@@ -1,271 +1,345 @@
-Thu Feb  9 19:27:41 JST 2006
--- PGR ALLCORE
--- by Tsuyoshi Hamada
--- Last Modified at 2005/01/02
--- Last Modified at 2004/11/20
---
--- SYS_CLK   __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __
--- WE        __/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\____
---(WRITE)
--- ADR         < 0 >< 1 >< 2 >< 3 >< 4 >< 5 >< 6 >< 7 >
--- DTI         < 0 >< 1 >< 2 >< 3 >< 4 >< 5 >< 6 >< 7 >
---(READ)
--- ADR         < 0 >< 1 >< 2 >< 3 >< 4 >< 5 >< 6 >< 7 >
--- DTO              < 0 >< 1 >< 2 >< 3 >< 4 >< 5 >< 6 >< 7 >
-
-
-library ieee;
-LIBRARY UNISIM;
-use ieee.std_logic_1164.all;
-use ieee.std_logic_arith.all;
-use ieee.std_logic_unsigned.all;
-USE UNISIM.Vcomponents.ALL;
-
-entity pgpg_mem is
-  port (
-    RST           : in  std_logic;
-    SYS_CLK       : in  std_logic;
-    PIPE_CLK      : in  std_logic;
-    ADR           : in  std_logic_vector(18 downto 0);
-    WE            : in  std_logic;
-    DTI           : in  std_logic_vector(63 downto 0);
-    DTO           : out std_logic_vector(63 downto 0);
-    STS           : out std_logic;
-    FPGA_NO       : in std_logic_vector(1 downto 0));
-end pgpg_mem;
-
-architecture RTL of pgpg_mem is
-
-component adr_dec
-  port (
-    clk        : in std_logic;
-    adr        : in std_logic_vector(18 downto 0);
-    is_jpw     : out std_logic;
-    is_ipw     : out std_logic;
-    is_fo      : out std_logic;
-    is_setn    : out std_logic;
-    is_run     : out std_logic;
-    FPGA_NO    : in std_logic_vector(1 downto 0));
-end component;
-
-component pipe_sts
-  port (
-    rst        : in  std_logic;
-    clk        : in  std_logic;
-    run        : in  std_logic;
-    runret     : in  std_logic;
-    status     : out std_logic_vector(31 downto 0));
-end component;
-
-component calc is
-  port (
-    start      : in  std_logic;
-    clk        : in  std_logic;
-    pclk       : in  std_logic;
-    n          : in  std_logic_vector(31 downto 0);
-    run        : out  std_logic;
-    mem_adr    : out  std_logic_vector(31 downto 0));
-end component;
-
-component setn
-  port (
-    clk       : in std_logic;
-    we        : in std_logic;
-    idata     : in std_logic_vector(31 downto 0);
-    odata     : out std_logic_vector(31 downto 0));
-end component;
-
-component jmem
-  port (
-    wadr        : in  std_logic_vector(15 downto 0);
-    wclk        : in  std_logic;
-    radr        : in  std_logic_vector(15 downto 0);
-    rclk        : in  std_logic;
-    rst        : in  std_logic; -- not used
-    we         : in  std_logic;
-    idata      : in  std_logic_vector(63 downto 0);
-    odata      : out  std_logic_vector(127 downto 0));  -- for G5            (JDIM 4)
---  odata      : out  std_logic_vector(255 downto 0));  -- for SPH 1st stage (JDIM 8)
---  odata      : out  std_logic_vector(511 downto 0));  -- for SPH 2nd stage (JDIM 16)
-end component;
-
--- pg_pipe
-component pg_pipe
-  generic(JDATA_WIDTH : integer := 384;
-          IDATA_WIDTH : integer := 64  );
-  port(
-    p_jdata : in std_logic_vector(JDATA_WIDTH-1 downto 0);
-    p_run : in std_logic;
-    p_we :  in std_logic;
-    p_adri : in std_logic_vector(11 downto 0);
-    p_datai : in std_logic_vector(IDATA_WIDTH-1 downto 0);
-    p_adro : in std_logic_vector(11 downto 0);
-    p_datao : out std_logic_vector(IDATA_WIDTH-1 downto 0);
-    p_runret : out std_logic;
---  aclk : in std_logic;                -- for pg_float_accum
-    rst,pclk,clk : in std_logic);
-end component;
-
--- adr_dec
-signal is_jpw : std_logic;
-signal is_ipw : std_logic;
-signal is_fo  : std_logic;
-signal is_setn : std_logic;
-signal is_run : std_logic;
-
--- pipe_sts
-signal p_runret  : std_logic;
-signal odata_sts : std_logic_vector(31 downto 0);
-
--- calc
-signal calc_we : std_logic;
-signal calc_jadr : std_logic_vector(31 downto 0);
-signal p_run : std_logic;
-
--- setn
-signal setn_we : std_logic;
-signal odata_setn : std_logic_vector(31 downto 0);
-
--- fo
-signal odata_fo : std_logic_vector(63 downto 0);
-signal p_adro   : std_logic_vector(11 downto 0);
-
--- ipw
-signal p_we    : std_logic;
-signal p_adri : std_logic_vector(11 downto 0);
-
--- jmem
-signal jmem_d : std_logic_vector(127 downto 0);  -- for G5
---signal jmem_d : std_logic_vector(255 downto 0);  -- for SHP 1st Stage
---signal jmem_d : std_logic_vector(511 downto 0);  -- for SHP 2nd Stage
-signal jpw_we : std_logic;
-signal jmem_adr : std_logic_vector(63 downto 0);
-signal jmem_adr_outside : std_logic_vector(15 downto 0);
-
-
-signal idata : std_logic_vector(63 downto 0);
-signal clk : std_logic;
-signal pclk : std_logic;
-constant zero32 : std_logic_vector(31 downto 0) := (others=>'0');
-signal ADR_ff : std_logic_vector(18 downto 0) := (others=>'0');
-signal odata_jmem : std_logic_vector(63 downto 0) := (others=>'0');
-
--- DEBUG ---------------------------------------------
-signal debug_p_jdata : std_logic_vector(511 downto 0);
-constant c_zero : std_logic_vector(1023 downto 0) := (others=>'0');
-------------------------------------------------------
-
-begin
-
-clk  <= SYS_CLK;
-pclk <= PIPE_CLK;
---pclk <= SYS_CLK;
-
-idata <= DTI;
-
--- calc status
-process(clk) begin
-  if(clk'event and clk='1') then
-    STS <= odata_sts(0);
-  end if;
-end process;
-
-
-
-----------
--- DTO ---
-----------
-
-DTO <= odata_fo;
-
-unit0: adr_dec port map(
-    clk=>clk,
-    adr=>ADR,
-    is_jpw =>is_jpw,  -- jmem
-    is_ipw =>is_ipw,  -- ireg
-    is_fo  =>is_fo,   -- fo
-    is_setn=>is_setn, -- setn
-    is_run =>is_run, -- do calc
-    FPGA_NO => FPGA_NO);
-
--------------------------------------------------------------------------------
--- pg_pipe
--------------------------------------------------------------------------------
-p_we <= is_ipw and WE;
---- ADR CONVERSION XI ---
-p_adri(3 downto 0)  <= '0' & ADR(2 downto 0); --  16 xi       (2004/01/01)
-p_adri(10 downto 4) <= ADR(9 downto 3);       -- 128 pipes    (2004/01/01)
-p_adri(11)          <= '0';                   -- chipsel mask (2005/01/01)
---- ADR CONVERSION AI ---
-p_adro(3 downto 0)  <= '0' & ADR(2 downto 0); --   8 ai       (2004/01/02)
-p_adro(10 downto 4) <= ADR(9 downto 3);       -- 128 pipes    (2004/01/02)
-p_adro(11)          <= '0';                   -- chipsel mask
-
-unit1 : pg_pipe
-    generic map (JDATA_WIDTH =>128,     -- for G5
---  generic map (JDATA_WIDTH =>113,     -- for G5
---  generic map (JDATA_WIDTH =>208,     -- for SPH 1st Stage
---  generic map (JDATA_WIDTH =>384,     -- for SPH 2nd Stage
-                 IDATA_WIDTH =>64 )
-    port map(
---  p_jdata => jmem_d(73 downto 0),     -- G3
-    p_jdata => jmem_d(127 downto 0),    -- G5
---  p_jdata => jmem_d(112 downto 0),    -- G5
---  p_jdata => jmem_d(207 downto 0),    -- SPH 1st Stage
---  p_jdata => jmem_d(383 downto 0),    -- SPH 2nd Stage
-    p_run   => p_run,
-    p_we    => p_we,
-    p_adri  => p_adri,
-    p_datai => idata,
-    p_adro  => p_adro,
-    p_datao => odata_fo,
-    p_runret=> p_runret,
-    rst => '0',
-    pclk => pclk,
-    clk =>clk);
-
--- calc ---------------------------------------------
-calc_we <= is_run AND WE;
-unit2 : calc port map(
-       start   => calc_we,
-       clk     => clk,
-       pclk    => pclk,
-       n       => odata_setn,
-       run     => p_run,
-       mem_adr => calc_jadr);
-
--- pipe_sts
-unit3 : pipe_sts port map(
-           rst => RST,
-           clk => pclk,
-           run => p_run,
-           runret=>p_runret,
-           status=>odata_sts);
-
--- setn access -------------------------------------
-setn_we <= is_setn AND WE;
-unit8 : setn port map(
-       clk=>clk,
-       we=>setn_we,
-       idata=>idata(31 downto 0),
-       odata=>odata_setn);
-
--- jmem access -------------------------------------
-jpw_we <= is_jpw AND WE;
-
---jmem_adr_outside <= "0" & ADR(14 downto 0);
-jmem_adr_outside <= ADR(15 downto 0);
-
-
-unit9: jmem port map(
-    rst=>'0',
-    we=>jpw_we,
-    wadr=>jmem_adr_outside(15 downto 0),  -- ADDRESS for WRITE 
-    wclk=>clk,                            -- CLOCK   for WRITE
-    radr => calc_jadr(15 downto 0),       -- ADDRESS for READ 
-    rclk=>pclk,                           -- CLOCK   for READ
-    idata=>idata,
-    odata=>jmem_d);
-
-end rtl;
-
+Sun Feb 19 19:35:04 JST 2006
+#ChipScope Core Inserter Project File Version 3.0
+#Thu Dec 30 21:23:10 JST 2004
+Project.device.designInputFile=c\:\\cygwin\\home\\administrator\\fkit\\pci64\\proj\\ifpga.ngc
+Project.device.designOutputFile=c\:\\cygwin\\home\\administrator\\fkit\\pci64\\proj\\ifpga.ngc
+Project.device.deviceFamily=2
+Project.device.enableRPMs=true
+Project.device.outputDirectory=c\:\\cygwin\\home\\administrator\\fkit\\pci64\\proj\\_ngo
+Project.device.useSRL16=true
+Project.filter.dimension=12
+Project.filter<0>=MEM_ADA*
+Project.filter<10>=DEBUG*
+Project.filter<11>=DE
+Project.filter<1>=
+Project.filter<2>=DBUS_Port*
+Project.filter<3>=DBUS_Port
+Project.filter<4>=DMAW_ENABLE*
+Project.filter<5>=DMAW_ENABLE
+Project.filter<6>=MEM_*
+Project.filter<7>=MEM_DTIA*
+Project.filter<8>=MEM_DT*
+Project.filter<9>=MEM_AD*
+Project.icon.boundaryScanChain=0
+Project.icon.disableBUFGInsertion=false
+Project.icon.enableExtTriggerIn=false
+Project.icon.enableExtTriggerOut=false
+Project.icon.triggerInPinName=
+Project.icon.triggerOutPinName=
+Project.unit.dimension=1
+Project.unit<0>.clockChannel=dp0 CLK
+Project.unit<0>.clockEdge=Rising
+Project.unit<0>.dataChannel<0>=DEBUG_CS_CLK0
+Project.unit<0>.dataChannel<100>=pgpg1 DBUS_Port<17>
+Project.unit<0>.dataChannel<101>=pgpg1 DBUS_Port<18>
+Project.unit<0>.dataChannel<102>=pgpg1 DBUS_Port<19>
+Project.unit<0>.dataChannel<103>=pgpg1 DBUS_Port<20>
+Project.unit<0>.dataChannel<104>=pgpg1 DBUS_Port<21>
+Project.unit<0>.dataChannel<105>=pgpg1 DBUS_Port<22>
+Project.unit<0>.dataChannel<106>=pgpg1 DBUS_Port<23>
+Project.unit<0>.dataChannel<107>=pgpg1 DBUS_Port<24>
+Project.unit<0>.dataChannel<108>=pgpg1 DBUS_Port<25>
+Project.unit<0>.dataChannel<109>=pgpg1 DBUS_Port<26>
+Project.unit<0>.dataChannel<10>=dp0 MEM_ADA<6>
+Project.unit<0>.dataChannel<110>=pgpg1 DBUS_Port<27>
+Project.unit<0>.dataChannel<111>=pgpg1 DBUS_Port<28>
+Project.unit<0>.dataChannel<112>=pgpg1 DBUS_Port<29>
+Project.unit<0>.dataChannel<113>=pgpg1 DBUS_Port<30>
+Project.unit<0>.dataChannel<114>=pgpg1 DBUS_Port<31>
+Project.unit<0>.dataChannel<115>=pgpg1 DBUS_Port<32>
+Project.unit<0>.dataChannel<116>=pgpg1 DBUS_Port<33>
+Project.unit<0>.dataChannel<117>=pgpg1 DBUS_Port<34>
+Project.unit<0>.dataChannel<118>=pgpg1 DBUS_Port<35>
+Project.unit<0>.dataChannel<119>=pgpg1 DBUS_Port<36>
+Project.unit<0>.dataChannel<11>=dp0 MEM_ADA<7>
+Project.unit<0>.dataChannel<120>=pgpg1 DBUS_Port<37>
+Project.unit<0>.dataChannel<121>=pgpg1 DBUS_Port<38>
+Project.unit<0>.dataChannel<122>=pgpg1 DBUS_Port<39>
+Project.unit<0>.dataChannel<123>=pgpg1 DBUS_Port<40>
+Project.unit<0>.dataChannel<124>=pgpg1 DBUS_Port<41>
+Project.unit<0>.dataChannel<125>=pgpg1 DBUS_Port<42>
+Project.unit<0>.dataChannel<126>=pgpg1 DBUS_Port<43>
+Project.unit<0>.dataChannel<127>=pgpg1 DBUS_Port<44>
+Project.unit<0>.dataChannel<128>=pgpg1 DBUS_Port<45>
+Project.unit<0>.dataChannel<129>=pgpg1 DBUS_Port<46>
+Project.unit<0>.dataChannel<12>=dp0 MEM_ADA<8>
+Project.unit<0>.dataChannel<130>=pgpg1 DBUS_Port<47>
+Project.unit<0>.dataChannel<131>=pgpg1 DBUS_Port<48>
+Project.unit<0>.dataChannel<132>=pgpg1 DBUS_Port<49>
+Project.unit<0>.dataChannel<133>=pgpg1 DBUS_Port<50>
+Project.unit<0>.dataChannel<134>=pgpg1 DBUS_Port<51>
+Project.unit<0>.dataChannel<135>=pgpg1 DBUS_Port<52>
+Project.unit<0>.dataChannel<136>=pgpg1 DBUS_Port<53>
+Project.unit<0>.dataChannel<137>=pgpg1 DBUS_Port<54>
+Project.unit<0>.dataChannel<138>=pgpg1 DBUS_Port<55>
+Project.unit<0>.dataChannel<139>=pgpg1 DBUS_Port<56>
+Project.unit<0>.dataChannel<13>=dp0 MEM_ADA<9>
+Project.unit<0>.dataChannel<140>=pgpg1 DBUS_Port<57>
+Project.unit<0>.dataChannel<141>=pgpg1 DBUS_Port<58>
+Project.unit<0>.dataChannel<142>=pgpg1 DBUS_Port<59>
+Project.unit<0>.dataChannel<143>=pgpg1 DBUS_Port<60>
+Project.unit<0>.dataChannel<144>=pgpg1 DBUS_Port<61>
+Project.unit<0>.dataChannel<145>=pgpg1 DBUS_Port<62>
+Project.unit<0>.dataChannel<146>=pgpg1 DBUS_Port<63>
+Project.unit<0>.dataChannel<14>=dp0 MEM_ADA<10>
+Project.unit<0>.dataChannel<15>=dp0 MEM_ADA<11>
+Project.unit<0>.dataChannel<16>=dp0 MEM_ADA<12>
+Project.unit<0>.dataChannel<17>=dp0 MEM_ADA<13>
+Project.unit<0>.dataChannel<18>=dp0 MEM_DTIA<0>
+Project.unit<0>.dataChannel<19>=dp0 MEM_DTIA<1>
+Project.unit<0>.dataChannel<1>=dp0 MEM_REA
+Project.unit<0>.dataChannel<20>=dp0 MEM_DTIA<2>
+Project.unit<0>.dataChannel<21>=dp0 MEM_DTIA<3>
+Project.unit<0>.dataChannel<22>=dp0 MEM_DTIA<4>
+Project.unit<0>.dataChannel<23>=dp0 MEM_DTIA<5>
+Project.unit<0>.dataChannel<24>=dp0 MEM_DTIA<6>
+Project.unit<0>.dataChannel<25>=dp0 MEM_DTIA<7>
+Project.unit<0>.dataChannel<26>=dp0 MEM_DTIA<8>
+Project.unit<0>.dataChannel<27>=dp0 MEM_DTIA<9>
+Project.unit<0>.dataChannel<28>=dp0 MEM_DTIA<10>
+Project.unit<0>.dataChannel<29>=dp0 MEM_DTIA<11>
+Project.unit<0>.dataChannel<2>=dp0 MEM_WELA
+Project.unit<0>.dataChannel<30>=dp0 MEM_DTIA<12>
+Project.unit<0>.dataChannel<31>=dp0 MEM_DTIA<13>
+Project.unit<0>.dataChannel<32>=dp0 MEM_DTIA<14>
+Project.unit<0>.dataChannel<33>=dp0 MEM_DTIA<15>
+Project.unit<0>.dataChannel<34>=dp0 MEM_DTIA<16>
+Project.unit<0>.dataChannel<35>=dp0 MEM_DTIA<17>
+Project.unit<0>.dataChannel<36>=dp0 MEM_DTIA<18>
+Project.unit<0>.dataChannel<37>=dp0 MEM_DTIA<19>
+Project.unit<0>.dataChannel<38>=dp0 MEM_DTIA<20>
+Project.unit<0>.dataChannel<39>=dp0 MEM_DTIA<21>
+Project.unit<0>.dataChannel<3>=dp0 MEM_WEHA
+Project.unit<0>.dataChannel<40>=dp0 MEM_DTIA<22>
+Project.unit<0>.dataChannel<41>=dp0 MEM_DTIA<23>
+Project.unit<0>.dataChannel<42>=dp0 MEM_DTIA<24>
+Project.unit<0>.dataChannel<43>=dp0 MEM_DTIA<25>
+Project.unit<0>.dataChannel<44>=dp0 MEM_DTIA<26>
+Project.unit<0>.dataChannel<45>=dp0 MEM_DTIA<27>
+Project.unit<0>.dataChannel<46>=dp0 MEM_DTIA<28>
+Project.unit<0>.dataChannel<47>=dp0 MEM_DTIA<29>
+Project.unit<0>.dataChannel<48>=dp0 MEM_DTIA<30>
+Project.unit<0>.dataChannel<49>=dp0 MEM_DTIA<31>
+Project.unit<0>.dataChannel<4>=dp0 MEM_ADA<0>
+Project.unit<0>.dataChannel<50>=dp0 MEM_DTIA<32>
+Project.unit<0>.dataChannel<51>=dp0 MEM_DTIA<33>
+Project.unit<0>.dataChannel<52>=dp0 MEM_DTIA<34>
+Project.unit<0>.dataChannel<53>=dp0 MEM_DTIA<35>
+Project.unit<0>.dataChannel<54>=dp0 MEM_DTIA<36>
+Project.unit<0>.dataChannel<55>=dp0 MEM_DTIA<37>
+Project.unit<0>.dataChannel<56>=dp0 MEM_DTIA<38>
+Project.unit<0>.dataChannel<57>=dp0 MEM_DTIA<39>
+Project.unit<0>.dataChannel<58>=dp0 MEM_DTIA<40>
+Project.unit<0>.dataChannel<59>=dp0 MEM_DTIA<41>
+Project.unit<0>.dataChannel<5>=dp0 MEM_ADA<1>
+Project.unit<0>.dataChannel<60>=dp0 MEM_DTIA<42>
+Project.unit<0>.dataChannel<61>=dp0 MEM_DTIA<43>
+Project.unit<0>.dataChannel<62>=dp0 MEM_DTIA<44>
+Project.unit<0>.dataChannel<63>=dp0 MEM_DTIA<45>
+Project.unit<0>.dataChannel<64>=dp0 MEM_DTIA<46>
+Project.unit<0>.dataChannel<65>=dp0 MEM_DTIA<47>
+Project.unit<0>.dataChannel<66>=dp0 MEM_DTIA<48>
+Project.unit<0>.dataChannel<67>=dp0 MEM_DTIA<49>
+Project.unit<0>.dataChannel<68>=dp0 MEM_DTIA<50>
+Project.unit<0>.dataChannel<69>=dp0 MEM_DTIA<51>
+Project.unit<0>.dataChannel<6>=dp0 MEM_ADA<2>
+Project.unit<0>.dataChannel<70>=dp0 MEM_DTIA<52>
+Project.unit<0>.dataChannel<71>=dp0 MEM_DTIA<53>
+Project.unit<0>.dataChannel<72>=dp0 MEM_DTIA<54>
+Project.unit<0>.dataChannel<73>=dp0 MEM_DTIA<55>
+Project.unit<0>.dataChannel<74>=dp0 MEM_DTIA<56>
+Project.unit<0>.dataChannel<75>=dp0 MEM_DTIA<57>
+Project.unit<0>.dataChannel<76>=dp0 MEM_DTIA<58>
+Project.unit<0>.dataChannel<77>=dp0 MEM_DTIA<59>
+Project.unit<0>.dataChannel<78>=dp0 MEM_DTIA<60>
+Project.unit<0>.dataChannel<79>=dp0 MEM_DTIA<61>
+Project.unit<0>.dataChannel<7>=dp0 MEM_ADA<3>
+Project.unit<0>.dataChannel<80>=dp0 MEM_DTIA<62>
+Project.unit<0>.dataChannel<81>=dp0 MEM_DTIA<63>
+Project.unit<0>.dataChannel<82>=pgpg1 DMAW_ENABLE<0>
+Project.unit<0>.dataChannel<83>=pgpg1 DBUS_Port<0>
+Project.unit<0>.dataChannel<84>=pgpg1 DBUS_Port<1>
+Project.unit<0>.dataChannel<85>=pgpg1 DBUS_Port<2>
+Project.unit<0>.dataChannel<86>=pgpg1 DBUS_Port<3>
+Project.unit<0>.dataChannel<87>=pgpg1 DBUS_Port<4>
+Project.unit<0>.dataChannel<88>=pgpg1 DBUS_Port<5>
+Project.unit<0>.dataChannel<89>=pgpg1 DBUS_Port<6>
+Project.unit<0>.dataChannel<8>=dp0 MEM_ADA<4>
+Project.unit<0>.dataChannel<90>=pgpg1 DBUS_Port<7>
+Project.unit<0>.dataChannel<91>=pgpg1 DBUS_Port<8>
+Project.unit<0>.dataChannel<92>=pgpg1 DBUS_Port<9>
+Project.unit<0>.dataChannel<93>=pgpg1 DBUS_Port<10>
+Project.unit<0>.dataChannel<94>=pgpg1 DBUS_Port<11>
+Project.unit<0>.dataChannel<95>=pgpg1 DBUS_Port<12>
+Project.unit<0>.dataChannel<96>=pgpg1 DBUS_Port<13>
+Project.unit<0>.dataChannel<97>=pgpg1 DBUS_Port<14>
+Project.unit<0>.dataChannel<98>=pgpg1 DBUS_Port<15>
+Project.unit<0>.dataChannel<99>=pgpg1 DBUS_Port<16>
+Project.unit<0>.dataChannel<9>=dp0 MEM_ADA<5>
+Project.unit<0>.dataDepth=512
+Project.unit<0>.dataEqualsTrigger=true
+Project.unit<0>.dataPortWidth=147
+Project.unit<0>.enableGaps=false
+Project.unit<0>.enableTimestamps=false
+Project.unit<0>.timestampDepth=0
+Project.unit<0>.timestampWidth=0
+Project.unit<0>.triggerChannel<0><0>=DEBUG_CS_CLK0
+Project.unit<0>.triggerChannel<0><100>=pgpg1 DBUS_Port<17>
+Project.unit<0>.triggerChannel<0><101>=pgpg1 DBUS_Port<18>
+Project.unit<0>.triggerChannel<0><102>=pgpg1 DBUS_Port<19>
+Project.unit<0>.triggerChannel<0><103>=pgpg1 DBUS_Port<20>
+Project.unit<0>.triggerChannel<0><104>=pgpg1 DBUS_Port<21>
+Project.unit<0>.triggerChannel<0><105>=pgpg1 DBUS_Port<22>
+Project.unit<0>.triggerChannel<0><106>=pgpg1 DBUS_Port<23>
+Project.unit<0>.triggerChannel<0><107>=pgpg1 DBUS_Port<24>
+Project.unit<0>.triggerChannel<0><108>=pgpg1 DBUS_Port<25>
+Project.unit<0>.triggerChannel<0><109>=pgpg1 DBUS_Port<26>
+Project.unit<0>.triggerChannel<0><10>=dp0 MEM_ADA<6>
+Project.unit<0>.triggerChannel<0><110>=pgpg1 DBUS_Port<27>
+Project.unit<0>.triggerChannel<0><111>=pgpg1 DBUS_Port<28>
+Project.unit<0>.triggerChannel<0><112>=pgpg1 DBUS_Port<29>
+Project.unit<0>.triggerChannel<0><113>=pgpg1 DBUS_Port<30>
+Project.unit<0>.triggerChannel<0><114>=pgpg1 DBUS_Port<31>
+Project.unit<0>.triggerChannel<0><115>=pgpg1 DBUS_Port<32>
+Project.unit<0>.triggerChannel<0><116>=pgpg1 DBUS_Port<33>
+Project.unit<0>.triggerChannel<0><117>=pgpg1 DBUS_Port<34>
+Project.unit<0>.triggerChannel<0><118>=pgpg1 DBUS_Port<35>
+Project.unit<0>.triggerChannel<0><119>=pgpg1 DBUS_Port<36>
+Project.unit<0>.triggerChannel<0><11>=dp0 MEM_ADA<7>
+Project.unit<0>.triggerChannel<0><120>=pgpg1 DBUS_Port<37>
+Project.unit<0>.triggerChannel<0><121>=pgpg1 DBUS_Port<38>
+Project.unit<0>.triggerChannel<0><122>=pgpg1 DBUS_Port<39>
+Project.unit<0>.triggerChannel<0><123>=pgpg1 DBUS_Port<40>
+Project.unit<0>.triggerChannel<0><124>=pgpg1 DBUS_Port<41>
+Project.unit<0>.triggerChannel<0><125>=pgpg1 DBUS_Port<42>
+Project.unit<0>.triggerChannel<0><126>=pgpg1 DBUS_Port<43>
+Project.unit<0>.triggerChannel<0><127>=pgpg1 DBUS_Port<44>
+Project.unit<0>.triggerChannel<0><128>=pgpg1 DBUS_Port<45>
+Project.unit<0>.triggerChannel<0><129>=pgpg1 DBUS_Port<46>
+Project.unit<0>.triggerChannel<0><12>=dp0 MEM_ADA<8>
+Project.unit<0>.triggerChannel<0><130>=pgpg1 DBUS_Port<47>
+Project.unit<0>.triggerChannel<0><131>=pgpg1 DBUS_Port<48>
+Project.unit<0>.triggerChannel<0><132>=pgpg1 DBUS_Port<49>
+Project.unit<0>.triggerChannel<0><133>=pgpg1 DBUS_Port<50>
+Project.unit<0>.triggerChannel<0><134>=pgpg1 DBUS_Port<51>
+Project.unit<0>.triggerChannel<0><135>=pgpg1 DBUS_Port<52>
+Project.unit<0>.triggerChannel<0><136>=pgpg1 DBUS_Port<53>
+Project.unit<0>.triggerChannel<0><137>=pgpg1 DBUS_Port<54>
+Project.unit<0>.triggerChannel<0><138>=pgpg1 DBUS_Port<55>
+Project.unit<0>.triggerChannel<0><139>=pgpg1 DBUS_Port<56>
+Project.unit<0>.triggerChannel<0><13>=dp0 MEM_ADA<9>
+Project.unit<0>.triggerChannel<0><140>=pgpg1 DBUS_Port<57>
+Project.unit<0>.triggerChannel<0><141>=pgpg1 DBUS_Port<58>
+Project.unit<0>.triggerChannel<0><142>=pgpg1 DBUS_Port<59>
+Project.unit<0>.triggerChannel<0><143>=pgpg1 DBUS_Port<60>
+Project.unit<0>.triggerChannel<0><144>=pgpg1 DBUS_Port<61>
+Project.unit<0>.triggerChannel<0><145>=pgpg1 DBUS_Port<62>
+Project.unit<0>.triggerChannel<0><146>=pgpg1 DBUS_Port<63>
+Project.unit<0>.triggerChannel<0><147>=PCI_CNT MEM_ADA<14>
+Project.unit<0>.triggerChannel<0><148>=PCI_CNT MEM_ADA<15>
+Project.unit<0>.triggerChannel<0><149>=PCI_CNT MEM_ADA<16>
+Project.unit<0>.triggerChannel<0><14>=dp0 MEM_ADA<10>
+Project.unit<0>.triggerChannel<0><15>=dp0 MEM_ADA<11>
+Project.unit<0>.triggerChannel<0><16>=dp0 MEM_ADA<12>
+Project.unit<0>.triggerChannel<0><17>=dp0 MEM_ADA<13>
+Project.unit<0>.triggerChannel<0><18>=dp0 MEM_DTIA<0>
+Project.unit<0>.triggerChannel<0><19>=dp0 MEM_DTIA<1>
+Project.unit<0>.triggerChannel<0><1>=dp0 MEM_REA
+Project.unit<0>.triggerChannel<0><20>=dp0 MEM_DTIA<2>
+Project.unit<0>.triggerChannel<0><21>=dp0 MEM_DTIA<3>
+Project.unit<0>.triggerChannel<0><22>=dp0 MEM_DTIA<4>
+Project.unit<0>.triggerChannel<0><23>=dp0 MEM_DTIA<5>
+Project.unit<0>.triggerChannel<0><24>=dp0 MEM_DTIA<6>
+Project.unit<0>.triggerChannel<0><25>=dp0 MEM_DTIA<7>
+Project.unit<0>.triggerChannel<0><26>=dp0 MEM_DTIA<8>
+Project.unit<0>.triggerChannel<0><27>=dp0 MEM_DTIA<9>
+Project.unit<0>.triggerChannel<0><28>=dp0 MEM_DTIA<10>
+Project.unit<0>.triggerChannel<0><29>=dp0 MEM_DTIA<11>
+Project.unit<0>.triggerChannel<0><2>=dp0 MEM_WELA
+Project.unit<0>.triggerChannel<0><30>=dp0 MEM_DTIA<12>
+Project.unit<0>.triggerChannel<0><31>=dp0 MEM_DTIA<13>
+Project.unit<0>.triggerChannel<0><32>=dp0 MEM_DTIA<14>
+Project.unit<0>.triggerChannel<0><33>=dp0 MEM_DTIA<15>
+Project.unit<0>.triggerChannel<0><34>=dp0 MEM_DTIA<16>
+Project.unit<0>.triggerChannel<0><35>=dp0 MEM_DTIA<17>
+Project.unit<0>.triggerChannel<0><36>=dp0 MEM_DTIA<18>
+Project.unit<0>.triggerChannel<0><37>=dp0 MEM_DTIA<19>
+Project.unit<0>.triggerChannel<0><38>=dp0 MEM_DTIA<20>
+Project.unit<0>.triggerChannel<0><39>=dp0 MEM_DTIA<21>
+Project.unit<0>.triggerChannel<0><3>=dp0 MEM_WEHA
+Project.unit<0>.triggerChannel<0><40>=dp0 MEM_DTIA<22>
+Project.unit<0>.triggerChannel<0><41>=dp0 MEM_DTIA<23>
+Project.unit<0>.triggerChannel<0><42>=dp0 MEM_DTIA<24>
+Project.unit<0>.triggerChannel<0><43>=dp0 MEM_DTIA<25>
+Project.unit<0>.triggerChannel<0><44>=dp0 MEM_DTIA<26>
+Project.unit<0>.triggerChannel<0><45>=dp0 MEM_DTIA<27>
+Project.unit<0>.triggerChannel<0><46>=dp0 MEM_DTIA<28>
+Project.unit<0>.triggerChannel<0><47>=dp0 MEM_DTIA<29>
+Project.unit<0>.triggerChannel<0><48>=dp0 MEM_DTIA<30>
+Project.unit<0>.triggerChannel<0><49>=dp0 MEM_DTIA<31>
+Project.unit<0>.triggerChannel<0><4>=dp0 MEM_ADA<0>
+Project.unit<0>.triggerChannel<0><50>=dp0 MEM_DTIA<32>
+Project.unit<0>.triggerChannel<0><51>=dp0 MEM_DTIA<33>
+Project.unit<0>.triggerChannel<0><52>=dp0 MEM_DTIA<34>
+Project.unit<0>.triggerChannel<0><53>=dp0 MEM_DTIA<35>
+Project.unit<0>.triggerChannel<0><54>=dp0 MEM_DTIA<36>
+Project.unit<0>.triggerChannel<0><55>=dp0 MEM_DTIA<37>
+Project.unit<0>.triggerChannel<0><56>=dp0 MEM_DTIA<38>
+Project.unit<0>.triggerChannel<0><57>=dp0 MEM_DTIA<39>
+Project.unit<0>.triggerChannel<0><58>=dp0 MEM_DTIA<40>
+Project.unit<0>.triggerChannel<0><59>=dp0 MEM_DTIA<41>
+Project.unit<0>.triggerChannel<0><5>=dp0 MEM_ADA<1>
+Project.unit<0>.triggerChannel<0><60>=dp0 MEM_DTIA<42>
+Project.unit<0>.triggerChannel<0><61>=dp0 MEM_DTIA<43>
+Project.unit<0>.triggerChannel<0><62>=dp0 MEM_DTIA<44>
+Project.unit<0>.triggerChannel<0><63>=dp0 MEM_DTIA<45>
+Project.unit<0>.triggerChannel<0><64>=dp0 MEM_DTIA<46>
+Project.unit<0>.triggerChannel<0><65>=dp0 MEM_DTIA<47>
+Project.unit<0>.triggerChannel<0><66>=dp0 MEM_DTIA<48>
+Project.unit<0>.triggerChannel<0><67>=dp0 MEM_DTIA<49>
+Project.unit<0>.triggerChannel<0><68>=dp0 MEM_DTIA<50>
+Project.unit<0>.triggerChannel<0><69>=dp0 MEM_DTIA<51>
+Project.unit<0>.triggerChannel<0><6>=dp0 MEM_ADA<2>
+Project.unit<0>.triggerChannel<0><70>=dp0 MEM_DTIA<52>
+Project.unit<0>.triggerChannel<0><71>=dp0 MEM_DTIA<53>
+Project.unit<0>.triggerChannel<0><72>=dp0 MEM_DTIA<54>
+Project.unit<0>.triggerChannel<0><73>=dp0 MEM_DTIA<55>
+Project.unit<0>.triggerChannel<0><74>=dp0 MEM_DTIA<56>
+Project.unit<0>.triggerChannel<0><75>=dp0 MEM_DTIA<57>
+Project.unit<0>.triggerChannel<0><76>=dp0 MEM_DTIA<58>
+Project.unit<0>.triggerChannel<0><77>=dp0 MEM_DTIA<59>
+Project.unit<0>.triggerChannel<0><78>=dp0 MEM_DTIA<60>
+Project.unit<0>.triggerChannel<0><79>=dp0 MEM_DTIA<61>
+Project.unit<0>.triggerChannel<0><7>=dp0 MEM_ADA<3>
+Project.unit<0>.triggerChannel<0><80>=dp0 MEM_DTIA<62>
+Project.unit<0>.triggerChannel<0><81>=dp0 MEM_DTIA<63>
+Project.unit<0>.triggerChannel<0><82>=pgpg1 DMAW_ENABLE<0>
+Project.unit<0>.triggerChannel<0><83>=pgpg1 DBUS_Port<0>
+Project.unit<0>.triggerChannel<0><84>=pgpg1 DBUS_Port<1>
+Project.unit<0>.triggerChannel<0><85>=pgpg1 DBUS_Port<2>
+Project.unit<0>.triggerChannel<0><86>=pgpg1 DBUS_Port<3>
+Project.unit<0>.triggerChannel<0><87>=pgpg1 DBUS_Port<4>
+Project.unit<0>.triggerChannel<0><88>=pgpg1 DBUS_Port<5>
+Project.unit<0>.triggerChannel<0><89>=pgpg1 DBUS_Port<6>
+Project.unit<0>.triggerChannel<0><8>=dp0 MEM_ADA<4>
+Project.unit<0>.triggerChannel<0><90>=pgpg1 DBUS_Port<7>
+Project.unit<0>.triggerChannel<0><91>=pgpg1 DBUS_Port<8>
+Project.unit<0>.triggerChannel<0><92>=pgpg1 DBUS_Port<9>
+Project.unit<0>.triggerChannel<0><93>=pgpg1 DBUS_Port<10>
+Project.unit<0>.triggerChannel<0><94>=pgpg1 DBUS_Port<11>
+Project.unit<0>.triggerChannel<0><95>=pgpg1 DBUS_Port<12>
+Project.unit<0>.triggerChannel<0><96>=pgpg1 DBUS_Port<13>
+Project.unit<0>.triggerChannel<0><97>=pgpg1 DBUS_Port<14>
+Project.unit<0>.triggerChannel<0><98>=pgpg1 DBUS_Port<15>
+Project.unit<0>.triggerChannel<0><99>=pgpg1 DBUS_Port<16>
+Project.unit<0>.triggerChannel<0><9>=dp0 MEM_ADA<5>
+Project.unit<0>.triggerConditionCountWidth=0
+Project.unit<0>.triggerMatchCount<0>=1
+Project.unit<0>.triggerMatchCountWidth<0><0>=0
+Project.unit<0>.triggerMatchType<0><0>=1
+Project.unit<0>.triggerPortCount=1
+Project.unit<0>.triggerPortIsData<0>=true
+Project.unit<0>.triggerPortWidth<0>=150
+Project.unit<0>.triggerSequencerLevels=16
+Project.unit<0>.triggerSequencerType=1
+Project.unit<0>.type=ilapro

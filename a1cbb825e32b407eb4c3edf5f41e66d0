@@ -1,2 +1,17 @@
-Wed Jan 11 19:38:32 JST 2006
-set allSynthModules {pcim_lc.MOD cfg.MOD pci_targetcnt.MOD pci_rdtfifo.MOD pci_dmacnt.MOD pcicnt.MOD regcnt.MOD dp32b8192w.MOD dpram.MOD user.MOD pfpga_config.MOD local_write.MOD local_read_cnt.MOD local_read_if.MOD local_read.MOD local_io.MOD writecomb_check.MOD fifofifo.MOD dcm_ps_f.MOD ifpga.MOD}
+Wed Mar 29 19:36:14 JST 2006
+#!/usr/bin/perl
+
+my $N = 300;
+my $XSCALE = 1.0;
+my $YSCALE = 1.0;
+
+srand(12345);
+
+print $N ."\n";
+
+for(my $i=0;$i<$N;$i++){
+    my $x = (rand(1.0)*$XSCALE - $XSCALE/2.0);
+    my $y = (rand(1.0)*$YSCALE - $XSCALE/2.0);
+    my $s = sprintf("%e\t%e\n",$x,$y);
+    print $s;
+}

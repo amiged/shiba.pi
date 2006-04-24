@@ -1,13 +1,41 @@
-Mon Mar  6 19:37:08 JST 2006
-#include <stdio.h>
-#include "nbodysim.h"
+Mon Apr 24 19:29:12 JST 2006
+// Time-stamp: <2006-09-04 13:41:34 hamada>
+// by T.Hamada
+//
+// <2006-09-04 13:33:47 hamada>
 
-void debug_position(double x[][DIM], double time,int n)
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+#include "pg4.h"
+
+void rst(int devid, int d, int msec)
 {
-    int i;
-    for(i=0;i<n;i++){
-      //        printf("%d,%e,%1.8e,%1.8e,%1.8e\n",i,t,x[i][0],x[i][1],x[i][2]);
-        printf("%1.8e\t%1.8e\t%1.8e\t%1.1e\n",x[i][0],x[i][1],x[i][2],time);
-    }
+  d = 0xff & d;
+  WriteBase0(devid, 0x4, d);
+  usleep(msec*1000);
 }
 
+int main(int argc, char* argv[])
+{
+  int devid=0;
+  int i;
+
+  pg4_open(devid);
+  
+  for(i=0;i<16;i++){
+    int x;
+    x = 0xff&(1<<(i%8));
+    rst(devid, x, 100);
+    rst(devid, 0, 1);
+  }
+
+  rst(devid, 0xff, 1000);
+  rst(devid, 0x0, 0);
+
+  pg4_close(devid);
+
+  return 0;
+}

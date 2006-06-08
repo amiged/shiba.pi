@@ -1,34 +1,36 @@
-Thu Mar 30 19:27:43 JST 2006
-#include <stdio.h>
+Thu Jun  8 19:44:25 JST 2006
+#!/usr/bin/env python3
+import os
+from datetime import datetime
+import time
+
+# YYYYMMDD_HH_MM_SS
+def get_filename_frame(basedir, str_datetime):
+    cell = list(str_datetime)
+    str_YYYYMMDD = ''.join(cell[0:8])
+    str_HH = ''.join(cell[9:11])
+    str_MM = ''.join(cell[12:14])
+    str_SS = ''.join(cell[15:17])
+    dirname = basedir + str_YYYYMMDD + "/" + str_HH
+    if os.path.exists(dirname) != True:
+        os.makedirs(dirname)
+    ret = dirname + "/" + str_datetime+".jpg"
+    ret = ret.replace(' ','')
+    return ret
 
 
-void debug_position_snap(double x[][3], double Gflops, int n, int nstep)
-{
-  //    int i;
-    static int flag=0;
-    static FILE* fp;
+def get_filename_frame_simple(basedir, fname):
+    dirname = basedir
+    if os.path.exists(dirname) != True:
+        os.makedirs(dirname)
+    ret = dirname + fname
+    ret = ret.replace(' ','')
+    return ret
 
-    if(flag==0){
-      fp = fopen("/mnt/ram/xxx.log","w");
-      //      fp = fopen("xxx.log","w");
-      flag = 1;
-    }else{
-      rewind(fp);
-    }
 
-    fprintf(fp,"%d\n",nstep);
-    fprintf(fp,"%e\n",Gflops);
-    fprintf(fp,"%d\n",n);
-
-    fwrite(x, n*24,1,fp);
-
-    /*
-    for(i=0;i<n;i++){
-      fprintf(fp,"%1.8e\t%1.8e\t%1.8e\n",x[i][0],x[i][1],x[i][2]);
-    }
-    */
-
-    //    fclose(fp);
-    fflush(fp);
-}
-
+if __name__ == '__main__':
+    while(True):
+        tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S')
+        fname = get_filename_frame('../work/', tnow)
+        print (fname)
+        time.sleep(0.5)

@@ -1,265 +1,86 @@
-Sun Mar  5 19:45:07 JST 2006
--- C:\CYGWIN\HOME\ADMINISTRATOR\FKIT\PCI64\PROJ
--- VHDL Annotation Test Bench created by
--- HDL Bencher 6.1i
--- Tue Jan 04 18:45:17 2005
+Mon Jun 19 19:40:59 JST 2006
+# CUDA
+###  Modify this part as your environment   ##################
+export CUDA_INSTALL_PATH=/export/opt/cuda.2.3
+export SDK_INSTALL_PATH=/export/opt/cuda.2.3/NVIDIA_GPU_Computing_SDK/C
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CUDA_INSTALL_PATH/lib64
+export PATH=$PATH:$CUDA_INSTALL_PATH/bin
 
-LIBRARY IEEE;
-USE IEEE.STD_LOGIC_1164.ALL;
-USE IEEE.STD_LOGIC_UNSIGNED.ALL;
-USE IEEE.STD_LOGIC_ARITH.ALL;
-USE IEEE.STD_LOGIC_TEXTIO.ALL;
-USE STD.TEXTIO.ALL;
+# for profiling
+export CUDA_PROFILE=0
+export CUDA_PROFILE_LOG=./cuda_profile.log
+export CUDA_PROFILE_CSV=1
+alias cudaprofon='export CUDA_PROFILE=1'
+alias cudaprofoff='export CUDA_PROFILE=0'
 
-ENTITY sim_local_read IS
-END sim_local_read;
+# OpenCL
+#export PATH=$PATH:/export/opt/gcc-4.4.1/bin
+#export LD_LIBRARY_PATH=/export/opt/gcc-4.4.1/lib64:$LD_LIBRARY_PATH
+#export NV_COMPUTE_SDK_PATH=/export/opt/cuda/NVIDIA_GPU_Computing_SDK
 
-ARCHITECTURE testbench_arch OF sim_local_read IS
--- If you get a compiler error on the following line,
--- from the menu do Options->Configuration select VHDL 87
-FILE RESULTS: TEXT OPEN WRITE_MODE IS "c:\cygwin\home\administrator\fkit\pci64\proj\sim_local_read.ano";
-	COMPONENT local_read
-		GENERIC (
-			NBIT_L_ADRO : INTEGER
-		);
-		PORT (
-			NPIPE : In  std_logic_vector (7 DOWNTO 0);
-			CALC_STS : In  std_logic;
-			BUSY : Out  std_logic;
-			DMAR_ENABLE : Out  std_logic_vector (3 DOWNTO 0);
-			DBUS_Port : Out  std_logic_vector (63 DOWNTO 0);
-			DBUS_idata : In  std_logic_vector (63 DOWNTO 0);
-			DBUS_HiZ : Out  std_logic;
-			MEM_ADB : Out  std_logic_vector (12 DOWNTO 0);
-			MEM_WEHB : Out  std_logic;
-			MEM_WELB : Out  std_logic;
-			MEM_DTIB : Out  std_logic_vector (63 DOWNTO 0);
-			RST : In  std_logic;
-			CLK : In  std_logic
-		);
-	END COMPONENT;
+#export LD_LIBRARY_PATH=/export/opt/gcc-4.3.4/lib64:$LD_LIBRARY_PATH
+#export LD_LIBRARY_PATH=/export/opt/OpenCL/NVIDIA_GPU_Computing_SDK/OpenCL/common/lib/Linux64:$LD_LIBRARY_PATH
 
-	SIGNAL NPIPE : std_logic_vector (7 DOWNTO 0);
-	SIGNAL CALC_STS : std_logic;
-	SIGNAL BUSY : std_logic;
-	SIGNAL DMAR_ENABLE : std_logic_vector (3 DOWNTO 0);
-	SIGNAL DBUS_Port : std_logic_vector (63 DOWNTO 0);
-	SIGNAL DBUS_idata : std_logic_vector (63 DOWNTO 0);
-	SIGNAL DBUS_HiZ : std_logic;
-	SIGNAL MEM_ADB : std_logic_vector (12 DOWNTO 0);
-	SIGNAL MEM_WEHB : std_logic;
-	SIGNAL MEM_WELB : std_logic;
-	SIGNAL MEM_DTIB : std_logic_vector (63 DOWNTO 0);
-	SIGNAL RST : std_logic;
-	SIGNAL CLK : std_logic;
 
-BEGIN
-	UUT : local_read
-	GENERIC MAP (
-		NBIT_L_ADRO => 1
-	)
-	PORT MAP (
-		NPIPE => NPIPE,
-		CALC_STS => CALC_STS,
-		BUSY => BUSY,
-		DMAR_ENABLE => DMAR_ENABLE,
-		DBUS_Port => DBUS_Port,
-		DBUS_idata => DBUS_idata,
-		DBUS_HiZ => DBUS_HiZ,
-		MEM_ADB => MEM_ADB,
-		MEM_WEHB => MEM_WEHB,
-		MEM_WELB => MEM_WELB,
-		MEM_DTIB => MEM_DTIB,
-		RST => RST,
-		CLK => CLK
-	);
+#export NV_COMPUTE_SDK_PATH=/export/opt/cuda/NVIDIA_GPU_Computing_SDK
+export LD_LIBRARY_PATH=/export/opt/gcc-4.3.4/lib64:$LD_LIBRARY_PATH
+#export LD_LIBRARY_PATH=/export/opt/cuda/NVIDIA_GPU_Computing_SDK/OpenCL/common/lib/Linux64:$LD_LIBRARY_PATH
 
-	PROCESS -- clock process for CLK,
-		VARIABLE TX_TIME : INTEGER :=0;
+# for MPICH
+#export PATH=/export/opt/mpi/local/bin:$PATH
+#export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/export/opt/mpi/local/lib
 
-		PROCEDURE ANNOTATE_BUSY(
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
-			STD.TEXTIO.write(TX_LOC, TX_TIME);
-			STD.TEXTIO.write(TX_LOC,string'(",BUSY,"));
-			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, BUSY);
-			STD.TEXTIO.write(TX_LOC, string'("]"));
-			TX_STR(TX_LOC.all'range) := TX_LOC.all;
-			STD.TEXTIO.writeline(results, TX_LOC);
-			STD.TEXTIO.Deallocate(TX_LOC);
-		END;
+#------------ GbEd --------------------
+#export PATH=/export/opt/openmpi-1.3.1/bin:$PATH
+#export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/export/opt/openmpi-1.3.1/lib
 
-		PROCEDURE ANNOTATE_DMAR_ENABLE(
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
-			STD.TEXTIO.write(TX_LOC, TX_TIME);
-			STD.TEXTIO.write(TX_LOC,string'(",DMAR_ENABLE,"));
-			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, DMAR_ENABLE);
-			STD.TEXTIO.write(TX_LOC, string'("]"));
-			TX_STR(TX_LOC.all'range) := TX_LOC.all;
-			STD.TEXTIO.writeline(results, TX_LOC);
-			STD.TEXTIO.Deallocate(TX_LOC);
-		END;
+#------------ InfiniBand (OFED 1.4) --------------------
+export PATH=/usr/mpi/gcc/openmpi-1.2.8/bin:$PATH
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/mpi/gcc/openmpi-1.2.8/lib64
 
-		PROCEDURE ANNOTATE_DBUS_Port(
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
-			STD.TEXTIO.write(TX_LOC, TX_TIME);
-			STD.TEXTIO.write(TX_LOC,string'(",DBUS_Port,"));
-			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, DBUS_Port);
-			STD.TEXTIO.write(TX_LOC, string'("]"));
-			TX_STR(TX_LOC.all'range) := TX_LOC.all;
-			STD.TEXTIO.writeline(results, TX_LOC);
-			STD.TEXTIO.Deallocate(TX_LOC);
-		END;
+#------------ InfiniBand (OFED 1.5.1) --------------------
+#export PATH=/usr/mpi/gcc/openmpi-1.4.1/bin:$PATH
+#export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/mpi/gcc/openmpi-1.4.1/lib64
 
-		PROCEDURE ANNOTATE_DBUS_HiZ(
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
-			STD.TEXTIO.write(TX_LOC, TX_TIME);
-			STD.TEXTIO.write(TX_LOC,string'(",DBUS_HiZ,"));
-			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, DBUS_HiZ);
-			STD.TEXTIO.write(TX_LOC, string'("]"));
-			TX_STR(TX_LOC.all'range) := TX_LOC.all;
-			STD.TEXTIO.writeline(results, TX_LOC);
-			STD.TEXTIO.Deallocate(TX_LOC);
-		END;
 
-		PROCEDURE ANNOTATE_MEM_ADB(
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
-			STD.TEXTIO.write(TX_LOC, TX_TIME);
-			STD.TEXTIO.write(TX_LOC,string'(",MEM_ADB,"));
-			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, MEM_ADB);
-			STD.TEXTIO.write(TX_LOC, string'("]"));
-			TX_STR(TX_LOC.all'range) := TX_LOC.all;
-			STD.TEXTIO.writeline(results, TX_LOC);
-			STD.TEXTIO.Deallocate(TX_LOC);
-		END;
+export LANG=C
+export OPENCV_INSTALL_PATH=/export/opt/opencv-1.1.0
 
-		PROCEDURE ANNOTATE_MEM_WEHB(
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
-			STD.TEXTIO.write(TX_LOC, TX_TIME);
-			STD.TEXTIO.write(TX_LOC,string'(",MEM_WEHB,"));
-			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, MEM_WEHB);
-			STD.TEXTIO.write(TX_LOC, string'("]"));
-			TX_STR(TX_LOC.all'range) := TX_LOC.all;
-			STD.TEXTIO.writeline(results, TX_LOC);
-			STD.TEXTIO.Deallocate(TX_LOC);
-		END;
+# for ICC
+# source /export/opt/icc/11.0/081/bin/ifortvars.sh intel64
 
-		PROCEDURE ANNOTATE_MEM_WELB(
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
-			STD.TEXTIO.write(TX_LOC, TX_TIME);
-			STD.TEXTIO.write(TX_LOC,string'(",MEM_WELB,"));
-			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, MEM_WELB);
-			STD.TEXTIO.write(TX_LOC, string'("]"));
-			TX_STR(TX_LOC.all'range) := TX_LOC.all;
-			STD.TEXTIO.writeline(results, TX_LOC);
-			STD.TEXTIO.Deallocate(TX_LOC);
-		END;
+# for Mplayer
+export PATH=/export/opt/mplayer/bin:$PATH
 
-		PROCEDURE ANNOTATE_MEM_DTIB(
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
-			STD.TEXTIO.write(TX_LOC, TX_TIME);
-			STD.TEXTIO.write(TX_LOC,string'(",MEM_DTIB,"));
-			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, MEM_DTIB);
-			STD.TEXTIO.write(TX_LOC, string'("]"));
-			TX_STR(TX_LOC.all'range) := TX_LOC.all;
-			STD.TEXTIO.writeline(results, TX_LOC);
-			STD.TEXTIO.Deallocate(TX_LOC);
-		END;
+#echo 'OMP_NUM_THREADS =' $OMP_NUM_THREADS
 
-	BEGIN
-		CLOCK_LOOP : LOOP
-		CLK <= transport '0';
-		WAIT FOR 25 ns;
-		TX_TIME := TX_TIME + 25;
-		CLK <= transport '1';
-		WAIT FOR 25 ns;
-		TX_TIME := TX_TIME + 25;
-		ANNOTATE_BUSY(TX_TIME);
-		ANNOTATE_DMAR_ENABLE(TX_TIME);
-		ANNOTATE_DBUS_Port(TX_TIME);
-		ANNOTATE_DBUS_HiZ(TX_TIME);
-		ANNOTATE_MEM_ADB(TX_TIME);
-		ANNOTATE_MEM_WEHB(TX_TIME);
-		ANNOTATE_MEM_WELB(TX_TIME);
-		ANNOTATE_MEM_DTIB(TX_TIME);
-		WAIT FOR 25 ns;
-		TX_TIME := TX_TIME + 25;
-		CLK <= transport '0';
-		WAIT FOR 25 ns;
-		TX_TIME := TX_TIME + 25;
-		END LOOP CLOCK_LOOP;
-	END PROCESS;
+#for Cray-XT5
+alias ssc='ssh hawk.cray.com -l p01130'
 
-	PROCESS   -- Process for CLK
-		VARIABLE TX_OUT : LINE;
+#for AMD/ATI GPU
+#export CALROOT=/export/opt/amdstream/atical
+#export PATH=$CALROOT/bin/lnx64:$PATH
+#export LD_LIBRARY_PATH=/usr/lib64:/usr/lib:$LD_LIBRARY_PATH
+#export LD_LIBRARY_PATH=/export/opt/amdstream/atibrook/sdk/lib:$LD_LIBRARY_PATH
+#export PATH=/export/opt/amdstream/atibrook/sdk/bin:$PATH
+#export LD_LIBRARY_PATH=/export/opt/amdstream/acmlg1.0/gfortran64/lib:$LD_LIBRARY_PATH
+#alias aon='export DISPLAY=:0.0'
+export ATISTREAMSDKROOT=/export/opt/amdstream.opencl/ati-stream-sdk-v2.01-lnx64
+export ATISTREAMSDKSAMPLESROOT=/export/opt/amdstream.opencl/ati-stream-sdk-v2.01-lnx64
+export LD_LIBRARY_PATH=$ATISTREAMSDKROOT/lib/x86_64:$LD_LIBRARY_PATH
+#xmodmap ~/.Xmodmap 2> /dev/null
+#nodeid=`uname -n`
+#echo "node $nodeid"
 
-		BEGIN
-		-- --------------------
-		CALC_STS <= transport '0';
-		DBUS_idata <= transport std_logic_vector'("0000000000000000000000000000000000000000000000000000000000000000"); --0
-		RST <= transport '0';
-		NPIPE <= transport std_logic_vector'("00000000"); --0
-		-- --------------------
-		WAIT FOR 200 ns; -- Time=200 ns
-		NPIPE <= transport std_logic_vector'("00010001"); --11
-		-- --------------------
-		WAIT FOR 600 ns; -- Time=800 ns
-		CALC_STS <= transport '1';
-		-- --------------------
-		WAIT FOR 4400 ns; -- Time=5200 ns
-		CALC_STS <= transport '0';
-		-- --------------------
-		WAIT FOR 60275 ns; -- Time=65475 ns
-		-- --------------------
 
-		STD.TEXTIO.write(TX_OUT, string'("Total[]"));
-		STD.TEXTIO.writeline(results, TX_OUT);
-		ASSERT (FALSE) REPORT
-			"Success! Simulation for annotation completed"
-			SEVERITY FAILURE;
-	END PROCESS;
-END testbench_arch;
 
-CONFIGURATION local_read_cfg OF sim_local_read IS
-	FOR testbench_arch
-	END FOR;
-END local_read_cfg;
+export OMP_NUM_THREADS=1
+#export OMP_NUM_THREADS=2
+#export OMP_NUM_THREADS=4
+#export OMP_NUM_THREADS=8
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/export/opt/DevIL/lib
+
+export FFTW_INSTALL_PATH=/export/opt/fftw2-mpi
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$FFTW_INSTALL_PATH/lib
+

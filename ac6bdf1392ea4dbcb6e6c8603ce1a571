@@ -1,114 +1,129 @@
-Tue Jul 11 19:38:31 JST 2006
--- multiple clock generator
--- by Tsuyoshi Hamada
--- Last Modified at 2004/01/11
--- ===== COMPONENT SAMPLE =======================================
---component CLK_MULDIV
---  generic (CLKFX_MULTIPLY : integer :=3;
---           CLKFX_DIVIDE : integer := 2);
---  port (ICLK : in std_logic;
---        OCLK : out std_logic;
---        OCLK_FX : out std_logic;
---        LOCKED : out std_logic);
---end component;
---
--- ===== INSTANCIATION SAMPLE ====================================
---dcm0 : CLK_MULDIV
-----  generic map (CLKFX_MULTIPLY =>11,CLKFX_DIVIDE=>2) -- 183MHz
-----  generic map (CLKFX_MULTIPLY =>16,CLKFX_DIVIDE=>3) -- 178MHz
-----  generic map (CLKFX_MULTIPLY =>5,CLKFX_DIVIDE=>1)  -- 167MHz
-----  generic map (CLKFX_MULTIPLY =>9,CLKFX_DIVIDE=>2)  -- 150MHz
-----  generic map (CLKFX_MULTIPLY =>4,CLKFX_DIVIDE=>1)  -- 133MHz
-----  generic map (CLKFX_MULTIPLY =>7,CLKFX_DIVIDE=>2)  -- 117MHz
-----  generic map (CLKFX_MULTIPLY =>3,CLKFX_DIVIDE=>1)  -- 100MHz
-----  generic map (CLKFX_MULTIPLY =>2,CLKFX_DIVIDE=>1)  -- 67MHz
---  generic map (CLKFX_MULTIPLY =>1,CLKFX_DIVIDE=>1)    -- 33MHz if SYS_CLK is 33MHz
---  port map (
---	ICLK=>SYS_CLK,
---	OCLK=>clk,
---	OCLK_FX=>pclk,
---	LOCKED=>dcm_locked);
+Sun Aug  6 19:50:27 JST 2006
+#!/bin/sh
+#
+# An example hook script to blocks unannotated tags from entering.
+# Called by "git receive-pack" with arguments: refname sha1-old sha1-new
+#
+# To enable this hook, rename this file to "update".
+#
+# Config
+# ------
+# hooks.allowunannotated
+#   This boolean sets whether unannotated tags will be allowed into the
+#   repository.  By default they won't be.
+# hooks.allowdeletetag
+#   This boolean sets whether deleting tags will be allowed in the
+#   repository.  By default they won't be.
+# hooks.allowmodifytag
+#   This boolean sets whether a tag may be modified after creation. By default
+#   it won't be.
+# hooks.allowdeletebranch
+#   This boolean sets whether deleting branches will be allowed in the
+#   repository.  By default they won't be.
+# hooks.denycreatebranch
+#   This boolean sets whether remotely creating branches will be denied
+#   in the repository.  By default this is allowed.
+#
 
+# --- Command line
+refname="$1"
+oldrev="$2"
+newrev="$3"
 
-library ieee;
-LIBRARY UNISIM;
-use ieee.std_logic_1164.all;
-use ieee.std_logic_arith.all;                                        
-use ieee.std_logic_unsigned.all;                                    
-USE UNISIM.Vcomponents.ALL;
+# --- Safety check
+if [ -z "$GIT_DIR" ]; then
+	echo "Don't run this script from the command line." >&2
+	echo " (if you want, you could supply GIT_DIR then run" >&2
+	echo "  $0 <ref> <oldrev> <newrev>)" >&2
+	exit 1
+fi
 
-entity CLK_MULDIV is
-  generic (CLKFX_MULTIPLY : integer :=3;
-           CLKFX_DIVIDE : integer := 2);
-  port (ICLK : in std_logic;
-        OCLK : out std_logic;
-        OCLK_FX : out std_logic;
-        LOCKED : out std_logic);
-end CLK_MULDIV;
+if [ -z "$refname" -o -z "$oldrev" -o -z "$newrev" ]; then
+	echo "usage: $0 <ref> <oldrev> <newrev>" >&2
+	exit 1
+fi
 
-architecture rtl of CLK_MULDIV is
-component BUFG port (I: in  std_logic;  O: out  std_logic); 
-end component;
-component IBUFG port(I: in std_logic; O: out std_logic);
-end component;
-component DCM
-  generic ( 
-       CLKFX_MULTIPLY : integer := 3;
-       CLKFX_DIVIDE : integer := 2;
-       CLKIN_PERIOD : real := 15.000000;
-       DLL_FREQUENCY_MODE : string := "LOW";
-       DUTY_CYCLE_CORRECTION : boolean := TRUE;
-       CLKOUT_PHASE_SHIFT : string := "FIXED";
-       PHASE_SHIFT  : integer := 0;
-       STARTUP_WAIT : boolean := FALSE
-      );  
-  port ( CLKIN   : in  std_logic;
-       CLKFB   : in  std_logic;
-       DSSEN   : in  std_logic;
-       PSINCDEC   : in  std_logic;
-       PSEN     : in  std_logic;
-       PSCLK   : in  std_logic;
-       RST     : in  std_logic;
-       CLK0     : out std_logic;
-       CLK90   : out std_logic;
-       CLK180   : out std_logic;
-       CLK270   : out std_logic;
-       CLK2X   : out std_logic;
-       CLK2X180   : out std_logic;
-       CLKDV   : out std_logic;
-       CLKFX   : out std_logic;
-       CLKFX180   : out std_logic;
-       LOCKED   : out std_logic;
-       PSDONE   : out std_logic;
-       STATUS   : out std_logic_vector(7 downto 0)
-      );
-end component;
+# --- Config
+allowunannotated=$(git config --bool hooks.allowunannotated)
+allowdeletebranch=$(git config --bool hooks.allowdeletebranch)
+denycreatebranch=$(git config --bool hooks.denycreatebranch)
+allowdeletetag=$(git config --bool hooks.allowdeletetag)
+allowmodifytag=$(git config --bool hooks.allowmodifytag)
 
-signal dcm_in,dcm_out,dcm_fx,dcm_fb : std_logic;
+# check for no description
+projectdesc=$(sed -e '1q' "$GIT_DIR/description")
+case "$projectdesc" in
+"Unnamed repository"* | "")
+	echo "*** Project description file hasn't been set" >&2
+	exit 1
+	;;
+esac
 
-begin
+# --- Check types
+# if $newrev is 0000...0000, it's a commit to delete a ref.
+zero="0000000000000000000000000000000000000000"
+if [ "$newrev" = "$zero" ]; then
+	newrev_type=delete
+else
+	newrev_type=$(git cat-file -t $newrev)
+fi
 
-dcm0 : DCM
-  generic map (CLKFX_MULTIPLY=>CLKFX_MULTIPLY,
-	CLKFX_DIVIDE=>CLKFX_DIVIDE,
-        CLKIN_PERIOD => 15.000000,
-	DUTY_CYCLE_CORRECTION=>TRUE)
-  port map(
-    RST          => '0',         -- リセット
-    CLKIN        => dcm_in,      -- PHASE SHIFT入力クロック
-    CLKFB        => dcm_fb,         -- FB入力
-    DSSEN        => '0',
-    PSINCDEC     => '0',
-    PSEN         => '0',         -- 位相シフトイネーブル
-    PSCLK        => '0',         -- 位相シフトクロック
-    LOCKED       => LOCKED,
-    CLKFX        => dcm_fx,      -- ICLK x N
-    CLK0         => dcm_out      -- PHASE SHIFT出力クロック
-  );
+case "$refname","$newrev_type" in
+	refs/tags/*,commit)
+		# un-annotated tag
+		short_refname=${refname##refs/tags/}
+		if [ "$allowunannotated" != "true" ]; then
+			echo "*** The un-annotated tag, $short_refname, is not allowed in this repository" >&2
+			echo "*** Use 'git tag [ -a | -s ]' for tags you want to propagate." >&2
+			exit 1
+		fi
+		;;
+	refs/tags/*,delete)
+		# delete tag
+		if [ "$allowdeletetag" != "true" ]; then
+			echo "*** Deleting a tag is not allowed in this repository" >&2
+			exit 1
+		fi
+		;;
+	refs/tags/*,tag)
+		# annotated tag
+		if [ "$allowmodifytag" != "true" ] && git rev-parse $refname > /dev/null 2>&1
+		then
+			echo "*** Tag '$refname' already exists." >&2
+			echo "*** Modifying a tag is not allowed in this repository." >&2
+			exit 1
+		fi
+		;;
+	refs/heads/*,commit)
+		# branch
+		if [ "$oldrev" = "$zero" -a "$denycreatebranch" = "true" ]; then
+			echo "*** Creating a branch is not allowed in this repository" >&2
+			exit 1
+		fi
+		;;
+	refs/heads/*,delete)
+		# delete branch
+		if [ "$allowdeletebranch" != "true" ]; then
+			echo "*** Deleting a branch is not allowed in this repository" >&2
+			exit 1
+		fi
+		;;
+	refs/remotes/*,commit)
+		# tracking branch
+		;;
+	refs/remotes/*,delete)
+		# delete tracking branch
+		if [ "$allowdeletebranch" != "true" ]; then
+			echo "*** Deleting a tracking branch is not allowed in this repository" >&2
+			exit 1
+		fi
+		;;
+	*)
+		# Anything else (is there anything else?)
+		echo "*** Update hook: unknown type of update to ref $refname of type $newrev_type" >&2
+		exit 1
+		;;
+esac
 
-U_BUFG0 : IBUFG port map(I=>ICLK, O=>dcm_in);
-U_BUFG1 : BUFG port map(I=>dcm_out,   O=>dcm_fb);
-U_BUFG2 : BUFG port map(I=>dcm_fx, O=>OCLK_FX);  -- 66,100,133MHz
-OCLK <= dcm_fb;
-end rtl;
-
+# --- Finished
+exit 0

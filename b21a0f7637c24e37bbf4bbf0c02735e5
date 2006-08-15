@@ -1,42 +1,56 @@
-Fri Mar 31 19:33:37 JST 2006
-/**
-   # ハードウェア化する部分 
-   #     1.加速度a[][]の初期化
-   #     2.加速度a[][]の計算
-*/
+Tue Aug 15 19:41:54 JST 2006
+#!/usr/bin/env python3
+#Time-stamp: <2017-06-11 19:17:43 hamada>
+import argparse
+import numpy as np
+import cv2
+from datetime import datetime
+import mkdir
 
-#include <stdio.h>
-#include <math.h>
-#include "nbodysim.h"
+def put_text(image, text):
+    font_size = 1.0
+    font_type = cv2.FONT_HERSHEY_PLAIN
+    font_color = (0xf, 0xf, 0xff)
+    cv2.putText(image, text, (440, 15), font_type, font_size, font_color)
 
-void force_on_host(double x[][DIM],
-	   double m[],
-	   double eps2,
-	   double a[][DIM],
-	   int n)
-{
-  int i,j,d;
-  double dx[3];
+if (__name__ == '__main__'):
+    parser = argparse.ArgumentParser(description = "description goes here")
+    parser.add_argument("--devid", type=int, help = "set device id", required=False)
+    args = parser.parse_args()
+    devid = 0
+    if args.devid:
+        devid = int(args.devid)
+        print ("set devid = ", devid)
 
-  /* a[][]の初期化 */
-  for(i=0;i<n;i++) for(d=0;d<3;d++) a[i][d] = 0.0;
+    log_base = '../log/'
+    cap = cv2.VideoCapture(devid)
 
-  /* 相互作用の計算  */
-  for(i=0;i<n-1;i++){
-    for(j=i+1;j<n;j++){
-      double r2,r3;
-      r2 = eps2;
-      for(d=0;d<3;d++){
-	dx[d] = x[j][d] - x[i][d];
-	r2 += dx[d] * dx[d];
-      }
-      r3 = sqrt(r2)*r2;
-      for(d=0;d<3;d++){
-	a[i][d] +=  m[j]*dx[d]/r3;
-	a[j][d] += -m[i]*dx[d]/r3;
-      }
-    }
-  }
+    cap_width  = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+    cap_height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+    cap_fps    = cap.get(cv2.CAP_PROP_FPS)
 
+    print(cap_width, "x", cap_height, ":", cap_fps)
 
-}
+    tnow0 = datetime.now().strftime('%Y%m%d_%H_%M_%S') # ('%Y%m%d_%H_%M_%S_%f')
+
+    while(cap.isOpened()):
+        ret, frame = cap.read()
+        cv2.imshow('camera: %d'%(devid), frame)
+
+        #tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S')
+        tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S_%f')
+        if(tnow != tnow0):
+            put_text(frame, tnow)
+            basedir = '../log.%d/'% (devid)
+            ofname = mkdir.get_filename_frame(basedir, tnow)
+            cv2.imwrite(ofname, frame)
+            print(ofname, "devid = %d"%devid)
+            tnow0 = tnow
+
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    cap.release()
+    cv2.destroyAllWindows()
+
+    print("Done.")

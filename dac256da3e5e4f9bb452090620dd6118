@@ -1,100 +1,102 @@
-Sun Jul 30 19:41:39 JST 2006
-#include "cutil.h"
-
-__device__ float4 
-inter(float4 xj, float4 xi, float4 apot)
-{
-  float mj    = xj.w;        // Mass Mj
-  float ieps2 = xi.w;        // epsilon^2
-  float dx = xj.x - xi.x;    // Coordinates Xj - Xi
-  float dy = xj.y - xi.y;    // Coordinates Yj - Yi
-  float dz = xj.z - xi.z;    // Coordinates Zj - Zi
-  float r2 = dx*dx+dy*dy+dz*dz+ieps2;
-  float r1i = 1/sqrt(r2);
-  float r2i = r1i * r1i;
-  float mr3i = mj * r2i * r1i;
-  apot.x += dx * mr3i;       // Accel AXi
-  apot.y += dy * mr3i;       // Accel AYi
-  apot.z += dz * mr3i;       // Accel AZi
-  return (apot);
-}
-#define NTHRE (128) // blockDim.x§»∆±√Õ
-__global__ void
-kernel(float4* g_xj,
-       float* g_xi,
-       float* g_fi,
-       int ni,
-       int nj)
-{
-  int tid      = threadIdx.x;
-  int i = blockIdx.x*NTHRE+tid;
-  float4 ai = make_float4(0.0, 0.0, 0.0, 0.0);
-  float4 xi;
-  xi.x = g_xi[i];
-  xi.y = g_xi[i+ni];
-  xi.z = g_xi[i+ni*2];
-  xi.w = g_xi[i+ni*3];
-  __shared__ float4 s_xj[NTHRE];
-  for(int j = 0; j<nj; j+=NTHRE){
-    __syncthreads();
-    s_xj[tid] = g_xj[j+tid];
-    __syncthreads();
-    ai = inter(s_xj[0], xi, ai); ai = inter(s_xj[1], xi, ai); ai = inter(s_xj[2], xi, ai); ai = inter(s_xj[3], xi, ai);
-    ai = inter(s_xj[4], xi, ai); ai = inter(s_xj[5], xi, ai); ai = inter(s_xj[6], xi, ai); ai = inter(s_xj[7], xi, ai);
-    ai = inter(s_xj[8], xi, ai); ai = inter(s_xj[9], xi, ai);
-
-    ai = inter(s_xj[10], xi, ai); ai = inter(s_xj[11], xi, ai); ai = inter(s_xj[12], xi, ai); ai = inter(s_xj[13], xi, ai);
-    ai = inter(s_xj[14], xi, ai); ai = inter(s_xj[15], xi, ai); ai = inter(s_xj[16], xi, ai); ai = inter(s_xj[17], xi, ai);
-    ai = inter(s_xj[18], xi, ai); ai = inter(s_xj[19], xi, ai);
-
-    ai = inter(s_xj[20], xi, ai); ai = inter(s_xj[21], xi, ai); ai = inter(s_xj[22], xi, ai); ai = inter(s_xj[23], xi, ai);
-    ai = inter(s_xj[24], xi, ai); ai = inter(s_xj[25], xi, ai); ai = inter(s_xj[26], xi, ai); ai = inter(s_xj[27], xi, ai);
-    ai = inter(s_xj[28], xi, ai); ai = inter(s_xj[29], xi, ai);
-
-    ai = inter(s_xj[30], xi, ai); ai = inter(s_xj[31], xi, ai); ai = inter(s_xj[32], xi, ai); ai = inter(s_xj[33], xi, ai);
-    ai = inter(s_xj[34], xi, ai); ai = inter(s_xj[35], xi, ai); ai = inter(s_xj[36], xi, ai); ai = inter(s_xj[37], xi, ai);
-    ai = inter(s_xj[38], xi, ai); ai = inter(s_xj[39], xi, ai);
-
-    ai = inter(s_xj[40], xi, ai); ai = inter(s_xj[41], xi, ai); ai = inter(s_xj[42], xi, ai); ai = inter(s_xj[43], xi, ai);
-    ai = inter(s_xj[44], xi, ai); ai = inter(s_xj[45], xi, ai); ai = inter(s_xj[46], xi, ai); ai = inter(s_xj[47], xi, ai);
-    ai = inter(s_xj[48], xi, ai); ai = inter(s_xj[49], xi, ai);
-
-    ai = inter(s_xj[50], xi, ai); ai = inter(s_xj[51], xi, ai); ai = inter(s_xj[52], xi, ai); ai = inter(s_xj[53], xi, ai);
-    ai = inter(s_xj[54], xi, ai); ai = inter(s_xj[55], xi, ai); ai = inter(s_xj[56], xi, ai); ai = inter(s_xj[57], xi, ai);
-    ai = inter(s_xj[58], xi, ai); ai = inter(s_xj[59], xi, ai);
-
-    ai = inter(s_xj[60], xi, ai); ai = inter(s_xj[61], xi, ai); ai = inter(s_xj[62], xi, ai); ai = inter(s_xj[63], xi, ai);
-    ai = inter(s_xj[64], xi, ai); ai = inter(s_xj[65], xi, ai); ai = inter(s_xj[66], xi, ai); ai = inter(s_xj[67], xi, ai);
-    ai = inter(s_xj[68], xi, ai); ai = inter(s_xj[69], xi, ai);
-
-    ai = inter(s_xj[70], xi, ai); ai = inter(s_xj[71], xi, ai); ai = inter(s_xj[72], xi, ai); ai = inter(s_xj[73], xi, ai);
-    ai = inter(s_xj[74], xi, ai); ai = inter(s_xj[75], xi, ai); ai = inter(s_xj[76], xi, ai); ai = inter(s_xj[77], xi, ai);
-    ai = inter(s_xj[78], xi, ai); ai = inter(s_xj[79], xi, ai);
-
-    ai = inter(s_xj[80], xi, ai); ai = inter(s_xj[81], xi, ai); ai = inter(s_xj[82], xi, ai); ai = inter(s_xj[83], xi, ai);
-    ai = inter(s_xj[84], xi, ai); ai = inter(s_xj[85], xi, ai); ai = inter(s_xj[86], xi, ai); ai = inter(s_xj[87], xi, ai);
-    ai = inter(s_xj[88], xi, ai); ai = inter(s_xj[89], xi, ai);
-
-    ai = inter(s_xj[90], xi, ai); ai = inter(s_xj[91], xi, ai); ai = inter(s_xj[92], xi, ai); ai = inter(s_xj[93], xi, ai);
-    ai = inter(s_xj[94], xi, ai); ai = inter(s_xj[95], xi, ai); ai = inter(s_xj[96], xi, ai); ai = inter(s_xj[97], xi, ai);
-    ai = inter(s_xj[98], xi, ai); ai = inter(s_xj[99], xi, ai);
-
-    ai = inter(s_xj[100], xi, ai); ai = inter(s_xj[101], xi, ai); ai = inter(s_xj[102], xi, ai); ai = inter(s_xj[103], xi, ai);
-    ai = inter(s_xj[104], xi, ai); ai = inter(s_xj[105], xi, ai); ai = inter(s_xj[106], xi, ai); ai = inter(s_xj[107], xi, ai);
-    ai = inter(s_xj[108], xi, ai); ai = inter(s_xj[109], xi, ai);
-
-    ai = inter(s_xj[110], xi, ai); ai = inter(s_xj[111], xi, ai); ai = inter(s_xj[112], xi, ai); ai = inter(s_xj[113], xi, ai);
-    ai = inter(s_xj[114], xi, ai); ai = inter(s_xj[115], xi, ai); ai = inter(s_xj[116], xi, ai); ai = inter(s_xj[117], xi, ai);
-    ai = inter(s_xj[118], xi, ai); ai = inter(s_xj[119], xi, ai);
-
-    ai = inter(s_xj[120], xi, ai); ai = inter(s_xj[121], xi, ai); ai = inter(s_xj[122], xi, ai); ai = inter(s_xj[123], xi, ai);
-    ai = inter(s_xj[124], xi, ai); ai = inter(s_xj[125], xi, ai); ai = inter(s_xj[126], xi, ai); ai = inter(s_xj[127], xi, ai);
-  }
-  if(i<ni){
-    g_fi[i]      = ai.x;
-    g_fi[i+ni]   = ai.y;
-    g_fi[i+ni*2] = ai.z;
-  }
-}
-
-#include "api.h"
+Tue Aug 22 19:28:09 JST 2006
+100
+-2.746715e-01	4.191831e-01
+-2.931587e-01	2.247797e-01
+2.321991e-01	4.064824e-01
+-1.520429e-01	3.578809e-01
+-8.481506e-02	-3.058323e-01
+1.856104e-01	2.437552e-02
+-3.403643e-01	4.547575e-01
+-3.730157e-01	-4.956605e-01
+-1.173085e-01	-2.492071e-01
+1.552879e-01	3.449078e-02
+1.099664e-01	-2.121421e-01
+4.092620e-01	2.361288e-01
+-3.788992e-01	1.148062e-01
+-2.340848e-01	4.453564e-01
+-7.531051e-02	-2.516460e-01
+1.772955e-01	-4.287967e-01
+-4.426001e-02	-3.237644e-04
+-4.797312e-01	3.861750e-01
+1.545830e-01	5.970007e-02
+4.850480e-01	-1.605443e-01
+-4.632017e-01	-2.009751e-01
+4.881687e-01	-5.634217e-02
+-3.708808e-01	4.150378e-01
+-1.135756e-01	-4.695678e-01
+-3.155564e-01	4.356883e-01
+-1.920876e-02	9.783734e-02
+-6.385236e-02	-3.949834e-01
+2.275205e-01	-3.768423e-01
+1.721155e-01	-4.660092e-01
+4.644338e-01	-4.804784e-01
+-4.553355e-01	-7.876486e-02
+2.642185e-01	4.444889e-01
+5.434882e-02	1.171663e-01
+1.465040e-01	-1.143288e-01
+4.021194e-01	-1.771178e-01
+-7.684997e-02	-4.504972e-02
+7.223762e-02	-4.515364e-01
+-2.392842e-02	-3.878574e-01
+3.425949e-01	-1.136164e-01
+-4.632521e-01	2.447992e-01
+2.661087e-03	-2.676771e-01
+-2.328564e-01	-3.223420e-01
+-4.466751e-01	-1.286633e-01
+-4.479510e-01	-6.189542e-02
+-4.433532e-01	1.711145e-01
+-2.251056e-01	-4.814771e-01
+1.644014e-01	3.307433e-01
+-4.618902e-01	1.489123e-01
+7.775744e-02	3.332788e-01
+3.334003e-01	-1.894713e-01
+-2.498460e-01	-4.304763e-01
+-2.016626e-01	-3.888901e-01
+3.431431e-01	-6.968799e-02
+9.800158e-02	3.226420e-01
+1.605654e-01	-8.747274e-02
+-4.682621e-01	-3.876081e-01
+2.279104e-01	1.228907e-01
+2.623244e-02	-7.350670e-02
+-3.627764e-01	1.817259e-01
+2.810276e-01	4.027677e-01
+-1.422834e-01	3.805313e-01
+4.783312e-01	2.763473e-01
+-3.893109e-01	2.006641e-03
+3.557465e-01	-1.806598e-01
+1.450046e-01	-2.954686e-01
+-2.783369e-01	-3.638557e-01
+-7.520648e-02	5.595485e-02
+2.496197e-02	-2.837536e-02
+2.810538e-01	1.905431e-01
+-3.170416e-01	-1.766273e-01
+4.882654e-01	-3.097528e-01
+-4.631571e-01	-3.453426e-02
+-1.609725e-01	4.549768e-01
+8.088132e-03	2.639415e-01
+-4.847877e-01	3.397484e-01
+4.413317e-01	-1.913503e-01
+-3.675422e-01	2.785392e-01
+3.611714e-01	-2.921098e-01
+-4.166281e-01	8.013365e-02
+2.673365e-01	-1.624028e-01
+3.691146e-01	-6.944182e-02
+4.231276e-01	2.426829e-01
+-2.873224e-01	2.458353e-01
+3.373099e-01	2.320625e-01
+4.419646e-01	2.934974e-02
+2.343567e-01	-1.409978e-01
+-4.534335e-01	4.573376e-01
+3.897785e-01	4.435523e-01
+-9.306764e-02	4.667342e-01
+3.670526e-01	-2.663117e-02
+-4.954102e-01	-4.096787e-01
+-2.756701e-01	-3.467814e-01
+-1.885635e-01	-1.210909e-01
+-9.027580e-02	-7.420788e-03
+4.672701e-01	1.888859e-01
+-2.162385e-01	-3.037337e-01
+-4.418227e-01	3.812396e-01
+3.998173e-01	2.168659e-01
+1.527816e-01	-4.239467e-01
+4.445392e-01	2.424582e-01

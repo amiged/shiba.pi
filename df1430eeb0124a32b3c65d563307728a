@@ -1,1684 +1,641 @@
-Sun Aug 13 19:34:45 JST 2006
-# ------------------------------------------------------------------------------
-# 2006/02/10 by Tsuyoshi Hamada
-# with Xilinx PCI-64/66 LogiCore Version 3.0.152
-#      |
-#      +- 2v1000fg456_64_66.ucf (merged in ifpga.ucf)
-#      +- 2v1000fg456_64_66.ncd (used for par.exe)
-#      +- pcim_lc_66_3_d.vhd    (copied as pcim_lc.vhd at ./rtl/)
-#      +- pci_lc_i.ngo          (copied at ./proj/)
-# ------------------------------------------------------------------------------
-
-################################################################################
-#
-# File:   2v1000fg456_64_66.ucf
-# Rev:    3.0.0
-#
-# Use this file only with the device listed below.  Any other
-# combination is invalid.  Do not modify this file except in
-# regions designated for "User" constraints.
-#
-# Copyright (c) 2005 Xilinx, Inc.  All rights reserved.
-#
-################################################################################
-# Define Device, Package, And Speed Grade
-################################################################################
-#
-CONFIG PART = XC2V1000-FG456-5 ;
-#
-################################################################################
-# Avoid Configuration Pins
-################################################################################
-#
-CONFIG PROHIBIT = "Y4"   ; # IO/RW                          # çÌèú Å® í«â¡
-CONFIG PROHIBIT = "AA3"  ; # IO/CS                          # çÌèú Å® í«â¡
-CONFIG PROHIBIT = "AB19" ; # IO/DOUT/BSY
-CONFIG PROHIBIT = "V18"  ; # IO/DIN/D0
-CONFIG PROHIBIT = "V17"  ; # IO/D1                          # çÌèú Å® í«â¡
-CONFIG PROHIBIT = "W18"  ; # IO/D2                          # çÌèú Å® í«â¡
-CONFIG PROHIBIT = "Y18"  ; # IO/D3                          # çÌèú Å® í«â¡
-CONFIG PROHIBIT = "Y5"   ; # IO/D4                          # çÌèú Å® í«â¡
-CONFIG PROHIBIT = "W5"   ; # IO/D5                          # çÌèú Å® í«â¡
-CONFIG PROHIBIT = "AB4"  ; # IO/D6                          # çÌèú Å® í«â¡
-CONFIG PROHIBIT = "AA4"  ; # IO/D7                          # çÌèú Å® í«â¡
-CONFIG PROHIBIT = "AA19" ; # IO/INIT
-#
-################################################################################
-# I/O Assignment
-################################################################################
-#
-NET  "PCLK"                                                        LOC = "D11" ;
-NET  "PCI_CORE/RST_I"                                              LOC = "C4"  ;
-NET  "PCI_CORE/INTA_O"                                             LOC = "C5"  ;
-NET  "PCI_CORE/GNT_I"                                              LOC = "B4"  ;
-NET  "PCI_CORE/REQ_O"                                              LOC = "A4"  ;
-#
-NET  "PCI_CORE/AD_IO<31>"                                          LOC = "E6"  ;
-NET  "PCI_CORE/AD_IO<30>"                                          LOC = "E5"  ;
-NET  "PCI_CORE/AD_IO<29>"                                          LOC = "C2"  ;
-NET  "PCI_CORE/AD_IO<28>"                                          LOC = "C1"  ;
-NET  "PCI_CORE/AD_IO<27>"                                          LOC = "D2"  ;
-NET  "PCI_CORE/AD_IO<26>"                                          LOC = "D1"  ;
-NET  "PCI_CORE/AD_IO<25>"                                          LOC = "E4"  ;
-NET  "PCI_CORE/AD_IO<24>"                                          LOC = "E3"  ;
-NET  "PCI_CORE/AD_IO<23>"                                          LOC = "E2"  ;
-NET  "PCI_CORE/AD_IO<22>"                                          LOC = "E1"  ;
-NET  "PCI_CORE/AD_IO<21>"                                          LOC = "F5"  ;
-NET  "PCI_CORE/AD_IO<20>"                                          LOC = "G5"  ;
-NET  "PCI_CORE/AD_IO<19>"                                          LOC = "F4"  ;
-NET  "PCI_CORE/AD_IO<18>"                                          LOC = "F3"  ;
-NET  "PCI_CORE/AD_IO<17>"                                          LOC = "F2"  ;
-NET  "PCI_CORE/AD_IO<16>"                                          LOC = "F1"  ;
-NET  "PCI_CORE/AD_IO<15>"                                          LOC = "G4"  ;
-NET  "PCI_CORE/AD_IO<14>"                                          LOC = "G3"  ;
-NET  "PCI_CORE/AD_IO<13>"                                          LOC = "G2"  ;
-NET  "PCI_CORE/AD_IO<12>"                                          LOC = "G1"  ;
-NET  "PCI_CORE/AD_IO<11>"                                          LOC = "H5"  ;
-NET  "PCI_CORE/AD_IO<10>"                                          LOC = "J6"  ;
-NET  "PCI_CORE/AD_IO<9>"                                           LOC = "H4"  ;
-NET  "PCI_CORE/AD_IO<8>"                                           LOC = "H3"  ;
-NET  "PCI_CORE/AD_IO<7>"                                           LOC = "H2"  ;
-NET  "PCI_CORE/AD_IO<6>"                                           LOC = "H1"  ;
-NET  "PCI_CORE/AD_IO<5>"                                           LOC = "J4"  ;
-NET  "PCI_CORE/AD_IO<4>"                                           LOC = "J3"  ;
-NET  "PCI_CORE/AD_IO<3>"                                           LOC = "J2"  ;
-NET  "PCI_CORE/AD_IO<2>"                                           LOC = "J1"  ;
-NET  "PCI_CORE/AD_IO<1>"                                           LOC = "J5"  ;
-NET  "PCI_CORE/AD_IO<0>"                                           LOC = "K5"  ;
-NET  "PCI_CORE/CBE_IO<3>"                                          LOC = "K6"  ;
-NET  "PCI_CORE/CBE_IO<2>"                                          LOC = "L6"  ;
-NET  "PCI_CORE/CBE_IO<1>"                                          LOC = "K4"  ;
-NET  "PCI_CORE/CBE_IO<0>"                                          LOC = "K3"  ;
-NET  "PCI_CORE/PAR_IO"                                             LOC = "K2"  ;
-#
-NET  "PCI_CORE/IDSEL_I"                                            LOC = "K1"  ;
-NET  "PCI_CORE/FRAME_IO"                                           LOC = "L5"  ;
-NET  "PCI_CORE/IRDY_IO"                                            LOC = "L4"  ;
-NET  "PCI_CORE/TRDY_IO"                                            LOC = "L3"  ;
-NET  "PCI_CORE/DEVSEL_IO"                                          LOC = "L2"  ;
-NET  "PCI_CORE/STOP_IO"                                            LOC = "M1"  ;
-NET  "PCI_CORE/PERR_IO"                                            LOC = "M2"  ;
-NET  "PCI_CORE/SERR_IO"                                            LOC = "M3"  ;
-NET  "PCI_CORE/ACK64_IO"                                           LOC = "M4"  ;
-NET  "PCI_CORE/REQ64_IO"                                           LOC = "M5"  ;
-#
-NET  "PCI_CORE/PAR64_IO"                                           LOC = "M6"  ;
-NET  "PCI_CORE/CBE_IO<7>"                                          LOC = "N1"  ;
-NET  "PCI_CORE/CBE_IO<6>"                                          LOC = "N2"  ;
-NET  "PCI_CORE/CBE_IO<5>"                                          LOC = "N3"  ;
-NET  "PCI_CORE/CBE_IO<4>"                                          LOC = "N4"  ;
-NET  "PCI_CORE/AD_IO<63>"                                          LOC = "N5"  ;
-NET  "PCI_CORE/AD_IO<62>"                                          LOC = "N6"  ;
-NET  "PCI_CORE/AD_IO<61>"                                          LOC = "P1"  ;
-NET  "PCI_CORE/AD_IO<60>"                                          LOC = "P2"  ;
-NET  "PCI_CORE/AD_IO<59>"                                          LOC = "P3"  ;
-NET  "PCI_CORE/AD_IO<58>"                                          LOC = "P4"  ;
-NET  "PCI_CORE/AD_IO<57>"                                          LOC = "P5"  ;
-NET  "PCI_CORE/AD_IO<56>"                                          LOC = "P6"  ;
-NET  "PCI_CORE/AD_IO<55>"                                          LOC = "R1"  ;
-NET  "PCI_CORE/AD_IO<54>"                                          LOC = "R2"  ;
-NET  "PCI_CORE/AD_IO<53>"                                          LOC = "R3"  ;
-NET  "PCI_CORE/AD_IO<52>"                                          LOC = "R4"  ;
-NET  "PCI_CORE/AD_IO<51>"                                          LOC = "T1"  ;
-NET  "PCI_CORE/AD_IO<50>"                                          LOC = "T2"  ;
-NET  "PCI_CORE/AD_IO<49>"                                          LOC = "T3"  ;
-NET  "PCI_CORE/AD_IO<48>"                                          LOC = "T4"  ;
-NET  "PCI_CORE/AD_IO<47>"                                          LOC = "R5"  ;
-NET  "PCI_CORE/AD_IO<46>"                                          LOC = "T5"  ;
-NET  "PCI_CORE/AD_IO<45>"                                          LOC = "U1"  ;
-NET  "PCI_CORE/AD_IO<44>"                                          LOC = "U2"  ;
-NET  "PCI_CORE/AD_IO<43>"                                          LOC = "V1"  ;
-NET  "PCI_CORE/AD_IO<42>"                                          LOC = "V2"  ;
-NET  "PCI_CORE/AD_IO<41>"                                          LOC = "U3"  ;
-NET  "PCI_CORE/AD_IO<40>"                                          LOC = "U4"  ;
-NET  "PCI_CORE/AD_IO<39>"                                          LOC = "W1"  ;
-NET  "PCI_CORE/AD_IO<38>"                                          LOC = "W2"  ;
-NET  "PCI_CORE/AD_IO<37>"                                          LOC = "V3"  ;
-NET  "PCI_CORE/AD_IO<36>"                                          LOC = "V4"  ;
-NET  "PCI_CORE/AD_IO<35>"                                          LOC = "Y1"  ;
-NET  "PCI_CORE/AD_IO<34>"                                          LOC = "Y2"  ;
-NET  "PCI_CORE/AD_IO<33>"                                          LOC = "U5"  ;
-NET  "PCI_CORE/AD_IO<32>"                                          LOC = "V5"  ;
-#
-################################################################################
-# Delay Buffer Settings
-################################################################################
-#
-NET  "PCI_CORE/RST_I"                                          IOBDELAY = BOTH ;
-NET  "PCI_CORE/INTA_O"                                         IOBDELAY = BOTH ;
-NET  "PCI_CORE/GNT_I"                                          IOBDELAY = BOTH ;
-NET  "PCI_CORE/REQ_O"                                          IOBDELAY = BOTH ;
-#
-NET  "PCI_CORE/AD_IO<31>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<30>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<29>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<28>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<27>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<26>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<25>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<24>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<23>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<22>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<21>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<20>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<19>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<18>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<17>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<16>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<15>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<14>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<13>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<12>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<11>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<10>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<9>"                                       IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<8>"                                       IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<7>"                                       IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<6>"                                       IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<5>"                                       IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<4>"                                       IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<3>"                                       IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<2>"                                       IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<1>"                                       IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<0>"                                       IOBDELAY = BOTH ;
-NET  "PCI_CORE/CBE_IO<3>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/CBE_IO<2>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/CBE_IO<1>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/CBE_IO<0>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/PAR_IO"                                         IOBDELAY = BOTH ;
-#
-NET  "PCI_CORE/IDSEL_I"                                        IOBDELAY = BOTH ;
-NET  "PCI_CORE/FRAME_IO"                                       IOBDELAY = BOTH ;
-NET  "PCI_CORE/IRDY_IO"                                        IOBDELAY = BOTH ;
-NET  "PCI_CORE/TRDY_IO"                                        IOBDELAY = BOTH ;
-NET  "PCI_CORE/DEVSEL_IO"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/STOP_IO"                                        IOBDELAY = BOTH ;
-NET  "PCI_CORE/PERR_IO"                                        IOBDELAY = BOTH ;
-NET  "PCI_CORE/SERR_IO"                                        IOBDELAY = BOTH ;
-NET  "PCI_CORE/ACK64_IO"                                       IOBDELAY = BOTH ;
-NET  "PCI_CORE/REQ64_IO"                                       IOBDELAY = BOTH ;
-#
-NET  "PCI_CORE/PAR64_IO"                                       IOBDELAY = BOTH ;
-NET  "PCI_CORE/CBE_IO<7>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/CBE_IO<6>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/CBE_IO<5>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/CBE_IO<4>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<63>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<62>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<61>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<60>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<59>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<58>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<57>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<56>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<55>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<54>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<53>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<52>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<51>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<50>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<49>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<48>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<47>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<46>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<45>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<44>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<43>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<42>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<41>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<40>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<39>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<38>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<37>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<36>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<35>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<34>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<33>"                                      IOBDELAY = BOTH ;
-NET  "PCI_CORE/AD_IO<32>"                                      IOBDELAY = BOTH ;
-#
-################################################################################
-# Force IOB Flip Flop Use For Data Path Output Flip Flops
-################################################################################
-#
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO31/OFD"                            IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO30/OFD"                            IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO29/OFD"                            IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO28/OFD"                            IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO27/OFD"                            IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO26/OFD"                            IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO25/OFD"                            IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO24/OFD"                            IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO23/OFD"                            IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO22/OFD"                            IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO21/OFD"                            IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO20/OFD"                            IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO19/OFD"                            IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO18/OFD"                            IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO17/OFD"                            IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO16/OFD"                            IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO15/OFD"                            IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO14/OFD"                            IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO13/OFD"                            IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO12/OFD"                            IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO11/OFD"                            IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO10/OFD"                            IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO9/OFD"                             IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO8/OFD"                             IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO7/OFD"                             IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO6/OFD"                             IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO5/OFD"                             IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO4/OFD"                             IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO3/OFD"                             IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO2/OFD"                             IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO1/OFD"                             IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO0/OFD"                             IOB = TRUE ;
-#
-INST "PCI_CORE/PCI_LC/PAR64/OFD"                                    IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-CBE64/IO3/OFD"                            IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-CBE64/IO2/OFD"                            IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-CBE64/IO1/OFD"                            IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-CBE64/IO0/OFD"                            IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-CBE/IO3/OFD"                              IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-CBE/IO2/OFD"                              IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-CBE/IO1/OFD"                              IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-CBE/IO0/OFD"                              IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PAR/OFD"                                      IOB = TRUE ;
-#
-INST "PCI_CORE/PCI_LC/PCI-AD/IO31/OFD"                              IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO30/OFD"                              IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO29/OFD"                              IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO28/OFD"                              IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO27/OFD"                              IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO26/OFD"                              IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO25/OFD"                              IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO24/OFD"                              IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO23/OFD"                              IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO22/OFD"                              IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO21/OFD"                              IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO20/OFD"                              IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO19/OFD"                              IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO18/OFD"                              IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO17/OFD"                              IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO16/OFD"                              IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO15/OFD"                              IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO14/OFD"                              IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO13/OFD"                              IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO12/OFD"                              IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO11/OFD"                              IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO10/OFD"                              IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO9/OFD"                               IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO8/OFD"                               IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO7/OFD"                               IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO6/OFD"                               IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO5/OFD"                               IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO4/OFD"                               IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO3/OFD"                               IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO2/OFD"                               IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO1/OFD"                               IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO0/OFD"                               IOB = TRUE ;
-#
-################################################################################
-# Force IOB Flip Flop Use For Data Path Input Flip Flops
-################################################################################
-#
-INST "PCI_CORE/XPCI_ADQ63"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ62"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ61"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ60"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ59"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ58"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ57"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ56"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ55"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ54"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ53"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ52"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ51"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ50"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ49"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ48"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ47"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ46"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ45"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ44"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ43"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ42"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ41"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ40"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ39"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ38"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ37"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ36"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ35"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ34"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ33"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ32"                                          IOB = TRUE ;
-#
-INST "PCI_CORE/XPCI_CBQ7"                                           IOB = TRUE ;
-INST "PCI_CORE/XPCI_CBQ6"                                           IOB = TRUE ;
-INST "PCI_CORE/XPCI_CBQ5"                                           IOB = TRUE ;
-INST "PCI_CORE/XPCI_CBQ4"                                           IOB = TRUE ;
-INST "PCI_CORE/XPCI_CBQ3"                                           IOB = TRUE ;
-INST "PCI_CORE/XPCI_CBQ2"                                           IOB = TRUE ;
-INST "PCI_CORE/XPCI_CBQ1"                                           IOB = TRUE ;
-INST "PCI_CORE/XPCI_CBQ0"                                           IOB = TRUE ;
-#
-INST "PCI_CORE/XPCI_ADQ31"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ30"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ29"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ28"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ27"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ26"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ25"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ24"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ23"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ22"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ21"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ20"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ19"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ18"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ17"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ16"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ15"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ14"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ13"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ12"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ11"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ10"                                          IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ9"                                           IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ8"                                           IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ7"                                           IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ6"                                           IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ5"                                           IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ4"                                           IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ3"                                           IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ2"                                           IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ1"                                           IOB = TRUE ;
-INST "PCI_CORE/XPCI_ADQ0"                                           IOB = TRUE ;
-#
-################################################################################
-# Force IOB Flip Flop Use For Control Signals
-################################################################################
-#
-INST "PCI_CORE/PCI_LC/MASTER/REQ_IOB/IFD"                           IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/MASTER/REQ_IOB/OFD"                           IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/MASTER/REQO_OE"                               IOB = TRUE ;
-#
-INST "PCI_CORE/PCI_LC/MASTER/GNT_IOB/IFD"                           IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/MASTER/GNT_IOB/OFD"                           IOB = TRUE ;
-#
-INST "PCI_CORE/PCI_LC/IDSEL/IFD"                                    IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/IDSEL/OFD"                                    IOB = TRUE ;
-#
-INST "PCI_CORE/PCI_LC/PCI-PAR/OE_SERR_FF"                           IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/MASTER/OE_FRAME/PERR_OE"                      IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/SERR/IFD"                                     IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/SERR/OFD"                                     IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PERR/IFD"                                     IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PERR/OFD"                                     IOB = TRUE ;
-#
-INST "PCI_CORE/PCI_LC/MASTER/OE_FRAME/OE_FRAME"                     IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/MASTER/OE_FRAME/OE_REQ64"                     IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/MASTER/OE_FRAME/OE_IRDY"                      IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/FRAME/IFD"                                    IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/FRAME/OFD"                                    IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/REQ64/IFD"                                    IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/REQ64/OFD"                                    IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/IRDY/IFD"                                     IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/IRDY/OFD"                                     IOB = TRUE ;
-#
-INST "PCI_CORE/PCI_LC/PCI-CNTL/PCI-OFCN/PCI-XOE/OE_DEVSEL"          IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-CNTL/PCI-OFCN/PCI-XOE/OE_ACK64"           IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-CNTL/PCI-OFCN/PCI-XOE/OE_STOP"            IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/PCI-CNTL/PCI-OFCN/PCI-XOE/OE_TRDY"            IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/DEVSEL/IFD"                                   IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/DEVSEL/OFD"                                   IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/ACK64/IFD"                                    IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/ACK64/OFD"                                    IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/STOP/IFD"                                     IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/STOP/OFD"                                     IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/TRDY/IFD"                                     IOB = TRUE ;
-INST "PCI_CORE/PCI_LC/TRDY/OFD"                                     IOB = TRUE ;
-#
-################################################################################
-# Location Constraints For AD TBUFs
-################################################################################
-#
-INST "PCI_CORE/PCI_LC/E/UPPER/T15"                          LOC = "TBUF_X0Y75" ;
-INST "PCI_CORE/PCI_LC/E/UPPER/T14"                          LOC = "TBUF_X0Y74" ;
-INST "PCI_CORE/PCI_LC/E/UPPER/T13"                          LOC = "TBUF_X0Y73" ;
-INST "PCI_CORE/PCI_LC/E/UPPER/T12"                          LOC = "TBUF_X0Y72" ;
-INST "PCI_CORE/PCI_LC/E/UPPER/T11"                          LOC = "TBUF_X0Y71" ;
-INST "PCI_CORE/PCI_LC/E/UPPER/T10"                          LOC = "TBUF_X0Y70" ;
-INST "PCI_CORE/PCI_LC/E/UPPER/T9"                           LOC = "TBUF_X0Y69" ;
-INST "PCI_CORE/PCI_LC/E/UPPER/T8"                           LOC = "TBUF_X0Y68" ;
-INST "PCI_CORE/PCI_LC/E/UPPER/T7"                           LOC = "TBUF_X0Y67" ;
-INST "PCI_CORE/PCI_LC/E/UPPER/T6"                           LOC = "TBUF_X0Y66" ;
-INST "PCI_CORE/PCI_LC/E/UPPER/T5"                           LOC = "TBUF_X0Y65" ;
-INST "PCI_CORE/PCI_LC/E/UPPER/T4"                           LOC = "TBUF_X0Y64" ;
-INST "PCI_CORE/PCI_LC/E/UPPER/T3"                           LOC = "TBUF_X0Y63" ;
-INST "PCI_CORE/PCI_LC/E/UPPER/T2"                           LOC = "TBUF_X0Y62" ;
-INST "PCI_CORE/PCI_LC/E/UPPER/T1"                           LOC = "TBUF_X0Y61" ;
-INST "PCI_CORE/PCI_LC/E/UPPER/T0"                           LOC = "TBUF_X0Y60" ;
-#
-INST "PCI_CORE/PCI_LC/E/LOWER/T15"                          LOC = "TBUF_X0Y59" ;
-INST "PCI_CORE/PCI_LC/E/LOWER/T14"                          LOC = "TBUF_X0Y58" ;
-INST "PCI_CORE/PCI_LC/E/LOWER/T13"                          LOC = "TBUF_X0Y57" ;
-INST "PCI_CORE/PCI_LC/E/LOWER/T12"                          LOC = "TBUF_X0Y56" ;
-INST "PCI_CORE/PCI_LC/E/LOWER/T11"                          LOC = "TBUF_X0Y55" ;
-INST "PCI_CORE/PCI_LC/E/LOWER/T10"                          LOC = "TBUF_X0Y54" ;
-INST "PCI_CORE/PCI_LC/E/LOWER/T9"                           LOC = "TBUF_X0Y53" ;
-INST "PCI_CORE/PCI_LC/E/LOWER/T8"                           LOC = "TBUF_X0Y52" ;
-INST "PCI_CORE/PCI_LC/E/LOWER/T7"                           LOC = "TBUF_X0Y51" ;
-INST "PCI_CORE/PCI_LC/E/LOWER/T6"                           LOC = "TBUF_X0Y50" ;
-INST "PCI_CORE/PCI_LC/E/LOWER/T5"                           LOC = "TBUF_X0Y49" ;
-INST "PCI_CORE/PCI_LC/E/LOWER/T4"                           LOC = "TBUF_X0Y48" ;
-INST "PCI_CORE/PCI_LC/E/LOWER/T3"                           LOC = "TBUF_X0Y47" ;
-INST "PCI_CORE/PCI_LC/E/LOWER/T2"                           LOC = "TBUF_X0Y46" ;
-INST "PCI_CORE/PCI_LC/E/LOWER/T1"                           LOC = "TBUF_X0Y45" ;
-INST "PCI_CORE/PCI_LC/E/LOWER/T0"                           LOC = "TBUF_X0Y44" ;
-#
-INST "PCI_CORE/PCI_LC/E64/UPPER/T15"                        LOC = "TBUF_X0Y35" ;
-INST "PCI_CORE/PCI_LC/E64/UPPER/T14"                        LOC = "TBUF_X0Y34" ;
-INST "PCI_CORE/PCI_LC/E64/UPPER/T13"                        LOC = "TBUF_X0Y33" ;
-INST "PCI_CORE/PCI_LC/E64/UPPER/T12"                        LOC = "TBUF_X0Y32" ;
-INST "PCI_CORE/PCI_LC/E64/UPPER/T11"                        LOC = "TBUF_X0Y31" ;
-INST "PCI_CORE/PCI_LC/E64/UPPER/T10"                        LOC = "TBUF_X0Y30" ;
-INST "PCI_CORE/PCI_LC/E64/UPPER/T9"                         LOC = "TBUF_X0Y29" ;
-INST "PCI_CORE/PCI_LC/E64/UPPER/T8"                         LOC = "TBUF_X0Y28" ;
-INST "PCI_CORE/PCI_LC/E64/UPPER/T7"                         LOC = "TBUF_X0Y27" ;
-INST "PCI_CORE/PCI_LC/E64/UPPER/T6"                         LOC = "TBUF_X0Y26" ;
-INST "PCI_CORE/PCI_LC/E64/UPPER/T5"                         LOC = "TBUF_X0Y25" ;
-INST "PCI_CORE/PCI_LC/E64/UPPER/T4"                         LOC = "TBUF_X0Y24" ;
-INST "PCI_CORE/PCI_LC/E64/UPPER/T3"                         LOC = "TBUF_X0Y23" ;
-INST "PCI_CORE/PCI_LC/E64/UPPER/T2"                         LOC = "TBUF_X0Y22" ;
-INST "PCI_CORE/PCI_LC/E64/UPPER/T1"                         LOC = "TBUF_X0Y21" ;
-INST "PCI_CORE/PCI_LC/E64/UPPER/T0"                         LOC = "TBUF_X0Y20" ;
-#
-INST "PCI_CORE/PCI_LC/E64/LOWER/T15"                        LOC = "TBUF_X0Y19" ;
-INST "PCI_CORE/PCI_LC/E64/LOWER/T14"                        LOC = "TBUF_X0Y18" ;
-INST "PCI_CORE/PCI_LC/E64/LOWER/T13"                        LOC = "TBUF_X0Y17" ;
-INST "PCI_CORE/PCI_LC/E64/LOWER/T12"                        LOC = "TBUF_X0Y16" ;
-INST "PCI_CORE/PCI_LC/E64/LOWER/T11"                        LOC = "TBUF_X0Y15" ;
-INST "PCI_CORE/PCI_LC/E64/LOWER/T10"                        LOC = "TBUF_X0Y14" ;
-INST "PCI_CORE/PCI_LC/E64/LOWER/T9"                         LOC = "TBUF_X0Y13" ;
-INST "PCI_CORE/PCI_LC/E64/LOWER/T8"                         LOC = "TBUF_X0Y12" ;
-INST "PCI_CORE/PCI_LC/E64/LOWER/T7"                         LOC = "TBUF_X0Y11" ;
-INST "PCI_CORE/PCI_LC/E64/LOWER/T6"                         LOC = "TBUF_X0Y10" ;
-INST "PCI_CORE/PCI_LC/E64/LOWER/T5"                         LOC = "TBUF_X0Y9"  ;
-INST "PCI_CORE/PCI_LC/E64/LOWER/T4"                         LOC = "TBUF_X0Y8"  ;
-INST "PCI_CORE/PCI_LC/E64/LOWER/T3"                         LOC = "TBUF_X0Y7"  ;
-INST "PCI_CORE/PCI_LC/E64/LOWER/T2"                         LOC = "TBUF_X0Y6"  ;
-INST "PCI_CORE/PCI_LC/E64/LOWER/T1"                         LOC = "TBUF_X0Y5"  ;
-INST "PCI_CORE/PCI_LC/E64/LOWER/T0"                         LOC = "TBUF_X0Y4"  ;
-#
-################################################################################
-# Placement Constraints For Control Signal "NS" Functions
-################################################################################
-#
-# **** NS_REQ **** (G, F, X)
-INST "PCI_CORE/PCI_LC/MASTER/REQ/REQ1"                     LOC = "SLICE_X0Y44" ;
-INST "PCI_CORE/PCI_LC/MASTER/REQ/REQ3"                     LOC = "SLICE_X0Y44" ;
-INST "PCI_CORE/PCI_LC/MASTER/REQ/IREQ_I-"                  LOC = "SLICE_X0Y44" ;
-#
-# **** NS_DEVSEL **** (F, G, X)
-INST "PCI_CORE/PCI_LC/PCI-CNTL/PCI-OFCN/PCI-DSEL/DSEL5"    LOC = "SLICE_X0Y40" ;
-INST "PCI_CORE/PCI_LC/PCI-CNTL/PCI-OFCN/PCI-DSEL/DSEL11"   LOC = "SLICE_X0Y40" ;
-INST "PCI_CORE/PCI_LC/PCI-CNTL/PCI-OFCN/PCI-DSEL/DEVSEL"   LOC = "SLICE_X0Y40" ;
-#
-# **** NS_STOP **** (F, G, X)
-INST "PCI_CORE/PCI_LC/PCI-CNTL/PCI-OFCN/PCI-STOP/STOP12"   LOC = "SLICE_X0Y38" ;
-INST "PCI_CORE/PCI_LC/PCI-CNTL/PCI-OFCN/PCI-STOP/STOP13"   LOC = "SLICE_X0Y38" ;
-INST "PCI_CORE/PCI_LC/PCI-CNTL/PCI-OFCN/PCI-STOP/STOP"     LOC = "SLICE_X0Y38" ;
-#
-# **** NS_IRDY **** (F, G, X)
-INST "PCI_CORE/PCI_LC/MASTER/IRDY/IRDY3"                   LOC = "SLICE_X0Y42" ;
-INST "PCI_CORE/PCI_LC/MASTER/IRDY/IRDY4"                   LOC = "SLICE_X0Y42" ;
-INST "PCI_CORE/PCI_LC/MASTER/IRDY/IIRDY_I-"                LOC = "SLICE_X0Y42" ;
-#
-# **** NS_TRDY **** (G, F, X)
-INST "PCI_CORE/PCI_LC/PCI-CNTL/PCI-OFCN/PCI-TRDY/TRDY10"   LOC = "SLICE_X0Y41" ;
-INST "PCI_CORE/PCI_LC/PCI-CNTL/PCI-OFCN/PCI-TRDY/TRDY11"   LOC = "SLICE_X0Y41" ;
-INST "PCI_CORE/PCI_LC/PCI-CNTL/PCI-OFCN/PCI-TRDY/TRDY"     LOC = "SLICE_X0Y41" ;
-#
-# **** NS_FRAME **** (G, F, X)
-INST "PCI_CORE/PCI_LC/MASTER/FRAME/FRAME3"                 LOC = "SLICE_X0Y43" ;
-INST "PCI_CORE/PCI_LC/MASTER/FRAME/FRAME4"                 LOC = "SLICE_X0Y43" ;
-INST "PCI_CORE/PCI_LC/MASTER/FRAME/IFRAME_I-"              LOC = "SLICE_X0Y43" ;
-#
-# **** CE_FRAME **** (F)
-INST "PCI_CORE/PCI_LC/MASTER/FRAME/FRAME_5"                LOC = "SLICE_X1Y43" ;
-#
-# **** NS_ACK64 **** (F, G, X)
-INST "PCI_CORE/PCI_LC/PCI-CNTL/PCI-OFCN/PCI-AK64/ACK5"     LOC = "SLICE_X0Y36" ;
-INST "PCI_CORE/PCI_LC/PCI-CNTL/PCI-OFCN/PCI-AK64/ACK11"    LOC = "SLICE_X0Y36" ;
-INST "PCI_CORE/PCI_LC/PCI-CNTL/PCI-OFCN/PCI-AK64/ACK64"    LOC = "SLICE_X0Y36" ;
-#
-# **** NS_REQ64 **** (G, F, X)
-INST "PCI_CORE/PCI_LC/MASTER/REQ64/REQ643"                 LOC = "SLICE_X0Y35" ;
-INST "PCI_CORE/PCI_LC/MASTER/REQ64/REQ644"                 LOC = "SLICE_X0Y35" ;
-INST "PCI_CORE/PCI_LC/MASTER/REQ64/IREQ64_I-"              LOC = "SLICE_X0Y35" ;
-#
-# **** CE_REQ64 **** (F)
-INST "PCI_CORE/PCI_LC/MASTER/REQ64/REQ645"                 LOC = "SLICE_X1Y35" ;
-#
-# **** NS_PERR **** (G, F, X)
-INST "PCI_CORE/PCI_LC/PCI-PAR/PERR_1"                      LOC = "SLICE_X1Y39" ;
-INST "PCI_CORE/PCI_LC/PCI-PAR/PERR_2"                      LOC = "SLICE_X1Y39" ;
-INST "PCI_CORE/PCI_LC/PCI-PAR/LC_PERR"                     LOC = "SLICE_X1Y39" ;
-#
-################################################################################
-# Placement Constraints For Parity / Byte Enable "NS" Functions
-################################################################################
-#
-# **** NS_PAR **** (G, F)
-INST "PCI_CORE/PCI_LC/PCI-PAR/PAR_1"                       LOC = "SLICE_X0Y45" ;
-INST "PCI_CORE/PCI_LC/PCI-PAR/PAR_2"                       LOC = "SLICE_X0Y45" ;
-#
-# **** NS_PAR64 **** (G, F)
-INST "PCI_CORE/PCI_LC/PCI-PAR/PAR64_1"                     LOC = "SLICE_X0Y34" ;
-INST "PCI_CORE/PCI_LC/PCI-PAR/PAR64_2"                     LOC = "SLICE_X0Y34" ;
-#
-# **** NS_CBE **** (F, G, F, G, F, G, F, G)
-INST "PCI_CORE/PCI_LC/PCI-CBE/IO3/MAPF"                    LOC = "SLICE_X0Y49" ;
-INST "PCI_CORE/PCI_LC/PCI-CBE/IO3/MAPG"                    LOC = "SLICE_X0Y49" ;
-INST "PCI_CORE/PCI_LC/PCI-CBE/IO2/MAPF"                    LOC = "SLICE_X0Y48" ;
-INST "PCI_CORE/PCI_LC/PCI-CBE/IO2/MAPG"                    LOC = "SLICE_X0Y48" ;
-INST "PCI_CORE/PCI_LC/PCI-CBE/IO1/MAPF"                    LOC = "SLICE_X0Y47" ;
-INST "PCI_CORE/PCI_LC/PCI-CBE/IO1/MAPG"                    LOC = "SLICE_X0Y47" ;
-INST "PCI_CORE/PCI_LC/PCI-CBE/IO0/MAPF"                    LOC = "SLICE_X0Y46" ;
-INST "PCI_CORE/PCI_LC/PCI-CBE/IO0/MAPG"                    LOC = "SLICE_X0Y46" ;
-#
-# **** NS_CBE64 **** (F, G, F, G, F, G, F, G)
-INST "PCI_CORE/PCI_LC/PCI-CBE64/IO3/MAPF"                  LOC = "SLICE_X0Y33" ;
-INST "PCI_CORE/PCI_LC/PCI-CBE64/IO3/MAPG"                  LOC = "SLICE_X0Y33" ;
-INST "PCI_CORE/PCI_LC/PCI-CBE64/IO2/MAPF"                  LOC = "SLICE_X0Y32" ;
-INST "PCI_CORE/PCI_LC/PCI-CBE64/IO2/MAPG"                  LOC = "SLICE_X0Y32" ;
-INST "PCI_CORE/PCI_LC/PCI-CBE64/IO1/MAPF"                  LOC = "SLICE_X0Y31" ;
-INST "PCI_CORE/PCI_LC/PCI-CBE64/IO1/MAPG"                  LOC = "SLICE_X0Y31" ;
-INST "PCI_CORE/PCI_LC/PCI-CBE64/IO0/MAPF"                  LOC = "SLICE_X0Y30" ;
-INST "PCI_CORE/PCI_LC/PCI-CBE64/IO0/MAPG"                  LOC = "SLICE_X0Y30" ;
-#
-################################################################################
-# Placement Constraints For Control Signal "OE" Functions
-################################################################################
-#
-# **** OE_COMMON **** (G, F)
-INST "PCI_CORE/PCI_LC/PCI-CNTL/PCI-OFCN/PCI-XOE/OTI_1"     LOC = "SLICE_X0Y39" ;
-INST "PCI_CORE/PCI_LC/PCI-CNTL/PCI-OFCN/PCI-XOE/OTI_3"     LOC = "SLICE_X0Y39" ;
-#
-# **** OE_FRAME **** (G, F, X)
-INST "PCI_CORE/PCI_LC/MASTER/OE_FRAME/OEF1"                LOC = "SLICE_X1Y42" ;
-INST "PCI_CORE/PCI_LC/MASTER/OE_FRAME/OEF2"                LOC = "SLICE_X1Y42" ;
-INST "PCI_CORE/PCI_LC/MASTER/OE_FRAME/OE_FRAME_INT"        LOC = "SLICE_X1Y42" ;
-#
-# **** OE_REQ64 **** (G, F, X)
-INST "PCI_CORE/PCI_LC/MASTER/OE_FRAME/OER1"                LOC = "SLICE_X1Y34" ;
-INST "PCI_CORE/PCI_LC/MASTER/OE_FRAME/OER2"                LOC = "SLICE_X1Y34" ;
-INST "PCI_CORE/PCI_LC/MASTER/OE_FRAME/OE_REQ64_INT"        LOC = "SLICE_X1Y34" ;
-#
-# **** OE_ACK64 **** (G, F)
-INST "PCI_CORE/PCI_LC/PCI-CNTL/PCI-OFCN/PCI-XOE/OAI_1"     LOC = "SLICE_X0Y37" ;
-INST "PCI_CORE/PCI_LC/PCI-CNTL/PCI-OFCN/PCI-XOE/OAI_3"     LOC = "SLICE_X0Y37" ;
-#
-################################################################################
-# Placement Constraints For Common Live Logic
-################################################################################
-#
-# **** APERR_N **** (G, F, X)
-INST "PCI_CORE/PCI_LC/PCI-PAR/APERR_1"                     LOC = "SLICE_X1Y38" ;
-INST "PCI_CORE/PCI_LC/PCI-PAR/APERR_2"                     LOC = "SLICE_X1Y38" ;
-INST "PCI_CORE/PCI_LC/PCI-PAR/APERR_N"                     LOC = "SLICE_X1Y38" ;
-#
-# **** DATA_VLD **** (G, X, F, X)
-INST "PCI_CORE/PCI_LC/DATA_VLD/MDV_MAP"                    LOC = "SLICE_X2Y37" ;
-INST "PCI_CORE/PCI_LC/DATA_VLD/MDV_FF"                     LOC = "SLICE_X2Y37" ;
-INST "PCI_CORE/PCI_LC/DATA_VLD/SDV_MAP"                    LOC = "SLICE_X2Y37" ;
-INST "PCI_CORE/PCI_LC/DATA_VLD/SDV_FF"                     LOC = "SLICE_X2Y37" ;
-#
-# **** OUT_SEL **** (F, X, G, X)
-INST "PCI_CORE/PCI_LC/OUT_SEL/OSEL3"                       LOC = "SLICE_X2Y36" ;
-INST "PCI_CORE/PCI_LC/OUT_SEL/OSEL_FF"                     LOC = "SLICE_X2Y36" ;
-INST "PCI_CORE/PCI_LC/OUT_SEL/OSEL4"                       LOC = "SLICE_X2Y36" ;
-INST "PCI_CORE/PCI_LC/OUT_SEL/OSEL64_FF"                   LOC = "SLICE_X2Y36" ;
-#
-# **** EOT **** (G, F, X)
-INST "PCI_CORE/PCI_LC/EOT/EOT0"                            LOC = "SLICE_X1Y36" ;
-INST "PCI_CORE/PCI_LC/EOT/EOT1"                            LOC = "SLICE_X1Y36" ;
-INST "PCI_CORE/PCI_LC/EOT/EOT_FF"                          LOC = "SLICE_X1Y36" ;
-#
-# **** NEWDATA **** (G, F, X)
-INST "PCI_CORE/PCI_LC/OUT_CE/ND1"                          LOC = "SLICE_X1Y40" ;
-INST "PCI_CORE/PCI_LC/OUT_CE/ND2"                          LOC = "SLICE_X1Y40" ;
-INST "PCI_CORE/PCI_LC/OUT_CE/NDFF"                         LOC = "SLICE_X1Y40" ;
-#
-# **** SOFTCE **** (G, F)
-INST "PCI_CORE/PCI_LC/OUT_CE/SOFT1"                        LOC = "SLICE_X1Y41" ;
-INST "PCI_CORE/PCI_LC/OUT_CE/SOFT2"                        LOC = "SLICE_X1Y41" ;
-#
-# **** PAR_CE **** (G, F, X)
-INST "PCI_CORE/PCI_LC/OUT_CE/ZCEB1"                        LOC = "SLICE_X2Y42" ;
-INST "PCI_CORE/PCI_LC/OUT_CE/ZCEB2"                        LOC = "SLICE_X2Y42" ;
-INST "PCI_CORE/PCI_LC/OUT_CE/PAR_CE"                       LOC = "SLICE_X2Y42" ;
-#
-################################################################################
-# Placement Constraints For Target Live Logic
-################################################################################
-#
-# **** PWIN **** (G, F, X, X)
-INST "PCI_CORE/PCI_LC/PCI-CNTL/PWIN1"                      LOC = "SLICE_X2Y43" ;
-INST "PCI_CORE/PCI_LC/PCI-CNTL/PWIN2"                      LOC = "SLICE_X2Y43" ;
-INST "PCI_CORE/PCI_LC/PCI-CNTL/PWIN_FF"                    LOC = "SLICE_X2Y43" ;
-INST "PCI_CORE/PCI_LC/PCI-CNTL/PWIN64_FF"                  LOC = "SLICE_X2Y43" ;
-#
-# **** S_FIRST **** (G, F, X)
-INST "PCI_CORE/PCI_LC/PCI-CNTL/PCI-OFCN/PCI-TRDY/SF3"      LOC = "SLICE_X1Y44" ;
-INST "PCI_CORE/PCI_LC/PCI-CNTL/PCI-OFCN/PCI-TRDY/SF4"      LOC = "SLICE_X1Y44" ;
-INST "PCI_CORE/PCI_LC/PCI-CNTL/PCI-OFCN/PCI-TRDY/S1FF"     LOC = "SLICE_X1Y44" ;
-#
-################################################################################
-# Placement Constraints For Initiator Live Logic
-################################################################################
-#
-# **** S_TAR **** (G, X)
-INST "PCI_CORE/PCI_LC/MASTER/S_TAR/S_TAR_MAP"              LOC = "SLICE_X2Y39" ;
-INST "PCI_CORE/PCI_LC/MASTER/S_TAR/S_TAR"                  LOC = "SLICE_X2Y39" ;
-#
-# **** FRAME TURN_ON **** (G)
-INST "PCI_CORE/PCI_LC/MASTER/FRAME/FRAME2"                 LOC = "SLICE_X1Y43" ;
-#
-# **** REQ64 TURN_ON **** (G)
-INST "PCI_CORE/PCI_LC/MASTER/REQ64/REQ642"                 LOC = "SLICE_X1Y35" ;
-#
-# **** M_FIRST **** (G, F, X)
-INST "PCI_CORE/PCI_LC/MASTER/IRDY/MF1"                     LOC = "SLICE_X1Y45" ;
-INST "PCI_CORE/PCI_LC/MASTER/IRDY/MF2"                     LOC = "SLICE_X1Y45" ;
-INST "PCI_CORE/PCI_LC/MASTER/IRDY/M1FF"                    LOC = "SLICE_X1Y45" ;
-#
-# **** FAIL64 **** (G, F, X)
-INST "PCI_CORE/PCI_LC/MASTER/XFERFAIL/FAIL1"               LOC = "SLICE_X1Y37" ;
-INST "PCI_CORE/PCI_LC/MASTER/XFERFAIL/FAIL2"               LOC = "SLICE_X1Y37" ;
-INST "PCI_CORE/PCI_LC/MASTER/XFERFAIL/FAIL_FF"             LOC = "SLICE_X1Y37" ;
-#
-# **** I_IDLE **** (G, F, X)
-INST "PCI_CORE/PCI_LC/MASTER/I_IDLE/IIDLE4"                LOC = "SLICE_X2Y44" ;
-INST "PCI_CORE/PCI_LC/MASTER/I_IDLE/IIDLE5"                LOC = "SLICE_X2Y44" ;
-INST "PCI_CORE/PCI_LC/MASTER/I_IDLE/I_IDLE_FF"             LOC = "SLICE_X2Y44" ;
-#
-# **** ADDR_BE **** (G, F, X, G, X)
-INST "PCI_CORE/PCI_LC/MASTER/ADDR/ADDR"                    LOC = "SLICE_X2Y41" ;
-INST "PCI_CORE/PCI_LC/MASTER/ADDR/ABE"                     LOC = "SLICE_X3Y45" ;
-INST "PCI_CORE/PCI_LC/MASTER/ADDR/ABE_FF"                  LOC = "SLICE_X3Y45" ;
-INST "PCI_CORE/PCI_LC/MASTER/ADDR/MAN"                     LOC = "SLICE_X3Y45" ;
-INST "PCI_CORE/PCI_LC/MASTER/ADDR/MAN_FF"                  LOC = "SLICE_X3Y45" ;
-#
-# **** DR_BUS **** (G, F, X)
-INST "PCI_CORE/PCI_LC/MASTER/DR_BUS/DRB6"                  LOC = "SLICE_X2Y45" ;
-INST "PCI_CORE/PCI_LC/MASTER/DR_BUS/DRB9"                  LOC = "SLICE_X2Y45" ;
-INST "PCI_CORE/PCI_LC/MASTER/DR_BUS/DR_BUS_FF"             LOC = "SLICE_X2Y45" ;
-#
-# **** M_DATA **** (G, F, X, X)
-INST "PCI_CORE/PCI_LC/MASTER/M_DATA/MDA1"                  LOC = "SLICE_X3Y44" ;
-INST "PCI_CORE/PCI_LC/MASTER/M_DATA/MDA2"                  LOC = "SLICE_X3Y44" ;
-INST "PCI_CORE/PCI_LC/MASTER/M_DATA/M_DATA"                LOC = "SLICE_X3Y44" ;
-INST "PCI_CORE/PCI_LC/MASTER/M_DATA/M_DATA1"               LOC = "SLICE_X3Y44" ;
-#
-# **** PRE-SLOT (HAS GNT) **** (F, G)
-INST "PCI_CORE/PCI_LC/MASTER/OE_FRAME/SLOT32_1"            LOC = "SLICE_X2Y38" ;
-INST "PCI_CORE/PCI_LC/MASTER/OE_FRAME/SLOT32_3"            LOC = "SLICE_X2Y38" ;
-#
-# **** SLOT (PUT NEAR START_AD) **** (G, F, X)
-INST "PCI_CORE/PCI_LC/MASTER/OE_FRAME/SLOT32_2"            LOC = "SLICE_X3Y39" ;
-INST "PCI_CORE/PCI_LC/MASTER/OE_FRAME/SLOT32_4"            LOC = "SLICE_X3Y39" ;
-INST "PCI_CORE/PCI_LC/MASTER/OE_FRAME/SLOT_FF"             LOC = "SLICE_X3Y39" ;
-#
-# **** PRE-SLOT64 (HAS GNT) **** (F, G)
-INST "PCI_CORE/PCI_LC/MASTER/OE_FRAME/SLOT64_1"            LOC = "SLICE_X2Y40" ;
-INST "PCI_CORE/PCI_LC/MASTER/OE_FRAME/SLOT64_3"            LOC = "SLICE_X2Y40" ;
-#
-# **** SLOT64 (PUT NEAR START_AD) **** (G, F, X)
-INST "PCI_CORE/PCI_LC/MASTER/OE_FRAME/SLOT64_2"            LOC = "SLICE_X3Y41" ;
-INST "PCI_CORE/PCI_LC/MASTER/OE_FRAME/SLOT64_4"            LOC = "SLICE_X3Y41" ;
-INST "PCI_CORE/PCI_LC/MASTER/OE_FRAME/SLOT64_FF"           LOC = "SLICE_X3Y41" ;
-#
-# **** START_AD **** (G)
-INST "PCI_CORE/PCI_LC/MASTER/OE_FRAME/SAD1"                LOC = "SLICE_X3Y38" ;
-#
-# **** START_AD64 **** (G)
-INST "PCI_CORE/PCI_LC/MASTER/OE_FRAME/SAD2"                LOC = "SLICE_X3Y40" ;
-#
-################################################################################
-# Placement Constraints For Parity / Byte Enable / Datapath "OE" Functions
-################################################################################
-#
-# **** OE_T64 **** (G, G)
-INST "PCI_CORE/PCI_LC/MASTER/OE_FRAME/OA64_1"              LOC = "SLICE_X5Y40" ;
-INST "PCI_CORE/PCI_LC/MASTER/OE_FRAME/OA64_2"              LOC = "SLICE_X4Y40" ;
-#
-# **** OE_LT64 **** (F, F)
-INST "PCI_CORE/PCI_LC/MASTER/OE_FRAME/OA64_3"              LOC = "SLICE_X5Y40" ;
-INST "PCI_CORE/PCI_LC/MASTER/OE_FRAME/OA64_4"              LOC = "SLICE_X4Y40" ;
-#
-# **** OE_LB64 **** (G, G)
-INST "PCI_CORE/PCI_LC/MASTER/OE_FRAME/OA64_5"              LOC = "SLICE_X5Y41" ;
-INST "PCI_CORE/PCI_LC/MASTER/OE_FRAME/OA64_6"              LOC = "SLICE_X4Y41" ;
-#
-# **** OE_B64 **** (F, F, X)
-INST "PCI_CORE/PCI_LC/MASTER/OE_FRAME/OA64_7"              LOC = "SLICE_X5Y41" ;
-INST "PCI_CORE/PCI_LC/MASTER/OE_FRAME/OA64_8"              LOC = "SLICE_X4Y41" ;
-INST "PCI_CORE/PCI_LC/MASTER/OE_FRAME/H_PAR_OE"            LOC = "SLICE_X4Y41" ;
-#
-# **** OE_CBE64 **** (F, F)
-INST "PCI_CORE/PCI_LC/MASTER/OE_FRAME/OC64_1"              LOC = "SLICE_X2Y41" ;
-INST "PCI_CORE/PCI_LC/MASTER/OE_FRAME/OC64_2"              LOC = "SLICE_X3Y40" ;
-#
-# **** OE_T **** (G, G)
-INST "PCI_CORE/PCI_LC/MASTER/OE_FRAME/OA32_1"              LOC = "SLICE_X5Y38" ;
-INST "PCI_CORE/PCI_LC/MASTER/OE_FRAME/OA32_2"              LOC = "SLICE_X4Y38" ;
-#
-# **** OE_LT **** (F, F)
-INST "PCI_CORE/PCI_LC/MASTER/OE_FRAME/OA32_3"              LOC = "SLICE_X5Y38" ;
-INST "PCI_CORE/PCI_LC/MASTER/OE_FRAME/OA32_4"              LOC = "SLICE_X4Y38" ;
-#
-# **** OE_LB **** (G, G)
-INST "PCI_CORE/PCI_LC/MASTER/OE_FRAME/OA32_5"              LOC = "SLICE_X5Y39" ;
-INST "PCI_CORE/PCI_LC/MASTER/OE_FRAME/OA32_6"              LOC = "SLICE_X4Y39" ;
-#
-# **** OE_B **** (F, F, X)
-INST "PCI_CORE/PCI_LC/MASTER/OE_FRAME/OA32_7"              LOC = "SLICE_X5Y39" ;
-INST "PCI_CORE/PCI_LC/MASTER/OE_FRAME/OA32_8"              LOC = "SLICE_X4Y39" ;
-INST "PCI_CORE/PCI_LC/MASTER/OE_FRAME/L_PAR_OE"            LOC = "SLICE_X4Y39" ;
-#
-# **** OE_CBE **** (F, F)
-INST "PCI_CORE/PCI_LC/MASTER/OE_FRAME/OC32_1"              LOC = "SLICE_X2Y39" ;
-INST "PCI_CORE/PCI_LC/MASTER/OE_FRAME/OC32_2"              LOC = "SLICE_X3Y38" ;
-#
-################################################################################
-# Placement Constraints For Less Important Things
-################################################################################
-#
-# **** DEVICE TIMEOUT A **** (F, G, F, G)
-INST "PCI_CORE/PCI_LC/MASTER/FRAME/FRAME6"                 LOC = "SLICE_X2Y34" ;
-INST "PCI_CORE/PCI_LC/MASTER/FRAME/FRAME8"                 LOC = "SLICE_X2Y34" ;
-INST "PCI_CORE/PCI_LC/MASTER/FRAME/FRAME7"                 LOC = "SLICE_X2Y35" ;
-INST "PCI_CORE/PCI_LC/MASTER/FRAME/FRAME9"                 LOC = "SLICE_X2Y35" ;
-#
-# **** DEVICE TIMEOUT B **** (F, G, F, G)
-INST "PCI_CORE/PCI_LC/MASTER/REQ64/REQ646"                 LOC = "SLICE_X3Y34" ;
-INST "PCI_CORE/PCI_LC/MASTER/REQ64/REQ648"                 LOC = "SLICE_X3Y34" ;
-INST "PCI_CORE/PCI_LC/MASTER/REQ64/REQ647"                 LOC = "SLICE_X3Y35" ;
-INST "PCI_CORE/PCI_LC/MASTER/REQ64/REQ649"                 LOC = "SLICE_X3Y35" ;
-#
-################################################################################
-# Clock Buffer Placement
-################################################################################
-#
-INST "PCI_CORE/XPCI_CKA"                                   LOC = "BUFGMUX7P"   ;
-#
-################################################################################
-# Netflag Attributes
-################################################################################
-#
-NET "PCI_CORE/PCI_LC/FRAME-"                                                 S ;
-NET "PCI_CORE/PCI_LC/REQ64-"                                                 S ;
-NET "PCI_CORE/PCI_LC/IRDY-"                                                  S ;
-NET "PCI_CORE/PCI_LC/DEVSEL-"                                                S ;
-NET "PCI_CORE/PCI_LC/ACK64-"                                                 S ;
-NET "PCI_CORE/PCI_LC/TRDY-"                                                  S ;
-NET "PCI_CORE/PCI_LC/STOP-"                                                  S ;
-NET "PCI_CORE/PCI_LC/PERR-"                                                  S ;
-NET "PCI_CORE/PCI_LC/SERR-"                                                  S ;
-#
-NET "PCI_CORE/PCI_LC/M_SRC_EN"                                               S ;
-NET "PCI_CORE/PCI_LC/S_SRC_EN"                                               S ;
-NET "PCI_CORE/PCI_LC/M_DATA_VLD"                                             S ;
-NET "PCI_CORE/PCI_LC/S_DATA_VLD"                                             S ;
-NET "PCI_CORE/PCI_LC/S_DATA"                                                 S ;
-NET "PCI_CORE/PCI_LC/M_DATA"                                                 S ;
-#
-NET "PCI_CORE/PCI_LC/M_ADDR_N"                                               S ;
-#
-################################################################################
-# I/O Time Names
-################################################################################
-#
-NET  "PCI_CORE/AD_IO<63>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<62>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<61>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<60>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<59>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<58>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<57>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<56>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<55>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<54>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<53>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<52>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<51>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<50>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<49>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<48>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<47>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<46>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<45>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<44>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<43>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<42>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<41>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<40>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<39>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<38>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<37>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<36>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<35>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<34>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<33>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<32>"                                TNM = PADS:PCI_PADS_D ;
-#
-NET  "PCI_CORE/SERR_IO"                                  TNM = PADS:PCI_PADS_C ;
-NET  "PCI_CORE/PERR_IO"                                  TNM = PADS:PCI_PADS_C ;
-NET  "PCI_CORE/PAR64_IO"                                 TNM = PADS:PCI_PADS_P ;
-NET  "PCI_CORE/CBE_IO<7>"                                TNM = PADS:PCI_PADS_B ;
-NET  "PCI_CORE/CBE_IO<6>"                                TNM = PADS:PCI_PADS_B ;
-NET  "PCI_CORE/CBE_IO<5>"                                TNM = PADS:PCI_PADS_B ;
-NET  "PCI_CORE/CBE_IO<4>"                                TNM = PADS:PCI_PADS_B ;
-NET  "PCI_CORE/REQ_O"                                    TNM = PADS:PCI_PADS_G ;
-NET  "PCI_CORE/GNT_I"                                    TNM = PADS:PCI_PADS_G ;
-NET  "PCI_CORE/FRAME_IO"                                 TNM = PADS:PCI_PADS_C ;
-NET  "PCI_CORE/REQ64_IO"                                 TNM = PADS:PCI_PADS_C ;
-NET  "PCI_CORE/IRDY_IO"                                  TNM = PADS:PCI_PADS_C ;
-NET  "PCI_CORE/TRDY_IO"                                  TNM = PADS:PCI_PADS_C ;
-NET  "PCI_CORE/DEVSEL_IO"                                TNM = PADS:PCI_PADS_C ;
-NET  "PCI_CORE/ACK64_IO"                                 TNM = PADS:PCI_PADS_C ;
-NET  "PCI_CORE/STOP_IO"                                  TNM = PADS:PCI_PADS_C ;
-NET  "PCI_CORE/CBE_IO<3>"                                TNM = PADS:PCI_PADS_B ;
-NET  "PCI_CORE/CBE_IO<2>"                                TNM = PADS:PCI_PADS_B ;
-NET  "PCI_CORE/CBE_IO<1>"                                TNM = PADS:PCI_PADS_B ;
-NET  "PCI_CORE/CBE_IO<0>"                                TNM = PADS:PCI_PADS_B ;
-NET  "PCI_CORE/PAR_IO"                                   TNM = PADS:PCI_PADS_P ;
-NET  "PCI_CORE/IDSEL_I"                                  TNM = PADS:PCI_PADS_C ;
-NET  "PCI_CORE/INTA_O"                                   TNM = PADS:PCI_PADS_X ;
-NET  "PCI_CORE/RST_I"                                    TNM = PADS:PCI_PADS_X ;
-#
-NET  "PCI_CORE/AD_IO<31>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<30>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<29>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<28>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<27>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<26>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<25>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<24>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<23>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<22>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<21>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<20>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<19>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<18>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<17>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<16>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<15>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<14>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<13>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<12>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<11>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<10>"                                TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<9>"                                 TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<8>"                                 TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<7>"                                 TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<6>"                                 TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<5>"                                 TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<4>"                                 TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<3>"                                 TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<2>"                                 TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<1>"                                 TNM = PADS:PCI_PADS_D ;
-NET  "PCI_CORE/AD_IO<0>"                                 TNM = PADS:PCI_PADS_D ;
-#
-################################################################################
-# Special I/O Time Names
-################################################################################
-#
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO31/OFD"                 TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO30/OFD"                 TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO29/OFD"                 TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO28/OFD"                 TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO27/OFD"                 TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO26/OFD"                 TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO25/OFD"                 TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO24/OFD"                 TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO23/OFD"                 TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO22/OFD"                 TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO21/OFD"                 TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO20/OFD"                 TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO19/OFD"                 TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO18/OFD"                 TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO17/OFD"                 TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO16/OFD"                 TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO15/OFD"                 TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO14/OFD"                 TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO13/OFD"                 TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO12/OFD"                 TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO11/OFD"                 TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO10/OFD"                 TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO9/OFD"                  TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO8/OFD"                  TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO7/OFD"                  TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO6/OFD"                  TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO5/OFD"                  TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO4/OFD"                  TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO3/OFD"                  TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO2/OFD"                  TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO1/OFD"                  TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD64/IO0/OFD"                  TNM = FFS:PCI_FFS_OCE ;
-#
-INST "PCI_CORE/PCI_LC/PCI-CBE64/IO3/OFD"                 TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-CBE64/IO2/OFD"                 TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-CBE64/IO1/OFD"                 TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-CBE64/IO0/OFD"                 TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-CBE/IO3/OFD"                   TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-CBE/IO2/OFD"                   TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-CBE/IO1/OFD"                   TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-CBE/IO0/OFD"                   TNM = FFS:PCI_FFS_OCE ;
-#
-INST "PCI_CORE/PCI_LC/PCI-AD/IO31/OFD"                   TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO30/OFD"                   TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO29/OFD"                   TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO28/OFD"                   TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO27/OFD"                   TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO26/OFD"                   TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO25/OFD"                   TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO24/OFD"                   TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO23/OFD"                   TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO22/OFD"                   TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO21/OFD"                   TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO20/OFD"                   TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO19/OFD"                   TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO18/OFD"                   TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO17/OFD"                   TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO16/OFD"                   TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO15/OFD"                   TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO14/OFD"                   TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO13/OFD"                   TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO12/OFD"                   TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO11/OFD"                   TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO10/OFD"                   TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO9/OFD"                    TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO8/OFD"                    TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO7/OFD"                    TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO6/OFD"                    TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO5/OFD"                    TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO4/OFD"                    TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO3/OFD"                    TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO2/OFD"                    TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO1/OFD"                    TNM = FFS:PCI_FFS_OCE ;
-INST "PCI_CORE/PCI_LC/PCI-AD/IO0/OFD"                    TNM = FFS:PCI_FFS_OCE ;
-#
-INST "PCI_CORE/XPCI_ADQ63"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ62"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ61"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ60"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ59"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ58"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ57"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ56"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ55"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ54"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ53"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ52"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ51"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ50"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ49"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ48"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ47"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ46"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ45"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ44"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ43"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ42"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ41"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ40"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ39"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ38"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ37"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ36"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ35"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ34"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ33"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ32"                               TNM = FFS:PCI_FFS_ICE ;
-#
-INST "PCI_CORE/XPCI_CBQ7"                                TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_CBQ6"                                TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_CBQ5"                                TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_CBQ4"                                TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_CBQ3"                                TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_CBQ2"                                TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_CBQ1"                                TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_CBQ0"                                TNM = FFS:PCI_FFS_ICE ;
-#
-INST "PCI_CORE/XPCI_ADQ31"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ30"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ29"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ28"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ27"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ26"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ25"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ24"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ23"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ22"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ21"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ20"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ19"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ18"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ17"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ16"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ15"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ14"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ13"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ12"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ11"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ10"                               TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ9"                                TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ8"                                TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ7"                                TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ6"                                TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ5"                                TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ4"                                TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ3"                                TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ2"                                TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ1"                                TNM = FFS:PCI_FFS_ICE ;
-INST "PCI_CORE/XPCI_ADQ0"                                TNM = FFS:PCI_FFS_ICE ;
-#
-################################################################################
-# Time Groups
-################################################################################
-#
-INST "PCI_CORE" TNM = FFS:PCIM_FFS ;
-TIMEGRP "ALL_FFS" = "PCIM_FFS" : "USER_FFS" ;
-TIMEGRP "FAST_FFS" = "PCI_FFS_ICE" : "PCI_FFS_OCE" ;
-TIMEGRP "SLOW_FFS" = "ALL_FFS" : EXCEPT : "FAST_FFS" ;
-#
-################################################################################
-# Time Specs
-################################################################################
-#
-# Important Note:  The timespecs used in this section cover all possible
-# paths.  Depending on the design options, some of the timespecs may
-# not contain any paths.  Such timespecs are ignored by PAR and TRCE.
-#
-#             1) Clock to Output        =       6.000 ns
-#             2) Setup                  =       3.000 ns
-#             3) Grant Setup            =       5.000 ns
-#             4) Datapath Tristate      =      14.000 ns
-#             5) Period                 =      15.000 ns
-#
-# Note:  Timespecs are derived from the PCI Bus Specification.  Use of
-# offset constraints allows the timing tools to automatically include
-# the clock delay estimates.  These constraints are for 66 MHz operation.
-#
-# The following timespecs are for setup.
-#
-
-TIMEGRP "PCI_PADS_D" OFFSET = IN   3.000 BEFORE "PCLK" TIMEGRP "ALL_FFS"  ;
-TIMEGRP "PCI_PADS_B" OFFSET = IN   3.000 BEFORE "PCLK" TIMEGRP "ALL_FFS"  ;
-TIMEGRP "PCI_PADS_P" OFFSET = IN   3.000 BEFORE "PCLK" TIMEGRP "ALL_FFS"  ;
-TIMEGRP "PCI_PADS_C" OFFSET = IN   3.000 BEFORE "PCLK" TIMEGRP "ALL_FFS"  ;
-TIMEGRP "PCI_PADS_G" OFFSET = IN   5.000 BEFORE "PCLK" TIMEGRP "ALL_FFS"  ;
-# TIMEGRP "PCI_PADS_D" OFFSET = IN   3.000 VALID  3.000 BEFORE "PCLK" TIMEGRP "ALL_FFS"  ;       # 0805DL UCF
-# TIMEGRP "PCI_PADS_B" OFFSET = IN   3.000 VALID  3.000 BEFORE "PCLK" TIMEGRP "ALL_FFS"  ;       # 0805DL UCF
-# TIMEGRP "PCI_PADS_P" OFFSET = IN   3.000 VALID  3.000 BEFORE "PCLK" TIMEGRP "ALL_FFS"  ;       # 0805DL UCF
-# TIMEGRP "PCI_PADS_C" OFFSET = IN   3.000 VALID  3.000 BEFORE "PCLK" TIMEGRP "ALL_FFS"  ;       # 0805DL UCF
-# TIMEGRP "PCI_PADS_G" OFFSET = IN   5.000 VALID  5.000 BEFORE "PCLK" TIMEGRP "ALL_FFS"  ;       # 0805DL UCF
-
-#
-# The following timespecs are for clock to out where stepping is not used.
-#
-TIMEGRP "PCI_PADS_D" OFFSET = OUT  6.000 AFTER  "PCLK" TIMEGRP "FAST_FFS" ;
-TIMEGRP "PCI_PADS_B" OFFSET = OUT  6.000 AFTER  "PCLK" TIMEGRP "FAST_FFS" ;
-TIMEGRP "PCI_PADS_P" OFFSET = OUT  6.000 AFTER  "PCLK" TIMEGRP "FAST_FFS" ;
-TIMEGRP "PCI_PADS_C" OFFSET = OUT  6.000 AFTER  "PCLK" TIMEGRP "ALL_FFS"  ;
-TIMEGRP "PCI_PADS_G" OFFSET = OUT  6.000 AFTER  "PCLK" TIMEGRP "ALL_FFS"  ;
-#
-# The following timespecs are for clock to out where stepping is used.
-#
-TIMEGRP "PCI_PADS_D" OFFSET = OUT 14.000 AFTER  "PCLK" TIMEGRP "SLOW_FFS" ;
-TIMEGRP "PCI_PADS_B" OFFSET = OUT 14.000 AFTER  "PCLK" TIMEGRP "SLOW_FFS" ;
-TIMEGRP "PCI_PADS_P" OFFSET = OUT 14.000 AFTER  "PCLK" TIMEGRP "SLOW_FFS" ;
-#
-# The following timespec is for the period.
-#
-NET "PCLK" PERIOD = 15.000 ;
-#
-################################################################################
-# User Time Names / User Time Groups
-################################################################################
-#
-# Note:  Change the instance name for the user application to match the
-# instance name in your custom design.  The example design, used here,
-# is called Ping.  This timegroup is used to form other timegroups needed
-# for the interface.  Do not remove it.  Flip flops in this group will be
-# constrained to operate at the nominal PCI Bus clock frequency.  If the
-# user application is partially asynchronous to the PCI Bus clock, this
-# timegroup must minimally contain the flip flops which are synchronous.
-#
-##INST "PING64_INST" TNM = FFS:USER_FFS ;
-TIMEGRP "USER_FFS" = FFS : EXCEPT : "PCIM_FFS" ;
-#
-# You may add further time names and time groups specific to your custom
-# design as long as the do not interfere with the timegroups and time
-# specs used for the interface.
-#
-################################################################################
-# User Time Specs
-################################################################################
-#
-NET "CK66_DCM"	PERIOD = 15.000 ;
-NET "CK66"	PERIOD = 15.000 ;
-
-################################################################################
-# Timing specification
-################################################################################
-NET "CLK"							TNM_NET = "CLK";
-TIMESPEC "TS_100" = FROM "CLK" TO "CLK"	15 ns;
-
-#NET "PCLK"							TNM_NET = "PCLK";
-#TIMESPEC "TS_PCLK" = PERIOD "PCLK" 7.5 ns HIGH 50 %;
-
-
-################################################################################
-# DCM settings
-################################################################################
-
-INST	"dcm_ps_f0/U_DCM"	DLL_FREQUENCY_MODE = LOW;
-INST	"dcm_ps_f0/U_DCM"	DUTY_CYCLE_CORRECTION = TRUE;
-INST	"dcm_ps_f0/U_DCM"	CLKOUT_PHASE_SHIFT = FIXED;
-INST	"dcm_ps_f0/U_DCM"	PHASE_SHIFT = 0;
-INST	"dcm_ps_f0/U_DCM"	STARTUP_WAIT = TRUE;
-
-################################################################################
-# I/O property
-################################################################################
-#
-
-#
-################################################################################
-# User Constraints (Pinout, Placement, Etc.)
-################################################################################
-#
-
-NET	"PLED_OUT<0>"		LOC = "W17";
-NET	"PLED_OUT<1>"		LOC = "Y17";
-NET	"PLED_OUT<2>"		LOC = "AA17";
-NET	"PLED_OUT<3>"		LOC = "AB17";
-NET	"LLED_OUT<0>"		LOC = "V16";
-NET	"LLED_OUT<1>"		LOC = "V15";
-NET	"LLED_OUT<2>"		LOC = "W16";
-NET	"LLED_OUT<3>"		LOC = "Y16";
-
-
-#
-################################################################################
-# PGPG: PFPGA Configuration Constrains
-################################################################################
-#
-NET	"CFG_D<0>"				LOC = "U11";
-NET	"CFG_D<1>"				LOC = "U10";
-NET	"CFG_D<2>"				LOC = "AB10";
-NET	"CFG_D<3>"				LOC = "AA10";
-NET	"CFG_D<4>"				LOC = "Y10";
-NET	"CFG_D<5>"				LOC = "W10";
-NET	"CFG_D<6>"				LOC = "V10";
-NET	"CFG_D<7>"				LOC = "V9";
-NET	"CFG_CCLK"				LOC = "AA9";
-NET	"CFG_PROG_B0"			LOC = "AB8";
-NET	"CFG_PROG_B1"			LOC = "V8";
-NET	"CFG_PROG_B2"			LOC = "AB6";
-NET	"CFG_PROG_B3"			LOC = "V6";
-NET	"CFG_CS_B0"				LOC = "Y8";
-NET	"CFG_CS_B1"				LOC = "AA7";
-NET	"CFG_CS_B2"				LOC = "Y6";
-NET	"CFG_CS_B3"				LOC = "AA5";
-NET	"CFG_RDWR_B"			LOC = "AB9";
-#  NET	"CFG_BUSY0"				LOC = "AA8";
-#  NET	"CFG_BUSY1"				LOC = "AB7";
-#  NET	"CFG_BUSY2"				LOC = "AA6";
-#  NET	"CFG_BUSY3"				LOC = "AB5";
-NET	"CFG_INIT_B0"			LOC = "Y9";
-NET	"CFG_INIT_B1"			LOC = "W8";
-NET	"CFG_INIT_B2"			LOC = "Y7";
-NET	"CFG_INIT_B3"			LOC = "W6";
-
-
-NET	"CFG_D<0>"				IOSTANDARD	=	LVCMOS25;
-NET	"CFG_D<1>"				IOSTANDARD	=	LVCMOS25;
-NET	"CFG_D<2>"				IOSTANDARD	=	LVCMOS25;
-NET	"CFG_D<3>"				IOSTANDARD	=	LVCMOS25;
-NET	"CFG_D<4>"				IOSTANDARD	=	LVCMOS25;
-NET	"CFG_D<5>"				IOSTANDARD	=	LVCMOS25;
-NET	"CFG_D<6>"				IOSTANDARD	=	LVCMOS25;
-NET	"CFG_D<7>"				IOSTANDARD	=	LVCMOS25;
-NET	"CFG_CCLK"				IOSTANDARD	=	LVCMOS25;
-NET	"CFG_PROG_B0"			IOSTANDARD	=	LVCMOS25;
-NET	"CFG_PROG_B1"			IOSTANDARD	=	LVCMOS25;
-NET	"CFG_PROG_B2"			IOSTANDARD	=	LVCMOS25;
-NET	"CFG_PROG_B3"			IOSTANDARD	=	LVCMOS25;
-NET	"CFG_CS_B0"				IOSTANDARD	=	LVCMOS25;
-NET	"CFG_CS_B1"				IOSTANDARD	=	LVCMOS25;
-NET	"CFG_CS_B2"				IOSTANDARD	=	LVCMOS25;
-NET	"CFG_CS_B3"				IOSTANDARD	=	LVCMOS25;
-NET	"CFG_RDWR_B"			IOSTANDARD	=	LVCMOS25;
-#  NET	"CFG_BUSY0"				IOSTANDARD	=	LVCMOS25;
-#  NET	"CFG_BUSY1"				IOSTANDARD	=	LVCMOS25;
-#  NET	"CFG_BUSY2"				IOSTANDARD	=	LVCMOS25;
-#  NET	"CFG_BUSY3"				IOSTANDARD	=	LVCMOS25;
-NET	"CFG_INIT_B0"			IOSTANDARD	=	LVCMOS25;
-NET	"CFG_INIT_B1"			IOSTANDARD	=	LVCMOS25;
-NET	"CFG_INIT_B2"			IOSTANDARD	=	LVCMOS25;
-NET	"CFG_INIT_B3"			IOSTANDARD	=	LVCMOS25;
-NET	"CFG_INIT_B0"			PULLUP;
-NET	"CFG_INIT_B1"			PULLUP;
-NET	"CFG_INIT_B2"			PULLUP;
-NET	"CFG_INIT_B3"			PULLUP;
-
-#-----------------------------------------------------------
-NET	"PFPGA_RST<0>"				LOC = "Y22";
-NET	"PFPGA_RST<1>"				LOC = "Y21";
-NET	"PFPGA_RST<2>"				LOC = "W20";
-NET	"PFPGA_RST<3>"				LOC = "AA20";
-
-NET	"PFPGA_RST<0>"				IOSTANDARD	=	LVCMOS25;
-NET	"PFPGA_RST<1>"				IOSTANDARD	=	LVCMOS25;
-NET	"PFPGA_RST<2>"				IOSTANDARD	=	LVCMOS25;
-NET	"PFPGA_RST<3>"				IOSTANDARD	=	LVCMOS25;
-#-----------------------------------------------------------
-NET	"CK66_IFPGA"				LOC = "T18";
-NET	"CK66"					LOC = "Y11";
-NET	"CK66_PFPGA0"				LOC = "U22";
-NET	"CK66_PFPGA1"				LOC = "U21";
-NET	"CK66_PFPGA2"				LOC = "U20";
-NET	"CK66_PFPGA3"				LOC = "U19";
-
-NET	"CK66_IFPGA"				IOSTANDARD	=	LVCMOS25;
-NET	"CK66"					IOSTANDARD	=	LVCMOS25;
-NET	"CK66_PFPGA0"				IOSTANDARD	=	LVCMOS25;
-NET	"CK66_PFPGA1"				IOSTANDARD	=	LVCMOS25;
-NET	"CK66_PFPGA2"				IOSTANDARD	=	LVCMOS25;
-NET	"CK66_PFPGA3"				IOSTANDARD	=	LVCMOS25;
-
-NET	"CK66_PFPGA0"				FAST;
-NET	"CK66_PFPGA1"				FAST;
-NET	"CK66_PFPGA2"				FAST;
-NET	"CK66_PFPGA3"				FAST;
-NET	"CK66_IFPGA"				FAST;
-
-
-#-----------------------------------------------------------
-#  CBUS
-#-----------------------------------------------------------
-NET	"CBUS0<0>"				LOC = "C12";
-NET	"CBUS0<1>"				LOC = "B12";
-NET	"CBUS0<2>"				LOC = "A13";
-NET	"CBUS0<3>"				LOC = "B13";
-NET	"CBUS0<4>"				LOC = "C13";
-NET	"CBUS0<5>"				LOC = "D13";
-NET	"CBUS0<6>"				LOC = "E13";
-NET	"CBUS0<7>"				LOC = "E14";
-NET	"CBUS1<0>"				LOC = "A14";
-NET	"CBUS1<1>"				LOC = "B14";
-NET	"CBUS1<2>"				LOC = "C14";
-NET	"CBUS1<3>"				LOC = "D14";
-NET	"CBUS1<4>"				LOC = "A15";
-NET	"CBUS1<5>"				LOC = "B15";
-NET	"CBUS1<6>"				LOC = "C15";
-NET	"CBUS1<7>"				LOC = "D15";
-NET	"CBUS2<0>"				LOC = "M17";
-NET	"CBUS2<1>"				LOC = "N17";
-NET	"CBUS2<2>"				LOC = "N22";
-NET	"CBUS2<3>"				LOC = "N21";
-NET	"CBUS2<4>"				LOC = "N20";
-NET	"CBUS2<5>"				LOC = "N19";
-NET	"CBUS2<6>"				LOC = "N18";
-NET	"CBUS2<7>"				LOC = "P18";
-NET	"CBUS3<0>"				LOC = "P22";
-NET	"CBUS3<1>"				LOC = "P21";
-NET	"CBUS3<2>"				LOC = "P20";
-NET	"CBUS3<3>"				LOC = "P19";
-NET	"CBUS3<4>"				LOC = "R22";
-NET	"CBUS3<5>"				LOC = "R21";
-NET	"CBUS3<6>"				LOC = "R20";
-NET	"CBUS3<7>"				LOC = "R19";
-
-NET	"CBUS0<0>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS0<1>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS0<2>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS0<3>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS0<4>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS0<5>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS0<6>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS0<7>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS1<0>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS1<1>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS1<2>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS1<3>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS1<4>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS1<5>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS1<6>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS1<7>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS2<0>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS2<1>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS2<2>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS2<3>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS2<4>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS2<5>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS2<6>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS2<7>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS3<0>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS3<1>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS3<2>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS3<3>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS3<4>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS3<5>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS3<6>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS3<7>"				IOSTANDARD	=	LVCMOS25;
-
-######## 2004/11/20  #########################################
-### LOCAL DMA (R/W) ENABLE (OUTPUT)
-NET	"CBUS0<0>"				FAST;
-NET	"CBUS0<1>"				FAST;
-NET	"CBUS0<0>"				IOB = TRUE ;
-NET	"CBUS0<1>"				IOB = TRUE ;
-
-NET	"CBUS1<0>"				FAST;
-NET	"CBUS1<1>"				FAST;
-NET	"CBUS1<0>"				IOB = TRUE ;
-NET	"CBUS1<1>"				IOB = TRUE ;
-
-NET	"CBUS2<0>"				FAST;
-NET	"CBUS2<1>"				FAST;
-NET	"CBUS2<0>"				IOB = TRUE ;
-NET	"CBUS2<1>"				IOB = TRUE ;
-
-NET	"CBUS3<0>"				FAST;
-NET	"CBUS3<1>"				FAST;
-NET	"CBUS3<0>"				IOB = TRUE ;
-NET	"CBUS3<1>"				IOB = TRUE ;
-
-### PIPE STATUS LINES(INPUT)
-NET	"CBUS0<7>"				FAST;
-NET	"CBUS0<7>"				IOB = TRUE ;
-## NET	"CBUS1<7>"				FAST;
-## NET	"CBUS1<7>"				IOB = TRUE ;
-## NET	"CBUS2<7>"				FAST;
-## NET	"CBUS2<7>"				IOB = TRUE ;
-## NET	"CBUS3<7>"				FAST;
-## NET	"CBUS3<7>"				IOB = TRUE ;
-
-
-
-#-----------------------------------------------------------
-#  DBUS
-#-----------------------------------------------------------
-NET	"DBUS<0>"				LOC = "F14";
-NET	"DBUS<1>"				LOC = "E15";
-NET	"DBUS<2>"				LOC = "A16";
-NET	"DBUS<3>"				LOC = "B16";
-NET	"DBUS<4>"				LOC = "C16";
-NET	"DBUS<5>"				LOC = "D16";
-NET	"DBUS<6>"				LOC = "E16";
-NET	"DBUS<7>"				LOC = "E17";
-NET	"DBUS<8>"				LOC = "A17";
-NET	"DBUS<9>"				LOC = "B17";
-NET	"DBUS<10>"				LOC = "C17";
-NET	"DBUS<11>"				LOC = "D17";
-NET	"DBUS<12>"				LOC = "A18";
-NET	"DBUS<13>"				LOC = "B18";
-NET	"DBUS<14>"				LOC = "C18";
-NET	"DBUS<15>"				LOC = "D18";
-NET	"DBUS<16>"				LOC = "A19";
-NET	"DBUS<17>"				LOC = "B19";
-NET	"DBUS<18>"				LOC = "C21";
-NET	"DBUS<19>"				LOC = "C22";
-NET	"DBUS<20>"				LOC = "E18";
-NET	"DBUS<21>"				LOC = "F18";
-NET	"DBUS<22>"				LOC = "D21";
-NET	"DBUS<23>"				LOC = "D22";
-NET	"DBUS<24>"				LOC = "E19";
-NET	"DBUS<25>"				LOC = "E20";
-NET	"DBUS<26>"				LOC = "E21";
-NET	"DBUS<27>"				LOC = "E22";
-NET	"DBUS<28>"				LOC = "F19";
-NET	"DBUS<29>"				LOC = "F20";
-NET	"DBUS<30>"				LOC = "F21";
-NET	"DBUS<31>"				LOC = "F22";
-NET	"DBUS<32>"				LOC = "G18";
-NET	"DBUS<33>"				LOC = "H18";
-NET	"DBUS<34>"				LOC = "G19";
-NET	"DBUS<35>"				LOC = "G20";
-NET	"DBUS<36>"				LOC = "G21";
-NET	"DBUS<37>"				LOC = "G22";
-NET	"DBUS<38>"				LOC = "H19";
-NET	"DBUS<39>"				LOC = "H20";
-NET	"DBUS<40>"				LOC = "H21";
-NET	"DBUS<41>"				LOC = "H22";
-NET	"DBUS<42>"				LOC = "J17";
-NET	"DBUS<43>"				LOC = "J18";
-NET	"DBUS<44>"				LOC = "J19";
-NET	"DBUS<45>"				LOC = "J20";
-NET	"DBUS<46>"				LOC = "J21";
-NET	"DBUS<47>"				LOC = "J22";
-NET	"DBUS<48>"				LOC = "K17";
-NET	"DBUS<49>"				LOC = "K18";
-NET	"DBUS<50>"				LOC = "K19";
-NET	"DBUS<51>"				LOC = "K20";
-NET	"DBUS<52>"				LOC = "K21";
-NET	"DBUS<53>"				LOC = "K22";
-NET	"DBUS<54>"				LOC = "L17";
-NET	"DBUS<55>"				LOC = "L18";
-NET	"DBUS<56>"				LOC = "L19";
-NET	"DBUS<57>"				LOC = "L20";
-NET	"DBUS<58>"				LOC = "L21";
-NET	"DBUS<59>"				LOC = "L22";
-NET	"DBUS<60>"				LOC = "M21";
-NET	"DBUS<61>"				LOC = "M20";
-NET	"DBUS<62>"				LOC = "M19";
-NET	"DBUS<63>"				LOC = "M18";
-
-NET	"DBUS<0>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<1>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<2>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<3>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<4>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<5>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<6>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<7>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<8>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<9>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<10>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<11>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<12>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<13>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<14>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<15>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<16>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<17>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<18>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<19>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<20>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<21>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<22>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<23>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<24>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<25>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<26>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<27>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<28>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<29>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<30>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<31>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<32>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<33>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<34>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<35>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<36>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<37>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<38>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<39>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<40>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<41>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<42>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<43>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<44>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<45>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<46>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<47>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<48>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<49>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<50>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<51>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<52>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<53>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<54>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<55>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<56>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<57>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<58>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<59>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<60>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<61>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<62>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<63>"				IOSTANDARD	=	LVCMOS25;
-
-NET	"DBUS<0>"				FAST;
-NET	"DBUS<1>"				FAST;
-NET	"DBUS<2>"				FAST;
-NET	"DBUS<3>"				FAST;
-NET	"DBUS<4>"				FAST;
-NET	"DBUS<5>"				FAST;
-NET	"DBUS<6>"				FAST;
-NET	"DBUS<7>"				FAST;
-NET	"DBUS<8>"				FAST;
-NET	"DBUS<9>"				FAST;
-NET	"DBUS<10>"				FAST;
-NET	"DBUS<11>"				FAST;
-NET	"DBUS<12>"				FAST;
-NET	"DBUS<13>"				FAST;
-NET	"DBUS<14>"				FAST;
-NET	"DBUS<15>"				FAST;
-NET	"DBUS<16>"				FAST;
-NET	"DBUS<17>"				FAST;
-NET	"DBUS<18>"				FAST;
-NET	"DBUS<19>"				FAST;
-NET	"DBUS<20>"				FAST;
-NET	"DBUS<21>"				FAST;
-NET	"DBUS<22>"				FAST;
-NET	"DBUS<23>"				FAST;
-NET	"DBUS<24>"				FAST;
-NET	"DBUS<25>"				FAST;
-NET	"DBUS<26>"				FAST;
-NET	"DBUS<27>"				FAST;
-NET	"DBUS<28>"				FAST;
-NET	"DBUS<29>"				FAST;
-NET	"DBUS<30>"				FAST;
-NET	"DBUS<31>"				FAST;
-NET	"DBUS<32>"				FAST;
-NET	"DBUS<33>"				FAST;
-NET	"DBUS<34>"				FAST;
-NET	"DBUS<35>"				FAST;
-NET	"DBUS<36>"				FAST;
-NET	"DBUS<37>"				FAST;
-NET	"DBUS<38>"				FAST;
-NET	"DBUS<39>"				FAST;
-NET	"DBUS<40>"				FAST;
-NET	"DBUS<41>"				FAST;
-NET	"DBUS<42>"				FAST;
-NET	"DBUS<43>"				FAST;
-NET	"DBUS<44>"				FAST;
-NET	"DBUS<45>"				FAST;
-NET	"DBUS<46>"				FAST;
-NET	"DBUS<47>"				FAST;
-NET	"DBUS<48>"				FAST;
-NET	"DBUS<49>"				FAST;
-NET	"DBUS<50>"				FAST;
-NET	"DBUS<51>"				FAST;
-NET	"DBUS<52>"				FAST;
-NET	"DBUS<53>"				FAST;
-NET	"DBUS<54>"				FAST;
-NET	"DBUS<55>"				FAST;
-NET	"DBUS<56>"				FAST;
-NET	"DBUS<57>"				FAST;
-NET	"DBUS<58>"				FAST;
-NET	"DBUS<59>"				FAST;
-NET	"DBUS<60>"				FAST;
-NET	"DBUS<61>"				FAST;
-NET	"DBUS<62>"				FAST;
-NET	"DBUS<63>"				FAST;
-
-#### IOB ###
-NET	"DBUS<0>"				IOB = TRUE ;
-NET	"DBUS<1>"				IOB = TRUE ;
-NET	"DBUS<2>"				IOB = TRUE ;
-NET	"DBUS<3>"				IOB = TRUE ;
-NET	"DBUS<4>"				IOB = TRUE ;
-NET	"DBUS<5>"				IOB = TRUE ;
-NET	"DBUS<6>"				IOB = TRUE ;
-NET	"DBUS<7>"				IOB = TRUE ;
-NET	"DBUS<8>"				IOB = TRUE ;
-NET	"DBUS<9>"				IOB = TRUE ;
-NET	"DBUS<10>"				IOB = TRUE ;
-NET	"DBUS<11>"				IOB = TRUE ;
-NET	"DBUS<12>"				IOB = TRUE ;
-NET	"DBUS<13>"				IOB = TRUE ;
-NET	"DBUS<14>"				IOB = TRUE ;
-NET	"DBUS<15>"				IOB = TRUE ;
-NET	"DBUS<16>"				IOB = TRUE ;
-NET	"DBUS<17>"				IOB = TRUE ;
-NET	"DBUS<18>"				IOB = TRUE ;
-NET	"DBUS<19>"				IOB = TRUE ;
-NET	"DBUS<20>"				IOB = TRUE ;
-NET	"DBUS<21>"				IOB = TRUE ;
-NET	"DBUS<22>"				IOB = TRUE ;
-NET	"DBUS<23>"				IOB = TRUE ;
-NET	"DBUS<24>"				IOB = TRUE ;
-NET	"DBUS<25>"				IOB = TRUE ;
-NET	"DBUS<26>"				IOB = TRUE ;
-NET	"DBUS<27>"				IOB = TRUE ;
-NET	"DBUS<28>"				IOB = TRUE ;
-NET	"DBUS<29>"				IOB = TRUE ;
-NET	"DBUS<30>"				IOB = TRUE ;
-NET	"DBUS<31>"				IOB = TRUE ;
-NET	"DBUS<32>"				IOB = TRUE ;
-NET	"DBUS<33>"				IOB = TRUE ;
-NET	"DBUS<34>"				IOB = TRUE ;
-NET	"DBUS<35>"				IOB = TRUE ;
-NET	"DBUS<36>"				IOB = TRUE ;
-NET	"DBUS<37>"				IOB = TRUE ;
-NET	"DBUS<38>"				IOB = TRUE ;
-NET	"DBUS<39>"				IOB = TRUE ;
-NET	"DBUS<40>"				IOB = TRUE ;
-NET	"DBUS<41>"				IOB = TRUE ;
-NET	"DBUS<42>"				IOB = TRUE ;
-NET	"DBUS<43>"				IOB = TRUE ;
-NET	"DBUS<44>"				IOB = TRUE ;
-NET	"DBUS<45>"				IOB = TRUE ;
-NET	"DBUS<46>"				IOB = TRUE ;
-NET	"DBUS<47>"				IOB = TRUE ;
-NET	"DBUS<48>"				IOB = TRUE ;
-NET	"DBUS<49>"				IOB = TRUE ;
-NET	"DBUS<50>"				IOB = TRUE ;
-NET	"DBUS<51>"				IOB = TRUE ;
-NET	"DBUS<52>"				IOB = TRUE ;
-NET	"DBUS<53>"				IOB = TRUE ;
-NET	"DBUS<54>"				IOB = TRUE ;
-NET	"DBUS<55>"				IOB = TRUE ;
-NET	"DBUS<56>"				IOB = TRUE ;
-NET	"DBUS<57>"				IOB = TRUE ;
-NET	"DBUS<58>"				IOB = TRUE ;
-NET	"DBUS<59>"				IOB = TRUE ;
-NET	"DBUS<60>"				IOB = TRUE ;
-NET	"DBUS<61>"				IOB = TRUE ;
-NET	"DBUS<62>"				IOB = TRUE ;
-NET	"DBUS<63>"				IOB = TRUE ;
-
-
-#
-################################################################################
-# End
-################################################################################
+Wed Aug 30 19:39:15 JST 2006
+-8.900000e+00	4.203612e+01	1.258925e-07
+-8.886094e+00	3.591460e+01	1.299889e-07
+-8.872187e+00	3.717914e+01	1.342185e-07
+-8.858281e+00	3.818615e+01	1.385858e-07
+-8.844375e+00	3.262533e+01	1.430952e-07
+-8.830469e+00	2.925012e+01	1.477513e-07
+-8.816562e+00	2.314380e+01	1.525589e-07
+-8.802656e+00	3.167697e+01	1.575229e-07
+-8.788750e+00	2.657383e+01	1.626485e-07
+-8.774844e+00	2.349342e+01	1.679408e-07
+-8.760938e+00	3.216024e+01	1.734054e-07
+-8.747031e+00	3.115280e+01	1.790477e-07
+-8.733125e+00	3.304329e+01	1.848736e-07
+-8.719219e+00	2.921257e+01	1.908892e-07
+-8.705312e+00	3.099873e+01	1.971004e-07
+-8.691406e+00	2.294033e+01	2.035137e-07
+-8.677500e+00	2.221295e+01	2.101358e-07
+-8.663594e+00	2.930307e+01	2.169733e-07
+-8.649687e+00	3.047788e+01	2.240333e-07
+-8.635781e+00	2.748831e+01	2.313230e-07
+-8.621875e+00	2.335306e+01	2.388499e-07
+-8.607969e+00	2.146083e+01	2.466217e-07
+-8.594062e+00	2.496745e+01	2.546464e-07
+-8.580156e+00	2.224299e+01	2.629322e-07
+-8.566250e+00	1.948829e+01	2.714876e-07
+-8.552344e+00	2.949625e+01	2.803214e-07
+-8.538437e+00	2.359401e+01	2.894426e-07
+-8.524531e+00	2.637457e+01	2.988607e-07
+-8.510625e+00	1.979441e+01	3.085851e-07
+-8.496719e+00	2.212780e+01	3.186260e-07
+-8.482812e+00	2.335899e+01	3.289936e-07
+-8.468906e+00	2.262164e+01	3.396986e-07
+-8.455000e+00	2.303372e+01	3.507519e-07
+-8.441094e+00	1.686792e+01	3.621648e-07
+-8.427188e+00	1.826308e+01	3.739491e-07
+-8.413281e+00	1.826437e+01	3.861168e-07
+-8.399375e+00	2.073512e+01	3.986805e-07
+-8.385469e+00	1.545479e+01	4.116530e-07
+-8.371562e+00	1.807512e+01	4.250475e-07
+-8.357656e+00	1.332593e+01	4.388779e-07
+-8.343750e+00	1.696059e+01	4.531584e-07
+-8.329844e+00	1.507668e+01	4.679035e-07
+-8.315937e+00	1.671106e+01	4.831283e-07
+-8.302031e+00	1.765517e+01	4.988486e-07
+-8.288125e+00	1.777286e+01	5.150804e-07
+-8.274219e+00	1.589430e+01	5.318403e-07
+-8.260312e+00	1.539060e+01	5.491456e-07
+-8.246406e+00	1.756328e+01	5.670140e-07
+-8.232500e+00	1.591436e+01	5.854637e-07
+-8.218594e+00	1.596457e+01	6.045138e-07
+-8.204688e+00	1.411522e+01	6.241838e-07
+-8.190781e+00	1.339049e+01	6.444938e-07
+-8.176875e+00	1.424820e+01	6.654647e-07
+-8.162969e+00	1.449754e+01	6.871179e-07
+-8.149063e+00	1.216328e+01	7.094757e-07
+-8.135156e+00	1.380596e+01	7.325609e-07
+-8.121250e+00	1.414657e+01	7.563974e-07
+-8.107344e+00	1.352417e+01	7.810094e-07
+-8.093438e+00	1.308348e+01	8.064222e-07
+-8.079531e+00	1.302577e+01	8.326620e-07
+-8.065625e+00	1.278075e+01	8.597556e-07
+-8.051719e+00	1.267812e+01	8.877307e-07
+-8.037813e+00	1.301133e+01	9.166161e-07
+-8.023906e+00	1.287712e+01	9.464414e-07
+-8.010000e+00	1.094962e+01	9.772372e-07
+-7.996094e+00	1.219580e+01	1.009035e-06
+-7.982187e+00	1.228253e+01	1.041868e-06
+-7.968281e+00	1.034661e+01	1.075768e-06
+-7.954375e+00	1.119629e+01	1.110772e-06
+-7.940469e+00	1.094710e+01	1.146915e-06
+-7.926563e+00	1.110876e+01	1.184234e-06
+-7.912656e+00	1.066339e+01	1.222767e-06
+-7.898750e+00	1.060202e+01	1.262554e-06
+-7.884844e+00	1.085800e+01	1.303636e-06
+-7.870937e+00	1.075127e+01	1.346054e-06
+-7.857031e+00	8.679963e+00	1.389853e-06
+-7.843125e+00	9.703643e+00	1.435076e-06
+-7.829219e+00	9.842588e+00	1.481772e-06
+-7.815312e+00	9.663223e+00	1.529986e-06
+-7.801406e+00	8.613362e+00	1.579770e-06
+-7.787500e+00	1.047307e+01	1.631173e-06
+-7.773594e+00	9.308482e+00	1.684249e-06
+-7.759688e+00	8.906944e+00	1.739052e-06
+-7.745781e+00	9.312845e+00	1.795638e-06
+-7.731875e+00	8.716693e+00	1.854065e-06
+-7.717969e+00	7.780157e+00	1.914394e-06
+-7.704062e+00	8.134695e+00	1.976685e-06
+-7.690156e+00	9.228943e+00	2.041004e-06
+-7.676250e+00	8.229833e+00	2.107415e-06
+-7.662344e+00	8.129258e+00	2.175987e-06
+-7.648437e+00	7.827250e+00	2.246790e-06
+-7.634531e+00	7.351526e+00	2.319897e-06
+-7.620625e+00	7.625831e+00	2.395383e-06
+-7.606719e+00	7.713546e+00	2.473325e-06
+-7.592812e+00	6.999681e+00	2.553804e-06
+-7.578906e+00	7.537845e+00	2.636901e-06
+-7.565000e+00	7.288883e+00	2.722701e-06
+-7.551094e+00	7.289182e+00	2.811294e-06
+-7.537187e+00	6.811335e+00	2.902769e-06
+-7.523281e+00	6.396718e+00	2.997221e-06
+-7.509375e+00	6.658923e+00	3.094746e-06
+-7.495469e+00	6.663252e+00	3.195444e-06
+-7.481562e+00	6.339402e+00	3.299419e-06
+-7.467656e+00	6.159275e+00	3.406777e-06
+-7.453750e+00	6.321857e+00	3.517629e-06
+-7.439844e+00	5.999731e+00	3.632087e-06
+-7.425937e+00	6.202065e+00	3.750270e-06
+-7.412031e+00	5.957232e+00	3.872298e-06
+-7.398125e+00	5.515733e+00	3.998297e-06
+-7.384219e+00	5.966034e+00	4.128395e-06
+-7.370313e+00	5.522940e+00	4.262727e-06
+-7.356406e+00	5.632840e+00	4.401430e-06
+-7.342500e+00	5.468094e+00	4.544645e-06
+-7.328594e+00	5.719716e+00	4.692521e-06
+-7.314687e+00	5.456957e+00	4.845209e-06
+-7.300781e+00	5.372098e+00	5.002865e-06
+-7.286875e+00	4.955648e+00	5.165650e-06
+-7.272969e+00	5.185842e+00	5.333733e-06
+-7.259062e+00	4.825496e+00	5.507284e-06
+-7.245156e+00	5.031753e+00	5.686483e-06
+-7.231250e+00	4.779863e+00	5.871513e-06
+-7.217344e+00	4.845950e+00	6.062563e-06
+-7.203438e+00	4.893603e+00	6.259829e-06
+-7.189531e+00	4.470952e+00	6.463515e-06
+-7.175625e+00	4.264191e+00	6.673828e-06
+-7.161719e+00	4.450152e+00	6.890984e-06
+-7.147813e+00	4.099793e+00	7.115206e-06
+-7.133906e+00	4.316789e+00	7.346724e-06
+-7.120000e+00	4.244798e+00	7.585776e-06
+-7.106094e+00	4.230631e+00	7.832605e-06
+-7.092187e+00	4.072438e+00	8.087467e-06
+-7.078281e+00	3.993847e+00	8.350621e-06
+-7.064375e+00	3.989012e+00	8.622337e-06
+-7.050469e+00	3.910168e+00	8.902895e-06
+-7.036563e+00	3.749917e+00	9.192582e-06
+-7.022656e+00	3.796059e+00	9.491694e-06
+-7.008750e+00	3.648724e+00	9.800540e-06
+-6.994844e+00	3.606228e+00	1.011943e-05
+-6.980938e+00	3.626868e+00	1.044871e-05
+-6.967031e+00	3.389855e+00	1.078869e-05
+-6.953125e+00	3.404641e+00	1.113974e-05
+-6.939219e+00	3.333284e+00	1.150221e-05
+-6.925312e+00	3.215464e+00	1.187647e-05
+-6.911406e+00	3.208938e+00	1.226292e-05
+-6.897500e+00	3.269183e+00	1.266193e-05
+-6.883594e+00	3.151513e+00	1.307393e-05
+-6.869687e+00	3.002953e+00	1.349934e-05
+-6.855781e+00	2.997312e+00	1.393859e-05
+-6.841875e+00	2.940846e+00	1.439213e-05
+-6.827969e+00	2.882711e+00	1.486043e-05
+-6.814063e+00	2.809032e+00	1.534396e-05
+-6.800156e+00	2.824800e+00	1.584323e-05
+-6.786250e+00	2.811174e+00	1.635875e-05
+-6.772344e+00	2.700340e+00	1.689103e-05
+-6.758437e+00	2.715502e+00	1.744064e-05
+-6.744531e+00	2.616428e+00	1.800814e-05
+-6.730625e+00	2.595297e+00	1.859409e-05
+-6.716719e+00	2.488220e+00	1.919912e-05
+-6.702812e+00	2.483365e+00	1.982383e-05
+-6.688906e+00	2.485228e+00	2.046886e-05
+-6.675000e+00	2.410290e+00	2.113489e-05
+-6.661094e+00	2.338524e+00	2.182259e-05
+-6.647188e+00	2.283822e+00	2.253266e-05
+-6.633281e+00	2.289034e+00	2.326584e-05
+-6.619375e+00	2.195122e+00	2.402288e-05
+-6.605469e+00	2.179981e+00	2.480454e-05
+-6.591562e+00	2.113570e+00	2.561165e-05
+-6.577656e+00	2.093893e+00	2.644501e-05
+-6.563750e+00	2.079954e+00	2.730549e-05
+-6.549844e+00	1.976668e+00	2.819397e-05
+-6.535937e+00	1.972512e+00	2.911136e-05
+-6.522031e+00	1.931661e+00	3.005860e-05
+-6.508125e+00	1.883341e+00	3.103666e-05
+-6.494219e+00	1.862267e+00	3.204655e-05
+-6.480313e+00	1.824793e+00	3.308929e-05
+-6.466406e+00	1.750959e+00	3.416597e-05
+-6.452500e+00	1.725595e+00	3.527768e-05
+-6.438594e+00	1.706400e+00	3.642556e-05
+-6.424687e+00	1.652823e+00	3.761079e-05
+-6.410781e+00	1.629155e+00	3.883459e-05
+-6.396875e+00	1.585853e+00	4.009821e-05
+-6.382969e+00	1.555897e+00	4.140295e-05
+-6.369062e+00	1.510827e+00	4.275014e-05
+-6.355156e+00	1.485814e+00	4.414116e-05
+-6.341250e+00	1.443123e+00	4.557745e-05
+-6.327344e+00	1.424056e+00	4.706047e-05
+-6.313437e+00	1.389307e+00	4.859175e-05
+-6.299531e+00	1.339321e+00	5.017285e-05
+-6.285625e+00	1.313128e+00	5.180540e-05
+-6.271719e+00	1.288642e+00	5.349107e-05
+-6.257812e+00	1.240911e+00	5.523158e-05
+-6.243906e+00	1.203127e+00	5.702874e-05
+-6.230000e+00	1.180991e+00	5.888437e-05
+-6.216094e+00	1.155651e+00	6.080037e-05
+-6.202187e+00	1.112940e+00	6.277873e-05
+-6.188281e+00	1.081534e+00	6.482145e-05
+-6.174375e+00	1.047441e+00	6.693064e-05
+-6.160469e+00	1.019329e+00	6.910847e-05
+-6.146562e+00	9.795535e-01	7.135715e-05
+-6.132656e+00	9.451837e-01	7.367900e-05
+-6.118750e+00	9.148615e-01	7.607641e-05
+-6.104844e+00	8.811663e-01	7.855182e-05
+-6.090937e+00	8.538468e-01	8.110778e-05
+-6.077031e+00	8.234044e-01	8.374690e-05
+-6.063125e+00	7.921253e-01	8.647190e-05
+-6.049219e+00	7.451972e-01	8.928556e-05
+-6.035312e+00	7.157019e-01	9.219078e-05
+-6.021406e+00	6.929499e-01	9.519053e-05
+-6.007500e+00	6.499955e-01	9.828789e-05
+-5.993594e+00	6.210720e-01	1.014860e-04
+-5.979687e+00	6.087430e-01	1.047882e-04
+-5.965781e+00	5.923471e-01	1.081979e-04
+-5.951875e+00	5.742007e-01	1.117185e-04
+-5.937969e+00	5.562412e-01	1.153536e-04
+-5.924062e+00	5.466945e-01	1.191071e-04
+-5.910156e+00	5.341762e-01	1.229826e-04
+-5.896250e+00	5.157258e-01	1.269843e-04
+-5.882344e+00	5.061797e-01	1.311162e-04
+-5.868437e+00	5.020393e-01	1.353825e-04
+-5.854531e+00	4.924345e-01	1.397876e-04
+-5.840625e+00	4.729521e-01	1.443361e-04
+-5.826719e+00	4.653212e-01	1.490326e-04
+-5.812813e+00	4.535231e-01	1.538819e-04
+-5.798906e+00	4.327356e-01	1.588890e-04
+-5.785000e+00	4.244332e-01	1.640590e-04
+-5.771094e+00	4.101745e-01	1.693972e-04
+-5.757187e+00	3.988536e-01	1.749091e-04
+-5.743281e+00	3.761355e-01	1.806004e-04
+-5.729375e+00	3.645769e-01	1.864769e-04
+-5.715469e+00	3.378145e-01	1.925446e-04
+-5.701563e+00	3.346835e-01	1.988097e-04
+-5.687656e+00	3.222267e-01	2.052786e-04
+-5.673750e+00	3.146365e-01	2.119581e-04
+-5.659844e+00	3.072583e-01	2.188549e-04
+-5.645937e+00	3.020875e-01	2.259761e-04
+-5.632031e+00	2.949766e-01	2.333290e-04
+-5.618125e+00	2.843703e-01	2.409212e-04
+-5.604219e+00	2.800373e-01	2.487604e-04
+-5.590312e+00	2.721716e-01	2.568547e-04
+-5.576406e+00	2.627146e-01	2.652124e-04
+-5.562500e+00	2.527315e-01	2.738420e-04
+-5.548594e+00	2.396207e-01	2.827524e-04
+-5.534688e+00	2.281655e-01	2.919527e-04
+-5.520781e+00	2.211726e-01	3.014524e-04
+-5.506875e+00	2.139738e-01	3.112612e-04
+-5.492969e+00	2.104610e-01	3.213892e-04
+-5.479062e+00	2.074507e-01	3.318467e-04
+-5.465156e+00	1.999510e-01	3.426445e-04
+-5.451250e+00	1.963216e-01	3.537936e-04
+-5.437344e+00	1.894057e-01	3.653055e-04
+-5.423437e+00	1.800479e-01	3.771920e-04
+-5.409531e+00	1.707145e-01	3.894653e-04
+-5.395625e+00	1.670693e-01	4.021379e-04
+-5.381719e+00	1.662748e-01	4.152229e-04
+-5.367813e+00	1.649032e-01	4.287336e-04
+-5.353906e+00	1.581588e-01	4.426839e-04
+-5.340000e+00	1.538519e-01	4.570882e-04
+-5.326094e+00	1.450689e-01	4.719611e-04
+-5.312187e+00	1.413571e-01	4.873181e-04
+-5.298281e+00	1.388890e-01	5.031746e-04
+-5.284375e+00	1.338942e-01	5.195472e-04
+-5.270469e+00	1.322842e-01	5.364525e-04
+-5.256562e+00	1.269210e-01	5.539078e-04
+-5.242656e+00	1.201026e-01	5.719311e-04
+-5.228750e+00	1.182614e-01	5.905409e-04
+-5.214844e+00	1.146167e-01	6.097562e-04
+-5.200938e+00	1.139131e-01	6.295968e-04
+-5.187031e+00	1.104558e-01	6.500829e-04
+-5.173125e+00	1.043222e-01	6.712356e-04
+-5.159219e+00	1.014057e-01	6.930766e-04
+-5.145312e+00	9.904778e-02	7.156283e-04
+-5.131406e+00	9.729152e-02	7.389138e-04
+-5.117500e+00	9.266775e-02	7.629569e-04
+-5.103594e+00	9.211761e-02	7.877824e-04
+-5.089687e+00	9.467250e-02	8.134156e-04
+-5.075781e+00	9.238958e-02	8.398829e-04
+-5.061875e+00	8.904599e-02	8.672114e-04
+-5.047969e+00	8.781094e-02	8.954292e-04
+-5.034063e+00	8.628646e-02	9.245651e-04
+-5.020156e+00	8.284956e-02	9.546491e-04
+-5.006250e+00	7.906321e-02	9.857119e-04
+-4.992344e+00	7.549161e-02	1.017785e-03
+-4.978437e+00	6.994675e-02	1.050903e-03
+-4.964531e+00	6.790120e-02	1.085097e-03
+-4.950625e+00	6.512182e-02	1.120405e-03
+-4.936719e+00	6.271048e-02	1.156861e-03
+-4.922812e+00	6.157368e-02	1.194504e-03
+-4.908906e+00	5.994839e-02	1.233371e-03
+-4.895000e+00	5.699566e-02	1.273503e-03
+-4.881094e+00	5.424141e-02	1.314941e-03
+-4.867188e+00	5.165718e-02	1.357727e-03
+-4.853281e+00	5.017823e-02	1.401906e-03
+-4.839375e+00	4.813325e-02	1.447521e-03
+-4.825469e+00	4.797464e-02	1.494622e-03
+-4.811562e+00	4.619317e-02	1.543254e-03
+-4.797656e+00	4.756779e-02	1.593469e-03
+-4.783750e+00	4.694357e-02	1.645319e-03
+-4.769844e+00	4.840771e-02	1.698855e-03
+-4.755937e+00	4.711329e-02	1.754133e-03
+-4.742031e+00	4.430606e-02	1.811210e-03
+-4.728125e+00	4.192733e-02	1.870144e-03
+-4.714219e+00	4.100755e-02	1.930995e-03
+-4.700312e+00	4.245878e-02	1.993827e-03
+-4.686406e+00	4.081708e-02	2.058703e-03
+-4.672500e+00	4.109341e-02	2.125690e-03
+-4.658594e+00	4.259287e-02	2.194857e-03
+-4.644687e+00	4.499165e-02	2.266274e-03
+-4.630781e+00	4.327597e-02	2.340016e-03
+-4.616875e+00	3.814649e-02	2.416156e-03
+-4.602969e+00	3.365591e-02	2.494774e-03
+-4.589062e+00	2.972507e-02	2.575950e-03
+-4.575156e+00	3.053430e-02	2.659768e-03
+-4.561250e+00	3.072617e-02	2.746313e-03
+-4.547344e+00	2.985807e-02	2.835674e-03
+-4.533437e+00	2.928113e-02	2.927942e-03
+-4.519531e+00	3.066074e-02	3.023213e-03
+-4.505625e+00	3.530442e-02	3.121584e-03
+-4.491719e+00	3.413172e-02	3.223155e-03
+-4.477812e+00	2.627759e-02	3.328032e-03
+-4.463906e+00	2.675461e-02	3.436321e-03
+-4.450000e+00	2.703653e-02	3.548134e-03
+-4.436094e+00	2.720673e-02	3.663585e-03
+-4.422187e+00	3.101321e-02	3.782792e-03
+-4.408281e+00	2.951771e-02	3.905879e-03
+-4.394375e+00	2.319441e-02	4.032970e-03
+-4.380469e+00	2.539193e-02	4.164197e-03
+-4.366563e+00	2.695403e-02	4.299694e-03
+-4.352656e+00	3.045272e-02	4.439599e-03
+-4.338750e+00	1.968512e-02	4.584057e-03
+-4.324844e+00	2.507680e-02	4.733215e-03
+-4.310937e+00	2.626638e-02	4.887227e-03
+-4.297031e+00	2.868858e-02	5.046250e-03
+-4.283125e+00	2.170705e-02	5.210447e-03
+-4.269219e+00	2.443033e-02	5.379987e-03
+-4.255313e+00	2.545573e-02	5.555044e-03
+-4.241406e+00	1.896229e-02	5.735797e-03
+-4.227500e+00	2.579243e-02	5.922431e-03
+-4.213594e+00	2.012985e-02	6.115138e-03
+-4.199688e+00	2.200407e-02	6.314115e-03
+-4.185781e+00	2.496285e-02	6.519567e-03
+-4.171875e+00	1.966233e-02	6.731704e-03
+-4.157969e+00	2.534566e-02	6.950743e-03
+-4.144062e+00	1.896261e-02	7.176910e-03
+-4.130156e+00	2.520434e-02	7.410436e-03
+-4.116250e+00	1.966543e-02	7.651560e-03
+-4.102344e+00	2.187770e-02	7.900530e-03
+-4.088438e+00	2.096439e-02	8.157602e-03
+-4.074531e+00	1.711616e-02	8.423038e-03
+-4.060625e+00	2.356820e-02	8.697111e-03
+-4.046719e+00	1.572096e-02	8.980102e-03
+-4.032813e+00	1.541962e-02	9.272301e-03
+-4.018906e+00	2.249778e-02	9.574007e-03
+-4.005000e+00	1.776735e-02	9.885531e-03
+-3.991094e+00	1.697986e-02	1.020719e-02
+-3.977187e+00	2.513120e-02	1.053932e-02
+-3.963281e+00	2.249662e-02	1.088225e-02
+-3.949375e+00	1.868609e-02	1.123634e-02
+-3.935469e+00	1.574551e-02	1.160196e-02
+-3.921562e+00	1.402662e-02	1.197947e-02
+-3.907656e+00	1.394272e-02	1.236926e-02
+-3.893750e+00	1.475968e-02	1.277174e-02
+-3.879844e+00	1.767497e-02	1.318731e-02
+-3.865938e+00	1.928843e-02	1.361641e-02
+-3.852031e+00	1.877169e-02	1.405946e-02
+-3.838125e+00	1.888404e-02	1.451694e-02
+-3.824219e+00	1.809569e-02	1.498930e-02
+-3.810312e+00	1.789177e-02	1.547703e-02
+-3.796406e+00	1.780377e-02	1.598062e-02
+-3.782500e+00	1.499087e-02	1.650061e-02
+-3.768594e+00	1.320485e-02	1.703751e-02
+-3.754687e+00	1.356246e-02	1.759189e-02
+-3.740781e+00	1.608943e-02	1.816430e-02
+-3.726875e+00	1.786220e-02	1.875534e-02
+-3.712969e+00	2.080543e-02	1.936561e-02
+-3.699063e+00	1.786821e-02	1.999574e-02
+-3.685156e+00	1.411801e-02	2.064637e-02
+-3.671250e+00	1.336188e-02	2.131817e-02
+-3.657344e+00	1.776835e-02	2.201184e-02
+-3.643437e+00	2.042593e-02	2.272807e-02
+-3.629531e+00	1.812700e-02	2.346760e-02
+-3.615625e+00	1.383773e-02	2.423120e-02
+-3.601719e+00	1.911054e-02	2.501965e-02
+-3.587812e+00	2.049279e-02	2.583375e-02
+-3.573906e+00	1.575595e-02	2.667434e-02
+-3.560000e+00	1.795602e-02	2.754229e-02
+-3.546094e+00	2.145621e-02	2.843847e-02
+-3.532188e+00	1.645098e-02	2.936382e-02
+-3.518281e+00	1.564788e-02	3.031927e-02
+-3.504375e+00	2.087440e-02	3.130581e-02
+-3.490469e+00	1.754954e-02	3.232446e-02
+-3.476562e+00	1.737250e-02	3.337625e-02
+-3.462656e+00	2.080398e-02	3.446226e-02
+-3.448750e+00	1.711808e-02	3.558361e-02
+-3.434844e+00	1.793800e-02	3.674145e-02
+-3.420937e+00	2.016398e-02	3.793696e-02
+-3.407031e+00	1.533172e-02	3.917137e-02
+-3.393125e+00	2.008585e-02	4.044595e-02
+-3.379219e+00	1.810079e-02	4.176200e-02
+-3.365312e+00	1.775187e-02	4.312087e-02
+-3.351406e+00	2.050131e-02	4.452396e-02
+-3.337500e+00	1.398668e-02	4.597270e-02
+-3.323594e+00	1.973902e-02	4.746858e-02
+-3.309688e+00	1.629744e-02	4.901314e-02
+-3.295781e+00	1.947616e-02	5.060795e-02
+-3.281875e+00	2.052032e-02	5.225466e-02
+-3.267969e+00	2.189759e-02	5.395494e-02
+-3.254062e+00	2.238873e-02	5.571056e-02
+-3.240156e+00	1.754549e-02	5.752329e-02
+-3.226250e+00	2.190670e-02	5.939502e-02
+-3.212344e+00	1.849127e-02	6.132764e-02
+-3.198437e+00	1.984980e-02	6.332315e-02
+-3.184531e+00	1.744459e-02	6.538359e-02
+-3.170625e+00	1.742446e-02	6.751107e-02
+-3.156719e+00	2.077383e-02	6.970778e-02
+-3.142812e+00	1.481800e-02	7.197597e-02
+-3.128906e+00	2.225130e-02	7.431795e-02
+-3.115000e+00	1.576817e-02	7.673615e-02
+-3.101094e+00	2.133354e-02	7.923303e-02
+-3.087188e+00	1.670715e-02	8.181115e-02
+-3.073281e+00	2.090200e-02	8.447316e-02
+-3.059375e+00	1.873622e-02	8.722179e-02
+-3.045469e+00	2.107900e-02	9.005986e-02
+-3.031562e+00	1.829485e-02	9.299027e-02
+-3.017656e+00	1.865654e-02	9.601603e-02
+-3.003750e+00	2.005363e-02	9.914025e-02
+-2.989844e+00	1.672847e-02	1.023661e-01
+-2.975937e+00	2.176886e-02	1.056970e-01
+-2.962031e+00	1.399167e-02	1.091362e-01
+-2.948125e+00	2.044116e-02	1.126873e-01
+-2.934219e+00	1.496616e-02	1.163540e-01
+-2.920313e+00	2.165018e-02	1.201400e-01
+-2.906406e+00	1.592932e-02	1.240491e-01
+-2.892500e+00	2.075077e-02	1.280855e-01
+-2.878594e+00	1.578047e-02	1.322532e-01
+-2.864687e+00	1.917896e-02	1.365565e-01
+-2.850781e+00	1.839635e-02	1.409999e-01
+-2.836875e+00	1.804164e-02	1.455878e-01
+-2.822969e+00	1.985915e-02	1.503250e-01
+-2.809062e+00	1.622192e-02	1.552164e-01
+-2.795156e+00	1.999513e-02	1.602669e-01
+-2.781250e+00	1.475216e-02	1.654817e-01
+-2.767344e+00	2.062172e-02	1.708662e-01
+-2.753437e+00	1.354314e-02	1.764260e-01
+-2.739531e+00	2.063068e-02	1.821666e-01
+-2.725625e+00	1.297518e-02	1.880940e-01
+-2.711719e+00	2.012277e-02	1.942143e-01
+-2.697812e+00	1.348486e-02	2.005338e-01
+-2.683906e+00	1.945455e-02	2.070588e-01
+-2.670000e+00	1.463707e-02	2.137962e-01
+-2.656094e+00	2.027680e-02	2.207528e-01
+-2.642187e+00	1.504550e-02	2.279358e-01
+-2.628281e+00	1.948844e-02	2.353525e-01
+-2.614375e+00	1.638464e-02	2.430105e-01
+-2.600469e+00	1.956801e-02	2.509177e-01
+-2.586562e+00	1.791862e-02	2.590822e-01
+-2.572656e+00	1.779687e-02	2.675123e-01
+-2.558750e+00	1.834655e-02	2.762167e-01
+-2.544844e+00	1.694630e-02	2.852044e-01
+-2.530937e+00	1.922103e-02	2.944845e-01
+-2.517031e+00	1.718298e-02	3.040666e-01
+-2.503125e+00	1.956593e-02	3.139605e-01
+-2.489219e+00	1.470971e-02	3.241763e-01
+-2.475312e+00	1.982090e-02	3.347245e-01
+-2.461406e+00	1.399496e-02	3.456159e-01
+-2.447500e+00	2.013867e-02	3.568617e-01
+-2.433594e+00	1.315746e-02	3.684735e-01
+-2.419688e+00	2.004059e-02	3.804631e-01
+-2.405781e+00	1.278580e-02	3.928428e-01
+-2.391875e+00	2.002383e-02	4.056253e-01
+-2.377969e+00	1.440813e-02	4.188237e-01
+-2.364063e+00	2.035495e-02	4.324516e-01
+-2.350156e+00	1.500585e-02	4.465229e-01
+-2.336250e+00	2.007609e-02	4.610521e-01
+-2.322344e+00	1.465395e-02	4.760540e-01
+-2.308437e+00	2.007828e-02	4.915441e-01
+-2.294531e+00	1.627294e-02	5.075382e-01
+-2.280625e+00	1.982040e-02	5.240527e-01
+-2.266719e+00	1.787746e-02	5.411046e-01
+-2.252812e+00	1.746756e-02	5.587114e-01
+-2.238906e+00	1.849146e-02	5.768910e-01
+-2.225000e+00	1.783787e-02	5.956621e-01
+-2.211094e+00	1.965026e-02	6.150441e-01
+-2.197188e+00	1.624576e-02	6.350567e-01
+-2.183281e+00	2.064068e-02	6.557205e-01
+-2.169375e+00	1.384357e-02	6.770566e-01
+-2.155469e+00	2.067904e-02	6.990870e-01
+-2.141562e+00	1.409873e-02	7.218343e-01
+-2.127656e+00	2.003425e-02	7.453217e-01
+-2.113750e+00	1.226940e-02	7.695733e-01
+-2.099844e+00	2.023110e-02	7.946141e-01
+-2.085937e+00	1.312263e-02	8.204696e-01
+-2.072031e+00	2.054332e-02	8.471665e-01
+-2.058125e+00	1.396300e-02	8.747320e-01
+-2.044219e+00	2.054152e-02	9.031944e-01
+-2.030312e+00	1.550205e-02	9.325830e-01
+-2.016406e+00	1.978949e-02	9.629279e-01
+-2.002500e+00	1.639069e-02	9.942601e-01
+-1.988594e+00	1.891107e-02	1.026612e+00
+-1.974688e+00	1.627325e-02	1.060016e+00
+-1.960781e+00	1.821275e-02	1.094508e+00
+-1.946875e+00	1.826566e-02	1.130121e+00
+-1.932969e+00	1.739267e-02	1.166894e+00
+-1.919062e+00	1.986348e-02	1.204863e+00
+-1.905156e+00	1.599809e-02	1.244067e+00
+-1.891250e+00	2.008299e-02	1.284547e+00
+-1.877344e+00	1.438683e-02	1.326344e+00
+-1.863437e+00	2.029834e-02	1.369501e+00
+-1.849531e+00	1.388551e-02	1.414063e+00
+-1.835625e+00	2.093194e-02	1.460074e+00
+-1.821719e+00	1.275115e-02	1.507583e+00
+-1.807813e+00	2.017634e-02	1.556638e+00
+-1.793906e+00	1.395827e-02	1.607288e+00
+-1.780000e+00	1.984019e-02	1.659587e+00
+-1.766094e+00	1.458965e-02	1.713587e+00
+-1.752187e+00	2.066756e-02	1.769345e+00
+-1.738281e+00	1.430622e-02	1.826917e+00
+-1.724375e+00	1.972422e-02	1.886362e+00
+-1.710469e+00	1.511056e-02	1.947741e+00
+-1.696562e+00	1.991875e-02	2.011118e+00
+-1.682656e+00	1.693855e-02	2.076556e+00
+-1.668750e+00	1.859116e-02	2.144125e+00
+-1.654844e+00	1.690815e-02	2.213891e+00
+-1.640937e+00	1.839050e-02	2.285928e+00
+-1.627031e+00	1.831300e-02	2.360308e+00
+-1.613125e+00	1.820962e-02	2.437109e+00
+-1.599219e+00	1.919223e-02	2.516409e+00
+-1.585313e+00	1.657285e-02	2.598289e+00
+-1.571406e+00	1.937511e-02	2.682834e+00
+-1.557500e+00	1.586664e-02	2.770129e+00
+-1.543594e+00	1.982810e-02	2.860265e+00
+-1.529687e+00	1.440252e-02	2.953334e+00
+-1.515781e+00	2.011925e-02	3.049431e+00
+-1.501875e+00	1.276386e-02	3.148654e+00
+-1.487969e+00	2.003538e-02	3.251107e+00
+-1.474062e+00	1.437866e-02	3.356893e+00
+-1.460156e+00	2.057594e-02	3.466121e+00
+-1.446250e+00	1.357016e-02	3.578904e+00
+-1.432344e+00	2.055429e-02	3.695356e+00
+-1.418438e+00	1.365692e-02	3.815597e+00
+-1.404531e+00	2.065811e-02	3.939751e+00
+-1.390625e+00	1.444008e-02	4.067944e+00
+-1.376719e+00	1.990530e-02	4.200309e+00
+-1.362812e+00	1.575971e-02	4.336981e+00
+-1.348906e+00	1.898722e-02	4.478100e+00
+-1.335000e+00	1.712980e-02	4.623810e+00
+-1.321094e+00	1.918503e-02	4.774262e+00
+-1.307187e+00	1.838090e-02	4.929609e+00
+-1.293281e+00	1.856028e-02	5.090011e+00
+-1.279375e+00	1.959589e-02	5.255633e+00
+-1.265469e+00	1.701071e-02	5.426643e+00
+-1.251563e+00	2.035247e-02	5.603218e+00
+-1.237656e+00	1.600988e-02	5.785538e+00
+-1.223750e+00	1.995661e-02	5.973791e+00
+-1.209844e+00	1.402512e-02	6.168169e+00
+-1.195937e+00	2.038687e-02	6.368872e+00
+-1.182031e+00	1.333972e-02	6.576105e+00
+-1.168125e+00	2.132882e-02	6.790082e+00
+-1.154219e+00	1.402983e-02	7.011021e+00
+-1.140313e+00	2.120350e-02	7.239149e+00
+-1.126406e+00	1.416911e-02	7.474700e+00
+-1.112500e+00	2.039776e-02	7.717915e+00
+-1.098594e+00	1.477523e-02	7.969044e+00
+-1.084687e+00	2.014639e-02	8.228345e+00
+-1.070781e+00	1.437440e-02	8.496083e+00
+-1.056875e+00	1.935201e-02	8.772533e+00
+-1.042969e+00	1.616536e-02	9.057978e+00
+-1.029062e+00	1.917996e-02	9.352711e+00
+-1.015156e+00	1.863500e-02	9.657034e+00
+-1.001250e+00	1.796369e-02	9.971259e+00
+-9.873438e-01	1.883714e-02	1.029571e+01
+-9.734375e-01	1.633317e-02	1.063072e+01
+-9.595312e-01	1.949097e-02	1.097662e+01
+-9.456250e-01	1.683168e-02	1.133379e+01
+-9.317188e-01	2.021068e-02	1.170257e+01
+-9.178125e-01	1.456224e-02	1.208335e+01
+-9.039062e-01	1.980275e-02	1.247653e+01
+-8.900000e-01	1.531788e-02	1.288250e+01
+-8.760937e-01	2.004163e-02	1.330167e+01
+-8.621875e-01	1.504834e-02	1.373449e+01
+-8.482812e-01	2.092667e-02	1.418139e+01
+-8.343750e-01	1.469156e-02	1.464283e+01
+-8.204687e-01	1.988521e-02	1.511928e+01
+-8.065625e-01	1.335580e-02	1.561124e+01
+-7.926562e-01	2.015223e-02	1.611921e+01
+-7.787500e-01	1.455755e-02	1.664370e+01
+-7.648437e-01	1.998403e-02	1.718527e+01
+-7.509375e-01	1.471393e-02	1.774445e+01
+-7.370312e-01	1.915753e-02	1.832183e+01
+-7.231250e-01	1.554784e-02	1.891799e+01
+-7.092188e-01	2.017501e-02	1.953355e+01
+-6.953125e-01	1.770688e-02	2.016915e+01
+-6.814062e-01	1.964780e-02	2.082542e+01
+-6.675000e-01	1.759606e-02	2.150305e+01
+-6.535937e-01	1.859868e-02	2.220272e+01
+-6.396875e-01	1.864250e-02	2.292517e+01
+-6.257812e-01	1.593860e-02	2.367112e+01
+-6.118750e-01	1.969175e-02	2.444134e+01
+-5.979687e-01	1.586633e-02	2.523662e+01
+-5.840625e-01	1.975775e-02	2.605779e+01
+-5.701562e-01	1.639191e-02	2.690567e+01
+-5.562500e-01	2.085687e-02	2.778114e+01
+-5.423437e-01	1.427838e-02	2.868509e+01
+-5.284375e-01	2.092864e-02	2.961846e+01
+-5.145312e-01	1.309603e-02	3.058220e+01
+-5.006250e-01	2.058685e-02	3.157730e+01
+-4.867187e-01	1.294809e-02	3.260478e+01
+-4.728125e-01	2.043734e-02	3.366569e+01
+-4.589062e-01	1.339354e-02	3.476112e+01
+-4.450000e-01	1.947425e-02	3.589219e+01
+-4.310937e-01	1.437091e-02	3.706007e+01
+-4.171875e-01	2.010888e-02	3.826595e+01
+-4.032813e-01	1.632286e-02	3.951107e+01
+-3.893750e-01	1.974829e-02	4.079670e+01
+-3.754687e-01	1.789330e-02	4.212416e+01
+-3.615625e-01	1.893194e-02	4.349482e+01
+-3.476562e-01	1.899475e-02	4.491007e+01
+-3.337500e-01	1.853717e-02	4.637138e+01
+-3.198437e-01	1.869796e-02	4.788023e+01
+-3.059375e-01	1.740375e-02	4.943818e+01
+-2.920312e-01	8.829202e-01	5.104683e+01
+-2.781250e-01	1.166626e+00	5.270781e+01
+-2.642188e-01	1.408574e+00	5.442285e+01
+-2.503125e-01	1.594290e+00	5.619368e+01
+-2.364062e-01	1.747369e+00	5.802214e+01
+-2.225000e-01	1.946478e+00	5.991009e+01
+-2.085937e-01	2.197292e+00	6.185948e+01
+-1.946875e-01	2.446337e+00	6.387229e+01
+-1.807813e-01	2.730962e+00	6.595060e+01
+-1.668750e-01	3.059110e+00	6.809653e+01
+-1.529687e-01	3.401792e+00	7.031229e+01
+-1.390625e-01	3.986702e+00	7.260015e+01
+-1.251562e-01	4.681107e+00	7.496245e+01
+-1.112500e-01	5.521735e+00	7.740161e+01
+-9.734375e-02	6.779003e+00	7.992014e+01
+-8.343750e-02	8.366523e+00	8.252062e+01
+-6.953125e-02	1.098960e+01	8.520572e+01
+-5.562500e-02	1.549592e+01	8.797819e+01
+-4.171875e-02	2.238043e+01	9.084086e+01
+-2.781250e-02	3.317157e+01	9.379669e+01
+-1.390625e-02	8.328865e+01	9.684869e+01

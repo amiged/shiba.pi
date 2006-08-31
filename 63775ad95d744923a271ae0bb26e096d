@@ -1,160 +1,233 @@
-Sat Aug 26 19:27:28 JST 2006
-#!/usr/bin/env python3
-#Time-stamp: <2017-06-11 19:19:34 hamada>
-import cv2
-import urllib.request
-import numpy as np
-import argparse
-from datetime import datetime
-import mkdir
+Thu Aug 31 19:31:02 JST 2006
+/*
+ * pfpga_conf_a.c
+ *
+ * Copyright (C) 2006-2007 Tsuyoshi Hamada
+ *                                All rights reserved.
+ * 
+ * No warranty is attached; 
+ * I cannot take responsibility for errors or fitness for use.
+ *
+ */
 
-class DroidCam(object):
-    def __init__(self):
-        self.droidapp = 'IP Webcam'
-        self.ipadr  = '192.168.43.1'
-#        self.ipadr  = '192.168.42.129'
-#        self.ipadr  = '133.45.9.162'
-        self.port  = '3389'
-        self.stream = -1
-        self.URL = -1
-        self.image = -1
-    def get_stream(self):
-        stub = ''
-        if (self.droidapp == 'DroidCam'):
-            stub = '/mjpegfeed?960x720'
-        elif (self.droidapp == 'IP Webcam'):
-            stub = '/video?dummy=param.mjpg'
-        else:
-            stub = '/mjpegfeed?640x480'
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <unistd.h>     // usleep
+#include "pg4.h"
 
-        url = 'http://'+self.ipadr+':'+self.port + stub
+static char pfpga_info[256];
+#define CNF_CMD_ADR 0x80
+#define CNF_DAT_ADR 0x84
 
-        print ('URL: ', url)
-        self.URL = url
-        self.stream = urllib.request.urlopen(self.URL)
-        return (self.stream)
+static unsigned int *data;
 
-    def get_stream_jpg(self):
-        stub = '/shot.jpg'
-        url = 'http://'+self.ipadr+':'+self.port + stub
-        print ('URL: ', url)
-        self.URL = url
-        self.stream = urllib.request.urlopen(self.URL)
-        return (self.stream)
+void get_header(char* bitfile, char* header)
+{
+  int index=0, x;
+  char buf[128];
+  
+  index += 2 + (((0xff&bitfile[index])<<8) | (0xff&bitfile[index+1]));
+  index += 2 + (((0xff&bitfile[index])<<8)|(0xff&bitfile[index+1]));
 
-    def get_jpg(self):
-        stub = '/shot.jpg'
-        url = 'http://'+self.ipadr+':'+self.port + stub
-        urlObj = urllib.request.urlopen(url)
-        print ('URL: ', url, urlObj.getcode())
-        ofname = '/dev/shm/now.jpg'
-        with open(ofname, "wb") as file:
-            file.write(urlObj.read())
-        self.image = cv2.imread(ofname)
-        return (self.image)
-        
-    def set_focus(self):
-        stub = '/focus'
-        url = 'http://'+self.ipadr+':'+self.port + stub
-        print ('focus: ', url)
-        urlObj = urllib.request.urlopen(url)
-        
+  // --- NCD file name ---
+  x = ((0xff&bitfile[index])<<8)|(0xff&bitfile[index+1]);
+  //  memcpy(buf, &bitfile[index+2], x);
+  //  sprintf(header, "%s, %s", header, buf);
 
-class State(object):
-    def __init__(self):
-        self.is_record = False
-        self.drawing = False
-        self.posi0 = [-1,-1]
-        self.posi1 = [-1,-1]
-        self.image = -1
-        self.image_size = [-1, -1] # [height, width]
-        self.image_orig = -1
-        self.class_num = 777
-        self.image_num = 1
+  // --- device ---
+  index += (x+3);
+  x = ((0xff&bitfile[index])<<8)|(0xff&bitfile[index+1]);
+  memcpy(buf, &bitfile[index+2], x);
+  sprintf(header, "%s, %s", header, buf);
 
-    def draw_rect(self):
-        # print ("posi0, posi1: ", self.posi0, self.posi1)
-        cv2.rectangle(self.image, (self.posi0[0], self.posi0[1]), (self.posi1[0], self.posi1[1]), (0, 255, 0), 1)
+  // --- data ---
+  index += (x+3);
+  x = ((0xff&bitfile[index])<<8)|(0xff&bitfile[index+1]);
+  memcpy(buf, &bitfile[index+2], x);
+  sprintf(header, "%s, %s", header, buf);
 
-    def draw_text(self):
-        if(self.is_record):
-            font = cv2.FONT_HERSHEY_TRIPLEX # cv2.FONT_HERSHEY_PLAIN
-            font_size = 0.8
-            text = "<<%d>>"% (self.image_num)
-            color = (0x0, 0x0, 0xBF)
-            px = int(self.image_size[1]/2)
-            py = 30
-            cv2.putText(self.image, text,(px, py), font, font_size, color)
+  // --- time ---
+  index += (x+3);
+  x = ((0xff&bitfile[index])<<8)|(0xff&bitfile[index+1]);
+  memcpy(buf, &bitfile[index+2], x);
+  sprintf(header, "%s, %s", header, buf);
 
-state = State()
-
-def mouse_event(event,x,y,flags,param):
-    global state
-
-    if x < 0: x = 0
-    if y < 0: y = 0
-    if x >= state.image_size[1]: x = state.image_size[1] - 1
-    if y >= state.image_size[0]: y = state.image_size[0] - 1
+  // --- key ---
+  index += (x+3);
+  x = ((0xff&bitfile[index])<<8)|(0xff&bitfile[index+1]);
+  //  memcpy(buf, &bitfile[index+2], x);
+  //  sprintf(header, "%s, %s", header, buf);
 
 
-    if event == (cv2.EVENT_LBUTTONDOWN):
-        state.posi0[0] = x0 = state.posi1[0]
-        state.posi0[1] = y0 = state.posi1[1]
-        state.posi1[0] = x
-        state.posi1[1] = y
-        print ("Rect: (%d, %d) - (%d, %d)"%(x0, y0, x, y) )
+}
 
 
-def put_text(image, text):
-    font_size = 1.0
-    font_type = cv2.FONT_HERSHEY_PLAIN
-    font_color = (0xf, 0xf, 0xff)
-    cv2.putText(image, text, (5, 15), font_type, font_size, font_color)
 
+int fread_config_data(char* fname, unsigned int *size)
+{
+  // -- Read Config File to 'config_bit_data'---
+  FILE* fin;
+  int ndata;
+  int i;
 
-if (__name__ == '__main__'):
+  struct stat buf;
+  int fsize;
 
-    droidcam = DroidCam()
-#    stream = droidcam.get_stream()
+  // read file status
+  if (stat(fname, &buf) == -1) {
+    fprintf(stderr, "fread_config_data: can't open bit file!!! %s\n", fname);
+    exit(-1);
+  }
 
-    parser = argparse.ArgumentParser(description = "description goes here")
-    parser.add_argument("--devid", type=int, help = "set device id", required=False)
-    args = parser.parse_args()
-    devid = 0
-    if args.devid:
-        devid = int(args.devid)
-        print ("set devid = ", devid)
+  fsize = buf.st_size;
+  if (data != NULL) {
+    free(data);
+  }
+  data = (unsigned int*)malloc(fsize);
+  if (data == NULL) {
+    fprintf(stderr, "fread_config_data: memory allocation error!\n");
+    exit(-1);
+  }
+  
+  fin = fopen(fname, "r");
+  if (fin == NULL) {
+    fprintf(stderr, "fread_config_data: cannot open %s!\n", fname);
+    exit(-1);
+  }
+  fread(data,fsize,1,fin);
+  fclose(fin);
+  fprintf(stderr, "fread_config_data: read %i bytes.\n", fsize);
 
-    while True:
-        frame = droidcam.get_jpg()
-        state.image_orig = frame.copy()
-        state.image      = frame.copy()
-        state.image_size[0], state.image_size[1] = frame.shape[:2]
-        state.draw_rect()
-        state.draw_text()
-        cv2.imshow('droidcam',state.image)
-        tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S_%f')
-        if True:
-            basedir = '../log.ipcam.%d/'% (devid)
-            ofname = mkdir.get_filename_frame(basedir, tnow)
-            put_text(state.image, tnow)
-            cv2.imwrite(ofname, state.image)
-            print(ofname)
-            tnow0 = tnow
-            state.image_num += 1
+  get_header((char*)data, pfpga_info);
 
-        key = cv2.waitKey(1) & 0xFF
-        if key == ord('q'): break
-        if ( (key == ord(' ')) or 
-             (key == 34) or # Muhenkan
-             (key == 35) or # Henkan
-             (key == 39) or # katakana
-             (key == 10)    # Enter
-        ):
-            state.is_record = not (state.is_record)
-        if key == ord('f'): droidcam.set_focus()
+  
+  ndata = fsize/sizeof(unsigned int);
 
+  // CHANGE ENDIAN (LittleEndian -> BigEndian)
+  for(i = 0;i < ndata; i++){
+    unsigned int byte[8];
+    byte[0] = 0xFF&(data[i]>>24);
+    byte[1] = 0xFF&(data[i]>>16);
+    byte[2] = 0xFF&(data[i]>>8);
+    byte[3] = 0xFF&(data[i]);
+    data[i]=0x0;
+    data[i]= (byte[3]<<24)|(byte[2]<<16)|(byte[1]<<8)|byte[0];
+  }
 
-    cv2.destroyAllWindows()
-    print("Done.")
+  *size = (unsigned int)ndata;
 
+  return fsize;
+}
+
+void config_onechip(int devid, unsigned int nfp, unsigned int ncfgdata)
+{
+  unsigned int i, d;
+  unsigned int *p;
+
+  if (data == NULL) return;
+  if (nfp > 0x8) {
+    fprintf(stderr, "nfp err\n");
+    exit(-1);
+  } 
+
+  // ---------------------------------------- SETUP CONFIGURATION
+  d = (unsigned int)(0xf0|nfp);
+  WriteBase0(devid, CNF_CMD_ADR, d);
+  d = (unsigned int)(  ((0xF^nfp)<<4)   |nfp);
+  WriteBase0(devid, CNF_CMD_ADR, d);
+  d = (unsigned int)(0xf0|nfp);
+  WriteBase0(devid, CNF_CMD_ADR, d);
+  usleep(15000);
+
+  // ---------------------------------------- SEND CONFIGURATION DATA
+  p = data;
+  for(i = 0; i < ncfgdata; i++){
+    WriteBase0(devid, CNF_DAT_ADR, *(p++));
+    d = (unsigned int)(0x1f0|nfp);
+    WriteBase0(devid, CNF_CMD_ADR,      d);
+    WriteBase0(devid, CNF_CMD_ADR, 0xff&d);
+  }
+
+  // ---------------------------------------- STOP CFG_CCLK
+  d = (unsigned int)(0xf0);
+  WriteBase0(devid, CNF_CMD_ADR,d);
+}
+
+void config_pfpga_a(int devid, char* fname, int chipid)
+{
+  unsigned int i, nfp, ncfgdata;
+
+  data = NULL;
+  fread_config_data(fname, &ncfgdata);
+
+  {
+    i = chipid;
+    nfp = 0xf&(0x1<<i);
+    fprintf(stderr, "configuring chip%i ...\n", i);
+    config_onechip(devid, nfp, ncfgdata);
+  }
+
+  free(data);
+}
+
+int main(int argc, char* argv[])
+{
+  int devid, chipid;
+
+  if (argc < 2) {
+    fprintf(stderr, "%s <bitfile> <chipid> <devid>\n", argv[0]);
+    exit(-1);
+  }
+
+  if (argv[2] == NULL) {
+    chipid = 0;
+  } else {
+    chipid = atoi(argv[2]);
+    if (chipid > 3) {
+      fprintf(stderr, "%s : invalid argument <chipid> %s:%d\n", argv[0], __FILE__, __LINE__);
+      exit(-1);
+    }
+  }
+
+  if (argv[3] == NULL) {
+    devid = 0;
+  } else {
+    devid = atoi(argv[3]);
+    if (devid > 3) {
+      fprintf(stderr, "%s : invalid argument <devid>%s:%d\n", argv[0], __FILE__, __LINE__);
+      exit(-1);
+    }
+  }
+
+  fprintf(stderr, "%s configures a PFPGA%i on progrape%i ...\n", argv[0], chipid, devid);
+
+  pg4_open(devid);
+
+  {
+    pg4_get_pfpga_info(devid, pfpga_info);
+    printf("----------------------\n");
+    printf("Previous config info: \n");
+    printf("%s\n",pfpga_info);
+    printf("----------------------\n");
+  }
+
+  {
+    sprintf(pfpga_info, "%s on <PFPGA%d>", argv[1], chipid);
+    config_pfpga_a(devid, argv[1], chipid);
+    pg4_set_pfpga_info(devid, pfpga_info);
+  }
+
+  {
+    pg4_get_pfpga_info(devid, pfpga_info);
+    printf("----------------------\n");
+    printf("Current config info: \n");
+    printf("%s\n",pfpga_info);
+    printf("----------------------\n");
+  }
+
+  pg4_close(devid);
+
+  return 0;
+}

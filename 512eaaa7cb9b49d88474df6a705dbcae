@@ -1,41 +1,37 @@
-Tue Aug 29 19:51:26 JST 2006
-// Time-stamp: <2006-09-04 13:41:34 hamada>
-// by T.Hamada
-//
-// <2006-09-04 13:33:47 hamada>
+Fri Sep  1 19:36:52 JST 2006
+-- Copyright 2004 Tsuyoshi Hamada
+--
+--
+--clk         __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __
+--[dma_we]    _______/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
+--[ DBUS ]           X   >< n ><d0 ><d1 ><d2 ><d3 ><d4 ><d5 ><d6 ><d7 >
+--state_dmaw          0  >< 1 >< 2                                    >< 3 >< 0 
+--mem_data                          <d0 ><d1 ><d2 ><d3 ><d4 ><d5 ><d6 ><d7 >
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
-#include "pg4.h"
+entity dmaw_mem_data is
+  port (
+    CLK      : in std_logic;
+    DBUS     : in std_logic_vector(63 downto 0);
+    STATE    : in std_logic_vector(1 downto 0);
+    MEM_DATA : out std_logic_vector(63 downto 0) );
+end dmaw_mem_data;
 
-void rst(int devid, int d, int msec)
-{
-  d = 0xff & d;
-  WriteBase0(devid, 0x4, d);
-  usleep(msec*1000);
-}
+architecture rtl of dmaw_mem_data is
+constant zero : std_logic_vector(63 downto 0) := (others=>'0');
+begin
 
-int main(int argc, char* argv[])
-{
-  int devid=0;
-  int i;
+  process (CLK,STATE) begin
+    if(CLK'event and CLK = '1') then
+      if(STATE="10") then
+        MEM_DATA <= DBUS;
+      else
+        MEM_DATA <= zero;
+      end if;
+    end if;
+  end process;
 
-  pg4_open(devid);
-  
-  for(i=0;i<16;i++){
-    int x;
-    x = 0xff&(1<<(i%8));
-    rst(devid, x, 100);
-    rst(devid, 0, 1);
-  }
-
-  rst(devid, 0xff, 1000);
-  rst(devid, 0x0, 0);
-
-  pg4_close(devid);
-
-  return 0;
-}
+end rtl;

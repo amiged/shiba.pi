@@ -1,42 +1,25 @@
-Sat Sep  9 19:28:02 JST 2006
-/**
-   # ハードウェア化する部分 
-   #     1.加速度a[][]の初期化
-   #     2.加速度a[][]の計算
-*/
-
-#include <stdio.h>
-#include <math.h>
-#include "nbodysim.h"
-
-void force_on_host(double x[][DIM],
-	   double m[],
-	   double eps2,
-	   double a[][DIM],
-	   int n)
-{
-  int i,j,d;
-  double dx[3];
-
-  /* a[][]の初期化 */
-  for(i=0;i<n;i++) for(d=0;d<3;d++) a[i][d] = 0.0;
-
-  /* 相互作用の計算  */
-  for(i=0;i<n-1;i++){
-    for(j=i+1;j<n;j++){
-      double r2,r3;
-      r2 = eps2;
-      for(d=0;d<3;d++){
-	dx[d] = x[j][d] - x[i][d];
-	r2 += dx[d] * dx[d];
-      }
-      r3 = sqrt(r2)*r2;
-      for(d=0;d<3;d++){
-	a[i][d] +=  m[j]*dx[d]/r3;
-	a[j][d] += -m[i]*dx[d]/r3;
-      }
-    }
-  }
-
-
-}
+Sun Oct 22 19:26:40 JST 2006
+JDF G
+// Created by Project Navigator ver 1.0
+PROJECT tmp2
+DESIGN tmp2
+DEVFAM virtex2
+DEVFAMTIME 0
+DEVICE xc2v1000
+DEVICETIME 0
+DEVPKG fg456
+DEVPKGTIME 0
+DEVSPEED -5
+DEVSPEEDTIME 0
+DEVTOPLEVELMODULETYPE HDL
+TOPLEVELMODULETYPETIME 0
+DEVSYNTHESISTOOL XST (VHDL/Verilog)
+SYNTHESISTOOLTIME 0
+DEVSIMULATOR Modelsim
+SIMULATORTIME 0
+DEVGENERATEDSIMULATIONMODEL VHDL
+GENERATEDSIMULATIONMODELTIME 0
+SOURCE pfpga_config.vhd
+STIMULUS sim.tbw
+[STRATEGY-LIST]
+Normal=True

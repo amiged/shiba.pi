@@ -1,50 +1,42 @@
-Sat Sep  2 19:52:23 JST 2006
-#!/usr/bin/env python3
-import numpy as np
-import cv2
-from datetime import datetime
-import mkdir
-import sys
+Thu Oct 26 19:31:52 JST 2006
+// Time-stamp: "2006-12-07 13:35:12 hamada"
+// Copyright (c) 2006 by Tsuyoshi Hamada, All rights reserved.
 
-def put_text(image, text):
-    font_size = 1.0
-    font_type = cv2.FONT_HERSHEY_PLAIN
-    font_color = (0xf, 0xf, 0xff)
-    cv2.putText(image, text, (460, 15), font_type, font_size, font_color)
-    
+#include <stdio.h>
+#include <stdlib.h>
+#include "pg4.h"
+
+//#define NMAX (0x1<<10) // 4KB
+//#define NMAX (0x1<<11) // 8KB
+//#define NMAX (0x1<<12) // 16KB
+//#define NMAX (0x1<<13) // 32KB
+#define NMAX (0x1<<14) // 64KB
+
+unsigned int* ptr;
+unsigned int* bar1;
+
+int main(int argc,char *argv[])
+{
+  int devid = 0;
+  int n = NMAX;
+  int i;
+
+  if(argc > 1){
+    n = atoi(argv[1]);
+  }
+  printf("n = %d\n",n);
+
+  pg4_open(devid);
+  bar1 = pg4_get_bar1ptr(devid);
+  printf("BAR0: %lx\n",pg4_getbaseaddr(devid,0));
+  printf("BAR1: %lx\n",pg4_getbaseaddr(devid,1));
+
+  for(i = 0; i < n; i++) {
+    unsigned int x;
+    x = pg4_readbase1(devid, i);
+    printf("%x : %x\n",i,x);
+  }
 
 
-if (__name__ == '__main__'):
-    argv = sys.argv
-    devid = int(argv[1])
-    log_base = '../log/'
-    cap = cv2.VideoCapture(devid)
-
-    cap_width  = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
-    cap_height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
-    cap_fps    = cap.get(cv2.CAP_PROP_FPS)
-
-    print(cap_width, "x", cap_height, ":", cap_fps)
-
-    tnow0 = datetime.now().strftime('%Y%m%d_%H_%M_%S') # ('%Y%m%d_%H_%M_%S_%f')
-
-    while(cap.isOpened()):
-        ret, frame = cap.read()
-        cv2.imshow('frame', frame)
-
-        tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S')
-        if(tnow != tnow0):
-            put_text(frame, tnow)
-            ofname = mkdir.get_filename_frame('../log/', tnow)
-#            cv2.imwrite(ofname, frame)
-            print(ofname, ": TEST on devid=%d"%devid)
-            tnow0 = tnow
- 
-
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-
-    cap.release()
-    cv2.destroyAllWindows()
-
-    print("Done.")
+  return 0;
+}

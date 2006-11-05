@@ -1,34 +1,91 @@
-Sat Aug 12 19:48:24 JST 2006
-// Time-stamp: "2006-12-07 19:19:07 hamada"
-// Copyright (c) 2006 by Tsuyoshi Hamada, All rights reserved.
+Sun Nov  5 19:30:03 JST 2006
+-- Copyright 2004 Tsuyoshi Hamada
+--
+--
+--clk         __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __
+--[ENABLE]    _______/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
+--[ DBUS ]          >< n ><d0 ><d1 ><d2 ><d3 ><d4 ><d5 ><d6 ><d7 >
 
-#include <stdio.h>
-#include <stdlib.h>
-#include "pg4.h"
+--  ena0      _______/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
+--  ena1           _______/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
+--[ DBUS ]          >< n ><d0 ><d1 ><d2 ><d3 ><d4 ><d5 ><d6 ><d7 >
+-- acnt                0 >< n ><n+1><n+2><n+3><n+4><n+5><n+6><n+7>< 0
+--MEM_ADR                   0 >< n ><n+1><n+2><n+3><n+4><n+5><n+6><n+7>< 0
+--MEM_DATA                     <d0 ><d1 ><d2 ><d3 ><d4 ><d5 ><d6 ><d7 >
+--MEM_WE                   ____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______
 
-unsigned int* ptr;
-unsigned int* bar1;
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
-int main(int argc,char *argv[])
-{
-  int devid = 0;
-  int i;
+entity dmaw is
+  port (
+    RST       : in std_logic;
+    CLK       : in std_logic;
+    ENABLE    : in std_logic;
+    DBUS      : in std_logic_vector(63 downto 0);
+    MEM_WE    : out std_logic;
+    MEM_ADR   : out std_logic_vector(18 downto 0);
+    MEM_DATA  : out std_logic_vector(63 downto 0)   );
+end dmaw;
 
-  pg4_open(devid);
-  bar1 = pg4_get_bar1ptr(devid);
-  printf("BAR0: %lx\n",pg4_getbaseaddr(devid,0));
-  printf("BAR1: %lx\n",pg4_getbaseaddr(devid,1));
+architecture rtl of dmaw is
 
-  puts("clear DMA_CTRL register(0x2C).");
-  WriteBase0(devid, 0x2C,   0); // 0x2C : DMA_CTRL ... clear
+signal ena0,ena1,ena2,ena3,ena4 : std_logic :='0';
+signal acnt,acntr : std_logic_vector(18 downto 0) :=(others=>'0');
+signal we : std_logic :='0';
 
-  puts("clear INT_STAT register(0x10).");
-  WriteBase0(devid, 0x10,   0); // 0x14 : INT_MASK  [1:Enable INT/ 0:Disable INT]
+begin
 
-  puts("clear INT_MASK register(0x14).");
-  WriteBase0(devid, 0x14,   0); // 0x14 : INT_MASK  [1:Enable INT/ 0:Disable INT]
+  -- MEM_DATA --
+  process (CLK) begin
+    if(CLK'event and CLK = '1') then
+      MEM_DATA <= DBUS;
+    end if;
+  end process;
 
-  pg4_DMAcheck(devid);
+  -- MEM_WE --
+  process (CLK) begin
+    if(CLK'event and CLK = '1') then
+      MEM_WE <= ena1;
+    end if;
+  end process;
 
-  return 0;
-}
+  -- MEM_ADR --
+  process (CLK) begin
+    if(CLK'event and CLK = '1') then
+      MEM_ADR <= acnt;
+    end if;
+  end process;
+
+  -- acnt
+  acntr <= acnt;
+  process (RST,CLK,ena0,ena1) begin
+    if(RST = '1') then
+      acnt  <= (others=>'0');
+    elsif(CLK'event and CLK = '1') then
+      if((ena0='1') AND (ena1='0')) then
+        acnt <= DBUS(18 downto 0);
+      elsif((ena0='1') AND (ena1='1')) then
+        acnt <= acntr + "0000000000000000001";
+      else
+        acnt <= (others=>'0');
+      end if;
+    end if;
+  end process;
+
+
+
+  -- ENABLE delays
+  ena0 <= ENABLE;
+  process (CLK) begin
+    if(CLK'event and CLK = '1') then
+      ena4 <= ena3;
+      ena3 <= ena2;
+      ena2 <= ena1;
+      ena1 <= ena0;
+    end if;
+  end process;
+
+
+end rtl;

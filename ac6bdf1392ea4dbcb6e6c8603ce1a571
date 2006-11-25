@@ -1,32 +1,26 @@
-Wed Sep 20 19:45:45 JST 2006
-/*
- * pfpga_info.c
- *
- * Copyright (C) 2006-2007 Tsuyoshi Hamada
- *                                All rights reserved.
- * 
- * No warranty is attached; 
- * I cannot take responsibility for errors or fitness for use.
- *
- */
-
+Sat Nov 25 19:46:47 JST 2006
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "nbodysim.h"
 
-#define MAXBD 8
-#include "pg4.h"
-
-int main(int argc, char* argv[])
+void debug(double x[][DIM],double a[][DIM], int n, int nstep)
 {
-  int devid=0;
-  char info[1024];
+  int i;
+  static int flag=0;
+  static FILE* fp;
 
-  pg4_open(devid);
-  pg4_get_pfpga_info(devid, info);
-  pg4_close(devid);
+  if(flag==0){
+    fp = fopen("aaa.log","w");
+    flag = 1;
+  }else{
+    rewind(fp);
+  }
 
-  printf("%s\n", info);
+  for(i=0;i<n;i++){
+    fprintf(fp,"%d\t",nstep);
+    fprintf(fp,"%1.8e\t%1.8e\t%1.8e\t",x[i][0],x[i][1],x[i][2]);
+    fprintf(fp,"%1.8e\t%1.8e\t%1.8e\n",a[i][0],a[i][1],a[i][2]);
+  }
 
-  return 1;
+  fflush(fp);
 }
+

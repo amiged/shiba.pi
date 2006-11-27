@@ -1,42 +1,118 @@
-Thu Oct 26 19:31:52 JST 2006
-// Time-stamp: "2006-12-07 13:35:12 hamada"
-// Copyright (c) 2006 by Tsuyoshi Hamada, All rights reserved.
-
-#include <stdio.h>
-#include <stdlib.h>
-#include "pg4.h"
-
-//#define NMAX (0x1<<10) // 4KB
-//#define NMAX (0x1<<11) // 8KB
-//#define NMAX (0x1<<12) // 16KB
-//#define NMAX (0x1<<13) // 32KB
-#define NMAX (0x1<<14) // 64KB
-
-unsigned int* ptr;
-unsigned int* bar1;
-
-int main(int argc,char *argv[])
-{
-  int devid = 0;
-  int n = NMAX;
-  int i;
-
-  if(argc > 1){
-    n = atoi(argv[1]);
-  }
-  printf("n = %d\n",n);
-
-  pg4_open(devid);
-  bar1 = pg4_get_bar1ptr(devid);
-  printf("BAR0: %lx\n",pg4_getbaseaddr(devid,0));
-  printf("BAR1: %lx\n",pg4_getbaseaddr(devid,1));
-
-  for(i = 0; i < n; i++) {
-    unsigned int x;
-    x = pg4_readbase1(devid, i);
-    printf("%x : %x\n",i,x);
-  }
+Mon Nov 27 19:30:10 JST 2006
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
 
 
-  return 0;
-}
+entity PFPGA_DMA is
+  port (
+    -- pcicnt input
+    MEM_AD  : in std_logic_vector(16 downto 0);     -- DPRAM Port B R/W Address
+    MEM_WE  : in std_logic;
+    MEM_WE  : in std_logic;
+    MEM_DTI : in std_logic_vector(63 downto 0);
+
+    -- CBUS/DBUS
+    DMAW_ENABLE : out std_logic_vector(3 downto 0); -- for 4 pfpga chip
+    DBUS_Port : out std_logic_vector(63 downto 0);
+
+    RST : in  std_logic;
+    CLK : in  std_logic
+    );
+end PFPGA_DMA;
+
+architecture rtl of PFPGA_DMA is
+
+-----------------------------------------------------------------
+-- DMAW
+  signal mem_wea   : std_logic := '0';
+  signal dmaw_we0  : std_logic := '0';
+  signal dmaw_we1  : std_logic := '0';
+  signal dmaw_adr          : std_logic_vector(63 downto 0) := (others=>'0');
+  signal dmaw_dt0,dmaw_dt1 : std_logic_vector(63 downto 0) := (others=>'0');
+  signal dmaw_dbus_o       : std_logic_vector(63 downto 0) := (others=>'0');
+
+begin
+
+-- WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+-- DMA WRITE ( ifpga -> pfpga )
+-- WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+  ------------------------------
+  --- mem_wea                ---
+  ------------------------------
+  mem_wea <= MEM_WE;
+
+  ------------------------------
+  --- dmaw_we0,1             ---
+  ------------------------------
+  process (RST,CLK) begin
+    if(RST='1') then
+      dmaw_we0 <= '0';
+    elsif(CLK'event and CLK='1') then
+      dmaw_we0 <= mem_wea;
+    end if;
+  end process;
+
+  process (CLK) begin
+    if(CLK'event and CLK='1') then
+      dmaw_we1 <= dmaw_we0;
+    end if;
+  end process;
+  
+  ------------------------------
+  --- dmaw_adr               ---
+  ------------------------------
+  process (RST,CLK,mem_wea,dmaw_we0) begin
+    if(RST='1') then
+      dmaw_adr <= (others=>'0');
+    elsif(CLK'event and CLK='1') then
+      if((mem_wea = '1') and (dmaw_we0 = '0')) then
+        dmaw_adr(15 downto 0) <= MEM_AD(16 downto 1);
+      end if;
+      dmaw_adr(63 downto 16) <= (others=>'0');
+    end if;
+  end process;
+
+  ------------------------------
+  --- dmaw_dt delay          ---
+  ------------------------------
+  process (RST,CLK) begin
+    if(RST='1') then
+      dmaw_dt1 <= (others=>'0');
+      dmaw_dt0 <= (others=>'0');
+    elsif(CLK'event and CLK='1') then
+      dmaw_dt1 <= dmaw_dt0;
+      dmaw_dt0 <= MEM_DTI;
+    end if;
+  end process;
+
+  ------------------------------
+  --- dmaw_dbus_o            ---
+  ------------------------------
+  process (RST,CLK,dmaw_we0,dmaw_we1) begin
+    if(RST='1') then
+      dmaw_dbus_o <= (others=>'0');
+    elsif(CLK'event and CLK='1') then
+      if(dmaw_we0 = '1' and dmaw_we1 = '0') then
+        dmaw_dbus_o <= dmaw_adr;
+      else
+        dmaw_dbus_o <= dmaw_dt1;
+      end if;
+    end if;
+  end process;
+
+  --- DMAW_ENABLE
+  process (RST,CLK) begin
+    if(RST='1') then
+      DMAW_ENABLE    <= (others=>'0');
+    elsif(CLK'event and CLK='1') then
+      DMAW_ENABLE(0) <= dmaw_we1;
+      DMAW_ENABLE(1) <= dmaw_we1;
+      DMAW_ENABLE(2) <= dmaw_we1;
+      DMAW_ENABLE(3) <= dmaw_we1;
+    end if;
+  end process;
+
+
+end rtl;

@@ -1,49 +1,65 @@
-Sat Nov 11 19:45:51 JST 2006
-JDF G
-// Created by Project Navigator ver 1.0
-PROJECT proj
-DESIGN proj
-DEVFAM virtex2p
-DEVFAMTIME 0
-DEVICE xc2vp70
-DEVICETIME 0
-DEVPKG ff1517
-DEVPKGTIME 0
-DEVSPEED -5
-DEVSPEEDTIME 0
-DEVTOPLEVELMODULETYPE HDL
-TOPLEVELMODULETYPETIME 0
-DEVSYNTHESISTOOL XST (VHDL/Verilog)
-SYNTHESISTOOLTIME 0
-DEVSIMULATOR Modelsim
-SIMULATORTIME 0
-DEVGENERATEDSIMULATIONMODEL VHDL
-GENERATEDSIMULATIONMODELTIME 0
-SOURCE ..\dmaw_mem_data.vhd
-SOURCE ..\dmaw_mem_we.vhd
-SOURCE ..\dmar_mem_adr.vhd
-SOURCE ..\dmaw_mem_adr.vhd
-SOURCE ..\dmar_start_adr.vhd
-SOURCE ..\dmaw_start_adr.vhd
-SOURCE ..\dmar_dbus_hiz.vhd
-SOURCE ..\dmar.vhd
-SOURCE ..\clk_muldiv_by_xcore.vhd
-SOURCE ..\dmaw.vhd
-SOURCE ..\user.vhd
-SOURCE ..\dmar_state.vhd
-SOURCE ..\dmar_mem_re.vhd
-SOURCE ..\clk_muldiv.vhd
-SOURCE ..\dmaw_state.vhd
-SOURCE ..\top.vhd
-SOURCE ..\pgpg_mem\dpram.vhd
-SOURCE ..\pgpg_mem\pg_module.vhd
-SOURCE ..\pgpg_mem\calc.vhd
-SOURCE ..\pgpg_mem\jmem.vhd
-SOURCE ..\pgpg_mem\pgpg_mem.vhd
-SOURCE ..\pgpg_mem\adr_dec.vhd
-SOURCE ..\pgpg_mem\pg_pipe.vhd
-SOURCE ..\pgpg_mem\setn.vhd
-SOURCE ..\pgpg_mem\pipe_sts.vhd
-DEPASSOC top ..\top.ucf
-[STRATEGY-LIST]
-Normal=True
+Mon Nov 27 19:36:23 JST 2006
+-- Copyright 2004 Tsuyoshi Hamada
+--
+--
+-- clk         __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __
+-- [ DBUS ]           X   >< n ><d0 ><d1 ><d2 ><d3 ><d4 ><d5 ><d6 ><d7 >
+-- STATE               0  >< 1 >< 2                                    >< 3 >< 0 
+-- START_ADR                    < n                                    >
+-- x                              0 >< 1 >< 2 >< 3 >< 4 >< 5 >< 6 >< 7 >< 8 >< 0 >
+-- z                              1 >< 2 >< 3 >< 4 >< 5 >< 6 >< 7 >< 8 >< 9 >< 1 >
+-- mem_adr_inc                    0 >< 1 >< 2 >< 3 >< 4 >< 5 >< 6 >< 7 >< 8 >< 0 >
+-- MEM_ADR                           < n ><n+1><n+2><n+3><n+4><n+5><n+6><n+7>
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+
+entity dmaw_mem_adr is
+  port (
+    CLK       : in  std_logic;
+    STATE     : in std_logic_vector(1 downto 0);  -- STATE of DMAW
+    START_ADR : in std_logic_vector(18 downto 0);
+    MEM_ADR   : out  std_logic_vector(18 downto 0)
+    );
+end dmaw_mem_adr;
+
+architecture rtl of dmaw_mem_adr is
+
+signal mem_adr_inc : std_logic_vector(18 downto 0);
+signal   x,z : std_logic_vector(18 downto 0);
+constant one : std_logic_vector(18 downto 0) := "0000000000000000001";
+
+begin
+
+  z <= x + one;
+
+  -----------------
+  -- mem_adr_inc
+  -----------------
+  process (CLK,STATE) begin
+    if(clk'event and clk = '1') then
+      if(STATE = "10") then
+        mem_adr_inc <= z;
+      else
+        mem_adr_inc <= (others=>'0');
+      end if;
+    end if;
+  end process;
+
+  x <= mem_adr_inc;
+
+  -----------------
+  -- MEM_ADR
+  -----------------
+  process (CLK,STATE) begin
+    if(clk'event and clk = '1') then
+      if(STATE="10") then
+        MEM_ADR <= mem_adr_inc + START_ADR;
+      else
+        MEM_ADR <= (others=>'0');
+      end if;
+    end if;
+  end process;
+
+end rtl;

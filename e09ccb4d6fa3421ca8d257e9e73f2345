@@ -1,210 +1,324 @@
-Thu Nov 30 19:43:45 JST 2006
-#COREGen Project File
-#Tue Nov 09 19:41:17 JST 2004
-overwritefiles=Default
-blkmemsp_v5_0|Xilinx,\ Inc.|5.0=true
-sid_v3_1|Xilinx,\ Inc.|3.1=true
-decode_8b10b_v5_0|Xilinx,\ Inc.|5.0=true
-C_REG_FD_V6_0|Xilinx,\ Inc.|6.0=true
-C_REG_FD_V3_0|Xilinx,\ Inc.|3.0=false
-C_MUX_BIT_V5_0|Xilinx,\ Inc.|5.0=false
-convolution_v2_0|Xilinx,\ Inc.|2.0=false
-pci32_v3_0|Xilinx,\ Inc.|3.0=true
-C_TWOS_COMP_V4_0|Xilinx,\ Inc.|4.0=false
-C_SHIFT_FD_V6_0|Xilinx,\ Inc.|6.0=true
-xlnx_PCI32sII|Xilinx,\ Inc.|3.0=false
-gig_eth_pcs_pma_v4_0|Xilinx,\ Inc.|4.0=true
-C_DDS_V4_2|Xilinx,\ Inc.|4.2=true
-ten_gig_eth_mac_v4_0|Xilinx,\ Inc.|4.0=true
-C_ACCUM_V5_0|Xilinx,\ Inc.|5.0=false
-C_GATE_BIT_BUS_V6_0|Xilinx,\ Inc.|6.0=true
-xlnx_pci_express_x1|Xilinx,\ Inc.|1.0=true
-C_GATE_BIT_BUS_V3_0|Xilinx,\ Inc.|3.0=false
-xilinxfamily=Virtex2
-C_COUNTER_BINARY_V5_0|Xilinx,\ Inc.|5.0=false
-C_DIST_MEM_V4_1|Xilinx,\ Inc.|4.1=false
-C_COUNTER_BINARY_V2_0|Xilinx,\ Inc.|2.0=false
-C_ADDSUB_V4_0|Xilinx,\ Inc.|4.0=false
-outputoption=DesignFlow
-C_MUX_SLICE_BUFE_V2_0|Xilinx,\ Inc.|2.0=false
-dividervht|Xilinx,\ Inc.|2.0=true
-C_GATE_BIT_V4_0|Xilinx,\ Inc.|4.0=false
-simvendor=ModelSim
-mult_gen_v6_0|Xilinx,\ Inc.|6.0=true
-C_MUX_BUS_V2_0|Xilinx,\ Inc.|2.0=false
-vfft64v2|Xilinx,\ Inc.|2.0=true
-C_DA_FIR_V7_0|Xilinx,\ Inc.|7.0=false
-C_REG_LD_V6_0|Xilinx,\ Inc.|6.0=true
-mac_v2_0|Xilinx,\ Inc.|2.0=true
-C_REG_LD_V3_0|Xilinx,\ Inc.|3.0=false
-sid_v2_0|Xilinx,\ Inc.|2.0=false
-C_SHIFT_RAM_V6_0|Xilinx,\ Inc.|6.0=true
-C_MUX_SLICE_BUFT_V2_0|Xilinx,\ Inc.|2.0=false
-C_MUX_SLICE_BUFE_V5_0|Xilinx,\ Inc.|5.0=false
-C_SHIFT_RAM_V3_0|Xilinx,\ Inc.|3.0=false
-ADPCM32_catalog|Xilinx,\ Inc.|1.0=true
-C_MUX_BUS_V5_0|Xilinx,\ Inc.|5.0=false
-outputproducts=ImpNetlist;ASYSymbol;VHDLSim
-cam_v4_0|Xilinx,\ Inc.|4.0=true
-C_MAC_FIR_V2_0|Xilinx,\ Inc.|2.0=false
-C_COMPARE_V4_0|Xilinx,\ Inc.|4.0=false
-C_DA_2D_DCT_V2_0|Xilinx,\ Inc.|2.0=true
-C_BIT_CORRELATOR_V3_0|Xilinx,\ Inc.|3.0=true
-cordic_v2_0|Xilinx,\ Inc.|2.0=true
-xlnx_PCI64v|Xilinx,\ Inc.|3.0=false
-fileversion=4
-C_DIST_MEM_V3_0|Xilinx,\ Inc.|3.0=false
-decode_8b10b_v4_0|Xilinx,\ Inc.|4.0=false
-viterbi_v3_0|Xilinx,\ Inc.|3.0=true
-C_MUX_SLICE_BUFT_V5_0|Xilinx,\ Inc.|5.0=false
-C_REG_FD_V2_0|Xilinx,\ Inc.|2.0=false
-encode_8b10b_v4_0|Xilinx,\ Inc.|4.0=true
-xapp265|Xilinx,\ Inc.|1.1=true
-C_DECODE_BINARY_V5_0|Xilinx,\ Inc.|5.0=false
-C_SHIFT_FD_V2_0|Xilinx,\ Inc.|2.0=false
-rs_decoder_v4_0|Xilinx,\ Inc.|4.0=false
-C_DECODE_BINARY_V2_0|Xilinx,\ Inc.|2.0=false
-C_GATE_BUS_V4_0|Xilinx,\ Inc.|4.0=false
-blkmemdp_v3_0|Xilinx,\ Inc.|3.0=false
-C_MAC_V3_0|Xilinx,\ Inc.|3.0=true
-posphyl3_link_v1_0|Xilinx,\ Inc.|3.2=true
-sync_fifo_v2_0|Xilinx,\ Inc.|2.0=false
-blkmemsp_v4_0|Xilinx,\ Inc.|4.0=false
-C_DIST_MEM_V6_0|Xilinx,\ Inc.|6.0=true
-C_REG_FD_V5_0|Xilinx,\ Inc.|5.0=false
-C_MUX_BIT_V4_0|Xilinx,\ Inc.|4.0=false
-C_TWOS_COMP_V3_0|Xilinx,\ Inc.|3.0=false
-C_SHIFT_FD_V5_0|Xilinx,\ Inc.|5.0=false
-posphyl4_v6_0_1|Xilinx,\ Inc.|6.0.1=true
-formalverification=None
-C_ACCUM_V4_0|Xilinx,\ Inc.|4.0=false
-C_GATE_BIT_BUS_V5_0|Xilinx,\ Inc.|5.0=false
-C_GATE_BIT_BUS_V2_0|Xilinx,\ Inc.|2.0=false
-vfft1024|Xilinx,\ Inc.|1.0=true
-C_COUNTER_BINARY_V4_0|Xilinx,\ Inc.|4.0=false
-C_ADDSUB_V3_0|Xilinx,\ Inc.|3.0=false
-vfft1024v2|Xilinx,\ Inc.|2.0=true
-C_MUX_SLICE_BUFE_V4_0|Xilinx,\ Inc.|4.0=false
-C_SHIFT_RAM_V2_0|Xilinx,\ Inc.|2.0=false
-xfft_v2_0|Xilinx,\ Inc.|2.0=false
-designflow=VHDL
-C_GATE_BIT_V3_0|Xilinx,\ Inc.|3.0=false
-rs_decoder_v4_1|Xilinx,\ Inc.|4.1=true
-mult_gen_v5_0|Xilinx,\ Inc.|5.0=false
-C_TWOS_COMP_V6_0|Xilinx,\ Inc.|6.0=true
-xlnx_pci64_dk|Xilinx,\ Inc.|1.0=true
-vfft64|Xilinx,\ Inc.|1.0=true
-C_DDC_V1_0|Xilinx,\ Inc.|1.0=true
-C_DA_FIR_V6_0|Xilinx,\ Inc.|6.0=false
-C_REG_LD_V5_0|Xilinx,\ Inc.|5.0=false
-C_REG_LD_V2_0|Xilinx,\ Inc.|2.0=false
-lockedprops=
-lfsr_v3_0|Xilinx,\ Inc.|3.0=true
-C_ADDSUB_V6_0|Xilinx,\ Inc.|6.0=true
-xfft_v2_1|Xilinx,\ Inc.|2.1=true
-C_CIC_V3_0|Xilinx,\ Inc.|3.0=true
-C_SHIFT_RAM_V5_0|Xilinx,\ Inc.|5.0=false
-async_fifo_v5_0|Xilinx,\ Inc.|5.0=false
-blkmemdp_v3_2|Xilinx,\ Inc.|3.2=false
-C_GATE_BIT_V6_0|Xilinx,\ Inc.|6.0=true
-simulationoutputproducts=VHDL
-C_MUX_BUS_V4_0|Xilinx,\ Inc.|4.0=false
-C_SIN_COS_V4_0|Xilinx,\ Inc.|4.0=false
-HDLC32_catalog|Xilinx,\ Inc.|1.0=true
-busformat=BusFormatAngleBracketNotRipped
-cam_v3_0|Xilinx,\ Inc.|3.0=false
-vfft256v2|Xilinx,\ Inc.|2.0=true
-C_MAC_FIR_V1_0|Xilinx,\ Inc.|1.0=false
-C_COMPARE_V3_0|Xilinx,\ Inc.|3.0=false
-vfft16|Xilinx,\ Inc.|1.0=true
-xlnx_PCI64s2|Xilinx,\ Inc.|3.0=false
-cordic_v1_0|Xilinx,\ Inc.|1.0=false
-flowvendor=Foundation_iSE
-magicnumber=-1172307782
-viterbi_v2_0|Xilinx,\ Inc.|2.0=false
-C_DIST_MEM_V2_0|Xilinx,\ Inc.|2.0=false
-C_MUX_SLICE_BUFT_V4_0|Xilinx,\ Inc.|4.0=false
-encode_8b10b_v3_0|Xilinx,\ Inc.|3.0=false
-C_SIN_COS_V4_1|Xilinx,\ Inc.|4.1=false
-HDLC1_catalog|Xilinx,\ Inc.|1.0=true
-C_DECODE_BINARY_V4_0|Xilinx,\ Inc.|4.0=false
-rs_encoder_v4_0|Xilinx,\ Inc.|4.0=false
-rs_decoder_v3_0|Xilinx,\ Inc.|3.0=false
-blkmemdp_v5_0|Xilinx,\ Inc.|5.0=true
-C_GATE_BUS_V3_0|Xilinx,\ Inc.|3.0=false
-sync_fifo_v4_0|Xilinx,\ Inc.|4.0=true
-tcc_decoder_v1_0|Xilinx,\ Inc.|1.0=true
-C_MAC_FIR_V4_0|Xilinx,\ Inc.|4.0=false
-C_ACCUM_V3_0|Xilinx,\ Inc.|3.0=false
-sync_fifo_v1_0|Xilinx,\ Inc.|1.0=false
-C_COMPARE_V6_0|Xilinx,\ Inc.|6.0=true
-cordic_v1_1|Xilinx,\ Inc.|1.1=false
-blkmemsp_v3_0|Xilinx,\ Inc.|3.0=false
-async_fifo_v5_1|Xilinx,\ Inc.|5.1=true
-C_DIST_MEM_V5_0|Xilinx,\ Inc.|5.0=false
-C_REG_FD_V4_0|Xilinx,\ Inc.|4.0=false
-C_MUX_BIT_V6_0|Xilinx,\ Inc.|6.0=true
-C_MUX_BIT_V3_0|Xilinx,\ Inc.|3.0=false
-convolution_v3_0|Xilinx,\ Inc.|3.0=true
-rs_encoder_v4_1|Xilinx,\ Inc.|4.1=true
-mult_gen_v4_0|Xilinx,\ Inc.|4.0=false
-xfft1024_v1_1|Xilinx,\ Inc.|1.1=true
-C_TWOS_COMP_V2_0|Xilinx,\ Inc.|2.0=false
-flexbus4_v1_0|Xilinx,\ Inc.|1.0=false
-C_SHIFT_FD_V4_0|Xilinx,\ Inc.|4.0=false
-C_GATE_BUS_V6_0|Xilinx,\ Inc.|6.0=true
-C_ACCUM_V6_0|Xilinx,\ Inc.|6.0=true
-C_GATE_BIT_BUS_V4_0|Xilinx,\ Inc.|4.0=false
-C_DIST_MEM_V5_1|Xilinx,\ Inc.|5.1=false
-C_ADDSUB_V5_0|Xilinx,\ Inc.|5.0=false
-lfsr_v2_0|Xilinx,\ Inc.|2.0=false
-C_COUNTER_BINARY_V3_0|Xilinx,\ Inc.|3.0=false
-C_ADDSUB_V2_0|Xilinx,\ Inc.|2.0=false
-C_MUX_SLICE_BUFE_V3_0|Xilinx,\ Inc.|3.0=false
-C_SIN_COS_V4_2|Xilinx,\ Inc.|4.2=true
-xaui_v4_0|Xilinx,\ Inc.|4.0=true
-vfft16v2|Xilinx,\ Inc.|2.0=true
-xlnx_PCIX64_virtex_e_ii|Xilinx,\ Inc.|5.0=true
-C_GATE_BIT_V5_0|Xilinx,\ Inc.|5.0=false
-C_GATE_BIT_V2_0|Xilinx,\ Inc.|2.0=false
-C_MUX_BUS_V3_0|Xilinx,\ Inc.|3.0=false
-C_TWOS_COMP_V5_0|Xilinx,\ Inc.|5.0=false
-posphyl4_lite_v2_0|Xilinx,\ Inc.|2.0=true
-C_DA_FIR_V8_0|Xilinx,\ Inc.|8.0=true
-C_DA_FIR_V5_0|Xilinx,\ Inc.|5.0=false
-xlnx_PCI64|Xilinx,\ Inc.|3.0=true
-C_DDS_V4_0|Xilinx,\ Inc.|4.0=false
-C_REG_LD_V4_0|Xilinx,\ Inc.|4.0=false
-C_DA_1D_DCT_V2_1|Xilinx,\ Inc.|2.1=true
-C_COUNTER_BINARY_V6_0|Xilinx,\ Inc.|6.0=true
-C_MUX_SLICE_BUFE_V6_0|Xilinx,\ Inc.|6.0=true
-C_SHIFT_RAM_V4_0|Xilinx,\ Inc.|4.0=false
-async_fifo_v4_0|Xilinx,\ Inc.|4.0=false
-xlnx_PCI32v|Xilinx,\ Inc.|3.0=false
-vfft32_v3_0|Xilinx,\ Inc.|3.0=true
-C_MUX_BUS_V6_0|Xilinx,\ Inc.|6.0=true
-blkmemsp_v3_2|Xilinx,\ Inc.|3.2=false
-C_COMPARE_V2_0|Xilinx,\ Inc.|2.0=false
-C_DDS_V4_1|Xilinx,\ Inc.|4.1=false
-vfft256|Xilinx,\ Inc.|1.0=true
-simelaboptions=
-C_DIST_MEM_V4_0|Xilinx,\ Inc.|4.0=false
-C_MUX_SLICE_BUFT_V6_0|Xilinx,\ Inc.|6.0=true
-sid_v3_0|Xilinx,\ Inc.|3.0=false
-xilinxsubfamily=Virtex2
-C_MUX_SLICE_BUFT_V3_0|Xilinx,\ Inc.|3.0=false
-C_MUX_BIT_V2_0|Xilinx,\ Inc.|2.0=false
-gig_eth_mac_v4_0|Xilinx,\ Inc.|4.0=true
-C_DECODE_BINARY_V6_0|Xilinx,\ Inc.|6.0=true
-C_SHIFT_FD_V3_0|Xilinx,\ Inc.|3.0=false
-corelibraryid=0
-C_DECODE_BINARY_V3_0|Xilinx,\ Inc.|3.0=false
-rs_encoder_v3_0|Xilinx,\ Inc.|3.0=false
-C_GATE_BUS_V5_0|Xilinx,\ Inc.|5.0=false
-blkmemdp_v4_0|Xilinx,\ Inc.|4.0=false
-C_GATE_BUS_V2_0|Xilinx,\ Inc.|2.0=false
-sync_fifo_v3_0|Xilinx,\ Inc.|3.0=false
-tcc_encoder_v1_0|Xilinx,\ Inc.|1.0=true
-C_MAC_FIR_V3_0|Xilinx,\ Inc.|3.0=true
-C_ACCUM_V2_0|Xilinx,\ Inc.|2.0=false
-C_COMPARE_V5_0|Xilinx,\ Inc.|5.0=false
+Sun Jan 28 19:39:17 JST 2007
+-- C:\CYGWIN\HOME\ADMINISTRATOR\FKIT\PCI64\TMP2
+-- VHDL Annotation Test Bench created by
+-- HDL Bencher 6.1i
+-- Wed Nov 10 11:38:24 2004
+
+LIBRARY IEEE;
+USE IEEE.STD_LOGIC_1164.ALL;
+USE IEEE.STD_LOGIC_ARITH.ALL;
+USE IEEE.STD_LOGIC_UNSIGNED.ALL;
+USE IEEE.STD_LOGIC_TEXTIO.ALL;
+USE STD.TEXTIO.ALL;
+
+ENTITY sim IS
+END sim;
+
+ARCHITECTURE testbench_arch OF sim IS
+-- If you get a compiler error on the following line,
+-- from the menu do Options->Configuration select VHDL 87
+FILE RESULTS: TEXT OPEN WRITE_MODE IS "c:\cygwin\home\administrator\fkit\pci64\tmp2\sim.ano";
+	COMPONENT pfpga_config
+		PORT (
+			clk : In  std_logic;
+			rst_n : In  std_logic;
+			cmd_reg : In  std_logic_vector (8 DOWNTO 0);
+			data_reg : In  std_logic_vector (31 DOWNTO 0);
+			CFG_D : Out  std_logic_vector (7 DOWNTO 0);
+			CFG_CCLK : Out  std_logic;
+			CFG_PROG_B0 : Out  std_logic;
+			CFG_PROG_B1 : Out  std_logic;
+			CFG_PROG_B2 : Out  std_logic;
+			CFG_PROG_B3 : Out  std_logic;
+			CFG_CS_B0 : Out  std_logic;
+			CFG_CS_B1 : Out  std_logic;
+			CFG_CS_B2 : Out  std_logic;
+			CFG_CS_B3 : Out  std_logic;
+			CFG_RDWR_B : Out  std_logic
+		);
+	END COMPONENT;
+
+	SIGNAL clk : std_logic;
+	SIGNAL rst_n : std_logic;
+	SIGNAL cmd_reg : std_logic_vector (8 DOWNTO 0);
+	SIGNAL data_reg : std_logic_vector (31 DOWNTO 0);
+	SIGNAL CFG_D : std_logic_vector (7 DOWNTO 0);
+	SIGNAL CFG_CCLK : std_logic;
+	SIGNAL CFG_PROG_B0 : std_logic;
+	SIGNAL CFG_PROG_B1 : std_logic;
+	SIGNAL CFG_PROG_B2 : std_logic;
+	SIGNAL CFG_PROG_B3 : std_logic;
+	SIGNAL CFG_CS_B0 : std_logic;
+	SIGNAL CFG_CS_B1 : std_logic;
+	SIGNAL CFG_CS_B2 : std_logic;
+	SIGNAL CFG_CS_B3 : std_logic;
+	SIGNAL CFG_RDWR_B : std_logic;
+
+BEGIN
+	UUT : pfpga_config
+	PORT MAP (
+		clk => clk,
+		rst_n => rst_n,
+		cmd_reg => cmd_reg,
+		data_reg => data_reg,
+		CFG_D => CFG_D,
+		CFG_CCLK => CFG_CCLK,
+		CFG_PROG_B0 => CFG_PROG_B0,
+		CFG_PROG_B1 => CFG_PROG_B1,
+		CFG_PROG_B2 => CFG_PROG_B2,
+		CFG_PROG_B3 => CFG_PROG_B3,
+		CFG_CS_B0 => CFG_CS_B0,
+		CFG_CS_B1 => CFG_CS_B1,
+		CFG_CS_B2 => CFG_CS_B2,
+		CFG_CS_B3 => CFG_CS_B3,
+		CFG_RDWR_B => CFG_RDWR_B
+	);
+
+	PROCESS -- clock process for clk,
+		VARIABLE TX_TIME : INTEGER :=0;
+
+		PROCEDURE ANNOTATE_CFG_D(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",CFG_D,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, CFG_D);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
+
+		PROCEDURE ANNOTATE_CFG_CCLK(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",CFG_CCLK,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, CFG_CCLK);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
+
+		PROCEDURE ANNOTATE_CFG_PROG_B0(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",CFG_PROG_B0,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, CFG_PROG_B0);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
+
+		PROCEDURE ANNOTATE_CFG_PROG_B1(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",CFG_PROG_B1,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, CFG_PROG_B1);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
+
+		PROCEDURE ANNOTATE_CFG_PROG_B2(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",CFG_PROG_B2,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, CFG_PROG_B2);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
+
+		PROCEDURE ANNOTATE_CFG_PROG_B3(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",CFG_PROG_B3,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, CFG_PROG_B3);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
+
+		PROCEDURE ANNOTATE_CFG_CS_B0(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",CFG_CS_B0,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, CFG_CS_B0);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
+
+		PROCEDURE ANNOTATE_CFG_CS_B1(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",CFG_CS_B1,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, CFG_CS_B1);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
+
+		PROCEDURE ANNOTATE_CFG_CS_B2(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",CFG_CS_B2,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, CFG_CS_B2);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
+
+		PROCEDURE ANNOTATE_CFG_CS_B3(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",CFG_CS_B3,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, CFG_CS_B3);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
+
+		PROCEDURE ANNOTATE_CFG_RDWR_B(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",CFG_RDWR_B,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, CFG_RDWR_B);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
+
+	BEGIN
+		CLOCK_LOOP : LOOP
+		clk <= transport '0';
+		WAIT FOR 5 us;
+		TX_TIME := TX_TIME + 5;
+		clk <= transport '1';
+		WAIT FOR 5 us;
+		TX_TIME := TX_TIME + 5;
+		ANNOTATE_CFG_D(TX_TIME);
+		ANNOTATE_CFG_CCLK(TX_TIME);
+		ANNOTATE_CFG_PROG_B0(TX_TIME);
+		ANNOTATE_CFG_PROG_B1(TX_TIME);
+		ANNOTATE_CFG_PROG_B2(TX_TIME);
+		ANNOTATE_CFG_PROG_B3(TX_TIME);
+		ANNOTATE_CFG_CS_B0(TX_TIME);
+		ANNOTATE_CFG_CS_B1(TX_TIME);
+		ANNOTATE_CFG_CS_B2(TX_TIME);
+		ANNOTATE_CFG_CS_B3(TX_TIME);
+		ANNOTATE_CFG_RDWR_B(TX_TIME);
+		WAIT FOR 45 us;
+		TX_TIME := TX_TIME + 45;
+		clk <= transport '0';
+		WAIT FOR 45 us;
+		TX_TIME := TX_TIME + 45;
+		END LOOP CLOCK_LOOP;
+	END PROCESS;
+
+	PROCESS   -- Process for clk
+		VARIABLE TX_OUT : LINE;
+
+		BEGIN
+		-- --------------------
+		rst_n <= transport '0';
+		cmd_reg <= transport std_logic_vector'("000000000"); --0
+		data_reg <= transport std_logic_vector'("00000000000000000000000000000000"); --0
+		-- --------------------
+		WAIT FOR 300 us; -- Time=300 us
+		rst_n <= transport '1';
+		-- --------------------
+		WAIT FOR 500 us; -- Time=800 us
+		cmd_reg <= transport std_logic_vector'("011110001"); --F1
+		-- --------------------
+		WAIT FOR 400 us; -- Time=1200 us
+		cmd_reg <= transport std_logic_vector'("011100001"); --E1
+		-- --------------------
+		WAIT FOR 400 us; -- Time=1600 us
+		cmd_reg <= transport std_logic_vector'("011110001"); --F1
+		-- --------------------
+		WAIT FOR 800 us; -- Time=2400 us
+		data_reg <= transport std_logic_vector'("10000000100000001000000011111111"); --808080FF
+		-- --------------------
+		WAIT FOR 700 us; -- Time=3100 us
+		cmd_reg <= transport std_logic_vector'("111110001"); --1F1
+		-- --------------------
+		WAIT FOR 3355 us; -- Time=6455 us
+		-- --------------------
+
+		STD.TEXTIO.write(TX_OUT, string'("Total[]"));
+		STD.TEXTIO.writeline(results, TX_OUT);
+		ASSERT (FALSE) REPORT
+			"Success! Simulation for annotation completed"
+			SEVERITY FAILURE;
+	END PROCESS;
+END testbench_arch;
+
+CONFIGURATION pfpga_config_cfg OF sim IS
+	FOR testbench_arch
+	END FOR;
+END pfpga_config_cfg;

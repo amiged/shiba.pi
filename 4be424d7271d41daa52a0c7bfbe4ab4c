@@ -1,90 +1,100 @@
-Tue Oct  3 19:52:29 JST 2006
-/EQNINJ
-/IPSET xi_0,x[][0],float,26,16
-/IPSET xi_1,x[][1],float,26,16
-/IPSET xi_2,x[][2],float,26,16
-/IPSET vi_0,v[][0],float,26,16
-/IPSET vi_1,v[][1],float,26,16
-/IPSET vi_2,v[][2],float,26,16
-/JPSET xj_0,0,0,25,x[][0],float,26,16
-/JPSET xj_1,0,26,51,x[][1],float,26,16
-/JPSET xj_2,0,52,77,x[][2],float,26,16
-/JPSET vj_0,0,78,103,v[][0],float,26,16
-/JPSET vj_1,0,104,129,v[][1],float,26,16
-/JPSET vj_2,0,130,155,v[][2],float,26,16
-/JPSET mj,0,156,181,m[],float,26,16
-/FOSET rx,p[],fix,64,(1.0/pow(2.0,(double)31))
-/FOSET sx_0,a[][0],fix,64,(1.0/pow(2.0,(double)31))
-/FOSET sx_1,a[][1],fix,64,(1.0/pow(2.0,(double)31))
-/FOSET sx_2,a[][2],fix,64,(1.0/pow(2.0,(double)31))
-/FOSET tx_0,jk[][0],fix,64,(1.0/pow(2.0,(double)31))
-/FOSET tx_1,jk[][1],fix,64,(1.0/pow(2.0,(double)31))
-/FOSET tx_2,jk[][2],fix,64,(1.0/pow(2.0,(double)31))
-/NPIPE 1
-/NVMP 1
-void force(double x[][3], double v[][3], double m[], double p[], double a[][3], double jk[][3], int n){
-  pg_float_sub(xj_0,xi_0,dx_0,26,16,4,6)
-  pg_float_sub(xj_1,xi_1,dx_1,26,16,4,6)
-  pg_float_sub(xj_2,xi_2,dx_2,26,16,4,6)
-  pg_float_mult(dx_0,dx_0,dx2_0,26,16,2,6)
-  pg_float_mult(dx_1,dx_1,dx2_1,26,16,2,6)
-  pg_float_mult(dx_2,dx_2,dx2_2,26,16,2,6)
-  pg_float_unsigned_add(dx2_0,dx2_1,x2y2,26,16,4,6)
-  pg_float_unsigned_add(dx2_2r,x2y2,r2,26,16,4,6)
-  pg_float_sqrt(r2,r1,26,16,3,6)
-  pg_float_mult(r2r,r1,r3,26,16,2,6)
-  pg_float_mult(r3,r2r1,r5,26,16,2,6)
-  pg_float_recipro(r5,r5i,26,16,2,6)
-  pg_float_mult(r5i,mjr,mr5i,26,16,2,6)
-  pg_float_mult(mr5i,r2r2,mf,26,16,2,6)
-  pg_bits_regifile(r2,rx,26,14)
-  pg_float_expadd(mf,fs,31,26,16,1)
-  pg_float_mult(fs,dx_0r,fx_0,26,16,2,6)
-  pg_float_mult(fs,dx_1r,fx_1,26,16,2,6)
-  pg_float_mult(fs,dx_2r,fx_2,26,16,2,6)
-  pg_float_fixaccum(fx_0,sx_0,26,16,57,64,2,30,6)
-  pg_float_fixaccum(fx_1,sx_1,26,16,57,64,2,30,6)
-  pg_float_fixaccum(fx_2,sx_2,26,16,57,64,2,30,6)
-  pg_float_sub(vj_0,vi_0,dv_0,26,16,4,6)
-  pg_float_sub(vj_1,vi_1,dv_1,26,16,4,6)
-  pg_float_sub(vj_2,vi_2,dv_2,26,16,4,6)
-  pg_float_mult(fs,dv_0r,jk1_0,26,16,2,6)
-  pg_float_mult(fs,dv_1r,jk1_1,26,16,2,6)
-  pg_float_mult(fs,dv_2r,jk1_2,26,16,2,6)
-  pg_float_mult(dx_0,dv_0,xv_0,26,16,2,6)
-  pg_float_mult(dx_1,dv_1,xv_1,26,16,2,6)
-  pg_float_mult(dx_2,dv_2,xv_2,26,16,2,6)
-  pg_float_unsigned_add(xv_0,xv_1,xv1,26,16,4,6)
-  pg_float_unsigned_add(xv_2r,xv1,xv2,26,16,4,6)
-  pg_float_expadd(xv2,xv2x2,1,26,16,1)
-  pg_float_unsigned_add(xv2x2,xv2r,xv2x3,26,16,4,6)
-  pg_float_mult(mr5i,xv2x3r,jk2a,26,16,2,6)
-  pg_float_expadd(jk2a,jk2s,31,26,16,1)
-  pg_float_mult(jk2s,dx_0r1,jk2_0,26,16,2,6)
-  pg_float_mult(jk2s,dx_1r1,jk2_1,26,16,2,6)
-  pg_float_mult(jk2s,dx_2r1,jk2_2,26,16,2,6)
-  pg_float_sub(jk1_0,jk2_0,jk0_0,26,16,4,6)
-  pg_float_sub(jk1_1,jk2_1,jk0_1,26,16,4,6)
-  pg_float_sub(jk1_2,jk2_2,jk0_2,26,16,4,6)
-  pg_float_fixaccum(jk0_0,tx_0,26,16,57,64,2,34,6)
-  pg_float_fixaccum(jk0_1,tx_1,26,16,57,64,2,34,6)
-  pg_float_fixaccum(jk0_2,tx_2,26,16,57,64,2,34,6)
-  pg_pdelay(dx2_2,dx2_2r,26,4)
-  pg_pdelay(r2,r2r,26,3)
-  pg_pdelay(r2,r2r1,26,5)
-  pg_pdelay(mj,mjr,26,23)
-  pg_pdelay(r2,r2r2,26,11)
-  pg_pdelay(dv_1,dv_1r,26,24)
-  pg_pdelay(dv_0,dv_0r,26,24)
-  pg_pdelay(xv_2,xv_2r,26,4)
-  pg_pdelay(dv_2,dv_2r,26,24)
-  pg_pdelay(dx_0,dx_0r,26,24)
-  pg_pdelay(dx_1,dx_1r,26,24)
-  pg_pdelay(dx_2,dx_2r,26,24)
-  pg_pdelay(xv2,xv2r,26,1)
-  pg_pdelay(xv2x3,xv2x3r,26,6)
-  pg_pdelay(dx_1,dx_1r1,26,24)
-  pg_pdelay(dx_2,dx_2r1,26,24)
-  pg_pdelay(dx_0,dx_0r1,26,24)
-  pg_rundelay(36)
+Thu Mar  1 19:27:56 JST 2007
+#include "cutil.h"
+
+__device__ float4 
+inter(float4 xj, float4 xi, float4 apot)
+{
+  float mj    = xj.w;        // Mass Mj
+  float ieps2 = xi.w;        // epsilon^2
+  float dx = xj.x - xi.x;    // Coordinates Xj - Xi
+  float dy = xj.y - xi.y;    // Coordinates Yj - Yi
+  float dz = xj.z - xi.z;    // Coordinates Zj - Zi
+  float r2 = dx*dx+dy*dy+dz*dz+ieps2;
+  float r1i = 1/sqrt(r2);
+  float r2i = r1i * r1i;
+  float mr3i = mj * r2i * r1i;
+  apot.x += dx * mr3i;       // Accel AXi
+  apot.y += dy * mr3i;       // Accel AYi
+  apot.z += dz * mr3i;       // Accel AZi
+  return (apot);
 }
+#define NTHRE (128) // blockDim.x§»∆±√Õ
+__global__ void
+kernel(float4* g_xj,
+       float* g_xi,
+       float* g_fi,
+       int ni,
+       int nj)
+{
+  int tid      = threadIdx.x;
+  int i = blockIdx.x*NTHRE+tid;
+  float4 ai = make_float4(0.0, 0.0, 0.0, 0.0);
+  float4 xi;
+  xi.x = g_xi[i];
+  xi.y = g_xi[i+ni];
+  xi.z = g_xi[i+ni*2];
+  xi.w = g_xi[i+ni*3];
+  __shared__ float4 s_xj[NTHRE];
+  for(int j = 0; j<nj; j+=NTHRE){
+    __syncthreads();
+    s_xj[tid] = g_xj[j+tid];
+    __syncthreads();
+    ai = inter(s_xj[0], xi, ai); ai = inter(s_xj[1], xi, ai); ai = inter(s_xj[2], xi, ai); ai = inter(s_xj[3], xi, ai);
+    ai = inter(s_xj[4], xi, ai); ai = inter(s_xj[5], xi, ai); ai = inter(s_xj[6], xi, ai); ai = inter(s_xj[7], xi, ai);
+    ai = inter(s_xj[8], xi, ai); ai = inter(s_xj[9], xi, ai);
+
+    ai = inter(s_xj[10], xi, ai); ai = inter(s_xj[11], xi, ai); ai = inter(s_xj[12], xi, ai); ai = inter(s_xj[13], xi, ai);
+    ai = inter(s_xj[14], xi, ai); ai = inter(s_xj[15], xi, ai); ai = inter(s_xj[16], xi, ai); ai = inter(s_xj[17], xi, ai);
+    ai = inter(s_xj[18], xi, ai); ai = inter(s_xj[19], xi, ai);
+
+    ai = inter(s_xj[20], xi, ai); ai = inter(s_xj[21], xi, ai); ai = inter(s_xj[22], xi, ai); ai = inter(s_xj[23], xi, ai);
+    ai = inter(s_xj[24], xi, ai); ai = inter(s_xj[25], xi, ai); ai = inter(s_xj[26], xi, ai); ai = inter(s_xj[27], xi, ai);
+    ai = inter(s_xj[28], xi, ai); ai = inter(s_xj[29], xi, ai);
+
+    ai = inter(s_xj[30], xi, ai); ai = inter(s_xj[31], xi, ai); ai = inter(s_xj[32], xi, ai); ai = inter(s_xj[33], xi, ai);
+    ai = inter(s_xj[34], xi, ai); ai = inter(s_xj[35], xi, ai); ai = inter(s_xj[36], xi, ai); ai = inter(s_xj[37], xi, ai);
+    ai = inter(s_xj[38], xi, ai); ai = inter(s_xj[39], xi, ai);
+
+    ai = inter(s_xj[40], xi, ai); ai = inter(s_xj[41], xi, ai); ai = inter(s_xj[42], xi, ai); ai = inter(s_xj[43], xi, ai);
+    ai = inter(s_xj[44], xi, ai); ai = inter(s_xj[45], xi, ai); ai = inter(s_xj[46], xi, ai); ai = inter(s_xj[47], xi, ai);
+    ai = inter(s_xj[48], xi, ai); ai = inter(s_xj[49], xi, ai);
+
+    ai = inter(s_xj[50], xi, ai); ai = inter(s_xj[51], xi, ai); ai = inter(s_xj[52], xi, ai); ai = inter(s_xj[53], xi, ai);
+    ai = inter(s_xj[54], xi, ai); ai = inter(s_xj[55], xi, ai); ai = inter(s_xj[56], xi, ai); ai = inter(s_xj[57], xi, ai);
+    ai = inter(s_xj[58], xi, ai); ai = inter(s_xj[59], xi, ai);
+
+    ai = inter(s_xj[60], xi, ai); ai = inter(s_xj[61], xi, ai); ai = inter(s_xj[62], xi, ai); ai = inter(s_xj[63], xi, ai);
+    ai = inter(s_xj[64], xi, ai); ai = inter(s_xj[65], xi, ai); ai = inter(s_xj[66], xi, ai); ai = inter(s_xj[67], xi, ai);
+    ai = inter(s_xj[68], xi, ai); ai = inter(s_xj[69], xi, ai);
+
+    ai = inter(s_xj[70], xi, ai); ai = inter(s_xj[71], xi, ai); ai = inter(s_xj[72], xi, ai); ai = inter(s_xj[73], xi, ai);
+    ai = inter(s_xj[74], xi, ai); ai = inter(s_xj[75], xi, ai); ai = inter(s_xj[76], xi, ai); ai = inter(s_xj[77], xi, ai);
+    ai = inter(s_xj[78], xi, ai); ai = inter(s_xj[79], xi, ai);
+
+    ai = inter(s_xj[80], xi, ai); ai = inter(s_xj[81], xi, ai); ai = inter(s_xj[82], xi, ai); ai = inter(s_xj[83], xi, ai);
+    ai = inter(s_xj[84], xi, ai); ai = inter(s_xj[85], xi, ai); ai = inter(s_xj[86], xi, ai); ai = inter(s_xj[87], xi, ai);
+    ai = inter(s_xj[88], xi, ai); ai = inter(s_xj[89], xi, ai);
+
+    ai = inter(s_xj[90], xi, ai); ai = inter(s_xj[91], xi, ai); ai = inter(s_xj[92], xi, ai); ai = inter(s_xj[93], xi, ai);
+    ai = inter(s_xj[94], xi, ai); ai = inter(s_xj[95], xi, ai); ai = inter(s_xj[96], xi, ai); ai = inter(s_xj[97], xi, ai);
+    ai = inter(s_xj[98], xi, ai); ai = inter(s_xj[99], xi, ai);
+
+    ai = inter(s_xj[100], xi, ai); ai = inter(s_xj[101], xi, ai); ai = inter(s_xj[102], xi, ai); ai = inter(s_xj[103], xi, ai);
+    ai = inter(s_xj[104], xi, ai); ai = inter(s_xj[105], xi, ai); ai = inter(s_xj[106], xi, ai); ai = inter(s_xj[107], xi, ai);
+    ai = inter(s_xj[108], xi, ai); ai = inter(s_xj[109], xi, ai);
+
+    ai = inter(s_xj[110], xi, ai); ai = inter(s_xj[111], xi, ai); ai = inter(s_xj[112], xi, ai); ai = inter(s_xj[113], xi, ai);
+    ai = inter(s_xj[114], xi, ai); ai = inter(s_xj[115], xi, ai); ai = inter(s_xj[116], xi, ai); ai = inter(s_xj[117], xi, ai);
+    ai = inter(s_xj[118], xi, ai); ai = inter(s_xj[119], xi, ai);
+
+    ai = inter(s_xj[120], xi, ai); ai = inter(s_xj[121], xi, ai); ai = inter(s_xj[122], xi, ai); ai = inter(s_xj[123], xi, ai);
+    ai = inter(s_xj[124], xi, ai); ai = inter(s_xj[125], xi, ai); ai = inter(s_xj[126], xi, ai); ai = inter(s_xj[127], xi, ai);
+  }
+  if(i<ni){
+    g_fi[i]      = ai.x;
+    g_fi[i+ni]   = ai.y;
+    g_fi[i+ni*2] = ai.z;
+  }
+}
+
+#include "api.h"

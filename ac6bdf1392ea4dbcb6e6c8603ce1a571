@@ -1,131 +1,57 @@
-Thu Jan  4 19:36:04 JST 2007
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL;
-use IEEE.STD_LOGIC_ARITH.ALL;
+Sun Mar 25 19:43:21 JST 2007
+-- 2005/06/13
+#define NPOS 32
+#define NLOG 17
+#define NMAN 8
+#define NCUT 6
+#define NFOR 57
+#define NACC 64
+#define D_FSU  1
+#define D_FTL  2
+#define D_LAD  4
+#define D_LMU  1
+#define D_LTF  2
+#define D_FAC  1
 
-entity USER is
-  port (
-    RST         : in  std_logic;                     -- PCI Bus Reset
-    CLK         : in  std_logic;                     -- PCI bus Clock
-    PSW_IN      : in  std_logic_vector( 1 downto 0); -- Push SW Input
-    DIPSW       : out  std_logic_vector( 3 downto 0);-- DIPSW Signal
-    PSW_ON0     : out  std_logic;                    -- User Interrupt 0 On Request
-    PSW_ON1     : out  std_logic;                    -- User Interrupt 1 On Request
-    USERINT2_ON : out  std_logic                     -- User Interrupt 2 On Request
-    );
-end USER;
+// -1 < xbox < 1.0,
+// mmin > 1.0 (1e-2 < m < 1.0 ==> underflow around large R)
+#define xsize (2.0)
+#define mmin  (1.0e-2)
+#define xscale (pow(2.0,(double)NPOS)/xsize)
+//mmin 0xdf61
+#define mscale (pow(2.0,95.38)/mmin)
+#define escale (xscale*xscale)
 
+#define NEXAD -31
+#define fshift pow(2.0,-1.0*(double)NEXAD)
+#define fscale (-xscale*xscale*fshift/mscale)
 
-architecture USER_rtl of USER is
+/NPIPE 2;
+/NVMP 1;
 
---------------------------------------------------
--- signals
---------------------------------------------------
+/JPSET xj[3], x[][], fix,      NPOS,xscale;
+/JPSET mj,    m[],   log,      NLOG,NMAN,mscale;
+/IPSET xi[3], x[][], fix,      NPOS,xscale;
+/IPSET ieps2, eps2,  log,      NLOG,NMAN,escale;
+/FOSET sx[3], a[][], fix,      NACC,fscale;
 
-  signal DIPSWi      : std_logic_vector( 3 downto 0);          ------ Internal DIPSW Data
-  signal SWCHK_CUNT  : std_logic_vector( 7 downto 0);          ------ Push SW Check Counter
-  signal PSWCHK_CNT0 : std_logic_vector( 2 downto 0);          ------ Push SW 0 Check
-  signal PSWCHK_CNT1 : std_logic_vector( 2 downto 0);          ------ Push SW 1 Check
-  signal PSW_ON0i    : std_logic;                      ------ User Interrupt 0 On Request
-  signal PSW_ON1i    : std_logic;                      ------ User Interrupt 1 On Request
+pg_fix_addsub(SUB,xi,xj,xij,           NPOS,           D_FSU);
+pg_conv_ftol(xij,dx,                   NPOS,NLOG,NMAN, D_FTL);
+pg_log_shift(1,dx,x2,                  NLOG);
 
-begin
+--pg_log_unsigned_add_itp(x2[0],x2[1], x2y2,   NLOG,NMAN,  D_LAD,NCUT);
+--pg_log_unsigned_add_itp(x2[2],ieps2, z2e2,   NLOG,NMAN,  D_LAD,NCUT);
+--pg_log_unsigned_add_itp(x2y2,z2e2,   r2,     NLOG,NMAN,  D_LAD,NCUT);
+pg_log_unsigned_add(x2[0],x2[1], x2y2, NLOG,NMAN,      D_LAD);
+pg_log_unsigned_add(x2[2],ieps2, z2e2, NLOG,NMAN,      D_LAD);
+pg_log_unsigned_add(x2y2,z2e2,   r2,   NLOG,NMAN,      D_LAD);
 
+pg_log_shift(-1,r2,       r1,          NLOG);
+pg_log_muldiv(MUL,r2,r1,  r3,          NLOG,           D_LMU);
+pg_log_muldiv(SDIV,mj,r3,  mf,         NLOG,           D_LMU);
+pg_log_muldiv(MUL,mf,dx,  fx,          NLOG,           D_LMU);
+--pg_log_muldiv(SDIV,fx,f_shift, fxs,    NLOG,           D_LMU);
+pg_log_expadd(fx,fxs,                  NEXAD,NLOG,NMAN, D_LMU);
 
---------------------------------------------------------------------------------
--- DIPSW Input Signal Output Control Process
---------------------------------------------------------------------------------
-    DIPSWi <= (others=>'0');  -- 2004/11/11 by T.Hamada
-    DIPSW <= DIPSWi;
-
---------------------------------------------------------------------------------
--- Push SW Check Counter Control Process
---------------------------------------------------------------------------------
-
-  process (RST,CLK) begin
-    if (RST='1') then
-       SWCHK_CUNT <= (others=>'0');
-    elsif (CLK'event and CLK='1') then
-       SWCHK_CUNT <= SWCHK_CUNT+1;                  ------ Counter Increment
-    end if;
-  end process;
-
---------------------------------------------------------------------------------
--- Push SW 0 Check Control Process
---------------------------------------------------------------------------------
-
-  process (RST,CLK) begin
-    if (RST='1') then
-       PSWCHK_CNT0 <= (others=>'1');
-    elsif (CLK'event and CLK='1') then
-      if (SWCHK_CUNT="11111111") then
-         PSWCHK_CNT0 <= PSWCHK_CNT0(1 downto 0) & PSW_IN(0);    ------ PSW_IN(0) Sampling
-      end if;
-    end if;
-  end process;
-
---------------------------------------------------------------------------------
--- Push SW 0 On Signal Output Control Process
---------------------------------------------------------------------------------
-
-  process (RST,CLK) begin
-    if (RST='1') then
-       PSW_ON0i <= '0';
-    elsif (CLK'event and CLK='1') then
-      if (SWCHK_CUNT="11111111") then
-        PSW_ON0i <= PSWCHK_CNT0(2) and (not PSWCHK_CNT0(1));    ------ SW Check Signal Set
-      else
-        PSW_ON0i <= '0';
-      end if;
-    end if;
-  end process;
-
-    PSW_ON0 <= PSW_ON0i;
-
---------------------------------------------------------------------------------
--- Push SW 1 Check Control Process
---------------------------------------------------------------------------------
-
-  process (RST,CLK) begin
-    if (RST='1') then
-       PSWCHK_CNT1 <= (others=>'1');
-    elsif (CLK'event and CLK='1') then
-      if (SWCHK_CUNT="11111111") then
-         PSWCHK_CNT1 <= PSWCHK_CNT1(1 downto 0) & PSW_IN(1);    ------ PSW_IN(1) Sampling
-      end if;
-    end if;
-  end process;
-
---------------------------------------------------------------------------------
--- Push SW 1 On Signal Output Control Process
---------------------------------------------------------------------------------
-
-  process (RST,CLK) begin
-    if (RST='1') then
-       PSW_ON1i <= '0';
-    elsif (CLK'event and CLK='1') then
-      if (SWCHK_CUNT="11111111") then
-        PSW_ON1i <= PSWCHK_CNT1(2) and (not PSWCHK_CNT1(1));    ------ SW Check Signal Set
-      else
-        PSW_ON1i <= '0';
-      end if;
-    end if;
-  end process;
-
-    PSW_ON1 <= PSW_ON1i;
-
---------------------------------------------------------------------------------
--- User Interrupt 2 Signal Output Control Process
---------------------------------------------------------------------------------
-
-  process (RST,CLK) begin
-    if (RST='1') then
-      USERINT2_ON <= '0';
-    elsif (CLK'event and CLK='1') then
-      USERINT2_ON <=  RST and DIPSWi(0) and (not PSWCHK_CNT1(2))
-                            and PSWCHK_CNT1(1);
-    end if;
-  end process;
-
-end USER_rtl;
+pg_conv_ltof(fxs,  ffx,                NLOG,NMAN,NFOR, D_LTF);
+pg_fix_accum(ffx,  sx,                 NFOR,NACC,      D_FAC);

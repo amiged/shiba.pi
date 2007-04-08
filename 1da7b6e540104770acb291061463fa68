@@ -1,168 +1,387 @@
-Tue Mar 27 19:46:31 JST 2007
--- C:\CYGWIN\HOME\ADMINISTRATOR\FKIT\PCI64\PROJ
--- VHDL Annotation Test Bench created by
--- HDL Bencher 6.1i
--- Wed Dec 29 19:47:04 2004
+Sun Apr  8 19:27:21 JST 2007
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
 
-LIBRARY IEEE;
-USE IEEE.STD_LOGIC_1164.ALL;
-USE IEEE.STD_LOGIC_UNSIGNED.ALL;
-USE IEEE.STD_LOGIC_ARITH.ALL;
-USE IEEE.STD_LOGIC_TEXTIO.ALL;
-USE STD.TEXTIO.ALL;
 
-ENTITY sim_writecomb_check IS
-END sim_writecomb_check;
+entity PFPGA_DMA is
+  port (
+    -- PGPG REG input 
+    PGPG_REG3 : in std_logic_vector(31 downto 0);  -- PFPGA Read  { CHIPSEL(4b), NQWORD(9b),  STARTADR(19b) }
+    GPREG0    : out std_logic_vector(31 downto 0); -- PFPGA Read Status(BUSY or DONE)
+    Hit_PGPG_REG3 : in std_logic;
 
-ARCHITECTURE testbench_arch OF sim_writecomb_check IS
--- If you get a compiler error on the following line,
--- from the menu do Options->Configuration select VHDL 87
-FILE RESULTS: TEXT OPEN WRITE_MODE IS "c:\cygwin\home\administrator\fkit\pci64\proj\sim_writecomb_check.ano";
-	COMPONENT writecomb_check
-		PORT (
-			MEM_WEHA : In  std_logic;
-			MEM_WELA : In  std_logic;
-			IS_ERR : Out  std_logic_vector (1 DOWNTO 0);
-			RST : In  std_logic;
-			CLK : In  std_logic
-		);
-	END COMPONENT;
+    -- pcicnt input
+    MEM_ADA  : in std_logic_vector(16 downto 0);     -- DPRAM Port B R/W Address
+    MEM_WEHA : in std_logic;
+    MEM_WELA : in std_logic;
+    MEM_DTIA : in std_logic_vector(63 downto 0);
 
-	SIGNAL MEM_WEHA : std_logic;
-	SIGNAL MEM_WELA : std_logic;
-	SIGNAL IS_ERR : std_logic_vector (1 DOWNTO 0);
-	SIGNAL RST : std_logic;
-	SIGNAL CLK : std_logic;
 
-BEGIN
-	UUT : writecomb_check
-	PORT MAP (
-		MEM_WEHA => MEM_WEHA,
-		MEM_WELA => MEM_WELA,
-		IS_ERR => IS_ERR,
-		RST => RST,
-		CLK => CLK
-	);
+    -- CBUS/DBUS
+    DMAW_ENABLE : out std_logic_vector(3 downto 0); -- for 4 pfpga chip
+    DMAR_ENABLE : out std_logic_vector(3 downto 0); -- for 4 pfpga chip
+    DBUS_Port : out std_logic_vector(63 downto 0);
+    DBUS_idata: in std_logic_vector(63 downto 0);
+    DBUS_HiZ  : out std_logic;
 
-	PROCESS -- clock process for CLK,
-		VARIABLE TX_TIME : INTEGER :=0;
+    -- DPRAM R/W ports
+    MEM_ADB     : out std_logic_vector(12 downto 0);     -- DPRAM Port B R/W Address
+    MEM_WEHB    : out std_logic;                         -- DPRAM Port B Write Enable (High Word)
+    MEM_WELB    : out std_logic;                         -- DPRAM Port B Write Enable (Low  Word)
+    MEM_DTIB    : out std_logic_vector(63 downto 0);     -- DPRAM Port B Write Data
+    MEM_DTOB    : in  std_logic_vector(63 downto 0);     -- DPRAM Port B Read Data
 
-		PROCEDURE ANNOTATE_IS_ERR(
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
-			STD.TEXTIO.write(TX_LOC, TX_TIME);
-			STD.TEXTIO.write(TX_LOC,string'(",IS_ERR,"));
-			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, IS_ERR);
-			STD.TEXTIO.write(TX_LOC, string'("]"));
-			TX_STR(TX_LOC.all'range) := TX_LOC.all;
-			STD.TEXTIO.writeline(results, TX_LOC);
-			STD.TEXTIO.Deallocate(TX_LOC);
-		END;
+    RST : in  std_logic;
+    CLK : in  std_logic
+    );
+end PFPGA_DMA;
 
-	BEGIN
-		CLOCK_LOOP : LOOP
-		CLK <= transport '0';
-		WAIT FOR 5 ns;
-		TX_TIME := TX_TIME + 5;
-		CLK <= transport '1';
-		WAIT FOR 50 ns;
-		TX_TIME := TX_TIME + 50;
-		CLK <= transport '0';
-		WAIT FOR 35 ns;
-		TX_TIME := TX_TIME + 35;
-		ANNOTATE_IS_ERR(TX_TIME);
-		WAIT FOR 10 ns;
-		TX_TIME := TX_TIME + 10;
-		END LOOP CLOCK_LOOP;
-	END PROCESS;
+architecture rtl of PFPGA_DMA is
 
-	PROCESS   -- Process for CLK
-		VARIABLE TX_OUT : LINE;
+-----------------------------------------------------------------
+-- DMAW/R
+  signal Hit_DMAW,Hit_DMAWr,Hit_DMAR,Hit_DMARr : std_logic;
+  signal ChipSel    : std_logic_vector(3 downto 0);
+  signal START_ADR : std_logic_vector(18 downto 0);
 
-		BEGIN
-		-- --------------------
-		RST <= transport '0';
-		MEM_WEHA <= transport '0';
-		MEM_WELA <= transport '0';
-		-- --------------------
-		WAIT FOR 200 ns; -- Time=200 ns
-		RST <= transport '0';
-		-- --------------------
-		WAIT FOR 500 ns; -- Time=700 ns
-		MEM_WEHA <= transport '0';
-		MEM_WELA <= transport '0';
-		-- --------------------
-		WAIT FOR 200 ns; -- Time=900 ns
-		RST <= transport '1';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=1000 ns
-		RST <= transport '0';
-		-- --------------------
-		WAIT FOR 1900 ns; -- Time=2900 ns
-		MEM_WEHA <= transport '1';
-		MEM_WELA <= transport '1';
-		-- --------------------
-		WAIT FOR 500 ns; -- Time=3400 ns
-		MEM_WEHA <= transport '0';
-		MEM_WELA <= transport '0';
-		-- --------------------
-		WAIT FOR 1100 ns; -- Time=4500 ns
-		MEM_WEHA <= transport '1';
-		MEM_WELA <= transport '1';
-		-- --------------------
-		WAIT FOR 200 ns; -- Time=4700 ns
-		MEM_WEHA <= transport '0';
-		MEM_WELA <= transport '0';
-		-- --------------------
-		WAIT FOR 1300 ns; -- Time=6000 ns
-		MEM_WELA <= transport '1';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=6100 ns
-		MEM_WELA <= transport '0';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=6200 ns
-		MEM_WEHA <= transport '0';
-		-- --------------------
-		WAIT FOR 300 ns; -- Time=6500 ns
-		MEM_WEHA <= transport '1';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=6600 ns
-		MEM_WEHA <= transport '0';
-		-- --------------------
-		WAIT FOR 1300 ns; -- Time=7900 ns
-		MEM_WELA <= transport '1';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=8000 ns
-		MEM_WEHA <= transport '1';
-		MEM_WELA <= transport '0';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=8100 ns
-		MEM_WEHA <= transport '0';
-		MEM_WELA <= transport '1';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=8200 ns
-		MEM_WEHA <= transport '1';
-		MEM_WELA <= transport '0';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=8300 ns
-		MEM_WEHA <= transport '0';
-		-- --------------------
-		WAIT FOR 2005 ns; -- Time=10305 ns
-		-- --------------------
+-- DMAW
+  signal mem_wea   : std_logic := '0';
+  signal dmaw_we0  : std_logic := '0';
+  signal dmaw_we1  : std_logic := '0';
+  signal dmaw_adr          : std_logic_vector(63 downto 0) := (others=>'0');
+  signal dmaw_dt0,dmaw_dt1 : std_logic_vector(63 downto 0) := (others=>'0');
+  signal dmaw_dbus_o       : std_logic_vector(63 downto 0) := (others=>'0');
+--
 
-		STD.TEXTIO.write(TX_OUT, string'("Total[]"));
-		STD.TEXTIO.writeline(results, TX_OUT);
-		ASSERT (FALSE) REPORT
-			"Success! Simulation for annotation completed"
-			SEVERITY FAILURE;
-	END PROCESS;
-END testbench_arch;
+-- DMAR
+  signal dmar_enable_cnt0   : std_logic_vector(12 downto 0) :=(others=>'0');
+  signal dmar_enable_cnt0_r : std_logic_vector(12 downto 0) :=(others=>'0');
+  signal dmar_enable0 : std_logic :='0';
+  signal dmar_enable1 : std_logic :='0';
+  signal dmar_enable2 : std_logic :='0';
+  signal dmar_enable3 : std_logic :='0';
+  signal dmar_enable4 : std_logic :='0';
+  signal dmar_enable5 : std_logic :='0';
+  signal dmar_enable6 : std_logic :='0';
+  signal dmar_enable7 : std_logic :='0';
+  signal lo_mem_wad, lo_mem_wad_z : std_logic_vector(12 downto 0);
+  signal dmar_dbus_o   : std_logic_vector(63 downto 0) := (others=>'0');
+---
+  signal busy_dmar : std_logic;
+  signal busy_dmaw : std_logic;
+  signal dbus_port0 : std_logic_vector(63 downto 0) := (others=>'0'); 
+begin
 
-CONFIGURATION writecomb_check_cfg OF sim_writecomb_check IS
-	FOR testbench_arch
-	END FOR;
-END writecomb_check_cfg;
+  GPREG0(0)   <= '0'; -- not used
+  Hit_DMAW    <= '0'; -- not used
+  busy_dmaw   <= '0'; -- not used
+
+  -- DMA BUSY or IDLE
+  GPREG0(1)   <= busy_dmar;
+  busy_dmar   <= Hit_DMAR or Hit_DMARr or dmar_enable0 or  dmar_enable1 or  dmar_enable2 or  dmar_enable3
+                                       or dmar_enable4 or  dmar_enable5 or  dmar_enable6 or  dmar_enable7;
+  GPREG0(31 downto 2) <= (others=>'0');
+
+
+  Hit_DMAR <= Hit_PGPG_REG3;
+  process (CLK) begin
+    if (CLK'event and CLK='1') then
+      Hit_DMAWr <= Hit_DMAW;
+      Hit_DMARr <= Hit_DMAR;
+    end if;
+  end process;
+
+
+-- WRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWR
+--    WR SHARE
+-- WRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWR
+
+  ----------------------------
+  --- DMAR/W START ADR     ---
+  ----------------------------
+  process (CLK,Hit_DMAW,Hit_DMAWr,Hit_DMAR,Hit_DMARr) begin
+    if(RST='1') then
+      START_ADR <= (others=>'0');
+    elsif(CLK'event and CLK='1') then
+      if   ((Hit_DMAW = '0') AND (Hit_DMAWr = '1')) then
+        START_ADR <= (others=>'0');
+      elsif((Hit_DMAR = '0') AND (Hit_DMARr = '1')) then
+        START_ADR <= PGPG_REG3(18 downto 0);
+      end if;
+    end if;
+  end process;
+
+  ----------------------------
+  --- ChipSel              ---
+  ----------------------------
+  process (CLK,Hit_DMAW,Hit_DMAWr,Hit_DMAR,Hit_DMARr) begin
+    if(RST='1') then
+      ChipSel <= (others=>'0');
+    elsif(CLK'event and CLK='1') then
+      if   ((Hit_DMAW = '0') AND (Hit_DMAWr = '1')) then
+        ChipSel <= (others=>'0');
+      elsif((Hit_DMAR = '0') AND (Hit_DMARr = '1')) then
+        if    (PGPG_REG3(28) = '1') then
+          ChipSel <= "0001";
+        elsif (PGPG_REG3(29) = '1') then
+          ChipSel <= "0010";
+        elsif (PGPG_REG3(30) = '1') then
+          ChipSel <= "0100";
+        else
+          ChipSel <= "1000";
+        end if;
+      end if;
+    end if;
+  end process;
+
+  ------------------------------
+  --- DBUS_Port              ---
+  ------------------------------
+  process (CLK) begin
+    if(CLK'event and CLK='1') then
+      DBUS_Port <= dbus_port0;
+    end if;
+  end process;
+
+  with busy_dmar select
+    dbus_port0 <= dmar_dbus_o when '1',
+                  dmaw_dbus_o when others;
+
+  ------------------------------
+  --- MEM_ADB                ---
+  ------------------------------
+  process (CLK) begin
+    if(CLK'event and CLK='1') then
+      MEM_ADB <= lo_mem_wad;
+    end if;
+  end process;
+
+-- WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+-- DMA WRITE ( ifpga -> pfpga )
+-- WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+  ------------------------------
+  --- mem_wea                ---
+  ------------------------------
+  mem_wea <= MEM_WEHA AND MEM_WELA;
+
+  ------------------------------
+  --- dmaw_we0,1             ---
+  ------------------------------
+  process (RST,CLK) begin
+    if(RST='1') then
+      dmaw_we0 <= '0';
+    elsif(CLK'event and CLK='1') then
+      dmaw_we0 <= mem_wea;
+    end if;
+  end process;
+
+  process (CLK) begin
+    if(CLK'event and CLK='1') then
+      dmaw_we1 <= dmaw_we0;
+    end if;
+  end process;
+  
+  ------------------------------
+  --- dmaw_adr               ---
+  ------------------------------
+  process (RST,CLK,mem_wea,dmaw_we0) begin
+    if(RST='1') then
+      dmaw_adr <= (others=>'0');
+    elsif(CLK'event and CLK='1') then
+      if((mem_wea = '1') and (dmaw_we0 = '0')) then
+        dmaw_adr(15 downto 0) <= MEM_ADA(16 downto 1);
+      end if;
+      dmaw_adr(63 downto 16) <= (others=>'0');
+    end if;
+  end process;
+
+  ------------------------------
+  --- dmaw_dt delay          ---
+  ------------------------------
+  process (RST,CLK) begin
+    if(RST='1') then
+      dmaw_dt1 <= (others=>'0');
+      dmaw_dt0 <= (others=>'0');
+    elsif(CLK'event and CLK='1') then
+      dmaw_dt1 <= dmaw_dt0;
+      dmaw_dt0 <= MEM_DTIA;
+    end if;
+  end process;
+
+  ------------------------------
+  --- dmaw_dbus_o            ---
+  ------------------------------
+  process (RST,CLK,dmaw_we0,dmaw_we1) begin
+    if(RST='1') then
+      dmaw_dbus_o <= (others=>'0');
+    elsif(CLK'event and CLK='1') then
+      if(dmaw_we0 = '1' and dmaw_we1 = '0') then
+        dmaw_dbus_o <= dmaw_adr;
+      else
+        dmaw_dbus_o <= dmaw_dt1;
+      end if;
+    end if;
+  end process;
+
+  --- DMAW_ENABLE
+  process (RST,CLK) begin
+    if(RST='1') then
+      DMAW_ENABLE    <= (others=>'0');
+    elsif(CLK'event and CLK='1') then
+      DMAW_ENABLE(0) <= dmaw_we1;
+      DMAW_ENABLE(1) <= dmaw_we1;
+      DMAW_ENABLE(2) <= dmaw_we1;
+      DMAW_ENABLE(3) <= dmaw_we1;
+    end if;
+  end process;
+
+-- RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
+-- DMA READ (ifpga <- pfpga)
+-- RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
+
+  ----------------------------
+  -- DMAR ENABLE COUNT     ---
+  ----------------------------
+  dmar_enable_cnt0_r <= dmar_enable_cnt0;
+  process (RST,CLK,Hit_DMAR,Hit_DMARr,dmar_enable_cnt0_r) begin
+    if(RST='1') then
+      dmar_enable_cnt0 <= (others=>'0');
+    elsif(CLK'event and CLK='1') then
+      if((Hit_DMAR = '0') AND (Hit_DMARr = '1'))then
+        dmar_enable_cnt0 <= "0000" & PGPG_REG3(27 downto 19);   -- SET NQWORD
+      elsif(dmar_enable_cnt0_r /= "000000000000") then
+        dmar_enable_cnt0 <= dmar_enable_cnt0_r - "000000000001";
+      end if;
+    end if;
+  end process;
+
+  ----------------------------
+  -- DMAR ENABLE 0         ---
+  ----------------------------
+  process (RST,CLK,Hit_DMAR,Hit_DMARr,dmar_enable_cnt0) begin
+    if(RST='1') then
+      dmar_enable0 <= '0';
+    elsif(CLK'event and CLK='1') then
+      if((Hit_DMAR = '0') AND (Hit_DMARr = '1'))then
+        dmar_enable0 <= '1';
+      elsif(dmar_enable_cnt0 = "000000000000") then
+        dmar_enable0 <= '0';
+      end if;
+    end if;
+  end process;
+
+  process (CLK) begin
+    if(CLK'event and CLK='1') then
+      dmar_enable7 <= dmar_enable6;
+      dmar_enable6 <= dmar_enable5;
+      dmar_enable5 <= dmar_enable4;
+      dmar_enable4 <= dmar_enable3;
+      dmar_enable3 <= dmar_enable2;
+      dmar_enable2 <= dmar_enable1;
+      dmar_enable1 <= dmar_enable0;
+    end if;
+  end process;
+
+
+  ------------------------------
+  --- DMAR ENABLE            ---
+  ------------------------------
+  process (CLK,dmar_enable1,dmar_enable2)  begin
+    if(CLK'event and CLK='1') then
+      if((dmar_enable0 = '1') OR (dmar_enable1 = '1')) then
+        DMAR_ENABLE(0) <= '1' AND ChipSel(0);
+        DMAR_ENABLE(1) <= '1' AND ChipSel(1);
+        DMAR_ENABLE(2) <= '1' AND ChipSel(2);
+        DMAR_ENABLE(3) <= '1' AND ChipSel(3);
+      else
+        DMAR_ENABLE <= (others=>'0');
+      end if;
+    end if;
+  end process;
+
+  ------------------------------
+  --- DMAR_DBUS_O            ---
+  ------------------------------
+  process (RST,CLK,dmar_enable0,dmar_enable1,dmar_enable2,dmar_enable3)  begin
+    if(RST='1') then
+      dmar_dbus_o <= (others=>'0');
+    elsif(CLK'event and CLK='1') then
+      if(    (dmar_enable0 = '1') AND (dmar_enable1 = '0') ) then
+        dmar_dbus_o <= ("000000000000000000000000000000000000000000000" & START_ADR);
+      elsif( (dmar_enable1 = '1') AND (dmar_enable2 = '0') ) then
+--        dmar_dbus_o <= X"FFFFFFFFFFFFFFFF";
+        NULL;
+      elsif( (dmar_enable2 = '1') AND (dmar_enable3 = '0') ) then
+        dmar_dbus_o <= (others=>'0');
+      end if;
+    end if;
+  end process;
+
+  ------------------------------
+  --- DBUS_HiZ               ---
+  ------------------------------
+  process (RST,CLK,dmar_enable2,dmar_enable3,dmar_enable4,dmar_enable5)  begin
+    if(RST='1') then
+      DBUS_HiZ <= '0';
+    elsif(CLK'event and CLK='1') then
+      if((dmar_enable2 = '1') OR (dmar_enable3 = '1') OR (dmar_enable4 = '1') OR (dmar_enable5 = '1') ) then
+        DBUS_HiZ <= '1';
+      else
+        DBUS_HiZ <= '0';
+      end if;
+    end if;
+  end process;
+
+  ------------------------------
+  --- MEM_DTIB               ---
+  ------------------------------
+  process (CLK)  begin
+    if(CLK'event and CLK='1') then
+      MEM_DTIB <= DBUS_idata;
+    end if;
+  end process;
+
+  ------------------------------
+  --- MEM_WEHB, MEM_WELB     ---
+  ------------------------------
+  process (CLK)  begin
+    if(CLK'event and CLK='1') then
+      MEM_WEHB <= dmar_enable6;
+      MEM_WELB <= dmar_enable6;
+    end if;
+  end process;
+
+  ------------------------------
+  --- lo_mem_wad             ---
+  ------------------------------
+  lo_mem_wad_z <= lo_mem_wad;
+--  process (RST,CLK,dmar_enable5,dmar_enable6)  begin
+--    if(RST='1') then
+--      lo_mem_wad <= "1000000000000";
+--    elsif(CLK'event and CLK='1') then
+--      if((dmar_enable5 = '1') AND (dmar_enable6 = '0')) then
+--        lo_mem_wad <= "1000000000000";
+--      elsif((dmar_enable5 = '1') AND (dmar_enable6 = '1')) then
+--        lo_mem_wad <= lo_mem_wad_z + "0000000000001";
+--      elsif((dmar_enable5 = '0') AND (dmar_enable6 = '1')) then
+--        lo_mem_wad <= "1000000000000";
+--      end if;
+--    end if;
+--  end process;
+  process (RST,CLK,dmar_enable5,dmar_enable6)  begin
+    if(RST='1') then
+      lo_mem_wad <= "0000000000000";
+    elsif(CLK'event and CLK='1') then
+      if((dmar_enable5 = '1') AND (dmar_enable6 = '0')) then
+        lo_mem_wad <= "0000000000000";
+      elsif((dmar_enable5 = '1') AND (dmar_enable6 = '1')) then
+        lo_mem_wad <= lo_mem_wad_z + "0000000000001";
+      elsif((dmar_enable5 = '0') AND (dmar_enable6 = '1')) then
+        lo_mem_wad <= "0000000000000";
+      end if;
+    end if;
+  end process;
+
+end rtl;

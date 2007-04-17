@@ -1,324 +1,386 @@
-Thu Jan 11 19:30:16 JST 2007
-# ---------------------------------------
-# pfpga ucf < for ISE6.3i >
-# 2004/11/16 by T.Hamada
-# ---------------------------------------
+Tue Apr 17 19:46:24 JST 2007
+-- C:\CYGWIN\HOME\ADMINISTRATOR\FKIT\PCI64\PROJ
+-- VHDL Annotation Test Bench created by
+-- HDL Bencher 6.1i
+-- Thu Dec 16 15:39:41 2004
 
+LIBRARY IEEE;
+USE IEEE.STD_LOGIC_1164.ALL;
+USE IEEE.STD_LOGIC_UNSIGNED.ALL;
+USE IEEE.STD_LOGIC_ARITH.ALL;
+USE IEEE.STD_LOGIC_TEXTIO.ALL;
+USE STD.TEXTIO.ALL;
 
-################################################################################
-# Timing specification
-################################################################################
-NET "CK133"							TNM_NET = "CLK133";
-NET "CK66"							TNM_NET = "CLK66";
+ENTITY sim_pfpga_dma IS
+END sim_pfpga_dma;
 
+ARCHITECTURE testbench_arch OF sim_pfpga_dma IS
+-- If you get a compiler error on the following line,
+-- from the menu do Options->Configuration select VHDL 87
+FILE RESULTS: TEXT OPEN WRITE_MODE IS "c:\cygwin\home\administrator\fkit\pci64\proj\sim_pfpga_dma.ano";
+	COMPONENT pfpga_dma
+		PORT (
+			PGPG_REG3 : In  std_logic_vector (31 DOWNTO 0);
+			GPREG0 : Out  std_logic_vector (31 DOWNTO 0);
+			Hit_PGPG_REG3 : In  std_logic;
+			MEM_ADA : In  std_logic_vector (12 DOWNTO 0);
+			MEM_WEHA : In  std_logic;
+			MEM_WELA : In  std_logic;
+			MEM_DTIA : In  std_logic_vector (63 DOWNTO 0);
+			DMAW_ENABLE : Out  std_logic_vector (3 DOWNTO 0);
+			DMAR_ENABLE : Out  std_logic_vector (3 DOWNTO 0);
+			DBUS_Port : Out  std_logic_vector (63 DOWNTO 0);
+			DBUS_idata : In  std_logic_vector (63 DOWNTO 0);
+			DBUS_HiZ : Out  std_logic;
+			MEM_ADB : Out  std_logic_vector (12 DOWNTO 0);
+			MEM_WEHB : Out  std_logic;
+			MEM_WELB : Out  std_logic;
+			MEM_DTIB : Out  std_logic_vector (63 DOWNTO 0);
+			MEM_DTOB : In  std_logic_vector (63 DOWNTO 0);
+			RST : In  std_logic;
+			CLK : In  std_logic
+		);
+	END COMPONENT;
 
-################################################################################
-# I/O property
-################################################################################
-NET	"CBUS<0>"				LOC = "AU10";
-NET	"CBUS<1>"				LOC = "AT10";
-NET	"CBUS<2>"				LOC = "AJ12";
-NET	"CBUS<3>"				LOC = "AJ13";
-NET	"CBUS<4>"				LOC = "AL10";
-NET	"CBUS<5>"				LOC = "AL11";
-NET	"CBUS<6>"				LOC = "AN11";
-NET	"CBUS<7>"				LOC = "AM11";
+	SIGNAL PGPG_REG3 : std_logic_vector (31 DOWNTO 0);
+	SIGNAL GPREG0 : std_logic_vector (31 DOWNTO 0);
+	SIGNAL Hit_PGPG_REG3 : std_logic;
+	SIGNAL MEM_ADA : std_logic_vector (12 DOWNTO 0);
+	SIGNAL MEM_WEHA : std_logic;
+	SIGNAL MEM_WELA : std_logic;
+	SIGNAL MEM_DTIA : std_logic_vector (63 DOWNTO 0);
+	SIGNAL DMAW_ENABLE : std_logic_vector (3 DOWNTO 0);
+	SIGNAL DMAR_ENABLE : std_logic_vector (3 DOWNTO 0);
+	SIGNAL DBUS_Port : std_logic_vector (63 DOWNTO 0);
+	SIGNAL DBUS_idata : std_logic_vector (63 DOWNTO 0);
+	SIGNAL DBUS_HiZ : std_logic;
+	SIGNAL MEM_ADB : std_logic_vector (12 DOWNTO 0);
+	SIGNAL MEM_WEHB : std_logic;
+	SIGNAL MEM_WELB : std_logic;
+	SIGNAL MEM_DTIB : std_logic_vector (63 DOWNTO 0);
+	SIGNAL MEM_DTOB : std_logic_vector (63 DOWNTO 0);
+	SIGNAL RST : std_logic;
+	SIGNAL CLK : std_logic;
 
-NET	"CBUS<0>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS<1>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS<2>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS<3>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS<4>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS<5>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS<6>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS<7>"				IOSTANDARD	=	LVCMOS25;
-NET	"CK66"					IOSTANDARD	=	LVCMOS25;
-NET	"CK133"					IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<0>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<1>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<2>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<3>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<4>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<5>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<6>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<7>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<8>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<9>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<10>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<11>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<12>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<13>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<14>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<15>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<16>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<17>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<18>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<19>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<20>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<21>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<22>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<23>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<24>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<25>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<26>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<27>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<28>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<29>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<30>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<31>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<32>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<33>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<34>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<35>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<36>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<37>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<38>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<39>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<40>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<41>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<42>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<43>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<44>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<45>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<46>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<47>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<48>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<49>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<50>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<51>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<52>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<53>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<54>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<55>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<56>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<57>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<58>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<59>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<60>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<61>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<62>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<63>"				IOSTANDARD	=	LVCMOS25;
-NET	"RST"					IOSTANDARD	=	LVCMOS25;
-NET	"FPGA_NO<0>"			IOSTANDARD	=	LVCMOS25;
-NET	"FPGA_NO<1>"			IOSTANDARD	=	LVCMOS25;
-NET	"LED<0>"				IOSTANDARD	=	LVCMOS25;
-NET	"LED<1>"				IOSTANDARD	=	LVCMOS25;
-NET	"LED<2>"				IOSTANDARD	=	LVCMOS25;
-NET	"LED<3>"				IOSTANDARD	=	LVCMOS25;
-NET	"LED<4>"				IOSTANDARD	=	LVCMOS25;
-NET	"LED<5>"				IOSTANDARD	=	LVCMOS25;
-NET	"LED<6>"				IOSTANDARD	=	LVCMOS25;
-NET	"LED<7>"				IOSTANDARD	=	LVCMOS25;
-NET	"DSW<0>"			IOSTANDARD	=	LVCMOS25;
-NET	"DSW<1>"			IOSTANDARD	=	LVCMOS25;
-NET	"DSW<2>"			IOSTANDARD	=	LVCMOS25;
-NET	"DSW<3>"			IOSTANDARD	=	LVCMOS25;
-NET	"DSW<4>"			IOSTANDARD	=	LVCMOS25;
-NET	"DSW<5>"			IOSTANDARD	=	LVCMOS25;
-NET	"DSW<6>"			IOSTANDARD	=	LVCMOS25;
-NET	"DSW<7>"			IOSTANDARD	=	LVCMOS25;
+BEGIN
+	UUT : pfpga_dma
+	PORT MAP (
+		PGPG_REG3 => PGPG_REG3,
+		GPREG0 => GPREG0,
+		Hit_PGPG_REG3 => Hit_PGPG_REG3,
+		MEM_ADA => MEM_ADA,
+		MEM_WEHA => MEM_WEHA,
+		MEM_WELA => MEM_WELA,
+		MEM_DTIA => MEM_DTIA,
+		DMAW_ENABLE => DMAW_ENABLE,
+		DMAR_ENABLE => DMAR_ENABLE,
+		DBUS_Port => DBUS_Port,
+		DBUS_idata => DBUS_idata,
+		DBUS_HiZ => DBUS_HiZ,
+		MEM_ADB => MEM_ADB,
+		MEM_WEHB => MEM_WEHB,
+		MEM_WELB => MEM_WELB,
+		MEM_DTIB => MEM_DTIB,
+		MEM_DTOB => MEM_DTOB,
+		RST => RST,
+		CLK => CLK
+	);
 
-NET	"CBUS<0>"				FAST;
-NET	"CBUS<1>"				FAST;
-NET	"CBUS<2>"				FAST;
-NET	"CBUS<3>"				FAST;
-NET	"CBUS<4>"				FAST;
-NET	"CBUS<5>"				FAST;
-NET	"CBUS<6>"				FAST;
-NET	"CBUS<7>"				FAST;
-NET	"DBUS<0>"				FAST;
-NET	"DBUS<1>"				FAST;
-NET	"DBUS<2>"				FAST;
-NET	"DBUS<3>"				FAST;
-NET	"DBUS<4>"				FAST;
-NET	"DBUS<5>"				FAST;
-NET	"DBUS<6>"				FAST;
-NET	"DBUS<7>"				FAST;
-NET	"DBUS<8>"				FAST;
-NET	"DBUS<9>"				FAST;
-NET	"DBUS<10>"				FAST;
-NET	"DBUS<11>"				FAST;
-NET	"DBUS<12>"				FAST;
-NET	"DBUS<13>"				FAST;
-NET	"DBUS<14>"				FAST;
-NET	"DBUS<15>"				FAST;
-NET	"DBUS<16>"				FAST;
-NET	"DBUS<17>"				FAST;
-NET	"DBUS<18>"				FAST;
-NET	"DBUS<19>"				FAST;
-NET	"DBUS<20>"				FAST;
-NET	"DBUS<21>"				FAST;
-NET	"DBUS<22>"				FAST;
-NET	"DBUS<23>"				FAST;
-NET	"DBUS<24>"				FAST;
-NET	"DBUS<25>"				FAST;
-NET	"DBUS<26>"				FAST;
-NET	"DBUS<27>"				FAST;
-NET	"DBUS<28>"				FAST;
-NET	"DBUS<29>"				FAST;
-NET	"DBUS<30>"				FAST;
-NET	"DBUS<31>"				FAST;
-NET	"DBUS<32>"				FAST;
-NET	"DBUS<33>"				FAST;
-NET	"DBUS<34>"				FAST;
-NET	"DBUS<35>"				FAST;
-NET	"DBUS<36>"				FAST;
-NET	"DBUS<37>"				FAST;
-NET	"DBUS<38>"				FAST;
-NET	"DBUS<39>"				FAST;
-NET	"DBUS<40>"				FAST;
-NET	"DBUS<41>"				FAST;
-NET	"DBUS<42>"				FAST;
-NET	"DBUS<43>"				FAST;
-NET	"DBUS<44>"				FAST;
-NET	"DBUS<45>"				FAST;
-NET	"DBUS<46>"				FAST;
-NET	"DBUS<47>"				FAST;
-NET	"DBUS<48>"				FAST;
-NET	"DBUS<49>"				FAST;
-NET	"DBUS<50>"				FAST;
-NET	"DBUS<51>"				FAST;
-NET	"DBUS<52>"				FAST;
-NET	"DBUS<53>"				FAST;
-NET	"DBUS<54>"				FAST;
-NET	"DBUS<55>"				FAST;
-NET	"DBUS<56>"				FAST;
-NET	"DBUS<57>"				FAST;
-NET	"DBUS<58>"				FAST;
-NET	"DBUS<59>"				FAST;
-NET	"DBUS<60>"				FAST;
-NET	"DBUS<61>"				FAST;
-NET	"DBUS<62>"				FAST;
-NET	"DBUS<63>"				FAST;
+	PROCESS -- clock process for CLK,
+		VARIABLE TX_TIME : INTEGER :=0;
 
-NET	"TPIN<0>"				FAST;
-NET	"TPIN<1>"				FAST;
-NET	"TPIN<2>"				FAST;
-NET	"TPIN<3>"				FAST;
-NET	"TPIN<4>"				FAST;
-NET	"TPIN<5>"				FAST;
-NET	"TPIN<6>"				FAST;
-NET	"TPIN<7>"				FAST;
-NET	"TPIN<8>"				FAST;
-NET	"TPIN<9>"				FAST;
-NET	"TPIN<10>"				FAST;
-NET	"TPIN<11>"				FAST;
-NET	"TPIN<12>"				FAST;
-NET	"TPIN<13>"				FAST;
-NET	"TPIN<14>"				FAST;
-NET	"TPIN<15>"				FAST;
-NET	"LED<0>"				FAST;
-NET	"LED<1>"				FAST;
-NET	"LED<2>"				FAST;
-NET	"LED<3>"				FAST;
-NET	"LED<4>"				FAST;
-NET	"LED<5>"				FAST;
-NET	"LED<6>"				FAST;
-NET	"LED<7>"				FAST;
+		PROCEDURE ANNOTATE_GPREG0(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",GPREG0,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, GPREG0);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
 
-################################################################################
-# I/O Assignment
-################################################################################
-NET	"CK66"					LOC = "AG20";
-NET	"CK133"					LOC = "AK20";
-NET	"DBUS<0>"				LOC = "AH13";
-NET	"DBUS<1>"				LOC = "AH14";
-NET	"DBUS<2>"				LOC = "AR11";
-NET	"DBUS<3>"				LOC = "AP11";
-NET	"DBUS<4>"				LOC = "AU11";
-NET	"DBUS<5>"				LOC = "AT11";
-NET	"DBUS<6>"				LOC = "AL14";
-NET	"DBUS<7>"				LOC = "AK14";
-NET	"DBUS<8>"				LOC = "AM12";
-NET	"DBUS<9>"				LOC = "AL12";
-NET	"DBUS<10>"				LOC = "AT12";
-NET	"DBUS<11>"				LOC = "AR12";
-NET	"DBUS<12>"				LOC = "AJ14";
-NET	"DBUS<13>"				LOC = "AJ15";
-NET	"DBUS<14>"				LOC = "AM13";
-NET	"DBUS<15>"				LOC = "AL13";
-NET	"DBUS<16>"				LOC = "AP12";
-NET	"DBUS<17>"				LOC = "AN13";
-NET	"DBUS<18>"				LOC = "AL15";
-NET	"DBUS<19>"				LOC = "AK15";
-NET	"DBUS<20>"				LOC = "AT13";
-NET	"DBUS<21>"				LOC = "AR13";
-NET	"DBUS<22>"				LOC = "AN14";
-NET	"DBUS<23>"				LOC = "AM14";
-NET	"DBUS<24>"				LOC = "AH15";
-NET	"DBUS<25>"				LOC = "AH16";
-NET	"DBUS<26>"				LOC = "AR14";
-NET	"DBUS<27>"				LOC = "AP14";
-NET	"DBUS<28>"				LOC = "AU14";
-NET	"DBUS<29>"				LOC = "AT14";
-NET	"DBUS<30>"				LOC = "AH17";
-NET	"DBUS<31>"				LOC = "AG17";
-NET	"DBUS<32>"				LOC = "AN15";
-NET	"DBUS<33>"				LOC = "AM15";
-NET	"DBUS<34>"				LOC = "AR15";
-NET	"DBUS<35>"				LOC = "AP15";
-NET	"DBUS<36>"				LOC = "AK16";
-NET	"DBUS<37>"				LOC = "AJ17";
-NET	"DBUS<38>"				LOC = "AU15";
-NET	"DBUS<39>"				LOC = "AT15";
-NET	"DBUS<40>"				LOC = "AM16";
-NET	"DBUS<41>"				LOC = "AL16";
-NET	"DBUS<42>"				LOC = "AM17";
-NET	"DBUS<43>"				LOC = "AL17";
-NET	"DBUS<44>"				LOC = "AR16";
-NET	"DBUS<45>"				LOC = "AR17";
-NET	"DBUS<46>"				LOC = "AH18";
-NET	"DBUS<47>"				LOC = "AG18";
-NET	"DBUS<48>"				LOC = "AU17";
-NET	"DBUS<49>"				LOC = "AT17";
-NET	"DBUS<50>"				LOC = "AM18";
-NET	"DBUS<51>"				LOC = "AL18";
-NET	"DBUS<52>"				LOC = "AK18";
-NET	"DBUS<53>"				LOC = "AJ18";
-NET	"DBUS<54>"				LOC = "AP18";
-NET	"DBUS<55>"				LOC = "AN18";
-NET	"DBUS<56>"				LOC = "AT18";
-NET	"DBUS<57>"				LOC = "AR18";
-NET	"DBUS<58>"				LOC = "AH19";
-NET	"DBUS<59>"				LOC = "AG19";
-NET	"DBUS<60>"				LOC = "AU18";
-NET	"DBUS<61>"				LOC = "AU19";
-NET	"DBUS<62>"				LOC = "AM19";
-NET	"DBUS<63>"				LOC = "AL19";
-NET	"RST"					LOC = "AR19";
-NET	"TPIN<0>"				LOC = "Y36";
-NET	"TPIN<2>"				LOC = "Y37";
-NET	"TPIN<4>"				LOC = "Y31";
-NET	"TPIN<6>"				LOC = "W31";
-NET	"TPIN<8>"				LOC = "Y32";
-NET	"TPIN<10>"				LOC = "Y33";
-NET	"TPIN<12>"				LOC = "W36";
-NET	"TPIN<14>"				LOC = "W37";
-NET	"TPIN<1>"				LOC = "W27";
-NET	"TPIN<3>"				LOC = "W28";
-NET	"TPIN<5>"				LOC = "W34";
-NET	"TPIN<7>"				LOC = "W35";
-NET	"TPIN<9>"				LOC = "G38";
-NET	"TPIN<11>"				LOC = "G39";
-NET	"TPIN<13>"				LOC = "G36";
-NET	"TPIN<15>"				LOC = "G37";
-NET	"FPGA_NO<0>"			LOC = "AP19";
-NET	"FPGA_NO<1>"			LOC = "AN19";
-NET	"LED<0>"				LOC = "P34";
-NET	"LED<1>"				LOC = "P33";
-NET	"LED<2>"				LOC = "R27";
-NET	"LED<3>"				LOC = "T27";
-NET	"LED<4>"				LOC = "P36";
-NET	"LED<5>"				LOC = "P35";
-NET	"LED<6>"				LOC = "P37";
-NET	"LED<7>"				LOC = "N37";
-NET	"DSW<0>"			LOC = "T30";
-NET	"DSW<1>"			LOC = "T29";
-NET	"DSW<2>"			LOC = "P39";
-NET	"DSW<3>"			LOC = "P38";
-NET	"DSW<4>"			LOC = "R33";
-NET	"DSW<5>"			LOC = "R32";
-NET	"DSW<6>"			LOC = "T28";
-NET	"DSW<7>"			LOC = "U28";
-NET "CK66" TNM_NET = "CK66";
-TIMESPEC "TS_CK66" = PERIOD "CK66" 20 ns HIGH 50 %;
+		PROCEDURE ANNOTATE_DMAW_ENABLE(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",DMAW_ENABLE,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, DMAW_ENABLE);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
+
+		PROCEDURE ANNOTATE_DMAR_ENABLE(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",DMAR_ENABLE,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, DMAR_ENABLE);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
+
+		PROCEDURE ANNOTATE_DBUS_Port(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",DBUS_Port,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, DBUS_Port);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
+
+		PROCEDURE ANNOTATE_DBUS_HiZ(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",DBUS_HiZ,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, DBUS_HiZ);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
+
+		PROCEDURE ANNOTATE_MEM_ADB(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",MEM_ADB,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, MEM_ADB);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
+
+		PROCEDURE ANNOTATE_MEM_WEHB(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",MEM_WEHB,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, MEM_WEHB);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
+
+		PROCEDURE ANNOTATE_MEM_WELB(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",MEM_WELB,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, MEM_WELB);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
+
+		PROCEDURE ANNOTATE_MEM_DTIB(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",MEM_DTIB,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, MEM_DTIB);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
+
+	BEGIN
+		CLOCK_LOOP : LOOP
+		CLK <= transport '0';
+		WAIT FOR 5 ns;
+		TX_TIME := TX_TIME + 5;
+		CLK <= transport '1';
+		WAIT FOR 50 ns;
+		TX_TIME := TX_TIME + 50;
+		CLK <= transport '0';
+		WAIT FOR 35 ns;
+		TX_TIME := TX_TIME + 35;
+		ANNOTATE_GPREG0(TX_TIME);
+		ANNOTATE_DMAW_ENABLE(TX_TIME);
+		ANNOTATE_DMAR_ENABLE(TX_TIME);
+		ANNOTATE_DBUS_Port(TX_TIME);
+		ANNOTATE_DBUS_HiZ(TX_TIME);
+		ANNOTATE_MEM_ADB(TX_TIME);
+		ANNOTATE_MEM_WEHB(TX_TIME);
+		ANNOTATE_MEM_WELB(TX_TIME);
+		ANNOTATE_MEM_DTIB(TX_TIME);
+		WAIT FOR 10 ns;
+		TX_TIME := TX_TIME + 10;
+		END LOOP CLOCK_LOOP;
+	END PROCESS;
+
+	PROCESS   -- Process for CLK
+		VARIABLE TX_OUT : LINE;
+
+		BEGIN
+		-- --------------------
+		RST <= transport '0';
+		PGPG_REG3 <= transport std_logic_vector'("00000000000000000000000000000000"); --0
+		Hit_PGPG_REG3 <= transport '0';
+		MEM_ADA <= transport std_logic_vector'("0000000000000"); --0
+		MEM_WEHA <= transport '0';
+		MEM_WELA <= transport '0';
+		MEM_DTIA <= transport std_logic_vector'("0000000000000000000000000000000000000000000000000000000000000000"); --0
+		DBUS_idata <= transport std_logic_vector'("0000000000000000000000000000000000000000000000000000000000000000"); --0
+		MEM_DTOB <= transport std_logic_vector'("0000000000000000000000000000000000000000000000000000000000000000"); --0
+		-- --------------------
+		WAIT FOR 500 ns; -- Time=500 ns
+		RST <= transport '1';
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=600 ns
+		RST <= transport '0';
+		-- --------------------
+		WAIT FOR 600 ns; -- Time=1200 ns
+		MEM_ADA <= transport std_logic_vector'("0111111110000"); --FF0
+		MEM_WEHA <= transport '1';
+		MEM_WELA <= transport '1';
+		MEM_DTIA <= transport std_logic_vector'("0000000000000000000000000000000000000000000000000000000000001010"); --A
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=1300 ns
+		MEM_ADA <= transport std_logic_vector'("0111111110010"); --FF2
+		MEM_DTIA <= transport std_logic_vector'("0000000000000000000000000000000000000000000000000000000000001011"); --B
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=1400 ns
+		MEM_ADA <= transport std_logic_vector'("0111111110100"); --FF4
+		MEM_DTIA <= transport std_logic_vector'("0000000000000000000000000000000000000000000000000000000000001100"); --C
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=1500 ns
+		MEM_ADA <= transport std_logic_vector'("0111111110110"); --FF6
+		MEM_DTIA <= transport std_logic_vector'("0000000000000000000000000000000000000000000000000000000000001101"); --D
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=1600 ns
+		MEM_WEHA <= transport '0';
+		MEM_WELA <= transport '0';
+		-- --------------------
+		WAIT FOR 300 ns; -- Time=1900 ns
+		MEM_ADA <= transport std_logic_vector'("0011101110000"); --770
+		MEM_WEHA <= transport '1';
+		MEM_WELA <= transport '1';
+		MEM_DTIA <= transport std_logic_vector'("0000000000000000000000000000000000001111111111110000000000000001"); --FFF0001
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=2000 ns
+		MEM_ADA <= transport std_logic_vector'("0011101110010"); --772
+		MEM_DTIA <= transport std_logic_vector'("0000000000000000000000000000000000001111111111110000000000000010"); --FFF0002
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=2100 ns
+		MEM_ADA <= transport std_logic_vector'("0011101110100"); --774
+		MEM_DTIA <= transport std_logic_vector'("0000000000000000000000000000000000001111111111110000000000000011"); --FFF0003
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=2200 ns
+		MEM_ADA <= transport std_logic_vector'("0011101110110"); --776
+		MEM_DTIA <= transport std_logic_vector'("0000000000000000000000000000000000001111111111110000000000000100"); --FFF0004
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=2300 ns
+		MEM_ADA <= transport std_logic_vector'("0011101111000"); --778
+		MEM_DTIA <= transport std_logic_vector'("0000000000000000000000000000000000001111111111110000000000000101"); --FFF0005
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=2400 ns
+		MEM_ADA <= transport std_logic_vector'("0011101111010"); --77A
+		MEM_DTIA <= transport std_logic_vector'("0000000000000000000000000000000000001111111111110000000000000110"); --FFF0006
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=2500 ns
+		MEM_ADA <= transport std_logic_vector'("0011101111100"); --77C
+		MEM_DTIA <= transport std_logic_vector'("0000000000000000000000000000000000001111111111110000000000000111"); --FFF0007
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=2600 ns
+		MEM_WEHA <= transport '0';
+		MEM_WELA <= transport '0';
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=2700 ns
+		MEM_ADA <= transport std_logic_vector'("0000000000100"); --4
+		MEM_WEHA <= transport '1';
+		MEM_WELA <= transport '1';
+		MEM_DTIA <= transport std_logic_vector'("0000000000000000000000000000011101110111011101110000000000000100"); --777770004
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=2800 ns
+		MEM_WEHA <= transport '0';
+		MEM_WELA <= transport '0';
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=2900 ns
+		MEM_ADA <= transport std_logic_vector'("0000000000110"); --6
+		MEM_WEHA <= transport '1';
+		MEM_WELA <= transport '1';
+		MEM_DTIA <= transport std_logic_vector'("0000000000000000000000000000011101110111011101110000000000000110"); --777770006
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=3000 ns
+		MEM_WEHA <= transport '0';
+		MEM_WELA <= transport '0';
+		-- --------------------
+		WAIT FOR 500 ns; -- Time=3500 ns
+		MEM_ADA <= transport std_logic_vector'("0011101111000"); --778
+		MEM_WEHA <= transport '1';
+		MEM_WELA <= transport '1';
+		MEM_DTIA <= transport std_logic_vector'("1001100110011001100110011001100110001000100010001000100010001000"); --9999999988888888
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=3600 ns
+		MEM_ADA <= transport std_logic_vector'("0011101111010"); --77A
+		MEM_DTIA <= transport std_logic_vector'("1011101110111011101110111011101110101010101010101010101010101010"); --BBBBBBBBAAAAAAAA
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=3700 ns
+		MEM_WEHA <= transport '0';
+		MEM_WELA <= transport '0';
+		-- --------------------
+		WAIT FOR 1255 ns; -- Time=4955 ns
+		-- --------------------
+
+		STD.TEXTIO.write(TX_OUT, string'("Total[]"));
+		STD.TEXTIO.writeline(results, TX_OUT);
+		ASSERT (FALSE) REPORT
+			"Success! Simulation for annotation completed"
+			SEVERITY FAILURE;
+	END PROCESS;
+END testbench_arch;
+
+CONFIGURATION pfpga_dma_cfg OF sim_pfpga_dma IS
+	FOR testbench_arch
+	END FOR;
+END pfpga_dma_cfg;

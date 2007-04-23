@@ -1,5 +1,3 @@
-Tue Apr  3 19:29:43 JST 2007
--- ProjNav VHDL simulation template: sim_local_read_if.udo
--- You may edit this file after the line that starts with
--- '-- START' to customize your simulation
--- START user-defined simulation commands
+Mon Apr 23 19:27:00 JST 2007
+# XST flow : Creating project file
+top.prj

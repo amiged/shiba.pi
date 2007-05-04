@@ -1,93 +1,91 @@
-Mon Mar 12 19:51:14 JST 2007
-/EQNINJ
-/IPSET xi_0,x[][0],float,26,16
-/IPSET xi_1,x[][1],float,26,16
-/IPSET xi_2,x[][2],float,26,16
-/IPSET vi_0,v[][0],float,26,16
-/IPSET vi_1,v[][1],float,26,16
-/IPSET vi_2,v[][2],float,26,16
-/JPSET xj_0,0,0,25,x[][0],float,26,16
-/JPSET xj_1,0,26,51,x[][1],float,26,16
-/JPSET xj_2,0,52,77,x[][2],float,26,16
-/JPSET vj_0,0,78,103,v[][0],float,26,16
-/JPSET vj_1,0,104,129,v[][1],float,26,16
-/JPSET vj_2,0,130,155,v[][2],float,26,16
-/JPSET mj,0,156,181,m[],float,26,16
-/FOSET rx,p[],fix,64,(1.0/pow(2.0,(double)31))
-/FOSET sx_0,a[][0],fix,64,(1.0/pow(2.0,(double)31))
-/FOSET sx_1,a[][1],fix,64,(1.0/pow(2.0,(double)31))
-/FOSET sx_2,a[][2],fix,64,(1.0/pow(2.0,(double)31))
-/FOSET tx_0,jk[][0],fix,64,(1.0/pow(2.0,(double)31))
-/FOSET tx_1,jk[][1],fix,64,(1.0/pow(2.0,(double)31))
-/FOSET tx_2,jk[][2],fix,64,(1.0/pow(2.0,(double)31))
-/NPIPE 1
-/NVMP 1
-void force(double x[][3], double v[][3], double m[], double p[], double a[][3], double jk[][3], int n){
-  pg_float_sub(xj_0,xi_0,dx_0,26,16,4,6)
-  pg_float_sub(xj_1,xi_1,dx_1,26,16,4,6)
-  pg_float_sub(xj_2,xi_2,dx_2,26,16,4,6)
-  pg_float_mult(dx_0,dx_0,dx2_0,26,16,2,6)
-  pg_float_mult(dx_1,dx_1,dx2_1,26,16,2,6)
-  pg_float_mult(dx_2,dx_2,dx2_2,26,16,2,6)
-  pg_float_unsigned_add(dx2_0,dx2_1,x2y2,26,16,4,6)
-  pg_float_unsigned_add(dx2_2r,x2y2,r2,26,16,4,6)
-  pg_float_sqrt(r2,r1,26,16,3,6)
-  pg_float_mult(r2r,r1,r3,26,16,2,6)
-  pg_float_mult(r3,r2r1,r5,26,16,2,6)
-  pg_float_recipro(r5,r5i,26,16,2,6)
-  pg_float_mult(r5i,mjr,mr5i,26,16,2,6)
-  pg_float_mult(mr5i,r2r2,mf,26,16,2,6)
-  pg_float_mult(mf,r2r3,mp,26,16,2,6)
-  pg_float_expadd(mp,ps,31,26,16,1)
-  pg_float_fixaccum(ps,rx,26,16,57,64,2,30,6)
-  pg_float_expadd(mf,fs,31,26,16,1)
-  pg_float_mult(fs,dx_0r,fx_0,26,16,2,6)
-  pg_float_mult(fs,dx_1r,fx_1,26,16,2,6)
-  pg_float_mult(fs,dx_2r,fx_2,26,16,2,6)
-  pg_float_fixaccum(fx_0,sx_0,26,16,57,64,2,30,6)
-  pg_float_fixaccum(fx_1,sx_1,26,16,57,64,2,30,6)
-  pg_float_fixaccum(fx_2,sx_2,26,16,57,64,2,30,6)
-  pg_float_sub(vj_0,vi_0,dv_0,26,16,4,6)
-  pg_float_sub(vj_1,vi_1,dv_1,26,16,4,6)
-  pg_float_sub(vj_2,vi_2,dv_2,26,16,4,6)
-  pg_float_mult(fs,dv_0r,jk1_0,26,16,2,6)
-  pg_float_mult(fs,dv_1r,jk1_1,26,16,2,6)
-  pg_float_mult(fs,dv_2r,jk1_2,26,16,2,6)
-  pg_float_mult(dx_0,dv_0,xv_0,26,16,2,6)
-  pg_float_mult(dx_1,dv_1,xv_1,26,16,2,6)
-  pg_float_mult(dx_2,dv_2,xv_2,26,16,2,6)
-  pg_float_unsigned_add(xv_0,xv_1,xv1,26,16,4,6)
-  pg_float_unsigned_add(xv_2r,xv1,xv2,26,16,4,6)
-  pg_float_expadd(xv2,xv2x2,1,26,16,1)
-  pg_float_unsigned_add(xv2x2,xv2r,xv2x3,26,16,4,6)
-  pg_float_mult(mr5i,xv2x3r,jk2a,26,16,2,6)
-  pg_float_expadd(jk2a,jk2s,31,26,16,1)
-  pg_float_mult(jk2s,dx_0r1,jk2_0,26,16,2,6)
-  pg_float_mult(jk2s,dx_1r1,jk2_1,26,16,2,6)
-  pg_float_mult(jk2s,dx_2r1,jk2_2,26,16,2,6)
-  pg_float_sub(jk1_0,jk2_0,jk0_0,26,16,4,6)
-  pg_float_sub(jk1_1,jk2_1,jk0_1,26,16,4,6)
-  pg_float_sub(jk1_2,jk2_2,jk0_2,26,16,4,6)
-  pg_float_fixaccum(jk0_0,tx_0,26,16,57,64,2,34,6)
-  pg_float_fixaccum(jk0_1,tx_1,26,16,57,64,2,34,6)
-  pg_float_fixaccum(jk0_2,tx_2,26,16,57,64,2,34,6)
-  pg_pdelay(dx2_2,dx2_2r,26,4)
-  pg_pdelay(r2,r2r,26,3)
-  pg_pdelay(r2,r2r1,26,5)
-  pg_pdelay(mj,mjr,26,23)
-  pg_pdelay(r2,r2r2,26,11)
-  pg_pdelay(dv_1,dv_1r,26,24)
-  pg_pdelay(r2,r2r3,26,13)
-  pg_pdelay(dv_0,dv_0r,26,24)
-  pg_pdelay(xv_2,xv_2r,26,4)
-  pg_pdelay(dv_2,dv_2r,26,24)
-  pg_pdelay(dx_0,dx_0r,26,24)
-  pg_pdelay(dx_1,dx_1r,26,24)
-  pg_pdelay(dx_2,dx_2r,26,24)
-  pg_pdelay(xv2,xv2r,26,1)
-  pg_pdelay(xv2x3,xv2x3r,26,6)
-  pg_pdelay(dx_1,dx_1r1,26,24)
-  pg_pdelay(dx_2,dx_2r1,26,24)
-  pg_pdelay(dx_0,dx_0r1,26,24)
-  pg_rundelay(36)
+Fri May  4 19:29:40 JST 2007
+#include <stdio.h>
+#include <math.h>
+#ifndef LONG
+#define LONG unsigned long long int
+#endif
+#ifndef PGINT
+#define PGINT unsigned long long int
+#endif
+
+
+void
+force_double(double x[][3], double m[], double eps2, double a[][3], int n)
+{
+    int             i, j;
+    double          sx_0;
+    double          sx_1;
+    double          sx_2;
+    double          xi_0;
+    double          xj_0;
+    double          xi_1;
+    double          xj_1;
+    double          xi_2;
+    double          xj_2;
+    double          dx2_0;
+    double          dx2_1;
+    double          dx2_2;
+    double          ieps2;
+    double          x2y2;
+    double          z2e2;
+    double          r2;
+    double          r1;
+    double          r3;
+    double          r3i;
+    double          mj;
+    double          mf;
+    double          dx_0;
+    double          dx_1;
+    double          fs;
+    double          dx_2;
+    double          fx_0;
+    double          fx_1;
+    double          fx_2;
+
+
+    for (i = 0; i < n; i++) {
+	xi_0 = x[i][0];
+	xi_1 = x[i][1];
+	xi_2 = x[i][2];
+	ieps2 = eps2;
+
+	sx_0 = 0.0;
+	sx_1 = 0.0;
+	sx_2 = 0.0;
+
+	for (j = n - 1; j >= 0; j--) {
+	    xj_0 = x[j][0];
+	    xj_1 = x[j][1];
+	    xj_2 = x[j][2];
+	    mj = m[j];
+
+	    dx_0 = xi_0 - xj_0;
+	    dx_1 = xi_1 - xj_1;
+	    dx_2 = xi_2 - xj_2;
+	    dx2_0 = dx_0 * dx_0;
+	    dx2_1 = dx_1 * dx_1;
+	    dx2_2 = dx_2 * dx_2;
+	    x2y2 = dx2_0 + dx2_1;
+	    z2e2 = dx2_2 + ieps2;
+	    r2 = x2y2 + z2e2;
+	    r1 = sqrt(r2);
+	    r3 = r2 * r1;
+	    if (r3 != 0.0) {
+		r3i = 1.0 / r3;
+	    } else {
+		r3i = 0.0;
+	    }
+	    mf = r3i * mj;
+	    fs = mf * pow(2.0, (double) 31);
+	    fx_0 = fs * dx_0;
+	    fx_1 = fs * dx_1;
+	    fx_2 = fs * dx_2;
+	    sx_0 += fx_0;
+	    sx_1 += fx_1;
+	    sx_2 += fx_2;
+	}
+	a[i][0] = sx_0 * (-1.0 / pow(2.0, (double) 31));
+	a[i][1] = sx_1 * (-1.0 / pow(2.0, (double) 31));
+	a[i][2] = sx_2 * (-1.0 / pow(2.0, (double) 31));
+    }
 }

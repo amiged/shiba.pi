@@ -1,5 +1,20 @@
-Sat Jan  6 19:51:14 JST 2007
-INFO:DesignRules:547 - Blockcheck: To achieve optimal frequency synthesis
-   performance with the CLKFX and CLKFX180 outputs of the DCM comp dcm0_dcm0,
-   consult the Virtex-II Interactive Data Sheet.
-DRC detected 0 errors and 0 warnings.
+Mon May  7 19:30:15 JST 2007
+
+
+all:
+	cp top.ucf.ISE6.3i top.ucf
+	rm -rf proj
+	tar xvf proj.ise6.3i.tar
+	cd proj;xst -intstyle ise -ifn __projnav/top.xst -ofn top.syr
+	cd proj;ngdbuild -intstyle ise -dd ./_ngo -uc ../top.ucf  -p xc2vp70-ff1517-5 top.ngc top.ngd
+	cd proj;map -intstyle ise -p xc2vp70-ff1517-5 -cm area -pr b -k 4 -c 100 -tx off -o top_map.ncd top.ngd top.pcf
+	cd proj;par -w -intstyle ise -ol std -t 1 top_map.ncd top.ncd top.pcf
+	cd proj;trce -intstyle ise -e 3 -l 3 -xml top top.ncd -o top.twr top.pcf
+	cd proj;bitgen -intstyle ise -f top.ut top.ncd
+
+
+
+clean:
+	rm -rf proj top.ucf *~ .*~
+
+

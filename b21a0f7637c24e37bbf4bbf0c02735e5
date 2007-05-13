@@ -1,28 +1,24 @@
-Sun May  6 19:28:18 JST 2007
-#define NFLO 26
-#define NMAN 16
-#define NFIX 57
-#define NACC 64
-#define NEXAD 31
-#define FSHIFT pow(2.0,(double)NEXAD)
+Sun May 13 19:50:14 JST 2007
+// Time-stamp: "2006-12-07 19:19:22 hamada"
+// Copyright (c) 2006 by Tsuyoshi Hamada, All rights reserved.
 
-/JPSET xj[3],  x[][],  float, NFLO, NMAN;
-/JPSET mj,     m[],    float, NFLO, NMAN;
-/IPSET xi[3],  x[][],  float, NFLO, NMAN;
-/IPSET ieps2,  eps2,   float, NFLO, NMAN;
-/FOSET sx[3],  a[][],  fix,   NACC, (-1.0/FSHIFT);
-/NVMP 1;
-/NPIPE 1;
+#include <stdio.h>
+#include <stdlib.h>
+#include "pg4.h"
 
-pg_float_sub      (xi,xj, dx,              NFLO,NMAN, 4);
-pg_float_mult     (dx,dx, dx2,             NFLO,NMAN, 2);
-pg_float_unsigned_add(dx2[0],dx2[1], x2y2, NFLO,NMAN, 4);
-pg_float_unsigned_add(dx2[2],ieps2,  z2e2, NFLO,NMAN, 4);
-pg_float_unsigned_add(x2y2,z2e2,r2,        NFLO,NMAN, 4);
-pg_float_sqrt     (r2,r1,                  NFLO,NMAN, 3);
-pg_float_mult     (r2,r1,r3,               NFLO,NMAN, 2);
-pg_float_recipro  (r3,r3i,                 NFLO,NMAN, 2);
-pg_float_mult     (r3i,mj,mf,              NFLO,NMAN, 2);
-pg_float_expadd   (mf,fs,                  NEXAD,NFLO,NMAN,1);
-pg_float_mult     (fs,dx,fx,               NFLO,NMAN, 2);
-pg_float_fixaccum (fx,sx,                  NFLO,NMAN, NFIX, NACC, 4);
+unsigned int* ptr;
+unsigned int* bar1;
+
+int main(int argc,char *argv[])
+{
+  int devid = 0;
+
+  pg4_open(devid);
+  bar1 = pg4_get_bar1ptr(devid);
+  printf("BAR0: %lx\n",pg4_getbaseaddr(devid,0));
+  printf("BAR1: %lx\n",pg4_getbaseaddr(devid,1));
+
+  pg4_DMAcheck(devid);
+
+  return 0;
+}

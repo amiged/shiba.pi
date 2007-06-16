@@ -1,12 +1,9 @@
-Thu May 24 19:36:20 JST 2007
-10
-2.253285e-01	9.191831e-01
-2.068413e-01	7.247797e-01
-7.321991e-01	9.064824e-01
-3.479571e-01	8.578809e-01
-4.151849e-01	1.941677e-01
-6.856104e-01	5.243755e-01
-1.596357e-01	9.547575e-01
-1.269843e-01	4.339532e-03
-3.826915e-01	2.507929e-01
-6.552879e-01	5.344908e-01
+Sat Jun 16 19:53:14 JST 2007
+V1 3
+FL c:/cygwin/home/administrator/fkit/pci64/tmp2/pfpga_config.vhd 2004/11/10.11:36:20
+EN work/PFPGA_CONFIG \
+      FL c:/cygwin/home/administrator/fkit/pci64/tmp2/pfpga_config.vhd \
+      PB ieee/STD_LOGIC_1164 PB ieee/STD_LOGIC_ARITH PB ieee/STD_LOGIC_UNSIGNED
+AR work/PFPGA_CONFIG/RTL \
+      FL c:/cygwin/home/administrator/fkit/pci64/tmp2/pfpga_config.vhd \
+      EN work/PFPGA_CONFIG

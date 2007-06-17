@@ -1,47 +1,26 @@
-Sun May  6 19:43:48 JST 2007
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
+Sun Jun 17 19:30:22 JST 2007
+-- Copyright 2004 Tsuyoshi Hamada
+--
+--
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
 
-/*
- * ifpga_get_barinfo.c -- to get infomation of pci bar regsters
- *
- * Copyright (C) 2006-2007 Tsuyoshi Hamada
- *                                All rights reserved.
- * 
- * No warranty is attached; 
- * I cannot take responsibility for errors or fitness for use.
- *
- */
+entity dmar_start_adr is
+  port (
+    CLK       : in std_logic;
+    DBUS      : in std_logic_vector(63 downto 0);
+    STATE     : in std_logic_vector(1 downto 0);
+    START_ADR : out std_logic_vector(18 downto 0) );
+end dmar_start_adr;
 
-#include "pg4.h"
-
-int main(int argc, char* argv[])
-{
-  int devid  = 0;
-  int bar    = 0;
-  int is_size = 0;
-  unsigned long z = 0;
-
-  if (argc < 3) {
-    fprintf(stderr, "%s <devid> <bar_num> <adr=0/size=1>\n", argv[0]);
-    exit(-1);
-  }
-  
-  if(argc == 3) is_size = 0; else is_size = atoi(argv[3]);
-
-  devid = atoi(argv[1]);
-  bar   = atoi(argv[2]);
-  
-  pg4_open(devid);
-
-  if(is_size)
-    z = 0xffffffff & pg4_getbaseaddr_size(devid, bar);
-  else
-    z = 0xffffffff & pg4_getbaseaddr(devid, bar);
-
-  printf("0x%08lx\n",z);
-  pg4_close(devid);
-
-  return 1;
-}
+architecture rtl of dmar_start_adr is
+component dmaw_start_adr
+  port (
+    CLK       : in std_logic;
+    DBUS      : in std_logic_vector(63 downto 0);
+    STATE     : in std_logic_vector(1 downto 0);
+    START_ADR : out std_logic_vector(18 downto 0) );
+end component;
+begin
+  u0 : dmaw_start_adr port map(CLK=>CLK, DBUS=>DBUS, STATE=>STATE, START_ADR=>START_ADR);
+end rtl;

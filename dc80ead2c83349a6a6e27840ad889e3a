@@ -1,100 +1,387 @@
-Fri Oct 26 19:30:58 JST 2007
-#include "cutil.h"
+Wed Nov 14 19:27:36 JST 2007
 
-__device__ float4 
-inter(float4 xj, float4 xi, float4 apot)
-{
-  float mj    = xj.w;        // Mass Mj
-  float ieps2 = xi.w;        // epsilon^2
-  float dx = xj.x - xi.x;    // Coordinates Xj - Xi
-  float dy = xj.y - xi.y;    // Coordinates Yj - Yi
-  float dz = xj.z - xi.z;    // Coordinates Zj - Zi
-  float r2 = (dx*dx+ieps2)+dy*dy+dz*dz;
-  float r1i = 1/sqrt(r2);
-  float r2i = r1i * r1i;
-  float mr3i = mj * r2i * r1i;
-  apot.x += dx * mr3i;       // Accel AXi
-  apot.y += dy * mr3i;       // Accel AYi
-  apot.z += dz * mr3i;       // Accel AZi
-  return (apot);
-}
-#define NTHRE (128) // blockDim.x§»∆±√Õ
-__global__ void
-kernel(float4* g_xj,
-       float* g_xi,
-       float* g_fi,
-       int ni,
-       int nj)
-{
-  int tid      = threadIdx.x;
-  int i = blockIdx.x*NTHRE+tid;
-  float4 ai = make_float4(0.0, 0.0, 0.0, 0.0);
-  float4 xi;
-  xi.x = g_xi[i];
-  xi.y = g_xi[i+ni];
-  xi.z = g_xi[i+ni*2];
-  xi.w = g_xi[i+ni*3];
-  __shared__ float4 s_xj[NTHRE];
-  for(int j = 0; j<nj; j+=NTHRE){
-    __syncthreads();
-    s_xj[tid] = g_xj[j+tid];
-    __syncthreads();
-    ai = inter(s_xj[0], xi, ai); ai = inter(s_xj[1], xi, ai); ai = inter(s_xj[2], xi, ai); ai = inter(s_xj[3], xi, ai);
-    ai = inter(s_xj[4], xi, ai); ai = inter(s_xj[5], xi, ai); ai = inter(s_xj[6], xi, ai); ai = inter(s_xj[7], xi, ai);
-    ai = inter(s_xj[8], xi, ai); ai = inter(s_xj[9], xi, ai);
+-- **************************************
+--               INREVIUM                
+-- **************************************
 
-    ai = inter(s_xj[10], xi, ai); ai = inter(s_xj[11], xi, ai); ai = inter(s_xj[12], xi, ai); ai = inter(s_xj[13], xi, ai);
-    ai = inter(s_xj[14], xi, ai); ai = inter(s_xj[15], xi, ai); ai = inter(s_xj[16], xi, ai); ai = inter(s_xj[17], xi, ai);
-    ai = inter(s_xj[18], xi, ai); ai = inter(s_xj[19], xi, ai);
+--------------------------------------------------------------------------------
+-- Copyright(C) 2004 - TOKYO ELECTRON DEVICE LIMITED. All rigths reserved.
+--------------------------------------------------------------------------------
+-- PCI_TARGETCNT MODEL
+--------------------------------------------------------------------------------
+-- PCI64_CORE Target Access Control Module
+--------------------------------------------------------------------------------
+-- File                      : PCI_TARGETCNT.vhd
+-- Entity                    : PCI_TARGETCNT
+-- Architecture              : PCI_TARGETCNT_rtl
+--------------------------------------------------------------------------------
+-- Project Navigator version : ISE6.2.03i
+-- Design Flow               : XST
+--------------------------------------------------------------------------------
+-- Ver.     Data        Coded by        Contents
+-- 01.00    2004/08/10  TED)DDC         êVãK
+--------------------------------------------------------------------------------
 
-    ai = inter(s_xj[20], xi, ai); ai = inter(s_xj[21], xi, ai); ai = inter(s_xj[22], xi, ai); ai = inter(s_xj[23], xi, ai);
-    ai = inter(s_xj[24], xi, ai); ai = inter(s_xj[25], xi, ai); ai = inter(s_xj[26], xi, ai); ai = inter(s_xj[27], xi, ai);
-    ai = inter(s_xj[28], xi, ai); ai = inter(s_xj[29], xi, ai);
 
-    ai = inter(s_xj[30], xi, ai); ai = inter(s_xj[31], xi, ai); ai = inter(s_xj[32], xi, ai); ai = inter(s_xj[33], xi, ai);
-    ai = inter(s_xj[34], xi, ai); ai = inter(s_xj[35], xi, ai); ai = inter(s_xj[36], xi, ai); ai = inter(s_xj[37], xi, ai);
-    ai = inter(s_xj[38], xi, ai); ai = inter(s_xj[39], xi, ai);
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
 
-    ai = inter(s_xj[40], xi, ai); ai = inter(s_xj[41], xi, ai); ai = inter(s_xj[42], xi, ai); ai = inter(s_xj[43], xi, ai);
-    ai = inter(s_xj[44], xi, ai); ai = inter(s_xj[45], xi, ai); ai = inter(s_xj[46], xi, ai); ai = inter(s_xj[47], xi, ai);
-    ai = inter(s_xj[48], xi, ai); ai = inter(s_xj[49], xi, ai);
 
-    ai = inter(s_xj[50], xi, ai); ai = inter(s_xj[51], xi, ai); ai = inter(s_xj[52], xi, ai); ai = inter(s_xj[53], xi, ai);
-    ai = inter(s_xj[54], xi, ai); ai = inter(s_xj[55], xi, ai); ai = inter(s_xj[56], xi, ai); ai = inter(s_xj[57], xi, ai);
-    ai = inter(s_xj[58], xi, ai); ai = inter(s_xj[59], xi, ai);
+entity PCI_TARGETCNT is
+	port (
+	-- Interface to PCI Logicore.
+		FRAMEQ_N		: in	std_logic;							-- Latched FRAME# Signal
+		REQ64Q_N		: in	std_logic;							-- Latched REQ64# Signal
+		TRDYQ_N 		: in	std_logic;							-- Latched TRDY# Signal
+		IRDYQ_N 		: in	std_logic;							-- Latched IRDY# Signal
+		STOPQ_N 		: in	std_logic;							-- Latched STOP# Signal
+		DEVSELQ_N		: in	std_logic;							-- Latched DEVSEL# Signal
+		ACK64Q_N		: in	std_logic;							-- Latched ACK64# Signal
 
-    ai = inter(s_xj[60], xi, ai); ai = inter(s_xj[61], xi, ai); ai = inter(s_xj[62], xi, ai); ai = inter(s_xj[63], xi, ai);
-    ai = inter(s_xj[64], xi, ai); ai = inter(s_xj[65], xi, ai); ai = inter(s_xj[66], xi, ai); ai = inter(s_xj[67], xi, ai);
-    ai = inter(s_xj[68], xi, ai); ai = inter(s_xj[69], xi, ai);
+		ADDR			: in	std_logic_vector( 31 downto 0);		-- Latched Target Address Bus
+		ADIO			: inout std_logic_vector( 63 downto 0);		-- Internal Address/Data Bus
 
-    ai = inter(s_xj[70], xi, ai); ai = inter(s_xj[71], xi, ai); ai = inter(s_xj[72], xi, ai); ai = inter(s_xj[73], xi, ai);
-    ai = inter(s_xj[74], xi, ai); ai = inter(s_xj[75], xi, ai); ai = inter(s_xj[76], xi, ai); ai = inter(s_xj[77], xi, ai);
-    ai = inter(s_xj[78], xi, ai); ai = inter(s_xj[79], xi, ai);
+		CFG_VLD 		: in	std_logic;							-- Configulation Cycle Valid
+		CFG_HIT 		: in	std_logic;							-- Configuration Cycle Start
+		C_TERM			: out	std_logic;							-- Configuraton Cycle Terminate Signal
+		C_READY 		: out	std_logic;							-- Configuration Data Transfer Ready Signal
 
-    ai = inter(s_xj[80], xi, ai); ai = inter(s_xj[81], xi, ai); ai = inter(s_xj[82], xi, ai); ai = inter(s_xj[83], xi, ai);
-    ai = inter(s_xj[84], xi, ai); ai = inter(s_xj[85], xi, ai); ai = inter(s_xj[86], xi, ai); ai = inter(s_xj[87], xi, ai);
-    ai = inter(s_xj[88], xi, ai); ai = inter(s_xj[89], xi, ai);
+		ADDR_VLD		: in	std_logic;							-- Internal Address Valid
+		BASE_HIT		: in	std_logic_vector(  7 downto 0);		-- Base Address Hit
 
-    ai = inter(s_xj[90], xi, ai); ai = inter(s_xj[91], xi, ai); ai = inter(s_xj[92], xi, ai); ai = inter(s_xj[93], xi, ai);
-    ai = inter(s_xj[94], xi, ai); ai = inter(s_xj[95], xi, ai); ai = inter(s_xj[96], xi, ai); ai = inter(s_xj[97], xi, ai);
-    ai = inter(s_xj[98], xi, ai); ai = inter(s_xj[99], xi, ai);
+		S_CYCLE64		: in	std_logic;							-- 64 bit Transaction Go On
+		S_TERM			: out	std_logic;							-- Target Transaction Terminate Signal
+		S_READY 		: out	std_logic;							-- Target Transaction Data Transfer Ready Siganl
+		S_ABORT 		: out	std_logic;							-- Target Abort Request Signal
+		S_WRDN			: in	std_logic;							-- Target Transaction Data Direction (0:Write, 1:Read)
+		S_SRC_EN		: in	std_logic;							-- Target Transaction Data Source Enable
+		S_DATA_VLD		: in	std_logic;							-- Target Transaction Data Phase Valid Signal
+		S_CBE			: in	std_logic_vector(  7 downto 0);		-- Target Command & Byte Enable Signal
+		PCI_CMD 		: in	std_logic_vector( 15 downto 0);		-- Latched Bus Command
 
-    ai = inter(s_xj[100], xi, ai); ai = inter(s_xj[101], xi, ai); ai = inter(s_xj[102], xi, ai); ai = inter(s_xj[103], xi, ai);
-    ai = inter(s_xj[104], xi, ai); ai = inter(s_xj[105], xi, ai); ai = inter(s_xj[106], xi, ai); ai = inter(s_xj[107], xi, ai);
-    ai = inter(s_xj[108], xi, ai); ai = inter(s_xj[109], xi, ai);
+		IDLE			: in	std_logic;							-- Target Idle State
+		B_BUSY			: in	std_logic;							-- PCI Bus Busy State
+		S_DATA			: in	std_logic;							-- Target Data Transfer State
+		BACKOFF 		: in	std_logic;							-- Target State Machine Transaction End State
 
-    ai = inter(s_xj[110], xi, ai); ai = inter(s_xj[111], xi, ai); ai = inter(s_xj[112], xi, ai); ai = inter(s_xj[113], xi, ai);
-    ai = inter(s_xj[114], xi, ai); ai = inter(s_xj[115], xi, ai); ai = inter(s_xj[116], xi, ai); ai = inter(s_xj[117], xi, ai);
-    ai = inter(s_xj[118], xi, ai); ai = inter(s_xj[119], xi, ai);
+		SLOT64			: out	std_logic;							-- 64 bit Extended Signal Eable
+		PERRQ_N 		: in	std_logic;							-- latched PERR# Signal
+		SERRQ_N 		: in	std_logic;							-- Latched SERR# Signal
+		KEEPOUT 		: out	std_logic;							-- ADIO Bus Disable Request Signal
 
-    ai = inter(s_xj[120], xi, ai); ai = inter(s_xj[121], xi, ai); ai = inter(s_xj[122], xi, ai); ai = inter(s_xj[123], xi, ai);
-    ai = inter(s_xj[124], xi, ai); ai = inter(s_xj[125], xi, ai); ai = inter(s_xj[126], xi, ai); ai = inter(s_xj[127], xi, ai);
-  }
-  if(i<ni){
-    g_fi[i]      = ai.x;
-    g_fi[i+ni]   = ai.y;
-    g_fi[i+ni*2] = ai.z;
-  }
-}
+		CSR 			: in	std_logic_vector( 39 downto 0);		-- Command/Status Register State
+		SUB_DATA		: out	std_logic_vector( 31 downto 0);		-- Sub-Identification
+		CFG 			: in	std_logic_vector(255 downto 0);		-- Confiuration Data
 
-#include "api.h"
+		RST 			: in	std_logic;							-- PCI Bus Reset
+		CLK 			: in	std_logic;							-- PCI bus Clock
+
+	-- Internal Block Target Access Control Signal
+		TARGET_AD		: out	std_logic_vector(31 downto 0);		-- Target Access Address
+
+		FIFO_RDDT		: in	std_logic_vector(63 downto 0);		-- FIFO Read Data
+		FIFO_RDTEN		: in	std_logic;							-- FIFO Read Data Enable Signel
+
+	-- Base Address 0 Area (Internal Register) Target Access Control Signal
+		BAR0_WRDT		: out	std_logic_vector(31 downto 0);		-- BAR0 Area Target Access Write Data
+		BAR0_WR			: out	std_logic_vector( 3 downto 0);		-- BAR0 Area Target Access Write Signal
+		BAR0_RD			: out	std_logic;							-- BAR0 Area Target Access Read  Signal
+
+	-- Base Address 1 Area (Internal Memoery) Target Access Control Signal
+		BAR1_WRDT		: out	std_logic_vector(63 downto 0);		-- BAR1 Area Target Access Write Data
+		BAR1_WR			: out	std_logic_vector( 7 downto 0);		-- BAR1 Area Target Access Write Signal
+		BAR1_RD			: out	std_logic							-- BAR1 Area Target Access Read  Signal
+		);
+end PCI_TARGETCNT;
+
+
+architecture PCI_TARGETCNT_rtl of PCI_TARGETCNT is
+
+--------------------------------------------------
+-- Components
+--------------------------------------------------
+
+
+--------------------------------------------------
+-- signals
+--------------------------------------------------
+
+-- Internal Block R/W Select Signal
+--
+--	BAR0 : Internal Register
+--	BAR1 : Internal Memory Block
+
+	signal	BAR0_WRENB		: std_logic;							-- BAR0 Block Write Select Signal
+	signal	BAR0_RDENB		: std_logic;							-- BAR0 Block Read  Select Signal
+
+	signal	BAR1_WRENB		: std_logic;							-- BAR1 Block Write Select Signal
+	signal	BAR1_RDENB		: std_logic;							-- BAR1 Block Read  Select Signal
+
+-- Internal Block Access Control Signal
+	signal	TARGET_ADRS		: std_logic_vector(31 downto 2);		-- Target Access Address
+
+	signal	PRERD_CNT		: std_logic_vector(3 downto 0);			-- Pre READ Signal Assert Control
+
+	signal	BAR0_PRERD		: std_logic;							-- BAR0 Block Pre-Read Signal
+	signal	BAR1_PRERD		: std_logic;							-- BAR1 Block Pre-Read Signal
+
+	signal	BAR0_READ		: std_logic;							-- Internal BAR0 Block Read Signal
+	signal	BAR1_READ		: std_logic;							-- Internal BAR1 Block Read Signal
+
+	signal	DTRD_FLG		: std_logic;							-- Data Read Flag
+
+
+
+begin
+
+
+
+--***************************************************************
+--*
+--*  Base Address 0 Area Access Control Signal Generate Block
+--*
+--***************************************************************
+
+--------------------------------------------------------------------------------
+-- BAR0(Internal Register) R/W Select Signal Control Process
+--------------------------------------------------------------------------------
+
+	process (RST,CLK) begin
+		if (RST='1') then
+			BAR0_WRENB <= '0';
+			BAR0_RDENB <= '0';
+		elsif (CLK'event and CLK='1') then
+			if (BASE_HIT(0)='1') then										------ Base Address 0 Area Access ?
+				BAR0_WRENB <= S_WRDN;										------ R/W Status Set
+				BAR0_RDENB <= (not S_WRDN);
+			elsif (S_DATA='0') then											------ Transaction End ?
+				BAR0_WRENB <= '0';											------ Select Signal Clear
+				BAR0_RDENB <= '0';
+			end if;
+		end if;
+	end process;
+
+--------------------------------------------------------------------------------
+-- BAR0(Internal Register) Area Write Signal Control Process
+--------------------------------------------------------------------------------
+
+	process (BAR0_WRENB,S_DATA_VLD,S_CBE) begin
+		if (BAR0_WRENB='1' and S_DATA_VLD='1') then							------ BAR0 Target Data Write Available ?
+			BAR0_WR <= (not S_CBE(3 downto 0));								------ High Word Write Signal Set
+		else
+			BAR0_WR <= (others => '0');										------ BAR0_WR Signal Negate
+		end if;
+	end process;
+
+--------------------------------------------------------------------------------
+-- BAR0(Internal Register) Area Write Data Control Process
+--------------------------------------------------------------------------------
+
+	process (BAR0_WRENB,S_DATA_VLD,ADIO) begin
+		if (BAR0_WRENB='1' and S_DATA_VLD='1') then							------ BAR0 Target Data Write Available ?
+			BAR0_WRDT(31 downto  0) <= ADIO(31 downto 0);					------ Low  Word Write Data Set
+		else
+			BAR0_WRDT <= (others => '0');									------ Write Data Clear
+		end if;
+	end process;
+
+--------------------------------------------------------------------------------
+-- BAR0(Internal Register) Area Pre-Read Signal Control Process
+--------------------------------------------------------------------------------
+
+	process (RST,CLK) begin
+		if (RST='1') then
+			BAR0_PRERD <= '0';
+		elsif (CLK'event and CLK='1') then
+			if (BASE_HIT(0)='1' and S_WRDN='0') then						------ Base Address 0 Area Read Access ?
+				BAR0_PRERD <= '1';											------ Base Address 0 Area Pre-Read Start
+			elsif (PRERD_CNT(3)='1') then									------ Pre Read Data Transfer End ?
+				BAR0_PRERD <= '0';											------ Base Address 0 Area Pre-Read End
+			end if;
+		end if;
+	end process;
+
+--------------------------------------------------------------------------------
+-- BAR0(Internal Register) Area Read Signal Control Process
+--------------------------------------------------------------------------------
+
+		BAR0_READ <= (BAR0_PRERD or S_SRC_EN) and BAR0_RDENB;			------ Data Read Signal Set
+
+		BAR0_RD   <= BAR0_READ;												------ Data Read Signal Output
+
+
+--***************************************************************
+--*
+--*  Base Address 1 Area Access Control Signal Generate Block
+--*
+--***************************************************************
+
+--------------------------------------------------------------------------------
+-- BAR1(Internal Memory) R/W Select Signal Control Process
+--------------------------------------------------------------------------------
+
+	process (RST,CLK) begin
+		if (RST='1') then
+			BAR1_WRENB <= '0';
+			BAR1_RDENB <= '0';
+		elsif (CLK'event and CLK='1') then
+			if (BASE_HIT(1)='1') then										------ Base Address 1 Area Access ?
+				BAR1_WRENB <= S_WRDN;										------ R/W Status Set
+				BAR1_RDENB <= (not S_WRDN);
+			elsif (S_DATA='0') then											------ Transaction End ?
+				BAR1_WRENB <= '0';											------ Select Signal Clear
+				BAR1_RDENB <= '0';
+			end if;
+		end if;
+	end process;
+
+--------------------------------------------------------------------------------
+-- BAR1(Internal Memory) Area Write Signal Control Process
+--------------------------------------------------------------------------------
+
+	process (BAR1_WRENB,S_DATA_VLD,S_CYCLE64,TARGET_ADRS,S_CBE) begin
+		if (BAR1_WRENB='1' and S_DATA_VLD='1') then							------ BAR1 Target Data Write Available ?
+			if (S_CYCLE64='1') then											------ 64 bit Access ?
+				BAR1_WR <= (not S_CBE);										------ S_CBE Signal Set
+			else
+				if (TARGET_ADRS(2)='1') then								------ 32 bit Odd Address Write ?
+					BAR1_WR <= (not S_CBE(3 downto 0)) & "0000";			------ High Word Write Signal Set
+				else
+					BAR1_WR <=  "0000" & (not S_CBE(3 downto 0));			------ High Word Write Signal Set
+				end if;
+			end if;
+		else
+				BAR1_WR <= (others => '0');									------ BAR1_WR Signal Negate
+		end if;
+	end process;
+
+--------------------------------------------------------------------------------
+-- BAR1(Internal Memory) Area Write Data Control Process
+--------------------------------------------------------------------------------
+
+	process (BAR1_WRENB,S_DATA_VLD,S_CYCLE64,TARGET_ADRS,ADIO) begin
+		if (BAR1_WRENB='1' and S_DATA_VLD='1') then							------ BAR1 Target Data Write Available ?
+			if (S_CYCLE64='1') then											------ 64 bit Access ?
+				BAR1_WRDT <= ADIO;											------ 64 bit Write Data Output
+			else
+				if (TARGET_ADRS(2)='1') then								------ 32 bit Odd Address Write ?
+					BAR1_WRDT(31 downto  0) <= (others => '0');				------ Low  Word Write Data Clear
+					BAR1_WRDT(63 downto 32) <= ADIO(31 downto 0);			------ High Word Write Data Set
+				else
+					BAR1_WRDT(31 downto  0) <= ADIO(31 downto 0);			------ Low  Word Write Data Set
+					BAR1_WRDT(63 downto 32) <= (others => '0');				------ High Word Write Data Clear
+				end if;
+			end if;
+		else
+				BAR1_WRDT <= (others => '0');								------ Write Data Clear
+		end if;
+	end process;
+
+--------------------------------------------------------------------------------
+-- BAR1(Internal Memory) Area Pre-Read Signal Control Process
+--------------------------------------------------------------------------------
+
+	process (RST,CLK) begin
+		if (RST='1') then
+			BAR1_PRERD <= '0';
+		elsif (CLK'event and CLK='1') then
+			if (BASE_HIT(1)='1' and S_WRDN='0') then						------ Base Address 1 Area Read Access ?
+				BAR1_PRERD <= '1';											------ Base Address 1 Area Pre-Read Start
+			elsif (PRERD_CNT(3)='1') then									------ Pre Read Data Transfer End ?
+				BAR1_PRERD <= '0';											------ Base Address 1 Area Pre-Read End
+			end if;
+		end if;
+	end process;
+
+--------------------------------------------------------------------------------
+-- BAR1(Internal Memory) Area Read Signal Control Process
+--------------------------------------------------------------------------------
+
+		BAR1_READ <= (BAR1_PRERD or S_SRC_EN) and BAR1_RDENB;			------ Data Read Signal Set
+
+		BAR1_RD   <= BAR1_READ;												------ Data Read Signal Output
+
+--------------------------------------------------------------------------------
+-- S_READY Signal Output Control Process
+--------------------------------------------------------------------------------
+
+		S_READY <= BAR0_WRENB or BAR1_WRENB or FIFO_RDTEN;					------ Target Write Access Start or Read Data Available
+
+--------------------------------------------------------------------------------
+-- Internal Block Pre-Read Signal Control Process
+--------------------------------------------------------------------------------
+
+	process (RST,CLK) begin
+		if (RST='1') then
+			PRERD_CNT <= (others=>'0');
+		elsif (CLK'event and CLK='1') then
+			PRERD_CNT <= PRERD_CNT(2 downto 0) & (BAR0_PRERD or BAR1_PRERD);		------ FRAMEQ_N Signal Sampling
+		end if;
+	end process;
+
+--------------------------------------------------------------------------------
+-- Target Access Address Output Control Process
+--------------------------------------------------------------------------------
+
+	process (RST,CLK) begin
+		if (RST='1') then
+			TARGET_ADRS <= (others=>'0');
+		elsif (CLK'event and CLK='1') then
+			if (ADDR_VLD='1') then											------- Target Access Start ?
+				TARGET_ADRS <= ADIO(31 downto 2);							------- Start Address Set
+			elsif (S_WRDN='1' and S_DATA_VLD='1') then						------- Target Write Access ?
+				if (S_CYCLE64='1') then										------- 64 bit Access ?
+					TARGET_ADRS <= TARGET_ADRS+2;							------- Access Address Increment +2
+				else
+					TARGET_ADRS <= TARGET_ADRS+1;							------- Access Address Increment +1
+				end if;
+			elsif (BAR0_READ='1' or BAR1_READ='1') then						------- Target Read Access ?
+				if (S_CYCLE64='1') then										------- 64 bit Access ?
+					TARGET_ADRS <= TARGET_ADRS+2;							------- Access Address Increment +2
+				else
+					TARGET_ADRS <= TARGET_ADRS+1;							------- Access Address Increment +1
+				end if;
+			end if;
+		end if;
+	end process;
+
+		TARGET_AD <= TARGET_ADRS & "00";									------- Target Access Address Output
+
+--------------------------------------------------------------------------------
+-- ADIO Signal Output Control Process
+--------------------------------------------------------------------------------
+
+	process (S_DATA,FIFO_RDTEN,FIFO_RDDT) begin
+		if (S_DATA='1' and FIFO_RDTEN='1') then								------ PCI Target Read Transaction & Data Valid ?
+			ADIO <= FIFO_RDDT;												------ Read Data Output
+		else
+			ADIO <= (others=>'Z');									--: inout std_logic_vector( 63 downto 0);
+		end if;
+	end process;
+
+
+--***************************************************************
+--*
+--*  Unused or Fixed PCI Core Signal Control Block
+--*
+--***************************************************************
+
+
+		C_TERM			<= '0'; --: out   std_logic;
+		C_READY 		<= '1'; --: out   std_logic;
+
+		S_TERM			<= '0'; --: out   std_logic;
+		S_ABORT 		<= '0'; --: out   std_logic;
+
+		SLOT64			<= '1'; --: out   std_logic;
+		KEEPOUT 		<= '0'; --: out   std_logic;
+
+		SUB_DATA		<= (others=>'0'); 								--: out	 std_logic_vector( 31 downto 0);
+
+
+
+
+
+end PCI_TARGETCNT_rtl;

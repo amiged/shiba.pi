@@ -1,16 +1,25 @@
-Wed Dec 12 19:28:38 JST 2007
-/** 
-# xを1ステップ進める
-# x(k+1) = x(k) + v(k+1/2)*dt
-*/
+Fri Dec 21 19:54:29 JST 2007
+-- Copyright 2004 Tsuyoshi Hamada
+--
+--
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
-#include <stdio.h>
-#include "nbodysim.h"
+entity dmar_mem_re is
+  port (
+    CLK       : in std_logic;
+    STATE     : in std_logic_vector(1 downto 0);
+    MEM_RE    : out std_logic );
+end dmar_mem_re;
 
-void leapflog(double dt,double x[][DIM],double v[][DIM],int n)
-{
-    int i,d;
-    for(i=0;i<n;i++)
-        for(d=0;d<3;d++)
-            x[i][d] = x[i][d]+v[i][d]*dt;
-}
+architecture rtl of dmar_mem_re is
+component dmaw_mem_we 
+  port (
+    CLK       : in std_logic;
+    STATE     : in std_logic_vector(1 downto 0);
+    MEM_WE    : out std_logic );
+end component;
+begin
+ u0 : dmaw_mem_we port map(CLK=>CLK, STATE=>STATE, MEM_WE=>MEM_RE);
+end rtl;

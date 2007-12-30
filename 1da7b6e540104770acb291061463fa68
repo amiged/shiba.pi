@@ -1,168 +1,163 @@
-Sat Nov 17 19:42:22 JST 2007
--- C:\CYGWIN\HOME\ADMINISTRATOR\FKIT\PCI64\PROJ
--- VHDL Annotation Test Bench created by
--- HDL Bencher 6.1i
--- Wed Dec 29 19:47:04 2004
+Sun Dec 30 19:28:11 JST 2007
+-- Copyright 2004,2005,2006 by Tsuyoshi Hamada
+-- 2006/06/22 : add some comments (T.H)
+-- 2006/02/08 : Fixed (T.H)
 
-LIBRARY IEEE;
-USE IEEE.STD_LOGIC_1164.ALL;
-USE IEEE.STD_LOGIC_UNSIGNED.ALL;
-USE IEEE.STD_LOGIC_ARITH.ALL;
-USE IEEE.STD_LOGIC_TEXTIO.ALL;
-USE STD.TEXTIO.ALL;
+-- LOCAL READ ( ifpga <- pfpga )
+-- by Tsuyoshi Hamada
+-- (※) l_adroのビット幅(NBIT_L_ADRO)を変えた場合はpromを焼きなおす必要があることに注意.(直すのは上のモジュール)
+-- (※) そもそもの前提：LOCAL_READはPFPGA0からのPIPE_STS信号(CBUS0(7))をトランザクション開始信号としています。
 
-ENTITY sim_writecomb_check IS
-END sim_writecomb_check;
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
 
-ARCHITECTURE testbench_arch OF sim_writecomb_check IS
--- If you get a compiler error on the following line,
--- from the menu do Options->Configuration select VHDL 87
-FILE RESULTS: TEXT OPEN WRITE_MODE IS "c:\cygwin\home\administrator\fkit\pci64\proj\sim_writecomb_check.ano";
-	COMPONENT writecomb_check
-		PORT (
-			MEM_WEHA : In  std_logic;
-			MEM_WELA : In  std_logic;
-			IS_ERR : Out  std_logic_vector (1 DOWNTO 0);
-			RST : In  std_logic;
-			CLK : In  std_logic
-		);
-	END COMPONENT;
+entity LOCAL_READ is
+  generic ( NBIT_L_ADRO : integer := 3);
+  port (
+    NPIPE : in std_logic_vector(7 downto 0); -- from PGPG_REG3
+    CALC_STS : in std_logic;    -- from PFPGA
+    BUSY : out std_logic :='1'; -- to GPREG0 (default '1'!! => Waiting until pipe calc end)
 
-	SIGNAL MEM_WEHA : std_logic;
-	SIGNAL MEM_WELA : std_logic;
-	SIGNAL IS_ERR : std_logic_vector (1 DOWNTO 0);
-	SIGNAL RST : std_logic;
-	SIGNAL CLK : std_logic;
+    -- CBUS/DBUS
+    DMAR_ENABLE : out std_logic_vector(3 downto 0); -- for 4 pfpga chip
+    DBUS_Port : out std_logic_vector(63 downto 0);
+    DBUS_idata: in std_logic_vector(63 downto 0);
+    DBUS_HiZ  : out std_logic;
 
-BEGIN
-	UUT : writecomb_check
-	PORT MAP (
-		MEM_WEHA => MEM_WEHA,
-		MEM_WELA => MEM_WELA,
-		IS_ERR => IS_ERR,
-		RST => RST,
-		CLK => CLK
-	);
+    -- DPRAM R/W ports
+    MEM_ADB     : out std_logic_vector(12 downto 0);     -- DPRAM Port B R/W Address
+    MEM_WEHB    : out std_logic;                         -- DPRAM Port B Write Enable (High Word)
+    MEM_WELB    : out std_logic;                         -- DPRAM Port B Write Enable (Low  Word)
+    MEM_DTIB    : out std_logic_vector(63 downto 0);     -- DPRAM Port B Write Data
 
-	PROCESS -- clock process for CLK,
-		VARIABLE TX_TIME : INTEGER :=0;
+    RST : in  std_logic;
+    CLK : in  std_logic
+    );
+end LOCAL_READ;
 
-		PROCEDURE ANNOTATE_IS_ERR(
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
-			STD.TEXTIO.write(TX_LOC, TX_TIME);
-			STD.TEXTIO.write(TX_LOC,string'(",IS_ERR,"));
-			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, IS_ERR);
-			STD.TEXTIO.write(TX_LOC, string'("]"));
-			TX_STR(TX_LOC.all'range) := TX_LOC.all;
-			STD.TEXTIO.writeline(results, TX_LOC);
-			STD.TEXTIO.Deallocate(TX_LOC);
-		END;
+architecture rtl of LOCAL_READ is
 
-	BEGIN
-		CLOCK_LOOP : LOOP
-		CLK <= transport '0';
-		WAIT FOR 5 ns;
-		TX_TIME := TX_TIME + 5;
-		CLK <= transport '1';
-		WAIT FOR 50 ns;
-		TX_TIME := TX_TIME + 50;
-		CLK <= transport '0';
-		WAIT FOR 35 ns;
-		TX_TIME := TX_TIME + 35;
-		ANNOTATE_IS_ERR(TX_TIME);
-		WAIT FOR 10 ns;
-		TX_TIME := TX_TIME + 10;
-		END LOOP CLOCK_LOOP;
-	END PROCESS;
+component LOCAL_READ_CNT
+  generic (CNT_WIDTH     : integer := 16;      -- program counter bit-width
+           FO_BASE       : integer := 24576;   -- = 0x6000
+           NBIT_L_ADRO   : integer := 3;       -- Bit-Length of l_ado(pgpg_mem.vhd)
+           INTF_LAT      : integer := 8);      -- LOCAL_READ_IF latency (clock)
+  port (
+    NPIPE : in std_logic_vector(7 downto 0);   -- number of pipelines per chip
+    CALC_DONE  : in std_logic;                 -- pulse
+    FETCH_DONE : out std_logic;
+    EXEC     : out std_logic;                     -- pulse
+    START_AD : out std_logic_vector(18 downto 0); -- 19 bit
+    NQWORD   : out std_logic_vector( 8 downto 0); --  9 bit
+    CHIPSEL  : out std_logic_vector( 3 downto 0); --  4 bit
+    MEM_AD_BASE : out std_logic_vector(12 downto 0);
+    RST : in  std_logic;
+    CLK : in  std_logic
+    );
+end component;
 
-	PROCESS   -- Process for CLK
-		VARIABLE TX_OUT : LINE;
+component LOCAL_READ_IF
+  port (
+    EXEC : in std_logic;
+    START_AD : in std_logic_vector(18 downto 0);
+    NQWORD   : in std_logic_vector( 8 downto 0);
+    CHIPSEL  : in std_logic_vector( 3 downto 0);
+    MEM_AD_BASE : in std_logic_vector(12 downto 0);
+    BUSY : out std_logic;  -- to GPREG0
+    DMAR_ENABLE : out std_logic_vector(3 downto 0);
+    DBUS_Port : out std_logic_vector(63 downto 0);
+    DBUS_idata: in std_logic_vector(63 downto 0);
+    DBUS_HiZ  : out std_logic;
+    MEM_ADB     : out std_logic_vector(12 downto 0);
+    MEM_WEHB    : out std_logic;
+    MEM_WELB    : out std_logic;
+    MEM_DTIB    : out std_logic_vector(63 downto 0);
+    RST : in  std_logic;
+    CLK : in  std_logic
+    );
+end component;
 
-		BEGIN
-		-- --------------------
-		RST <= transport '0';
-		MEM_WEHA <= transport '0';
-		MEM_WELA <= transport '0';
-		-- --------------------
-		WAIT FOR 200 ns; -- Time=200 ns
-		RST <= transport '0';
-		-- --------------------
-		WAIT FOR 500 ns; -- Time=700 ns
-		MEM_WEHA <= transport '0';
-		MEM_WELA <= transport '0';
-		-- --------------------
-		WAIT FOR 200 ns; -- Time=900 ns
-		RST <= transport '1';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=1000 ns
-		RST <= transport '0';
-		-- --------------------
-		WAIT FOR 1900 ns; -- Time=2900 ns
-		MEM_WEHA <= transport '1';
-		MEM_WELA <= transport '1';
-		-- --------------------
-		WAIT FOR 500 ns; -- Time=3400 ns
-		MEM_WEHA <= transport '0';
-		MEM_WELA <= transport '0';
-		-- --------------------
-		WAIT FOR 1100 ns; -- Time=4500 ns
-		MEM_WEHA <= transport '1';
-		MEM_WELA <= transport '1';
-		-- --------------------
-		WAIT FOR 200 ns; -- Time=4700 ns
-		MEM_WEHA <= transport '0';
-		MEM_WELA <= transport '0';
-		-- --------------------
-		WAIT FOR 1300 ns; -- Time=6000 ns
-		MEM_WELA <= transport '1';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=6100 ns
-		MEM_WELA <= transport '0';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=6200 ns
-		MEM_WEHA <= transport '0';
-		-- --------------------
-		WAIT FOR 300 ns; -- Time=6500 ns
-		MEM_WEHA <= transport '1';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=6600 ns
-		MEM_WEHA <= transport '0';
-		-- --------------------
-		WAIT FOR 1300 ns; -- Time=7900 ns
-		MEM_WELA <= transport '1';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=8000 ns
-		MEM_WEHA <= transport '1';
-		MEM_WELA <= transport '0';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=8100 ns
-		MEM_WEHA <= transport '0';
-		MEM_WELA <= transport '1';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=8200 ns
-		MEM_WEHA <= transport '1';
-		MEM_WELA <= transport '0';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=8300 ns
-		MEM_WEHA <= transport '0';
-		-- --------------------
-		WAIT FOR 2005 ns; -- Time=10305 ns
-		-- --------------------
+signal calc_done : std_logic :='0';   -- to cnt
+signal csts0,csts1 : std_logic :='0'; -- from pfpga
 
-		STD.TEXTIO.write(TX_OUT, string'("Total[]"));
-		STD.TEXTIO.writeline(results, TX_OUT);
-		ASSERT (FALSE) REPORT
-			"Success! Simulation for annotation completed"
-			SEVERITY FAILURE;
-	END PROCESS;
-END testbench_arch;
+-- CNT
+signal fetch_done : std_logic :='0';
+signal exec : std_logic;                          -- cnt -> if
+signal start_ad : std_logic_vector(18 downto 0);  -- cnt -> if
+signal nqword   : std_logic_vector( 8 downto 0);  -- cnt -> if
+signal chipsel  : std_logic_vector( 3 downto 0);  -- cnt -> if
+signal mem_base : std_logic_vector(12 downto 0);  -- cnt -> if
+-- IF
+signal ignore_busy : std_logic; 
 
-CONFIGURATION writecomb_check_cfg OF sim_writecomb_check IS
-	FOR testbench_arch
-	END FOR;
-END writecomb_check_cfg;
+begin
+
+  -- CALC STATUS
+  csts0 <= CALC_STS;
+  process (CLK) begin
+    if (CLK'event and CLK='1') then
+      csts1 <= csts0;
+    end if;
+  end process;
+
+  -- CALC DONE
+  process (RST,CLK,csts0,csts1) begin
+    if(RST='1') then
+      calc_done <= '0';
+    elsif (CLK'event and CLK='1') then
+      if((csts0='1') AND (csts1='0')) then
+        calc_done <= '1';
+      else
+        calc_done <= '0';
+      end if;
+    end if;
+  end process;
+
+  -- BUSY
+  process (RST,CLK,csts0,csts1,fetch_done) begin
+    if (RST='1') then
+      BUSY <='1';
+    elsif (CLK'event and CLK='1') then
+      if((csts0='1') AND (csts1='0')) then
+        BUSY <= '1';
+      elsif(fetch_done='1') then
+        BUSY <= '0';
+      end if;
+    end if;
+  end process;
+
+  -- =================================================== SUBMODULE INSTANCES
+  u0: LOCAL_READ_CNT 
+    generic map(NBIT_L_ADRO => NBIT_L_ADRO)
+    port map(NPIPE => NPIPE,
+             CALC_DONE => calc_done,
+             FETCH_DONE => fetch_done,
+             EXEC       => exec,
+             START_AD   => start_ad,
+             NQWORD     => nqword,
+             CHIPSEL    => chipsel,
+             MEM_AD_BASE => mem_base,
+             RST => RST, CLK=>CLK);
+
+
+  u1: LOCAL_READ_IF
+    port map(EXEC        => exec,     -- from cnt
+             START_AD    => start_ad, -- from cnt
+             NQWORD      => nqword,   -- from cnt
+             CHIPSEL     => chipsel,  -- from cnt
+             MEM_AD_BASE => mem_base, -- from cnt
+             BUSY => ignore_busy,
+             DMAR_ENABLE => DMAR_ENABLE, -- output directly
+             DBUS_Port   => DBUS_Port,   -- output directly
+             DBUS_idata  => DBUS_idata,  -- output directly
+             DBUS_HiZ    => DBUS_HiZ,    -- output directly
+             MEM_ADB  => MEM_ADB,        -- output directly
+             MEM_WEHB => MEM_WEHB,       -- output directly
+             MEM_WELB => MEM_WELB,       -- output directly
+             MEM_DTIB => MEM_DTIB,       -- output directly
+             RST=>RST,CLK=>CLK);
+
+
+end rtl;

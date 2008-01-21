@@ -1,12 +1,52 @@
-Sat Jan 19 19:36:56 JST 2008
-
-all:
-	cp top.ucf.ISE6.3i_Synplify top.ucf
-	rm -rf proj
-	tar xvf proj.synplify.tar
-	cd proj;ngdbuild -intstyle ise -dd /home/hamada/VHDL/proj/_ngo -uc ../top.ucf  -p xc2vp70-ff1517-5 top.edn top.ngd
-	cd proj;map -intstyle ise -p xc2vp70-ff1517-5 -cm area -pr b -k 4 -c 100 -tx off -o top_map.ncd top.ngd top.pcf
-	cd proj;par -w -intstyle ise -ol std -t 1 top_map.ncd top.ncd top.pcf
-	cd proj;trce -intstyle ise -e 3 -l 3 -xml top top.ncd -o top.twr top.pcf
-	cd proj;bitgen -intstyle ise -f top.ut top.ncd
-
+Mon Jan 21 19:30:57 JST 2008
+set -tmpdir __projnav
+set -xsthdpdir ./xst
+run
+-ifn top.prj
+-ifmt mixed
+-ofn top
+-ofmt NGC
+-p xc2vp70-5-ff1517
+-top top
+-opt_mode Speed
+-opt_level 1
+-iuc NO
+-lso top.lso
+-keep_hierarchy NO
+-glob_opt AllClockNets
+-rtlview Yes
+-read_cores YES
+-write_timing_constraints NO
+-cross_clock_analysis NO
+-hierarchy_separator _
+-bus_delimiter <>
+-case maintain
+-slice_utilization_ratio 100
+-verilog2001 YES
+-vlgincdir 
+-fsm_extract YES -fsm_encoding Auto
+-fsm_style lut
+-ram_extract Yes
+-ram_style Auto
+-rom_extract Yes
+-rom_style Auto
+-mux_extract YES
+-mux_style Auto
+-decoder_extract YES
+-priority_extract YES
+-shreg_extract YES
+-shift_extract YES
+-xor_collapse YES
+-resource_sharing YES
+-mult_style auto
+-iobuf YES
+-max_fanout 500
+-bufg 16
+-register_duplication YES
+-equivalent_register_removal YES
+-register_balancing No
+-slice_packing YES
+-optimize_primitives NO
+-tristate2logic No
+-iob auto
+-slice_utilization_ratio_maxmargin 5

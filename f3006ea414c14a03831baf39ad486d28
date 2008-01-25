@@ -1,15 +1,5 @@
-Wed Jan  2 19:34:33 JST 2008
-#!/bin/sh
-#
-# An example hook script to verify what is about to be committed
-# by applypatch from an e-mail message.
-#
-# The hook should exit with non-zero status after issuing an
-# appropriate message if it wants to stop the commit.
-#
-# To enable this hook, rename this file to "pre-applypatch".
-
-. git-sh-setup
-test -x "$GIT_DIR/hooks/pre-commit" &&
-	exec "$GIT_DIR/hooks/pre-commit" ${1+"$@"}
-:
+Fri Jan 25 19:30:29 JST 2008
+-- ProjNav VHDL simulation template: sim_local_io.udo
+-- You may edit this file after the line that starts with
+-- '-- START' to customize your simulation
+-- START user-defined simulation commands

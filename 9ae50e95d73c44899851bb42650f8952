@@ -1,302 +1,233 @@
-Wed Jan  9 19:47:13 JST 2008
-#!/usr/bin/env python3
-#Time-stamp: <2017-06-12 07:44:23 hamada>
-import cv2
-import urllib.request
-import numpy as np
-import argparse
-from datetime import datetime
-import mkdir
+Fri Feb  1 19:30:56 JST 2008
+/*
+ * pfpga_conf_a.c
+ *
+ * Copyright (C) 2006-2007 Tsuyoshi Hamada
+ *                                All rights reserved.
+ * 
+ * No warranty is attached; 
+ * I cannot take responsibility for errors or fitness for use.
+ *
+ */
 
-class DroidCam(object):
-    def __init__(self):
-        self.droidapp = 'IP Webcam'
-        self.ipadr  = '192.168.7.2'
-#        self.droidapp = 'DroidCam'
-#        self.ipadr  = '133.45.9.162'
-        self.port  = '3389'
-        self.stream = -1
-        self.URL = -1
-    def get_stream(self):
-        stub = ''
-        if (self.droidapp == 'DroidCam'):
-            stub = '/mjpegfeed?960x720'
-        elif (self.droidapp == 'IP Webcam'):
-            stub = '/video?dummy=param.mjpg'
-        else:
-            stub = '/mjpegfeed?640x480'
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <unistd.h>     // usleep
+#include "pg4.h"
 
-        url = 'http://'+self.ipadr+':'+self.port + stub
-        print ('URL: ', url)
-        self.URL = url
-        self.stream = urllib.request.urlopen(self.URL)
-        return (self.stream)
+static char pfpga_info[256];
+#define CNF_CMD_ADR 0x80
+#define CNF_DAT_ADR 0x84
 
-class State(object):
-    def __init__(self):
-        self.is_record = False
-        self.drawing = False
-        self.moving = False
-        self.posi0 = [-1,-1]
-        self.posi1 = [-1,-1]
-        self.posi2 = [-1,-1]
-        self.image = -1
-        self.image_size = [-1, -1] # [height, width]
-        self.image_orig = -1
-        self.class_num = 777
-        self.image_num = 0
+static unsigned int *data;
 
-    def draw_rect(self):
-        # print ("posi0, posi1: ", self.posi0, self.posi1)
-        cv2.rectangle(self.image, (self.posi0[0], self.posi0[1]), (self.posi1[0], self.posi1[1]), (0, 255, 0), 1)
+void get_header(char* bitfile, char* header)
+{
+  int index=0, x;
+  char buf[128];
+  
+  index += 2 + (((0xff&bitfile[index])<<8) | (0xff&bitfile[index+1]));
+  index += 2 + (((0xff&bitfile[index])<<8)|(0xff&bitfile[index+1]));
 
-    def draw_text(self):
-        if(self.is_record):
-            font = cv2.FONT_HERSHEY_TRIPLEX # cv2.FONT_HERSHEY_PLAIN
-            font_size = 0.8
-            text = "<<%d>>"% (self.image_num)
-            color = (0x0, 0x0, 0xBF)
-            px = int(self.image_size[1]/2)
-            py = 30
-            cv2.putText(self.image, text,(px, py), font, font_size, color)
+  // --- NCD file name ---
+  x = ((0xff&bitfile[index])<<8)|(0xff&bitfile[index+1]);
+  //  memcpy(buf, &bitfile[index+2], x);
+  //  sprintf(header, "%s, %s", header, buf);
 
-state = State()
+  // --- device ---
+  index += (x+3);
+  x = ((0xff&bitfile[index])<<8)|(0xff&bitfile[index+1]);
+  memcpy(buf, &bitfile[index+2], x);
+  sprintf(header, "%s, %s", header, buf);
 
-def mouse_event(event,x,y,flags,param):
-    global state
+  // --- data ---
+  index += (x+3);
+  x = ((0xff&bitfile[index])<<8)|(0xff&bitfile[index+1]);
+  memcpy(buf, &bitfile[index+2], x);
+  sprintf(header, "%s, %s", header, buf);
 
-    if x < 0: x = 0
-    if y < 0: y = 0
-    if x >= state.image_size[1]: x = state.image_size[1] - 1
-    if y >= state.image_size[0]: y = state.image_size[0] - 1
+  // --- time ---
+  index += (x+3);
+  x = ((0xff&bitfile[index])<<8)|(0xff&bitfile[index+1]);
+  memcpy(buf, &bitfile[index+2], x);
+  sprintf(header, "%s, %s", header, buf);
 
-    if event == (cv2.EVENT_LBUTTONDOWN):
-        state.posi0[0] = x0 = state.posi1[0]
-        state.posi0[1] = y0 = state.posi1[1]
-        state.posi1[0] = x
-        state.posi1[1] = y
-        print ("Rect: (%d, %d) - (%d, %d)"%(x0, y0, x, y) )
-
-    if event == (cv2.EVENT_RBUTTONDOWN): 
-        state.moving = True
-        state.posi2[0] = x
-        state.posi2[1] = y
-
-    if event == (cv2.EVENT_RBUTTONUP): 
-        state.moving = False
-        state.posi2[0] = x
-        state.posi2[1] = y
-    
-
-    if event == (cv2.EVENT_MOUSEMOVE):
-        if state.moving == True:
-            width  = abs(state.posi0[0] - state.posi1[0])
-            height = abs(state.posi0[1] - state.posi1[1])
-            x0 = x - int(width/2)
-            x1 = x + int(width/2)
-            y0 = y - int(height/2)
-            y1 = y + int(height/2)
-
-            x_min = min(x0, x1)
-            x_max = max(x0, x1)
-            y_min = min(y0, y1)
-            y_max = max(y0, y1)
-
-            if x_min < 0: x_min = 0
-            if y_min < 0: y_min = 0
-            if x_max >= state.image_size[1]: x_max = state.image_size[1] - 1
-            if y_max >= state.image_size[0]: y_max = state.image_size[0] - 1
-
-            state.posi0[0] = x_min
-            state.posi0[1] = y_min
-            state.posi1[0] = x_max
-            state.posi1[1] = y_max
+  // --- key ---
+  index += (x+3);
+  x = ((0xff&bitfile[index])<<8)|(0xff&bitfile[index+1]);
+  //  memcpy(buf, &bitfile[index+2], x);
+  //  sprintf(header, "%s, %s", header, buf);
 
 
-def __mouse_event(event,x,y,flags,param):
-    global state
-
-    if x < 0: x = 0
-    if y < 0: y = 0
-    if x >= state.image_size[1]: x = state.image_size[1] - 1
-    if y >= state.image_size[0]: y = state.image_size[0] - 1
+}
 
 
-    if event == (cv2.EVENT_LBUTTONDOWN):
-        state.posi0[0] = x0 = state.posi1[0]
-        state.posi0[1] = y0 = state.posi1[1]
-        state.posi1[0] = x
-        state.posi1[1] = y
-        print ("Rect: (%d, %d) - (%d, %d)"%(x0, y0, x, y) )
 
-#------------------------------------------------------------------------ save_data
-def save_data_bbox(image_dbg, image_orig, fnum):
-    global state
-    class_num = state.class_num
-    posi0 = state.posi0
-    posi1 = state.posi1
-    basedir = '../data4bbox/'
-    fname_body = "image_%08d" % fnum
+int fread_config_data(char* fname, unsigned int *size)
+{
+  // -- Read Config File to 'config_bit_data'---
+  FILE* fin;
+  int ndata;
+  int i;
 
-    # save image_orig (for Images/)
-    fname = fname_body + ".jpg"
-    basedir_images = basedir+"Images/%03d/"%(class_num)
-    ofname_images = mkdir.get_filename_frame_simple(basedir_images , fname)
-    print (ofname_images)
-    cv2.imwrite(ofname_images, image_orig)
+  struct stat buf;
+  int fsize;
 
-    # save image_dbg (for Debug/)
-    fname = fname_body + ".jpg"
-    basedir_dbg = basedir+"Debug/%03d/"%(class_num)
-    ofname_dbg  = mkdir.get_filename_frame_simple(basedir_dbg , fname)
-    print (ofname_dbg)
-    cv2.imwrite(ofname_dbg, image_dbg)
+  // read file status
+  if (stat(fname, &buf) == -1) {
+    fprintf(stderr, "fread_config_data: can't open bit file!!! %s\n", fname);
+    exit(-1);
+  }
 
-    # save labes
-    fname = fname_body + ".txt"
-    basedir_labels = basedir+"Labels/%03d/"%(class_num)
-    ofname_labels  = mkdir.get_filename_frame_simple(basedir_labels , fname)
-    print (ofname_labels)
-    bbox_posi = []
-    bbox_posi.append(min(posi0[0], posi1[0]))
-    bbox_posi.append(min(posi0[1], posi1[1]))
-    bbox_posi.append(max(posi0[0], posi1[0]))
-    bbox_posi.append(max(posi0[1], posi1[1]))
-    with open(ofname_labels, "w") as file:
-        file.write("1\n")
-        file.write("%d %d %d %d\n" % (tuple(bbox_posi)))
+  fsize = buf.st_size;
+  if (data != NULL) {
+    free(data);
+  }
+  data = (unsigned int*)malloc(fsize);
+  if (data == NULL) {
+    fprintf(stderr, "fread_config_data: memory allocation error!\n");
+    exit(-1);
+  }
+  
+  fin = fopen(fname, "r");
+  if (fin == NULL) {
+    fprintf(stderr, "fread_config_data: cannot open %s!\n", fname);
+    exit(-1);
+  }
+  fread(data,fsize,1,fin);
+  fclose(fin);
+  fprintf(stderr, "fread_config_data: read %i bytes.\n", fsize);
 
-def save_data_darknet(image_dbg, image_orig, fnum):
-    global state
-    class_num = state.class_num
-    posi0 = state.posi0
-    posi1 = state.posi1
-    basedir = '../data4darknet/'
-    fname_body = "image_%08d" % fnum
+  get_header((char*)data, pfpga_info);
 
-    # save image_orig (for Images/)
-    fname = fname_body + ".jpg"
-    basedir_images = basedir+"images/%03d/"%(class_num)
-    ofname_images = mkdir.get_filename_frame_simple(basedir_images , fname)
-    #print (ofname_images)
-    cv2.imwrite(ofname_images, image_orig)
+  
+  ndata = fsize/sizeof(unsigned int);
 
-    # save image_dbg (for Debug/)
-    fname = fname_body + ".jpg"
-    basedir_dbg = basedir+"debug/%03d/"%(class_num)
-    ofname_dbg  = mkdir.get_filename_frame_simple(basedir_dbg , fname)
-    #print (ofname_dbg)
-    cv2.imwrite(ofname_dbg, image_dbg)
+  // CHANGE ENDIAN (LittleEndian -> BigEndian)
+  for(i = 0;i < ndata; i++){
+    unsigned int byte[8];
+    byte[0] = 0xFF&(data[i]>>24);
+    byte[1] = 0xFF&(data[i]>>16);
+    byte[2] = 0xFF&(data[i]>>8);
+    byte[3] = 0xFF&(data[i]);
+    data[i]=0x0;
+    data[i]= (byte[3]<<24)|(byte[2]<<16)|(byte[1]<<8)|byte[0];
+  }
 
-    # save labes
-    fname = fname_body + ".txt"
-    basedir_labels = basedir+"labels/%03d/"%(class_num)
-    ofname_labels  = mkdir.get_filename_frame_simple(basedir_labels , fname)
-    print (ofname_labels)
-    bbox_posi = []
-    bbox_posi.append(min(posi0[0], posi1[0]))
-    bbox_posi.append(min(posi0[1], posi1[1]))
-    bbox_posi.append(max(posi0[0], posi1[0]))
-    bbox_posi.append(max(posi0[1], posi1[1]))
-    
-    label_format = 'BBox'
-    label_format = 'darknet'
+  *size = (unsigned int)ndata;
 
-    if label_format == 'BBox': 
-        with open(ofname_labels, "w") as file:
-            file.write("1\n")
-            file.write("%d %d %d %d\n" % (tuple(bbox_posi)))
+  return fsize;
+}
 
-    if label_format == 'darknet': 
-        img_h, img_w = image_orig.shape[:2]
-        dh = float(img_h)
-        dw = float(img_w)
-        x0 = bbox_posi[0]
-        y0 = bbox_posi[1]
-        x1 = bbox_posi[2]
-        y1 = bbox_posi[3]
-        dnet_x = (x0 + x1)/(2.0*dw)
-        dnet_y = (y0 + y1)/(2.0*dh)
-        dnet_w = (x1 - x0)/dw
-        dnet_h = (y1 - y0)/dh
-        with open(ofname_labels, "w") as file:
-            file.write("0 %1.17f %1.17f %1.17f %1.17f\n" % (dnet_x, dnet_y, dnet_w, dnet_h))
+void config_onechip(int devid, unsigned int nfp, unsigned int ncfgdata)
+{
+  unsigned int i, d;
+  unsigned int *p;
 
+  if (data == NULL) return;
+  if (nfp > 0x8) {
+    fprintf(stderr, "nfp err\n");
+    exit(-1);
+  } 
 
-def save_data(image_dbg, image_orig, fnum, label_format='darknet'):
-    if False:                      save_data_bbox(image_dbg, image_orig, fnum)
-    if label_format == 'darknet': save_data_darknet(image_dbg, image_orig, fnum)
+  // ---------------------------------------- SETUP CONFIGURATION
+  d = (unsigned int)(0xf0|nfp);
+  WriteBase0(devid, CNF_CMD_ADR, d);
+  d = (unsigned int)(  ((0xF^nfp)<<4)   |nfp);
+  WriteBase0(devid, CNF_CMD_ADR, d);
+  d = (unsigned int)(0xf0|nfp);
+  WriteBase0(devid, CNF_CMD_ADR, d);
+  usleep(15000);
 
-#------------------------------------------------------------------------ save_data./
+  // ---------------------------------------- SEND CONFIGURATION DATA
+  p = data;
+  for(i = 0; i < ncfgdata; i++){
+    WriteBase0(devid, CNF_DAT_ADR, *(p++));
+    d = (unsigned int)(0x1f0|nfp);
+    WriteBase0(devid, CNF_CMD_ADR,      d);
+    WriteBase0(devid, CNF_CMD_ADR, 0xff&d);
+  }
 
+  // ---------------------------------------- STOP CFG_CCLK
+  d = (unsigned int)(0xf0);
+  WriteBase0(devid, CNF_CMD_ADR,d);
+}
 
-if (__name__ == '__main__'):
+void config_pfpga_a(int devid, char* fname, int chipid)
+{
+  unsigned int i, nfp, ncfgdata;
 
-    droidcam = DroidCam()
-    stream = droidcam.get_stream()
+  data = NULL;
+  fread_config_data(fname, &ncfgdata);
 
-    parser = argparse.ArgumentParser(description = "description goes here")
-    parser.add_argument("--devid", type=int, help = "set device id", required=False)
-    args = parser.parse_args()
-    devid = 0
-    if args.devid:
-        devid = int(args.devid)
-        print ("set devid = ", devid)
+  {
+    i = chipid;
+    nfp = 0xf&(0x1<<i);
+    fprintf(stderr, "configuring chip%i ...\n", i);
+    config_onechip(devid, nfp, ncfgdata);
+  }
 
+  free(data);
+}
 
-    bytes = b''
+int main(int argc, char* argv[])
+{
+  int devid, chipid;
 
-    frame = -1
-    # --- init loop ---
-    while True:
-        raw = stream.read(1024)
-        bytes += raw
-        a = bytes.find(b'\xff\xd8')
-        b = bytes.find(b'\xff\xd9')
-        if a!=-1 and b!=-1:
-            jpg = bytes[a:b+2]
-            bytes= bytes[b+2:]
-            frame = cv2.imdecode(np.fromstring(jpg, dtype=np.uint8),cv2.IMREAD_COLOR)
-            state.image_orig = frame.copy()
-            state.image      = frame.copy()
-            state.image_size[0], state.image_size[1] = frame.shape[:2]
-            cv2.imshow('droidcam',state.image)
-            break
+  if (argc < 2) {
+    fprintf(stderr, "%s <bitfile> <chipid> <devid>\n", argv[0]);
+    exit(-1);
+  }
 
-    # --- record/annotation loop ---
-    while True:
-        raw = stream.read(1024)
-        bytes += raw
-        a = bytes.find(b'\xff\xd8')
-        b = bytes.find(b'\xff\xd9')
-        if a!=-1 and b!=-1:
-            jpg = bytes[a:b+2]
-            bytes= bytes[b+2:]
-            frame = cv2.imdecode(np.fromstring(jpg, dtype=np.uint8),cv2.IMREAD_COLOR)
+  if (argv[2] == NULL) {
+    chipid = 0;
+  } else {
+    chipid = atoi(argv[2]);
+    if (chipid > 3) {
+      fprintf(stderr, "%s : invalid argument <chipid> %s:%d\n", argv[0], __FILE__, __LINE__);
+      exit(-1);
+    }
+  }
 
-        state.image_orig = frame.copy()
-        state.image      = frame.copy()
-        state.image_size[0], state.image_size[1] = frame.shape[:2]
-        state.draw_rect()
-        state.draw_text()
-        cv2.imshow('droidcam',state.image)
-        cv2.setMouseCallback("droidcam", mouse_event)
-        tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S_%f')
-        if(state.is_record):
-            save_data(state.image, state.image_orig, state.image_num)
-            state.image_num += 1
+  if (argv[3] == NULL) {
+    devid = 0;
+  } else {
+    devid = atoi(argv[3]);
+    if (devid > 3) {
+      fprintf(stderr, "%s : invalid argument <devid>%s:%d\n", argv[0], __FILE__, __LINE__);
+      exit(-1);
+    }
+  }
 
-        key = cv2.waitKey(1) & 0xFF
-        if key == ord('q'): break
-        if ( (key == ord(' ')) or 
-             (key == 34) or # Muhenkan
-             (key == 35) or # Henkan
-             (key == 39) or # katakana
-             (key == 10)    # Enter
-        ):
-            state.is_record = not (state.is_record)
+  fprintf(stderr, "%s configures a PFPGA%i on progrape%i ...\n", argv[0], chipid, devid);
 
+  pg4_open(devid);
 
-    cv2.destroyAllWindows()
-    print("Done.")
+  {
+    pg4_get_pfpga_info(devid, pfpga_info);
+    printf("----------------------\n");
+    printf("Previous config info: \n");
+    printf("%s\n",pfpga_info);
+    printf("----------------------\n");
+  }
 
+  {
+    sprintf(pfpga_info, "%s on <PFPGA%d>", argv[1], chipid);
+    config_pfpga_a(devid, argv[1], chipid);
+    pg4_set_pfpga_info(devid, pfpga_info);
+  }
+
+  {
+    pg4_get_pfpga_info(devid, pfpga_info);
+    printf("----------------------\n");
+    printf("Current config info: \n");
+    printf("%s\n",pfpga_info);
+    printf("----------------------\n");
+  }
+
+  pg4_close(devid);
+
+  return 0;
+}

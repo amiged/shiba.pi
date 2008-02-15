@@ -1,29 +1,24 @@
-Mon Oct 15 19:28:26 JST 2007
-#!/usr/bin/env python3
-#Time-stamp: <>
-import fnmatch
-import functools
-import os
-import re
+Fri Feb 15 19:27:04 JST 2008
+// Time-stamp: "2006-12-07 19:19:22 hamada"
+// Copyright (c) 2006 by Tsuyoshi Hamada, All rights reserved.
 
-def find(path, pattern):
+#include <stdio.h>
+#include <stdlib.h>
+#include "pg4.h"
 
-    if isinstance(pattern, str): 
-        match = functools.partial(fnmatch.fnmatch, pat=pattern)
-    elif isinstance(pattern, re._pattern_type):
-        match = pattern.match
-    elif callable(pattern):
-        match = pattern
-    else:
-        raise TypeError
+unsigned int* ptr;
+unsigned int* bar1;
 
-    for root, dirs, files in os.walk(path):
-        for file_ in files:
-            if match(file_):
-                yield os.path.join(root, file_)
+int main(int argc,char *argv[])
+{
+  int devid = 0;
 
+  pg4_open(devid);
+  bar1 = pg4_get_bar1ptr(devid);
+  printf("BAR0: %lx\n",pg4_getbaseaddr(devid,0));
+  printf("BAR1: %lx\n",pg4_getbaseaddr(devid,1));
 
-if __name__ == '__main__':
-    for i in find('../log/', '*.jpg'):
-        print (i)
+  pg4_DMAcheck(devid);
 
+  return 0;
+}

@@ -1,34 +1,57 @@
-Wed Feb  6 19:46:37 JST 2008
-#include <stdio.h>
+Fri Mar 28 19:28:51 JST 2008
+-- 2005/06/13
+#define NPOS 32
+#define NLOG 17
+#define NMAN 8
+#define NCUT 6
+#define NFOR 57
+#define NACC 64
+#define D_FSU  1
+#define D_FTL  2
+#define D_LAD  4
+#define D_LMU  1
+#define D_LTF  2
+#define D_FAC  1
 
+// -1 < xbox < 1.0,
+// mmin > 1.0 (1e-2 < m < 1.0 ==> underflow around large R)
+#define xsize (2.0)
+#define mmin  (1.0e-2)
+#define xscale (pow(2.0,(double)NPOS)/xsize)
+//mmin 0xdf61
+#define mscale (pow(2.0,95.38)/mmin)
+#define escale (xscale*xscale)
 
-void debug_position_snap(double x[][3], double Gflops, int n, int nstep)
-{
-  //    int i;
-    static int flag=0;
-    static FILE* fp;
+#define NEXAD -31
+#define fshift pow(2.0,-1.0*(double)NEXAD)
+#define fscale (-xscale*xscale*fshift/mscale)
 
-    if(flag==0){
-      fp = fopen("/mnt/ram/xxx.log","w");
-      //      fp = fopen("xxx.log","w");
-      flag = 1;
-    }else{
-      rewind(fp);
-    }
+/NPIPE 2;
+/NVMP 1;
 
-    fprintf(fp,"%d\n",nstep);
-    fprintf(fp,"%e\n",Gflops);
-    fprintf(fp,"%d\n",n);
+/JPSET xj[3], x[][], fix,      NPOS,xscale;
+/JPSET mj,    m[],   log,      NLOG,NMAN,mscale;
+/IPSET xi[3], x[][], fix,      NPOS,xscale;
+/IPSET ieps2, eps2,  log,      NLOG,NMAN,escale;
+/FOSET sx[3], a[][], fix,      NACC,fscale;
 
-    fwrite(x, n*24,1,fp);
+pg_fix_addsub(SUB,xi,xj,xij,           NPOS,           D_FSU);
+pg_conv_ftol(xij,dx,                   NPOS,NLOG,NMAN, D_FTL);
+pg_log_shift(1,dx,x2,                  NLOG);
 
-    /*
-    for(i=0;i<n;i++){
-      fprintf(fp,"%1.8e\t%1.8e\t%1.8e\n",x[i][0],x[i][1],x[i][2]);
-    }
-    */
+--pg_log_unsigned_add_itp(x2[0],x2[1], x2y2,   NLOG,NMAN,  D_LAD,NCUT);
+--pg_log_unsigned_add_itp(x2[2],ieps2, z2e2,   NLOG,NMAN,  D_LAD,NCUT);
+--pg_log_unsigned_add_itp(x2y2,z2e2,   r2,     NLOG,NMAN,  D_LAD,NCUT);
+pg_log_unsigned_add(x2[0],x2[1], x2y2, NLOG,NMAN,      D_LAD);
+pg_log_unsigned_add(x2[2],ieps2, z2e2, NLOG,NMAN,      D_LAD);
+pg_log_unsigned_add(x2y2,z2e2,   r2,   NLOG,NMAN,      D_LAD);
 
-    //    fclose(fp);
-    fflush(fp);
-}
+pg_log_shift(-1,r2,       r1,          NLOG);
+pg_log_muldiv(MUL,r2,r1,  r3,          NLOG,           D_LMU);
+pg_log_muldiv(SDIV,mj,r3,  mf,         NLOG,           D_LMU);
+pg_log_muldiv(MUL,mf,dx,  fx,          NLOG,           D_LMU);
+--pg_log_muldiv(SDIV,fx,f_shift, fxs,    NLOG,           D_LMU);
+pg_log_expadd(fx,fxs,                  NEXAD,NLOG,NMAN, D_LMU);
 
+pg_conv_ltof(fxs,  ffx,                NLOG,NMAN,NFOR, D_LTF);
+pg_fix_accum(ffx,  sx,                 NFOR,NACC,      D_FAC);

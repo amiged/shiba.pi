@@ -1,17 +1,32 @@
-Sat Feb  9 19:49:40 JST 2008
-#!/usr/bin/perl
+Tue Apr  1 19:29:30 JST 2008
+/*
+ * pfpga_info.c
+ *
+ * Copyright (C) 2006-2007 Tsuyoshi Hamada
+ *                                All rights reserved.
+ * 
+ * No warranty is attached; 
+ * I cannot take responsibility for errors or fitness for use.
+ *
+ */
 
-my $N = 300;
-my $XSCALE = 1.0;
-my $YSCALE = 1.0;
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-srand(12345);
+#define MAXBD 8
+#include "pg4.h"
 
-print $N ."\n";
+int main(int argc, char* argv[])
+{
+  int devid=0;
+  char info[1024];
 
-for(my $i=0;$i<$N;$i++){
-    my $x = (rand(1.0)*$XSCALE - $XSCALE/2.0);
-    my $y = (rand(1.0)*$YSCALE - $XSCALE/2.0);
-    my $s = sprintf("%e\t%e\n",$x,$y);
-    print $s;
+  pg4_open(devid);
+  pg4_get_pfpga_info(devid, info);
+  pg4_close(devid);
+
+  printf("%s\n", info);
+
+  return 1;
 }

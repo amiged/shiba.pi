@@ -1,82 +1,129 @@
-Sun Apr 13 19:37:48 JST 2008
------------------------------------------------
---  pgpg-b3 dual port RAM module (for IMEM)
---      32 bits
---   16384 entries
---  Copyright(c) 2004- by Tsuyoshi Hamada
---  2004/12/02 : 64KB version up for imem by Tsuyoshi Hamada 
---  2004/10/29 : for Jmem by Tsuyoshi Hamada
------------------------------------------------
-library ieee;
-use ieee.std_logic_1164.all;
-library UNISIM;
-use UNISIM.VCOMPONENTS.ALL;
+Wed Apr 30 19:45:59 JST 2008
+#!/bin/sh
+#
+# An example hook script to blocks unannotated tags from entering.
+# Called by "git receive-pack" with arguments: refname sha1-old sha1-new
+#
+# To enable this hook, rename this file to "update".
+#
+# Config
+# ------
+# hooks.allowunannotated
+#   This boolean sets whether unannotated tags will be allowed into the
+#   repository.  By default they won't be.
+# hooks.allowdeletetag
+#   This boolean sets whether deleting tags will be allowed in the
+#   repository.  By default they won't be.
+# hooks.allowmodifytag
+#   This boolean sets whether a tag may be modified after creation. By default
+#   it won't be.
+# hooks.allowdeletebranch
+#   This boolean sets whether deleting branches will be allowed in the
+#   repository.  By default they won't be.
+# hooks.denycreatebranch
+#   This boolean sets whether remotely creating branches will be denied
+#   in the repository.  By default this is allowed.
+#
 
-entity dp32b8192w is
-  port (
-    clka  : in std_logic;
-    wea   : in std_logic;
-    addra : in std_logic_vector(12 downto 0);
-    dina  : in std_logic_vector(31 downto 0);
-    douta : out std_logic_vector(31 downto 0);
+# --- Command line
+refname="$1"
+oldrev="$2"
+newrev="$3"
 
-    clkb  : in std_logic;
-    web   : in std_logic;
-    addrb : in std_logic_vector(12 downto 0);
-    dinb  : in std_logic_vector(31 downto 0);
-    doutb : out std_logic_vector(31 downto 0));
+# --- Safety check
+if [ -z "$GIT_DIR" ]; then
+	echo "Don't run this script from the command line." >&2
+	echo " (if you want, you could supply GIT_DIR then run" >&2
+	echo "  $0 <ref> <oldrev> <newrev>)" >&2
+	exit 1
+fi
 
-end dp32b8192w;
+if [ -z "$refname" -o -z "$oldrev" -o -z "$newrev" ]; then
+	echo "usage: $0 <ref> <oldrev> <newrev>" >&2
+	exit 1
+fi
 
-architecture rtl of dp32b8192w is
+# --- Config
+allowunannotated=$(git config --bool hooks.allowunannotated)
+allowdeletebranch=$(git config --bool hooks.allowdeletebranch)
+denycreatebranch=$(git config --bool hooks.denycreatebranch)
+allowdeletetag=$(git config --bool hooks.allowdeletetag)
+allowmodifytag=$(git config --bool hooks.allowmodifytag)
 
-component RAMB16_S2_S2
-  generic (
-         INIT_A : bit_vector := X"0";
-         INIT_B : bit_vector := X"0";
-         SRVAL_A : bit_vector := X"0";
-         SRVAL_B : bit_vector := X"0";
-         WRITE_MODE_A : string :="WRITE_FIRST";
-         WRITE_MODE_B : string :="WRITE_FIRST");
-  port ( doa   : out std_logic_vector(1 downto 0);
-         addra : in std_logic_vector(12 downto 0);
-         clka  : in std_logic;
-         dia   : in std_logic_vector(1 downto 0);
-         ena   : in std_logic;
-         ssra  : in std_logic;
-         wea   : in std_logic;
+# check for no description
+projectdesc=$(sed -e '1q' "$GIT_DIR/description")
+case "$projectdesc" in
+"Unnamed repository"* | "")
+	echo "*** Project description file hasn't been set" >&2
+	exit 1
+	;;
+esac
 
-         dob   : out std_logic_vector(1 downto 0);
-         addrb : in std_logic_vector(12 downto 0);
-         clkb  : in std_logic;
-         dib   : in std_logic_vector(1 downto 0);
-         enb   : in std_logic;
-         ssrb  : in std_logic;
-         web   : in std_logic);
-end component;
+# --- Check types
+# if $newrev is 0000...0000, it's a commit to delete a ref.
+zero="0000000000000000000000000000000000000000"
+if [ "$newrev" = "$zero" ]; then
+	newrev_type=delete
+else
+	newrev_type=$(git cat-file -t $newrev)
+fi
 
-begin
+case "$refname","$newrev_type" in
+	refs/tags/*,commit)
+		# un-annotated tag
+		short_refname=${refname##refs/tags/}
+		if [ "$allowunannotated" != "true" ]; then
+			echo "*** The un-annotated tag, $short_refname, is not allowed in this repository" >&2
+			echo "*** Use 'git tag [ -a | -s ]' for tags you want to propagate." >&2
+			exit 1
+		fi
+		;;
+	refs/tags/*,delete)
+		# delete tag
+		if [ "$allowdeletetag" != "true" ]; then
+			echo "*** Deleting a tag is not allowed in this repository" >&2
+			exit 1
+		fi
+		;;
+	refs/tags/*,tag)
+		# annotated tag
+		if [ "$allowmodifytag" != "true" ] && git rev-parse $refname > /dev/null 2>&1
+		then
+			echo "*** Tag '$refname' already exists." >&2
+			echo "*** Modifying a tag is not allowed in this repository." >&2
+			exit 1
+		fi
+		;;
+	refs/heads/*,commit)
+		# branch
+		if [ "$oldrev" = "$zero" -a "$denycreatebranch" = "true" ]; then
+			echo "*** Creating a branch is not allowed in this repository" >&2
+			exit 1
+		fi
+		;;
+	refs/heads/*,delete)
+		# delete branch
+		if [ "$allowdeletebranch" != "true" ]; then
+			echo "*** Deleting a branch is not allowed in this repository" >&2
+			exit 1
+		fi
+		;;
+	refs/remotes/*,commit)
+		# tracking branch
+		;;
+	refs/remotes/*,delete)
+		# delete tracking branch
+		if [ "$allowdeletebranch" != "true" ]; then
+			echo "*** Deleting a tracking branch is not allowed in this repository" >&2
+			exit 1
+		fi
+		;;
+	*)
+		# Anything else (is there anything else?)
+		echo "*** Update hook: unknown type of update to ref $refname of type $newrev_type" >&2
+		exit 1
+		;;
+esac
 
-  forgen1: for i in 0 to 15 generate
-    uraml: RAMB16_S2_S2 -- GENERIC MAP(WRITE_MODE=>"WRITE_FIRST");
-	      PORT MAP(-- FIFO SIDE --
-                       clka=>clka,
-                       addra=>addra,
-                       dia=>dina(((2*i)+1) downto 2*i),
-                       doa=>douta(((2*i)+1) downto 2*i),
-                       ena=>'1',
-                       ssra=>'0',
-                       wea=>wea,
-                       -- LOCAL SIDE --
-                       clkb=>clkb,
-                       addrb=>addrb,
-                       dib=>dinb(((2*i)+1) downto 2*i),
-                       dob=>doutb(((2*i)+1) downto 2*i),
-                       enb=>'1',
-                       ssrb=>'0',
-                       web=>web);
-  end generate forgen1;
-
-
-end rtl;
-
+# --- Finished
+exit 0

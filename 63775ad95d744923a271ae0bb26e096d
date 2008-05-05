@@ -1,65 +1,51 @@
-Sat Apr  5 19:35:44 JST 2008
--- Copyright 2004 Tsuyoshi Hamada
---
---
--- clk         __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __
--- [ DBUS ]           X   >< n ><d0 ><d1 ><d2 ><d3 ><d4 ><d5 ><d6 ><d7 >
--- STATE               0  >< 1 >< 2                                    >< 3 >< 0 
--- START_ADR                    < n                                    >
--- x                              0 >< 1 >< 2 >< 3 >< 4 >< 5 >< 6 >< 7 >< 8 >< 0 >
--- z                              1 >< 2 >< 3 >< 4 >< 5 >< 6 >< 7 >< 8 >< 9 >< 1 >
--- mem_adr_inc                    0 >< 1 >< 2 >< 3 >< 4 >< 5 >< 6 >< 7 >< 8 >< 0 >
--- MEM_ADR                           < n ><n+1><n+2><n+3><n+4><n+5><n+6><n+7>
+Mon May  5 19:29:07 JST 2008
+#!/bin/sh
+#
+# An example hook script to verify what is about to be committed.
+# Called by "git commit" with no arguments.  The hook should
+# exit with non-zero status after issuing an appropriate message if
+# it wants to stop the commit.
+#
+# To enable this hook, rename this file to "pre-commit".
 
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL;
+if git rev-parse --verify HEAD >/dev/null 2>&1
+then
+	against=HEAD
+else
+	# Initial commit: diff against an empty tree object
+	against=4b825dc642cb6eb9a060e54bf8d69288fbee4904
+fi
 
-entity dmaw_mem_adr is
-  port (
-    CLK       : in  std_logic;
-    STATE     : in std_logic_vector(1 downto 0);  -- STATE of DMAW
-    START_ADR : in std_logic_vector(18 downto 0);
-    MEM_ADR   : out  std_logic_vector(18 downto 0)
-    );
-end dmaw_mem_adr;
+# If you want to allow non-ascii filenames set this variable to true.
+allownonascii=$(git config hooks.allownonascii)
 
-architecture rtl of dmaw_mem_adr is
+# Redirect output to stderr.
+exec 1>&2
 
-signal mem_adr_inc : std_logic_vector(18 downto 0);
-signal   x,z : std_logic_vector(18 downto 0);
-constant one : std_logic_vector(18 downto 0) := "0000000000000000001";
+# Cross platform projects tend to avoid non-ascii filenames; prevent
+# them from being added to the repository. We exploit the fact that the
+# printable range starts at the space character and ends with tilde.
+if [ "$allownonascii" != "true" ] &&
+	# Note that the use of brackets around a tr range is ok here, (it's
+	# even required, for portability to Solaris 10's /usr/bin/tr), since
+	# the square bracket bytes happen to fall in the designated range.
+	test $(git diff --cached --name-only --diff-filter=A -z $against |
+	  LC_ALL=C tr -d '[ -~]\0' | wc -c) != 0
+then
+	echo "Error: Attempt to add a non-ascii file name."
+	echo
+	echo "This can cause problems if you want to work"
+	echo "with people on other platforms."
+	echo
+	echo "To be portable it is advisable to rename the file ..."
+	echo
+	echo "If you know what you are doing you can disable this"
+	echo "check using:"
+	echo
+	echo "  git config hooks.allownonascii true"
+	echo
+	exit 1
+fi
 
-begin
-
-  z <= x + one;
-
-  -----------------
-  -- mem_adr_inc
-  -----------------
-  process (CLK,STATE) begin
-    if(clk'event and clk = '1') then
-      if(STATE = "10") then
-        mem_adr_inc <= z;
-      else
-        mem_adr_inc <= (others=>'0');
-      end if;
-    end if;
-  end process;
-
-  x <= mem_adr_inc;
-
-  -----------------
-  -- MEM_ADR
-  -----------------
-  process (CLK,STATE) begin
-    if(clk'event and clk = '1') then
-      if(STATE="10") then
-        MEM_ADR <= mem_adr_inc + START_ADR;
-      else
-        MEM_ADR <= (others=>'0');
-      end if;
-    end if;
-  end process;
-
-end rtl;
+# If there are whitespace errors, print the offending file names and fail.
+exec git diff-index --check --cached $against --

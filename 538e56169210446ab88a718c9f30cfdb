@@ -1,30 +1,16 @@
-Wed May  7 19:28:11 JST 2008
-#!/usr/bin/perl
+Wed May 28 19:28:15 JST 2008
+/** 
+# xを1ステップ進める
+# x(k+1) = x(k) + v(k+1/2)*dt
+*/
 
+#include <stdio.h>
+#include "nbodysim.h"
 
-my $is_stop = 0;
-my $nboard = 0;
-
-if($ARGV[0]){
-    $nboard = $ARGV[0];
+void leapflog(double dt,double x[][DIM],double v[][DIM],int n)
+{
+    int i,d;
+    for(i=0;i<n;i++)
+        for(d=0;d<3;d++)
+            x[i][d] = x[i][d]+v[i][d]*dt;
 }
-
-my $kbuf_dir = "/sys/class/fpga/fpga". sprintf("%d",$nboard);
-my $cmd ="cat ". $kbuf_dir ."/kbuffers";
-my $exe = `$cmd`;
-print $exe;
-
-my $nbuf = `$cmd | wc -l`;
-chomp($nbuf);
-$nbuf--;
-
-print $nbuf ." buffers exists\n";
-
-for(my $i=0;$i<$nbuf;$i++){
-    $cmd = "echo $i > ". $kbuf_dir. "/kmem_free";
-    print $cmd ."\n";
-    $exe = `$cmd`;
-    print $exe;
-}
-
-1;

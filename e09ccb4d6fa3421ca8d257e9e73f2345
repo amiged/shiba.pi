@@ -1,49 +1,104 @@
-Mon Apr 28 19:27:44 JST 2008
-info x 44 510 0 0 0 0 0 0 0 0 0 0 0 0 0 0 VHDL
-col x 257 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-radix x 16 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-entity name 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 local_write
-term mark 117 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-vlib save 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL;
-use IEEE.STD_LOGIC_ARITH.ALL;
-
-var add 7 0 0 226 21 0 257 100 50 50 5 85 0 0 0 0 CLKInstd_logicRISING_EDGECLK
-var add 1 16 0 164 13 0 257 100 50 50 5 85 0 0 0 0 MEM_ADInstd_logic_vectorRISING_EDGECLK
-var add 2 0 0 162 14 0 257 100 50 50 5 85 0 0 0 0 MEM_WEInstd_logicRISING_EDGECLK
-var add 3 63 0 164 15 0 257 100 50 50 5 85 0 0 0 0 MEM_DTIInstd_logic_vectorRISING_EDGECLK
-var add 6 0 0 162 20 0 257 100 50 50 5 85 0 0 0 0 RSTInstd_logicRISING_EDGECLK
-var add 4 3 0 164 18 0 257 100 50 50 5 85 0 0 0 0 DMAW_ENABLEOutstd_logic_vectorRISING_EDGECLK
-var add 5 63 0 164 19 0 257 100 50 50 5 85 0 0 0 0 DBUS_PortOutstd_logic_vectorRISING_EDGECLK
-vdone xxx 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-npos xxx 179 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-cell fill 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 00000000000000000
-cell fill 2 20 0 0 0 0 0 0 0 0 0 0 0 0 0 0 01100000000000000
-cell fill 2 68 0 0 0 0 0 0 0 0 0 0 0 0 0 0 01000000000000000
-cell fill 2 72 0 0 0 0 0 0 0 0 0 0 0 0 0 0 00000000000000000
-cell fill 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-cell fill 3 20 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
-cell fill 3 36 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-cell fill 3 68 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
-cell fill 3 72 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-cell fill 4 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0000000000000000000000000000000000000000000000000000000000000000
-cell fill 4 20 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0000000000000000000000000000000000000000000000000001000100010001
-cell fill 4 24 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0000000000000000000000000000000000000000000000000010001000100010
-cell fill 4 28 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0000000000000000000000000000000000000000000000000011001100110011
-cell fill 4 32 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0000000000000000000000000000000000000000000000000100010001000100
-cell fill 4 68 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0000000000000000000000000000000000000000101010111100110111101111
-cell fill 4 72 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0000000000000000000000000000000000000000000000000000000000000000
-cell fill 5 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-time info 50 50 5 85 50 50 1 1 0 0 0 0 0 0 0 0 nsCLK
-font save -14 0 400 49 0 0 0 0 0 0 0 0 0 0 0 0 Times New Roman
-src mod 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 c:\cygwin\home\administrator\fkit\pci64\rtl\local_write.vhd
-utd true 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-cellenab on 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-grid on 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-type info 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 std_logicBITDOWNTO
-type info 31 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 std_logic_vectorVECTORDOWNTO
-opt vhdl87 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-NumClocks x 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-clock_1 name 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 CLK
-Zoom_level x 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1.00000000000000
+Wed May 28 19:47:18 JST 2008
+#!/usr/bin/env python3
+#Time-stamp: <2017-06-01 03:19:59 hamada>
+import argparse
+import numpy as np
+import cv2
+from datetime import datetime
+import mkdir
+
+def get_ndev():
+    ndev = 0
+    devid = []
+    for i in range(0, 10):
+        c = cv2.VideoCapture(i)
+        if c.isOpened():
+            ndev = ndev + 1
+            devid.append(i)
+        c.release()
+
+    print ("devid = ", devid)
+    return ndev
+
+def isOpened(cap):
+    ret = True
+    for c in cap:
+        ret = ret and c.isOpened()
+    return ret
+
+
+def put_text(image, text):
+    font_size = 1.0
+    font_type = cv2.FONT_HERSHEY_PLAIN
+    font_color = (0xaf, 0xff, 0xaf)
+    #    cv2.putText(image, text, (460, 15), font_type, font_size, font_color)
+    cv2.putText(image, text, (10, 15), font_type, font_size, font_color)
+
+if (__name__ == '__main__'):
+    ndev = get_ndev()
+    log_base = '../log/'
+    cap = []
+    for i in range(ndev):
+        cap.append(cv2.VideoCapture(i))
+
+    # -- swap cap --
+    if False:
+        cap_tmp = cap[0]
+        cap[0] = cap[2]
+        cap[2] = cap_tmp
+
+
+    cap_width  = cap[0].get(cv2.CAP_PROP_FRAME_WIDTH)
+    cap_height = cap[0].get(cv2.CAP_PROP_FRAME_HEIGHT)
+    cap_fps    = cap[0].get(cv2.CAP_PROP_FPS)
+
+    print(cap_width, "x", cap_height, ":", cap_fps)
+    size = (int(cap_width/2), int(cap_height/2))
+
+    tnow0 = datetime.now().strftime('%Y%m%d_%H_%M_%S') # ('%Y%m%d_%H_%M_%S_%f')
+
+    while(isOpened(cap)):
+        frame = [0] * ndev
+        for (i, fm) in enumerate(frame):
+            ret, fm = cap[i].read()
+            smallimg = cv2.resize(fm, size)
+            if False: cv2.imshow('camera: %d'%(i), smallimg)
+            frame[i] = smallimg
+
+        # ----------------------------------------------------------------
+        frame_height, frame_width = frame[0].shape[:2]
+
+        nwx = 3
+        nwy = int(1.0+(ndev-1)/3.0)
+
+        image = np.zeros((frame_height * nwy, frame_width*nwx, 3), dtype=np.uint8)
+        # image = np.zeros((frame_height, frame_width*ndev, 3), dtype=np.uint8)
+
+        # --- ROI ---
+        for (i, fm) in enumerate(frame):
+            sx = frame_width * (i%nwx)
+            sy = frame_height * int(i/nwx)
+            ex = frame_width * (i%nwx+1)
+            ey = frame_height * int(1+i/nwx)
+            image[sy:ey,sx:ex] = fm
+
+        cv2.imshow(__file__, image)
+
+        tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S_%f')
+        if(tnow != tnow0):
+            put_text(image, tnow)
+            basedir = '../log/'
+            ofname = mkdir.get_filename_frame(basedir, tnow)
+            cv2.imwrite(ofname, image)
+            print(ofname)
+            tnow0 = tnow
+
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    for (i, fm) in enumerate(frame):
+        cap[i].release()
+
+    cv2.destroyAllWindows()
+
+    print("Done.")

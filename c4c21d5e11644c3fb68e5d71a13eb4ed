@@ -1,68 +1,86 @@
-Sat Jun  7 19:58:37 JST 2008
-#!/usr/bin/env python3
-# ----------------------------------------------------------------------
-# BBox-Label-Tool
-#1
-#231 204 403 455
-# ----------------------------------------------------------------------
-# darknet 
-#0 0.49531250000000004 0.6864583333333333 0.26875 0.5229166666666667
-# ----------------------------------------------------------------------
-import glob
+Tue Jun 10 19:36:24 JST 2008
+# CUDA
+###  Modify this part as your environment   ##################
+export CUDA_INSTALL_PATH=/export/opt/cuda.2.3
+export SDK_INSTALL_PATH=/export/opt/cuda.2.3/NVIDIA_GPU_Computing_SDK/C
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CUDA_INSTALL_PATH/lib64
+export PATH=$PATH:$CUDA_INSTALL_PATH/bin
 
-def convert(size, box):
-    dw = (size[0])
-    dh = (size[1])
-    x = (box[0] + box[2])/2.0
-    y = (box[1] + box[3])/2.0
-    w = box[2] - box[0]
-    h = box[3] - box[1]
-    x = x/dw
-    w = w/dw
-    y = y/dh
-    h = h/dh
-    return (x,y,w,h)
+# for profiling
+export CUDA_PROFILE=0
+export CUDA_PROFILE_LOG=./cuda_profile.log
+export CUDA_PROFILE_CSV=1
+alias cudaprofon='export CUDA_PROFILE=1'
+alias cudaprofoff='export CUDA_PROFILE=0'
+
+# OpenCL
+#export PATH=$PATH:/export/opt/gcc-4.4.1/bin
+#export LD_LIBRARY_PATH=/export/opt/gcc-4.4.1/lib64:$LD_LIBRARY_PATH
+#export NV_COMPUTE_SDK_PATH=/export/opt/cuda/NVIDIA_GPU_Computing_SDK
+
+#export LD_LIBRARY_PATH=/export/opt/gcc-4.3.4/lib64:$LD_LIBRARY_PATH
+#export LD_LIBRARY_PATH=/export/opt/OpenCL/NVIDIA_GPU_Computing_SDK/OpenCL/common/lib/Linux64:$LD_LIBRARY_PATH
 
 
-def _convert(size, box):
-    dw = 1./(size[0])
-    dh = 1./(size[1])
-    x = (box[0] + box[2])/2.0 - 1
-    y = (box[1] + box[3])/2.0 - 1
-    w = box[2] - box[0]
-    h = box[3] - box[1]
-    x = x*dw
-    w = w*dw
-    y = y*dh
-    h = h*dh
-    return (x,y,w,h)
+#export NV_COMPUTE_SDK_PATH=/export/opt/cuda/NVIDIA_GPU_Computing_SDK
+export LD_LIBRARY_PATH=/export/opt/gcc-4.3.4/lib64:$LD_LIBRARY_PATH
+#export LD_LIBRARY_PATH=/export/opt/cuda/NVIDIA_GPU_Computing_SDK/OpenCL/common/lib/Linux64:$LD_LIBRARY_PATH
 
-flist = glob.glob("../data4bbox/Labels/777/image*.txt")
-flist.sort()
+# for MPICH
+#export PATH=/export/opt/mpi/local/bin:$PATH
+#export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/export/opt/mpi/local/lib
 
-for fname in flist:
-    with open(fname, "r") as fd:
-        lines = fd.readlines()
-        l = lines[1].replace('\n','')
-        box_str = l.split(' ')
-        box = []
-        for v in box_str:
-            box.append(float(int(v)))
+#------------ GbEd --------------------
+#export PATH=/export/opt/openmpi-1.3.1/bin:$PATH
+#export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/export/opt/openmpi-1.3.1/lib
 
-        size = [640.0, 480.0]
-        x, y, w, h = convert(size, box)
+#------------ InfiniBand (OFED 1.4) --------------------
+export PATH=/usr/mpi/gcc/openmpi-1.2.8/bin:$PATH
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/mpi/gcc/openmpi-1.2.8/lib64
 
-        if False:
-        #if True:
-            x0 = box[0]
-            y0 = box[1]
-            x1 = box[2]
-            y1 = box[3]
-            x = (x0 + x1)/2.0/size[0]
-            y = (y0 + y1)/2.0/size[1]
+#------------ InfiniBand (OFED 1.5.1) --------------------
+#export PATH=/usr/mpi/gcc/openmpi-1.4.1/bin:$PATH
+#export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/mpi/gcc/openmpi-1.4.1/lib64
 
 
-        #print(fname, lines[1], box, x, y, w, h)
-        print("%1.17f %1.17f %1.17f %1.17f " %(x, y, w, h))
+export LANG=C
+export OPENCV_INSTALL_PATH=/export/opt/opencv-1.1.0
 
-    
+# for ICC
+# source /export/opt/icc/11.0/081/bin/ifortvars.sh intel64
+
+# for Mplayer
+export PATH=/export/opt/mplayer/bin:$PATH
+
+#echo 'OMP_NUM_THREADS =' $OMP_NUM_THREADS
+
+#for Cray-XT5
+alias ssc='ssh hawk.cray.com -l p01130'
+
+#for AMD/ATI GPU
+#export CALROOT=/export/opt/amdstream/atical
+#export PATH=$CALROOT/bin/lnx64:$PATH
+#export LD_LIBRARY_PATH=/usr/lib64:/usr/lib:$LD_LIBRARY_PATH
+#export LD_LIBRARY_PATH=/export/opt/amdstream/atibrook/sdk/lib:$LD_LIBRARY_PATH
+#export PATH=/export/opt/amdstream/atibrook/sdk/bin:$PATH
+#export LD_LIBRARY_PATH=/export/opt/amdstream/acmlg1.0/gfortran64/lib:$LD_LIBRARY_PATH
+#alias aon='export DISPLAY=:0.0'
+export ATISTREAMSDKROOT=/export/opt/amdstream.opencl/ati-stream-sdk-v2.01-lnx64
+export ATISTREAMSDKSAMPLESROOT=/export/opt/amdstream.opencl/ati-stream-sdk-v2.01-lnx64
+export LD_LIBRARY_PATH=$ATISTREAMSDKROOT/lib/x86_64:$LD_LIBRARY_PATH
+#xmodmap ~/.Xmodmap 2> /dev/null
+#nodeid=`uname -n`
+#echo "node $nodeid"
+
+
+
+export OMP_NUM_THREADS=1
+#export OMP_NUM_THREADS=2
+#export OMP_NUM_THREADS=4
+#export OMP_NUM_THREADS=8
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/export/opt/DevIL/lib
+
+export FFTW_INSTALL_PATH=/export/opt/fftw2-mpi
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$FFTW_INSTALL_PATH/lib
+

@@ -1,93 +1,211 @@
-Mon Jun  2 19:27:19 JST 2008
-/EQNINJ
-/IPSET xi_0,x[][0],float,26,16
-/IPSET xi_1,x[][1],float,26,16
-/IPSET xi_2,x[][2],float,26,16
-/IPSET vi_0,v[][0],float,26,16
-/IPSET vi_1,v[][1],float,26,16
-/IPSET vi_2,v[][2],float,26,16
-/JPSET xj_0,0,0,25,x[][0],float,26,16
-/JPSET xj_1,0,26,51,x[][1],float,26,16
-/JPSET xj_2,0,52,77,x[][2],float,26,16
-/JPSET vj_0,0,78,103,v[][0],float,26,16
-/JPSET vj_1,0,104,129,v[][1],float,26,16
-/JPSET vj_2,0,130,155,v[][2],float,26,16
-/JPSET mj,0,156,181,m[],float,26,16
-/FOSET rx,p[],fix,64,(1.0/pow(2.0,(double)31))
-/FOSET sx_0,a[][0],fix,64,(1.0/pow(2.0,(double)31))
-/FOSET sx_1,a[][1],fix,64,(1.0/pow(2.0,(double)31))
-/FOSET sx_2,a[][2],fix,64,(1.0/pow(2.0,(double)31))
-/FOSET tx_0,jk[][0],fix,64,(1.0/pow(2.0,(double)31))
-/FOSET tx_1,jk[][1],fix,64,(1.0/pow(2.0,(double)31))
-/FOSET tx_2,jk[][2],fix,64,(1.0/pow(2.0,(double)31))
-/NPIPE 1
-/NVMP 1
-void force(double x[][3], double v[][3], double m[], double p[], double a[][3], double jk[][3], int n){
-  pg_float_sub(xj_0,xi_0,dx_0,26,16,4,6)
-  pg_float_sub(xj_1,xi_1,dx_1,26,16,4,6)
-  pg_float_sub(xj_2,xi_2,dx_2,26,16,4,6)
-  pg_float_mult(dx_0,dx_0,dx2_0,26,16,2,6)
-  pg_float_mult(dx_1,dx_1,dx2_1,26,16,2,6)
-  pg_float_mult(dx_2,dx_2,dx2_2,26,16,2,6)
-  pg_float_unsigned_add(dx2_0,dx2_1,x2y2,26,16,4,6)
-  pg_float_unsigned_add(dx2_2r,x2y2,r2,26,16,4,6)
-  pg_float_sqrt(r2,r1,26,16,3,6)
-  pg_float_mult(r2r,r1,r3,26,16,2,6)
-  pg_float_mult(r3,r2r1,r5,26,16,2,6)
-  pg_float_recipro(r5,r5i,26,16,2,6)
-  pg_float_mult(r5i,mjr,mr5i,26,16,2,6)
-  pg_float_mult(mr5i,r2r2,mf,26,16,2,6)
-  pg_float_mult(mf,r2r3,mp,26,16,2,6)
-  pg_float_expadd(mp,ps,31,26,16,1)
-  pg_float_fixaccum(ps,rx,26,16,57,64,2,30,6)
-  pg_float_expadd(mf,fs,31,26,16,1)
-  pg_float_mult(fs,dx_0r,fx_0,26,16,2,6)
-  pg_float_mult(fs,dx_1r,fx_1,26,16,2,6)
-  pg_float_mult(fs,dx_2r,fx_2,26,16,2,6)
-  pg_float_fixaccum(fx_0,sx_0,26,16,57,64,2,30,6)
-  pg_float_fixaccum(fx_1,sx_1,26,16,57,64,2,30,6)
-  pg_float_fixaccum(fx_2,sx_2,26,16,57,64,2,30,6)
-  pg_float_sub(vj_0,vi_0,dv_0,26,16,4,6)
-  pg_float_sub(vj_1,vi_1,dv_1,26,16,4,6)
-  pg_float_sub(vj_2,vi_2,dv_2,26,16,4,6)
-  pg_float_mult(fs,dv_0r,jk1_0,26,16,2,6)
-  pg_float_mult(fs,dv_1r,jk1_1,26,16,2,6)
-  pg_float_mult(fs,dv_2r,jk1_2,26,16,2,6)
-  pg_float_mult(dx_0,dv_0,xv_0,26,16,2,6)
-  pg_float_mult(dx_1,dv_1,xv_1,26,16,2,6)
-  pg_float_mult(dx_2,dv_2,xv_2,26,16,2,6)
-  pg_float_unsigned_add(xv_0,xv_1,xv1,26,16,4,6)
-  pg_float_unsigned_add(xv_2r,xv1,xv2,26,16,4,6)
-  pg_float_expadd(xv2,xv2x2,1,26,16,1)
-  pg_float_unsigned_add(xv2x2,xv2r,xv2x3,26,16,4,6)
-  pg_float_mult(mr5i,xv2x3r,jk2a,26,16,2,6)
-  pg_float_expadd(jk2a,jk2s,31,26,16,1)
-  pg_float_mult(jk2s,dx_0r1,jk2_0,26,16,2,6)
-  pg_float_mult(jk2s,dx_1r1,jk2_1,26,16,2,6)
-  pg_float_mult(jk2s,dx_2r1,jk2_2,26,16,2,6)
-  pg_float_sub(jk1_0,jk2_0,jk0_0,26,16,4,6)
-  pg_float_sub(jk1_1,jk2_1,jk0_1,26,16,4,6)
-  pg_float_sub(jk1_2,jk2_2,jk0_2,26,16,4,6)
-  pg_float_fixaccum(jk0_0,tx_0,26,16,57,64,2,34,6)
-  pg_float_fixaccum(jk0_1,tx_1,26,16,57,64,2,34,6)
-  pg_float_fixaccum(jk0_2,tx_2,26,16,57,64,2,34,6)
-  pg_pdelay(dx2_2,dx2_2r,26,4)
-  pg_pdelay(r2,r2r,26,3)
-  pg_pdelay(r2,r2r1,26,5)
-  pg_pdelay(mj,mjr,26,23)
-  pg_pdelay(r2,r2r2,26,11)
-  pg_pdelay(dv_1,dv_1r,26,24)
-  pg_pdelay(r2,r2r3,26,13)
-  pg_pdelay(dv_0,dv_0r,26,24)
-  pg_pdelay(xv_2,xv_2r,26,4)
-  pg_pdelay(dv_2,dv_2r,26,24)
-  pg_pdelay(dx_0,dx_0r,26,24)
-  pg_pdelay(dx_1,dx_1r,26,24)
-  pg_pdelay(dx_2,dx_2r,26,24)
-  pg_pdelay(xv2,xv2r,26,1)
-  pg_pdelay(xv2x3,xv2x3r,26,6)
-  pg_pdelay(dx_1,dx_1r1,26,24)
-  pg_pdelay(dx_2,dx_2r1,26,24)
-  pg_pdelay(dx_0,dx_0r1,26,24)
-  pg_rundelay(36)
-}
+Mon Jun 23 19:28:04 JST 2008
+
+-- **************************************
+--               INREVIUM                
+-- **************************************
+
+--------------------------------------------------------------------------------
+-- Copyright(C) 2004 - TOKYO ELECTRON DEVICE LIMITED. All rigths reserved.
+--------------------------------------------------------------------------------
+-- PCI_RDTFIFO MODEL
+--------------------------------------------------------------------------------
+-- PCI_RDTFIFO (64 bit X 4 word) Module
+--------------------------------------------------------------------------------
+-- File                      : PCI_RDTFIFO.vhd
+-- Entity                    : PCI_RDTFIFO
+-- Architecture              : PCI_RDTFIFO_rtl
+--------------------------------------------------------------------------------
+-- Project Navigator version : ISE6.2.03i
+-- Design Flow               : XST
+--------------------------------------------------------------------------------
+-- Ver.     Data        Coded by        Contents
+-- 01.00    2004/08/10  TED)DDC         êVãK
+--------------------------------------------------------------------------------
+
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
+
+
+entity PCI_RDTFIFO is
+	port (
+		RST 			: in	std_logic;							-- PCI Bus Reset
+		CLK 			: in	std_logic;							-- PCI bus Clock
+
+		FIFO_ENB		: in	std_logic;							-- FIFO Enable Signal
+
+		-- FIFO Data Write ports
+		FIFO_WRDT		: in	std_logic_vector(63 downto 0);		-- FIFO Write Data
+		FIFO_WE			: in	std_logic;					  		-- FIFO Write Enable
+
+		-- FIFO Data Read ports
+		FIFO_RE			: in	std_logic;							-- FIFO Read Enable
+		FIFO_RDDT		: out	std_logic_vector(63 downto 0);		-- FIFO Read Data
+		FIFO_RDTEN		: out	std_logic							-- FIFO Read Data Enable
+		);
+end PCI_RDTFIFO;
+
+
+architecture PCI_RDTFIFO_rtl of PCI_RDTFIFO is
+
+
+--------------------------------------------------
+-- signals
+--------------------------------------------------
+
+--	type FIFO_TYPE is array (0 to 3) of std_logic_vector(64 downto 0);		------ Define Data Buffer Type (65bit X 4)
+
+	signal FIFO_DATA0	: std_logic_vector(64 downto 0);					------ FIFO Data Buffer 0
+	signal FIFO_DATA1	: std_logic_vector(64 downto 0);					------ FIFO Data Buffer 1
+	signal FIFO_DATA2	: std_logic_vector(64 downto 0);					------ FIFO Data Buffer 2
+	signal FIFO_DATA3	: std_logic_vector(64 downto 0);					------ FIFO Data Buffer 3
+
+	signal FIFO_WRADRS	: std_logic_vector( 1 downto 0);					------ FIFO Write Address
+	signal FIFO_RDADRS	: std_logic_vector( 1 downto 0);					------ FIFO Read Address
+
+
+begin
+
+
+--***************************************************************
+--*
+--*  FIFO Data Write Control Block
+--*
+--***************************************************************
+
+--------------------------------------------------------------------------------
+-- FIFO_DATA0 Data Write Control Process
+--------------------------------------------------------------------------------
+
+	process (RST,CLK) begin
+		if (RST='1') then
+			FIFO_DATA0 <= (others=>'0');
+		elsif (CLK'event and CLK='1') then
+			if (FIFO_ENB='0') then											------ FIFO Disable ?
+				FIFO_DATA0 <= (others=>'0');								------ FIFO Data Clear
+			elsif (FIFO_WRADRS="00" and FIFO_WE='1') then					------ FIFO Data Write ?
+				FIFO_DATA0 <= FIFO_WE & FIFO_WRDT;							------ FIFO Write Data Set
+			end if;
+		end if;
+	end process;
+
+--------------------------------------------------------------------------------
+-- FIFO_DATA1 Data Write Control Process
+--------------------------------------------------------------------------------
+
+	process (RST,CLK) begin
+		if (RST='1') then
+			FIFO_DATA1 <= (others=>'0');
+		elsif (CLK'event and CLK='1') then
+			if (FIFO_ENB='0') then											------ FIFO Disable ?
+				FIFO_DATA1 <= (others=>'0');								------ FIFO Data Clear
+			elsif (FIFO_WRADRS="01" and FIFO_WE='1') then					------ FIFO Data Write ?
+				FIFO_DATA1 <= FIFO_WE & FIFO_WRDT;							------ FIFO Write Data Set
+			end if;
+		end if;
+	end process;
+
+--------------------------------------------------------------------------------
+-- FIFO_DATA2 Data Write Control Process
+--------------------------------------------------------------------------------
+
+	process (RST,CLK) begin
+		if (RST='1') then
+			FIFO_DATA2 <= (others=>'0');
+		elsif (CLK'event and CLK='1') then
+			if (FIFO_ENB='0') then											------ FIFO Disable ?
+				FIFO_DATA2 <= (others=>'0');								------ FIFO Data Clear
+			elsif (FIFO_WRADRS="10" and FIFO_WE='1') then					------ FIFO Data Write ?
+				FIFO_DATA2 <= FIFO_WE & FIFO_WRDT;							------ FIFO Write Data Set
+			end if;
+		end if;
+	end process;
+
+--------------------------------------------------------------------------------
+-- FIFO_DATA3 Data Write Control Process
+--------------------------------------------------------------------------------
+
+	process (RST,CLK) begin
+		if (RST='1') then
+			FIFO_DATA3 <= (others=>'0');
+		elsif (CLK'event and CLK='1') then
+			if (FIFO_ENB='0') then											------ FIFO Disable ?
+				FIFO_DATA3 <= (others=>'0');								------ FIFO Data Clear
+			elsif (FIFO_WRADRS="11" and FIFO_WE='1') then					------ FIFO Data Write ?
+				FIFO_DATA3 <= FIFO_WE & FIFO_WRDT;							------ FIFO Write Data Set
+			end if;
+		end if;
+	end process;
+
+--------------------------------------------------------------------------------
+-- FIFO Write Address Control Process
+--------------------------------------------------------------------------------
+
+	process (RST,CLK) begin
+		if (RST='1') then
+			FIFO_WRADRS <= (others=>'0');
+		elsif (CLK'event and CLK='1') then
+			if (FIFO_ENB='0') then											------ FIFO Disable ?
+				FIFO_WRADRS <= (others=>'0');								------ FIFO Write Address Clear
+			elsif (FIFO_WE='1') then										------ FIFO Data Write ?
+				FIFO_WRADRS <= FIFO_WRADRS+1;								------ FIFO Write Address Increment
+			end if;
+		end if;
+	end process;
+
+
+--***************************************************************
+--*
+--*  FIFO Data Read Control Block
+--*
+--***************************************************************
+
+--------------------------------------------------------------------------------
+-- FIFO Read Data Select Control Process
+--------------------------------------------------------------------------------
+
+	process (FIFO_RDADRS,FIFO_DATA0,FIFO_DATA1,FIFO_DATA2,FIFO_DATA3) begin
+		case FIFO_RDADRS is
+			when "00"	=> FIFO_RDDT <= FIFO_DATA0(63 downto 0);			------ Buffer0 Read
+			when "01"	=> FIFO_RDDT <= FIFO_DATA1(63 downto 0);			------ Buffer1 Read
+			when "10"	=> FIFO_RDDT <= FIFO_DATA2(63 downto 0);			------ Buffer2 Read
+			when "11"	=> FIFO_RDDT <= FIFO_DATA3(63 downto 0);			------ Buffer3 Read
+			when others => FIFO_RDDT <= (others=>'0');
+		end case;
+	end process;
+
+--------------------------------------------------------------------------------
+-- FIFO Read Data Enable Signal Select Control Process
+--------------------------------------------------------------------------------
+
+	process (FIFO_RDADRS,FIFO_DATA0,FIFO_DATA1,FIFO_DATA2,FIFO_DATA3) begin
+		case FIFO_RDADRS is
+			when "00"	=> FIFO_RDTEN <= FIFO_DATA0(64);					------ Buffer0 Read Enable Signal
+			when "01"	=> FIFO_RDTEN <= FIFO_DATA1(64);					------ Buffer1 Read Enable Signal
+			when "10"	=> FIFO_RDTEN <= FIFO_DATA2(64);					------ Buffer2 Read Enable Signal
+			when "11"	=> FIFO_RDTEN <= FIFO_DATA3(64);					------ Buffer3 Read Enable Signal
+			when others => FIFO_RDTEN <= '0';
+		end case;
+	end process;
+
+--------------------------------------------------------------------------------
+-- FIFO Read Address Control Process
+--------------------------------------------------------------------------------
+
+	process (RST,CLK) begin
+		if (RST='1') then
+			FIFO_RDADRS <= (others=>'0');
+		elsif (CLK'event and CLK='1') then
+			if (FIFO_ENB='0') then											------ FIFO Disable ?
+				FIFO_RDADRS <= (others=>'0');								------ FIFO Read Address Clear
+			elsif (FIFO_RE='1') then										------ FIFO Data Read ?
+				FIFO_RDADRS <= FIFO_RDADRS+1;								------ FIFO Read Address Increment
+			end if;
+		end if;
+	end process;
+
+
+
+end PCI_RDTFIFO_rtl;

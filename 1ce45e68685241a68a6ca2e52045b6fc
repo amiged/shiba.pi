@@ -1,36 +1,32 @@
-Sat Jun 14 19:45:56 JST 2008
--- Copyright 2004 Tsuyoshi Hamada
---
---
---clk         __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __
---[ DBUS ]           X   >< n ><d0 ><d1 ><d2 ><d3 ><d4 ><d5 ><d6 ><d7 >
---dmaw_state          0  >< 1 >< 2                                    >< 3 >< 0 
---dmaw_start_adr               < n                                         >< 0
+Fri Jun 27 19:43:32 JST 2008
+/*
+ * pfpga_info.c
+ *
+ * Copyright (C) 2006-2007 Tsuyoshi Hamada
+ *                                All rights reserved.
+ * 
+ * No warranty is attached; 
+ * I cannot take responsibility for errors or fitness for use.
+ *
+ */
 
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL;
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-entity dmaw_start_adr is
-  port (
-    CLK       : in std_logic;
-    DBUS      : in std_logic_vector(63 downto 0);
-    STATE     : in std_logic_vector(1 downto 0);
-    START_ADR : out std_logic_vector(18 downto 0) );
-end dmaw_start_adr;
+#define MAXBD 8
+#include "pg4.h"
 
-architecture rtl of dmaw_start_adr is
-constant zero : std_logic_vector(18 downto 0) := (others=>'0');
-begin
+int main(int argc, char* argv[])
+{
+  int devid=0;
+  char info[1024];
 
-  process (CLK,STATE) begin
-    if(CLK'event and CLK = '1') then
-      if(STATE="01") then
-        START_ADR <= DBUS(18 downto 0);
-      elsif((STATE="00") OR (STATE="11")) then
-        START_ADR <= zero;
-      end if;
-    end if;
-  end process;
+  pg4_open(devid);
+  pg4_get_pfpga_info(devid, info);
+  pg4_close(devid);
 
-end rtl;
+  printf("%s\n", info);
+
+  return 1;
+}

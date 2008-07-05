@@ -1,211 +1,86 @@
-Mon Jun 23 19:28:04 JST 2008
+Sat Jul  5 19:41:14 JST 2008
+# CUDA
+###  Modify this part as your environment   ##################
+export CUDA_INSTALL_PATH=/export/opt/cuda.2.3
+export SDK_INSTALL_PATH=/export/opt/cuda.2.3/NVIDIA_GPU_Computing_SDK/C
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CUDA_INSTALL_PATH/lib64
+export PATH=$PATH:$CUDA_INSTALL_PATH/bin
 
--- **************************************
---               INREVIUM                
--- **************************************
+# for profiling
+export CUDA_PROFILE=0
+export CUDA_PROFILE_LOG=./cuda_profile.log
+export CUDA_PROFILE_CSV=1
+alias cudaprofon='export CUDA_PROFILE=1'
+alias cudaprofoff='export CUDA_PROFILE=0'
 
---------------------------------------------------------------------------------
--- Copyright(C) 2004 - TOKYO ELECTRON DEVICE LIMITED. All rigths reserved.
---------------------------------------------------------------------------------
--- PCI_RDTFIFO MODEL
---------------------------------------------------------------------------------
--- PCI_RDTFIFO (64 bit X 4 word) Module
---------------------------------------------------------------------------------
--- File                      : PCI_RDTFIFO.vhd
--- Entity                    : PCI_RDTFIFO
--- Architecture              : PCI_RDTFIFO_rtl
---------------------------------------------------------------------------------
--- Project Navigator version : ISE6.2.03i
--- Design Flow               : XST
---------------------------------------------------------------------------------
--- Ver.     Data        Coded by        Contents
--- 01.00    2004/08/10  TED)DDC         êVãK
---------------------------------------------------------------------------------
+# OpenCL
+#export PATH=$PATH:/export/opt/gcc-4.4.1/bin
+#export LD_LIBRARY_PATH=/export/opt/gcc-4.4.1/lib64:$LD_LIBRARY_PATH
+#export NV_COMPUTE_SDK_PATH=/export/opt/cuda/NVIDIA_GPU_Computing_SDK
 
-
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL;
-use IEEE.STD_LOGIC_ARITH.ALL;
+#export LD_LIBRARY_PATH=/export/opt/gcc-4.3.4/lib64:$LD_LIBRARY_PATH
+#export LD_LIBRARY_PATH=/export/opt/OpenCL/NVIDIA_GPU_Computing_SDK/OpenCL/common/lib/Linux64:$LD_LIBRARY_PATH
 
 
-entity PCI_RDTFIFO is
-	port (
-		RST 			: in	std_logic;							-- PCI Bus Reset
-		CLK 			: in	std_logic;							-- PCI bus Clock
+#export NV_COMPUTE_SDK_PATH=/export/opt/cuda/NVIDIA_GPU_Computing_SDK
+export LD_LIBRARY_PATH=/export/opt/gcc-4.3.4/lib64:$LD_LIBRARY_PATH
+#export LD_LIBRARY_PATH=/export/opt/cuda/NVIDIA_GPU_Computing_SDK/OpenCL/common/lib/Linux64:$LD_LIBRARY_PATH
 
-		FIFO_ENB		: in	std_logic;							-- FIFO Enable Signal
+# for MPICH
+#export PATH=/export/opt/mpi/local/bin:$PATH
+#export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/export/opt/mpi/local/lib
 
-		-- FIFO Data Write ports
-		FIFO_WRDT		: in	std_logic_vector(63 downto 0);		-- FIFO Write Data
-		FIFO_WE			: in	std_logic;					  		-- FIFO Write Enable
+#------------ GbEd --------------------
+#export PATH=/export/opt/openmpi-1.3.1/bin:$PATH
+#export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/export/opt/openmpi-1.3.1/lib
 
-		-- FIFO Data Read ports
-		FIFO_RE			: in	std_logic;							-- FIFO Read Enable
-		FIFO_RDDT		: out	std_logic_vector(63 downto 0);		-- FIFO Read Data
-		FIFO_RDTEN		: out	std_logic							-- FIFO Read Data Enable
-		);
-end PCI_RDTFIFO;
+#------------ InfiniBand (OFED 1.4) --------------------
+export PATH=/usr/mpi/gcc/openmpi-1.2.8/bin:$PATH
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/mpi/gcc/openmpi-1.2.8/lib64
 
-
-architecture PCI_RDTFIFO_rtl of PCI_RDTFIFO is
-
-
---------------------------------------------------
--- signals
---------------------------------------------------
-
---	type FIFO_TYPE is array (0 to 3) of std_logic_vector(64 downto 0);		------ Define Data Buffer Type (65bit X 4)
-
-	signal FIFO_DATA0	: std_logic_vector(64 downto 0);					------ FIFO Data Buffer 0
-	signal FIFO_DATA1	: std_logic_vector(64 downto 0);					------ FIFO Data Buffer 1
-	signal FIFO_DATA2	: std_logic_vector(64 downto 0);					------ FIFO Data Buffer 2
-	signal FIFO_DATA3	: std_logic_vector(64 downto 0);					------ FIFO Data Buffer 3
-
-	signal FIFO_WRADRS	: std_logic_vector( 1 downto 0);					------ FIFO Write Address
-	signal FIFO_RDADRS	: std_logic_vector( 1 downto 0);					------ FIFO Read Address
+#------------ InfiniBand (OFED 1.5.1) --------------------
+#export PATH=/usr/mpi/gcc/openmpi-1.4.1/bin:$PATH
+#export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/mpi/gcc/openmpi-1.4.1/lib64
 
 
-begin
+export LANG=C
+export OPENCV_INSTALL_PATH=/export/opt/opencv-1.1.0
 
+# for ICC
+# source /export/opt/icc/11.0/081/bin/ifortvars.sh intel64
 
---***************************************************************
---*
---*  FIFO Data Write Control Block
---*
---***************************************************************
+# for Mplayer
+export PATH=/export/opt/mplayer/bin:$PATH
 
---------------------------------------------------------------------------------
--- FIFO_DATA0 Data Write Control Process
---------------------------------------------------------------------------------
+#echo 'OMP_NUM_THREADS =' $OMP_NUM_THREADS
 
-	process (RST,CLK) begin
-		if (RST='1') then
-			FIFO_DATA0 <= (others=>'0');
-		elsif (CLK'event and CLK='1') then
-			if (FIFO_ENB='0') then											------ FIFO Disable ?
-				FIFO_DATA0 <= (others=>'0');								------ FIFO Data Clear
-			elsif (FIFO_WRADRS="00" and FIFO_WE='1') then					------ FIFO Data Write ?
-				FIFO_DATA0 <= FIFO_WE & FIFO_WRDT;							------ FIFO Write Data Set
-			end if;
-		end if;
-	end process;
+#for Cray-XT5
+alias ssc='ssh hawk.cray.com -l p01130'
 
---------------------------------------------------------------------------------
--- FIFO_DATA1 Data Write Control Process
---------------------------------------------------------------------------------
-
-	process (RST,CLK) begin
-		if (RST='1') then
-			FIFO_DATA1 <= (others=>'0');
-		elsif (CLK'event and CLK='1') then
-			if (FIFO_ENB='0') then											------ FIFO Disable ?
-				FIFO_DATA1 <= (others=>'0');								------ FIFO Data Clear
-			elsif (FIFO_WRADRS="01" and FIFO_WE='1') then					------ FIFO Data Write ?
-				FIFO_DATA1 <= FIFO_WE & FIFO_WRDT;							------ FIFO Write Data Set
-			end if;
-		end if;
-	end process;
-
---------------------------------------------------------------------------------
--- FIFO_DATA2 Data Write Control Process
---------------------------------------------------------------------------------
-
-	process (RST,CLK) begin
-		if (RST='1') then
-			FIFO_DATA2 <= (others=>'0');
-		elsif (CLK'event and CLK='1') then
-			if (FIFO_ENB='0') then											------ FIFO Disable ?
-				FIFO_DATA2 <= (others=>'0');								------ FIFO Data Clear
-			elsif (FIFO_WRADRS="10" and FIFO_WE='1') then					------ FIFO Data Write ?
-				FIFO_DATA2 <= FIFO_WE & FIFO_WRDT;							------ FIFO Write Data Set
-			end if;
-		end if;
-	end process;
-
---------------------------------------------------------------------------------
--- FIFO_DATA3 Data Write Control Process
---------------------------------------------------------------------------------
-
-	process (RST,CLK) begin
-		if (RST='1') then
-			FIFO_DATA3 <= (others=>'0');
-		elsif (CLK'event and CLK='1') then
-			if (FIFO_ENB='0') then											------ FIFO Disable ?
-				FIFO_DATA3 <= (others=>'0');								------ FIFO Data Clear
-			elsif (FIFO_WRADRS="11" and FIFO_WE='1') then					------ FIFO Data Write ?
-				FIFO_DATA3 <= FIFO_WE & FIFO_WRDT;							------ FIFO Write Data Set
-			end if;
-		end if;
-	end process;
-
---------------------------------------------------------------------------------
--- FIFO Write Address Control Process
---------------------------------------------------------------------------------
-
-	process (RST,CLK) begin
-		if (RST='1') then
-			FIFO_WRADRS <= (others=>'0');
-		elsif (CLK'event and CLK='1') then
-			if (FIFO_ENB='0') then											------ FIFO Disable ?
-				FIFO_WRADRS <= (others=>'0');								------ FIFO Write Address Clear
-			elsif (FIFO_WE='1') then										------ FIFO Data Write ?
-				FIFO_WRADRS <= FIFO_WRADRS+1;								------ FIFO Write Address Increment
-			end if;
-		end if;
-	end process;
-
-
---***************************************************************
---*
---*  FIFO Data Read Control Block
---*
---***************************************************************
-
---------------------------------------------------------------------------------
--- FIFO Read Data Select Control Process
---------------------------------------------------------------------------------
-
-	process (FIFO_RDADRS,FIFO_DATA0,FIFO_DATA1,FIFO_DATA2,FIFO_DATA3) begin
-		case FIFO_RDADRS is
-			when "00"	=> FIFO_RDDT <= FIFO_DATA0(63 downto 0);			------ Buffer0 Read
-			when "01"	=> FIFO_RDDT <= FIFO_DATA1(63 downto 0);			------ Buffer1 Read
-			when "10"	=> FIFO_RDDT <= FIFO_DATA2(63 downto 0);			------ Buffer2 Read
-			when "11"	=> FIFO_RDDT <= FIFO_DATA3(63 downto 0);			------ Buffer3 Read
-			when others => FIFO_RDDT <= (others=>'0');
-		end case;
-	end process;
-
---------------------------------------------------------------------------------
--- FIFO Read Data Enable Signal Select Control Process
---------------------------------------------------------------------------------
-
-	process (FIFO_RDADRS,FIFO_DATA0,FIFO_DATA1,FIFO_DATA2,FIFO_DATA3) begin
-		case FIFO_RDADRS is
-			when "00"	=> FIFO_RDTEN <= FIFO_DATA0(64);					------ Buffer0 Read Enable Signal
-			when "01"	=> FIFO_RDTEN <= FIFO_DATA1(64);					------ Buffer1 Read Enable Signal
-			when "10"	=> FIFO_RDTEN <= FIFO_DATA2(64);					------ Buffer2 Read Enable Signal
-			when "11"	=> FIFO_RDTEN <= FIFO_DATA3(64);					------ Buffer3 Read Enable Signal
-			when others => FIFO_RDTEN <= '0';
-		end case;
-	end process;
-
---------------------------------------------------------------------------------
--- FIFO Read Address Control Process
---------------------------------------------------------------------------------
-
-	process (RST,CLK) begin
-		if (RST='1') then
-			FIFO_RDADRS <= (others=>'0');
-		elsif (CLK'event and CLK='1') then
-			if (FIFO_ENB='0') then											------ FIFO Disable ?
-				FIFO_RDADRS <= (others=>'0');								------ FIFO Read Address Clear
-			elsif (FIFO_RE='1') then										------ FIFO Data Read ?
-				FIFO_RDADRS <= FIFO_RDADRS+1;								------ FIFO Read Address Increment
-			end if;
-		end if;
-	end process;
+#for AMD/ATI GPU
+#export CALROOT=/export/opt/amdstream/atical
+#export PATH=$CALROOT/bin/lnx64:$PATH
+#export LD_LIBRARY_PATH=/usr/lib64:/usr/lib:$LD_LIBRARY_PATH
+#export LD_LIBRARY_PATH=/export/opt/amdstream/atibrook/sdk/lib:$LD_LIBRARY_PATH
+#export PATH=/export/opt/amdstream/atibrook/sdk/bin:$PATH
+#export LD_LIBRARY_PATH=/export/opt/amdstream/acmlg1.0/gfortran64/lib:$LD_LIBRARY_PATH
+#alias aon='export DISPLAY=:0.0'
+export ATISTREAMSDKROOT=/export/opt/amdstream.opencl/ati-stream-sdk-v2.01-lnx64
+export ATISTREAMSDKSAMPLESROOT=/export/opt/amdstream.opencl/ati-stream-sdk-v2.01-lnx64
+export LD_LIBRARY_PATH=$ATISTREAMSDKROOT/lib/x86_64:$LD_LIBRARY_PATH
+#xmodmap ~/.Xmodmap 2> /dev/null
+#nodeid=`uname -n`
+#echo "node $nodeid"
 
 
 
-end PCI_RDTFIFO_rtl;
+export OMP_NUM_THREADS=1
+#export OMP_NUM_THREADS=2
+#export OMP_NUM_THREADS=4
+#export OMP_NUM_THREADS=8
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/export/opt/DevIL/lib
+
+export FFTW_INSTALL_PATH=/export/opt/fftw2-mpi
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$FFTW_INSTALL_PATH/lib
+

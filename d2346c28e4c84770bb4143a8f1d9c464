@@ -1,5 +1,3 @@
-Thu Jun 26 19:50:46 JST 2008
--- ProjNav VHDL simulation template: sim_writecomb_check.udo
--- You may edit this file after the line that starts with
--- '-- START' to customize your simulation
--- START user-defined simulation commands
+Tue Jul 15 19:35:30 JST 2008
+# XST flow : Creating project file
+top.prj

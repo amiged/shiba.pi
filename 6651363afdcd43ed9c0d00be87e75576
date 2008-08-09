@@ -1,103 +1,93 @@
-Sun Aug  3 19:27:33 JST 2008
-# Current time Tue Jan 04 17:06:01 2005
-# ModelSim Stack Trace
-# Program = vish
-# Id = "5.7g"
-# Version = "2003.10"
-# Date = "Oct 13 2003"
-# Platform = win32pe
-
-Exception c0000005 has occurred at address 0060b1ac. Traceback:
-# 0    0x0060b1ac: 'TclpAlloc + 0x9c'
-# 1    0x0060f6ae: 'Tcl_Alloc + 0xe'
-# 2    0x006370a1: 'Tcl_ListObjReplace + 0x321'
-# 3    0x0063b669: 'Tcl_DuplicateObj + 0xd9'
-# 4    0x0061414d: 'Tcl_LreplaceObjCmd + 0x10d'
-# 5    0x006238e4: 'TclExecuteByteCode + 0x5b4'
-# 6    0x0060cb12: 'Tcl_EvalObjEx + 0x1f2'
-# 7    0x006427ef: 'TclObjInterpProc + 0x26f'
-# 8    0x0063ccd6: 'Tcl_EvalObjv + 0x3d6'
-# 9    0x0063d18a: 'Tcl_EvalEx + 0x11a'
-# 10   0x0063d426: 'Tcl_Eval + 0x16'
-# 11   0x10002ad3: 'Itk_ArchetypeInit + 0x1ad3'
-# 12   0x100019a0: 'Itk_ArchetypeInit + 0x9a0'
-# 13   0x0033b67c: 'Itcl_EvalMemberCode + 0x206'
-# 14   0x0033c346: 'Itcl_ExecMethod + 0x18d'
-# 15   0x00344657: 'Itcl_EvalArgs + 0x133'
-# 16   0x0033e4b1: 'Itcl_HandleInstance + 0x1f2'
-# 17   0x006238e4: 'TclExecuteByteCode + 0x5b4'
-# 18   0x0060cb12: 'Tcl_EvalObjEx + 0x1f2'
-# 19   0x0063a5ba: 'Tcl_NamespaceObjCmd + 0xb2a'
-# 20   0x00639ba9: 'Tcl_NamespaceObjCmd + 0x119'
-# 21   0x0063ccd6: 'Tcl_EvalObjv + 0x3d6'
-# 22   0x0063d18a: 'Tcl_EvalEx + 0x11a'
-# 23   0x0063d426: 'Tcl_Eval + 0x16'
-# 24   0x0060df0c: 'Tcl_GlobalEval + 0x1c'
-# 25   0x00530d70: 'Tk_BindEvent + 0x99c'
-# 26   0x00553635: 'TkBindEventProc + 0x18f'
-# 27   0x0055d2e2: 'Tk_HandleEvent + 0x5eb'
-# 28   0x005acff7: 'Tk_DestroyWindow + 0x204'
-# 29   0x005acf2a: 'Tk_DestroyWindow + 0x137'
-# 30   0x005acf2a: 'Tk_DestroyWindow + 0x137'
-# 31   0x005acf2a: 'Tk_DestroyWindow + 0x137'
-# 32   0x005ae2f1: 'Tk_GetNumMainWindows + 0x70'
-# 33   0x00622f8d: 'Tcl_Finalize + 0x4d'
-# 34   0x0061060e: 'Tcl_ExitObjCmd + 0x3e'
-# 35   0x006238e4: 'TclExecuteByteCode + 0x5b4'
-# 36   0x0060cb12: 'Tcl_EvalObjEx + 0x1f2'
-# 37   0x006427ef: 'TclObjInterpProc + 0x26f'
-# 38   0x006238e4: 'TclExecuteByteCode + 0x5b4'
-# 39   0x0060cb12: 'Tcl_EvalObjEx + 0x1f2'
-# 40   0x006427ef: 'TclObjInterpProc + 0x26f'
-# 41   0x006238e4: 'TclExecuteByteCode + 0x5b4'
-# 42   0x0060cb12: 'Tcl_EvalObjEx + 0x1f2'
-# 43   0x006427ef: 'TclObjInterpProc + 0x26f'
-# 44   0x006238e4: 'TclExecuteByteCode + 0x5b4'
-# 45   0x0060cb12: 'Tcl_EvalObjEx + 0x1f2'
-# 46   0x006427ef: 'TclObjInterpProc + 0x26f'
-# 47   0x0063ccd6: 'Tcl_EvalObjv + 0x3d6'
-# 48   0x0063d18a: 'Tcl_EvalEx + 0x11a'
-# 49   0x0060cc62: 'Tcl_EvalObjEx + 0x342'
-# 50   0x0061059c: 'Tcl_EvalObjCmd + 0x6c'
-# 51   0x006238e4: 'TclExecuteByteCode + 0x5b4'
-# 52   0x0060cb12: 'Tcl_EvalObjEx + 0x1f2'
-# 53   0x006427ef: 'TclObjInterpProc + 0x26f'
-# 54   0x0063ccd6: 'Tcl_EvalObjv + 0x3d6'
-# 55   0x0063d18a: 'Tcl_EvalEx + 0x11a'
-# 56   0x0063d426: 'Tcl_Eval + 0x16'
-# 57   0x0060df0c: 'Tcl_GlobalEval + 0x1c'
-# 58   0x0042d1f7: '<unknown (@0x42d1f7)>'
-# 59   0x0060c2bb: 'TclInvokeStringCommand + 0x6b'
-# 60   0x0063ccd6: 'Tcl_EvalObjv + 0x3d6'
-# 61   0x0063d18a: 'Tcl_EvalEx + 0x11a'
-# 62   0x0063d426: 'Tcl_Eval + 0x16'
-# 63   0x0060df0c: 'Tcl_GlobalEval + 0x1c'
-# 64   0x0042cfd2: '<unknown (@0x42cfd2)>'
-# 65   0x0060c2bb: 'TclInvokeStringCommand + 0x6b'
-# 66   0x006238e4: 'TclExecuteByteCode + 0x5b4'
-# 67   0x0060cb12: 'Tcl_EvalObjEx + 0x1f2'
-# 68   0x00623a73: 'TclExecuteByteCode + 0x743'
-# 69   0x0060cb12: 'Tcl_EvalObjEx + 0x1f2'
-# 70   0x006427ef: 'TclObjInterpProc + 0x26f'
-# 71   0x006238e4: 'TclExecuteByteCode + 0x5b4'
-# 72   0x0060cb12: 'Tcl_EvalObjEx + 0x1f2'
-# 73   0x006427ef: 'TclObjInterpProc + 0x26f'
-# 74   0x0063ccd6: 'Tcl_EvalObjv + 0x3d6'
-# 75   0x0063d18a: 'Tcl_EvalEx + 0x11a'
-# 76   0x0063d426: 'Tcl_Eval + 0x16'
-# 77   0x0060df0c: 'Tcl_GlobalEval + 0x1c'
-# 78   0x00530d70: 'Tk_BindEvent + 0x99c'
-# 79   0x00553635: 'TkBindEventProc + 0x18f'
-# 80   0x0055d2e2: 'Tk_HandleEvent + 0x5eb'
-# 81   0x0055d6d2: 'TkQueueEventForAllChildren + 0xcf'
-# 82   0x0063af20: 'Tcl_ServiceEvent + 0x60'
-# 83   0x0063b191: 'Tcl_DoOneEvent + 0x111'
-# 84   0x0055d73c: 'Tk_MainLoop + 0x14'
-# 85   0x0057ce48: 'Tk_MainEx + 0x438'
-# 86   0x0042eed4: '<unknown (@0x42eed4)>'
-# 87   0x0042f3e9: '<unknown (@0x42f3e9)>'
-# 88   0x004c0925: '<unknown (@0x4c0925)>'
-# 89   0x77e7893d: '<unknown (@0x77e7893d)>'
-StackWalk failed 487
-# End of Stack Trace
-
+Sat Aug  9 19:53:22 JST 2008
+/EQNINJ
+/IPSET xi_0,x[][0],float,26,16
+/IPSET xi_1,x[][1],float,26,16
+/IPSET xi_2,x[][2],float,26,16
+/IPSET vi_0,v[][0],float,26,16
+/IPSET vi_1,v[][1],float,26,16
+/IPSET vi_2,v[][2],float,26,16
+/JPSET xj_0,0,0,25,x[][0],float,26,16
+/JPSET xj_1,0,26,51,x[][1],float,26,16
+/JPSET xj_2,0,52,77,x[][2],float,26,16
+/JPSET vj_0,0,78,103,v[][0],float,26,16
+/JPSET vj_1,0,104,129,v[][1],float,26,16
+/JPSET vj_2,0,130,155,v[][2],float,26,16
+/JPSET mj,0,156,181,m[],float,26,16
+/FOSET rx,p[],fix,64,(1.0/pow(2.0,(double)31))
+/FOSET sx_0,a[][0],fix,64,(1.0/pow(2.0,(double)31))
+/FOSET sx_1,a[][1],fix,64,(1.0/pow(2.0,(double)31))
+/FOSET sx_2,a[][2],fix,64,(1.0/pow(2.0,(double)31))
+/FOSET tx_0,jk[][0],fix,64,(1.0/pow(2.0,(double)31))
+/FOSET tx_1,jk[][1],fix,64,(1.0/pow(2.0,(double)31))
+/FOSET tx_2,jk[][2],fix,64,(1.0/pow(2.0,(double)31))
+/NPIPE 1
+/NVMP 1
+void force(double x[][3], double v[][3], double m[], double p[], double a[][3], double jk[][3], int n){
+  pg_float_sub(xj_0,xi_0,dx_0,26,16,4,6)
+  pg_float_sub(xj_1,xi_1,dx_1,26,16,4,6)
+  pg_float_sub(xj_2,xi_2,dx_2,26,16,4,6)
+  pg_float_mult(dx_0,dx_0,dx2_0,26,16,2,6)
+  pg_float_mult(dx_1,dx_1,dx2_1,26,16,2,6)
+  pg_float_mult(dx_2,dx_2,dx2_2,26,16,2,6)
+  pg_float_unsigned_add(dx2_0,dx2_1,x2y2,26,16,4,6)
+  pg_float_unsigned_add(dx2_2r,x2y2,r2,26,16,4,6)
+  pg_float_sqrt(r2,r1,26,16,3,6)
+  pg_float_mult(r2r,r1,r3,26,16,2,6)
+  pg_float_mult(r3,r2r1,r5,26,16,2,6)
+  pg_float_recipro(r5,r5i,26,16,2,6)
+  pg_float_mult(r5i,mjr,mr5i,26,16,2,6)
+  pg_float_mult(mr5i,r2r2,mf,26,16,2,6)
+  pg_float_mult(mf,r2r3,mp,26,16,2,6)
+  pg_float_expadd(mp,ps,31,26,16,1)
+  pg_float_fixaccum(ps,rx,26,16,57,64,2,30,6)
+  pg_float_expadd(mf,fs,31,26,16,1)
+  pg_float_mult(fs,dx_0r,fx_0,26,16,2,6)
+  pg_float_mult(fs,dx_1r,fx_1,26,16,2,6)
+  pg_float_mult(fs,dx_2r,fx_2,26,16,2,6)
+  pg_float_fixaccum(fx_0,sx_0,26,16,57,64,2,30,6)
+  pg_float_fixaccum(fx_1,sx_1,26,16,57,64,2,30,6)
+  pg_float_fixaccum(fx_2,sx_2,26,16,57,64,2,30,6)
+  pg_float_sub(vj_0,vi_0,dv_0,26,16,4,6)
+  pg_float_sub(vj_1,vi_1,dv_1,26,16,4,6)
+  pg_float_sub(vj_2,vi_2,dv_2,26,16,4,6)
+  pg_float_mult(fs,dv_0r,jk1_0,26,16,2,6)
+  pg_float_mult(fs,dv_1r,jk1_1,26,16,2,6)
+  pg_float_mult(fs,dv_2r,jk1_2,26,16,2,6)
+  pg_float_mult(dx_0,dv_0,xv_0,26,16,2,6)
+  pg_float_mult(dx_1,dv_1,xv_1,26,16,2,6)
+  pg_float_mult(dx_2,dv_2,xv_2,26,16,2,6)
+  pg_float_unsigned_add(xv_0,xv_1,xv1,26,16,4,6)
+  pg_float_unsigned_add(xv_2r,xv1,xv2,26,16,4,6)
+  pg_float_expadd(xv2,xv2x2,1,26,16,1)
+  pg_float_unsigned_add(xv2x2,xv2r,xv2x3,26,16,4,6)
+  pg_float_mult(mr5i,xv2x3r,jk2a,26,16,2,6)
+  pg_float_expadd(jk2a,jk2s,31,26,16,1)
+  pg_float_mult(jk2s,dx_0r1,jk2_0,26,16,2,6)
+  pg_float_mult(jk2s,dx_1r1,jk2_1,26,16,2,6)
+  pg_float_mult(jk2s,dx_2r1,jk2_2,26,16,2,6)
+  pg_float_sub(jk1_0,jk2_0,jk0_0,26,16,4,6)
+  pg_float_sub(jk1_1,jk2_1,jk0_1,26,16,4,6)
+  pg_float_sub(jk1_2,jk2_2,jk0_2,26,16,4,6)
+  pg_float_fixaccum(jk0_0,tx_0,26,16,57,64,2,34,6)
+  pg_float_fixaccum(jk0_1,tx_1,26,16,57,64,2,34,6)
+  pg_float_fixaccum(jk0_2,tx_2,26,16,57,64,2,34,6)
+  pg_pdelay(dx2_2,dx2_2r,26,4)
+  pg_pdelay(r2,r2r,26,3)
+  pg_pdelay(r2,r2r1,26,5)
+  pg_pdelay(mj,mjr,26,23)
+  pg_pdelay(r2,r2r2,26,11)
+  pg_pdelay(dv_1,dv_1r,26,24)
+  pg_pdelay(r2,r2r3,26,13)
+  pg_pdelay(dv_0,dv_0r,26,24)
+  pg_pdelay(xv_2,xv_2r,26,4)
+  pg_pdelay(dv_2,dv_2r,26,24)
+  pg_pdelay(dx_0,dx_0r,26,24)
+  pg_pdelay(dx_1,dx_1r,26,24)
+  pg_pdelay(dx_2,dx_2r,26,24)
+  pg_pdelay(xv2,xv2r,26,1)
+  pg_pdelay(xv2x3,xv2x3r,26,6)
+  pg_pdelay(dx_1,dx_1r1,26,24)
+  pg_pdelay(dx_2,dx_2r1,26,24)
+  pg_pdelay(dx_0,dx_0r1,26,24)
+  pg_rundelay(36)
+}

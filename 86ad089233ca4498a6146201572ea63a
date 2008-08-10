@@ -1,68 +1,44 @@
-Wed Aug  6 19:52:29 JST 2008
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.std_logic_arith.all;                                        
-use ieee.std_logic_unsigned.all;                                    
+Sun Aug 10 19:41:10 JST 2008
+////////////////////////////////////// ADDRESS OF IFPGA REGISTERS
+#define PIPE_DMA_STAT      0x0   // gpreg0(0) : pipe calc sts | available but not used in api
+#define PIPE_RST           0x4
+#define CNF_CMD_ADR       0x80
+#define CNF_DAT_ADR       0x84
+#define PIPE_DMA_WRITE    0x88   // unused
+#define PIPE_DMA_READ     0x8C   // unused
+#define NPIPE_IFPGA       0x8C  // PGPG_REG3 @ ifpga.vhd
 
-entity calc is
-  port (
-    start      : in  std_logic;
-    clk        : in  std_logic;
-    pclk       : in  std_logic;
-    n          : in  std_logic_vector(31 downto 0);
-    run        : out  std_logic;
-    mem_adr    : out  std_logic_vector(31 downto 0));
-end calc;
+/********************************************************************
+ * PIPE_DMA_WRITE (31 downto 28) : pfpga chip select
+ *       "        (27 downto 19) : num of 64-bit WARD
+ *       "        (18 downto  0) : offset of pfpga address
+ *
+ * PIPE_DMA_READ  (31 downto 28) : pfpga chip select
+ *       "        (27 downto 19) : num of 64-bit WARD
+ *       "        (18 downto  0) : offset of pfpga address
+ ********************************************************************/
 
-architecture rtl of calc is
+/*****************************************************
+0x5000 - 0x501f : i 0
+0x5020 - 0x503f : i 1
+0x5040 - 0x505f : i 2
+0x5060 - 0x507f : i 3
+0x5080 - 0x5fff : -- none --
 
-signal rst :  std_logic;
-signal rstn : std_logic_vector(31 downto 0);
-signal start_r : std_logic;
-signal mema_dc : std_logic_vector(17 downto 0) := (others=>'0');
-begin
+0x6000 - 0x60ff : f 0
+0x6100 - 0x61ff : f 1
+0x6200 - 0x62ff : f 2
+0x6300 - 0x63ff : f 3
+0x6400 - 0x6fff : -- none --
 
--- GENERATE rst PULS ------------------
-process(pclk) begin
-  if(pclk'event and pclk='1') then
-    rst <= rstn(0);
-  end if;
-end process;
+0x7000          : set n
+0x7001          : run
 
-process (clk) begin
-  if(clk'event and clk='1') then
-    rstn(0) <= start_r AND (NOT start);
-    start_r <= start;
-  end if;
-end process;
----------------------------------------
+0x40000 -       : j
+********************************************/
+#define ADR_IPSET 0x5000
+#define ADR_FOSET 0x6000
+#define ADR_SETN  0x7000
+#define ADR_RUN   0x7008
 
--- GENERATE run --------------------------
-process(pclk,rst) begin
-  if(rst = '1') then
-    run <= '0';
-  elsif(pclk'event and pclk='1') then
-    if(mema_dc /= "000000000000000000") then
-      run <= '1';
-    else
-      run <= '0';
-    end if;
-  end if;
-end process;
-
--- GENERATE mem_adr  ---------------------
-process(pclk,rst) begin
-  if(rst = '1') then
-    mema_dc <=  n(17 downto 0) ;
-  elsif(pclk'event and pclk='1') then
-    if(mema_dc /= "000000000000000000") then
-      mema_dc <= mema_dc - "000000000000000001";
-    end if;
-  end if;
-end process;
---hoge
-  mem_adr <= "000000000000000" & mema_dc(15 downto 0) & "0";  -- G5
---mem_adr <= "00000000000000" & mema_dc(15 downto 0) & "00";  -- SPH FirstStage
---mem_adr <= "0000000000000" & mema_dc(15 downto 0) & "000";  -- SPH SecondStage
-
-end rtl;
+#define ADR_JPSET 0x40000

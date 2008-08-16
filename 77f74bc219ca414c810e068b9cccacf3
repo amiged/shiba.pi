@@ -1,28 +1,30 @@
-Fri Aug  8 19:29:16 JST 2008
-#!/usr/bin/env python3
-import numpy as np
-import cv2
-from datetime import datetime
+Sat Aug 16 19:35:18 JST 2008
+#!/usr/bin/perl
 
 
-def put_text(image, text):
-    font_size = 1.0
-    font_type = cv2.FONT_HERSHEY_PLAIN
-    font_color = (0xff, 0xf, 0xff)
-    cv2.putText(image, text, (460, 15), font_type, font_size, font_color)
-    
+my $is_stop = 0;
+my $nboard = 0;
 
-image = cv2.imread("/tmp/tmp.jpg")
+if($ARGV[0]){
+    $nboard = $ARGV[0];
+}
 
-tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S') # ('%Y%m%d_%H_%M_%S_%f')
-put_text(image, tnow)
-cv2.imshow('test', image)
+my $kbuf_dir = "/sys/class/fpga/fpga". sprintf("%d",$nboard);
+my $cmd ="cat ". $kbuf_dir ."/kbuffers";
+my $exe = `$cmd`;
+print $exe;
 
+my $nbuf = `$cmd | wc -l`;
+chomp($nbuf);
+$nbuf--;
 
-while(True):
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
+print $nbuf ." buffers exists\n";
 
-cv2.destroyAllWindows()
+for(my $i=0;$i<$nbuf;$i++){
+    $cmd = "echo $i > ". $kbuf_dir. "/kmem_free";
+    print $cmd ."\n";
+    $exe = `$cmd`;
+    print $exe;
+}
 
-print("Done.")
+1;

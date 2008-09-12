@@ -1,57 +1,26 @@
-Wed Aug 13 19:36:25 JST 2008
--- 2005/06/13
-#define NPOS 32
-#define NLOG 17
-#define NMAN 8
-#define NCUT 6
-#define NFOR 57
-#define NACC 64
-#define D_FSU  1
-#define D_FTL  2
-#define D_LAD  4
-#define D_LMU  1
-#define D_LTF  2
-#define D_FAC  1
+Fri Sep 12 19:30:56 JST 2008
+-- Copyright 2004 Tsuyoshi Hamada
+--
+--
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
 
-// -1 < xbox < 1.0,
-// mmin > 1.0 (1e-2 < m < 1.0 ==> underflow around large R)
-#define xsize (2.0)
-#define mmin  (1.0e-2)
-#define xscale (pow(2.0,(double)NPOS)/xsize)
-//mmin 0xdf61
-#define mscale (pow(2.0,95.38)/mmin)
-#define escale (xscale*xscale)
+entity dmar_start_adr is
+  port (
+    CLK       : in std_logic;
+    DBUS      : in std_logic_vector(63 downto 0);
+    STATE     : in std_logic_vector(1 downto 0);
+    START_ADR : out std_logic_vector(18 downto 0) );
+end dmar_start_adr;
 
-#define NEXAD -31
-#define fshift pow(2.0,-1.0*(double)NEXAD)
-#define fscale (-xscale*xscale*fshift/mscale)
-
-/NPIPE 2;
-/NVMP 1;
-
-/JPSET xj[3], x[][], fix,      NPOS,xscale;
-/JPSET mj,    m[],   log,      NLOG,NMAN,mscale;
-/IPSET xi[3], x[][], fix,      NPOS,xscale;
-/IPSET ieps2, eps2,  log,      NLOG,NMAN,escale;
-/FOSET sx[3], a[][], fix,      NACC,fscale;
-
-pg_fix_addsub(SUB,xi,xj,xij,           NPOS,           D_FSU);
-pg_conv_ftol(xij,dx,                   NPOS,NLOG,NMAN, D_FTL);
-pg_log_shift(1,dx,x2,                  NLOG);
-
---pg_log_unsigned_add_itp(x2[0],x2[1], x2y2,   NLOG,NMAN,  D_LAD,NCUT);
---pg_log_unsigned_add_itp(x2[2],ieps2, z2e2,   NLOG,NMAN,  D_LAD,NCUT);
---pg_log_unsigned_add_itp(x2y2,z2e2,   r2,     NLOG,NMAN,  D_LAD,NCUT);
-pg_log_unsigned_add(x2[0],x2[1], x2y2, NLOG,NMAN,      D_LAD);
-pg_log_unsigned_add(x2[2],ieps2, z2e2, NLOG,NMAN,      D_LAD);
-pg_log_unsigned_add(x2y2,z2e2,   r2,   NLOG,NMAN,      D_LAD);
-
-pg_log_shift(-1,r2,       r1,          NLOG);
-pg_log_muldiv(MUL,r2,r1,  r3,          NLOG,           D_LMU);
-pg_log_muldiv(SDIV,mj,r3,  mf,         NLOG,           D_LMU);
-pg_log_muldiv(MUL,mf,dx,  fx,          NLOG,           D_LMU);
---pg_log_muldiv(SDIV,fx,f_shift, fxs,    NLOG,           D_LMU);
-pg_log_expadd(fx,fxs,                  NEXAD,NLOG,NMAN, D_LMU);
-
-pg_conv_ltof(fxs,  ffx,                NLOG,NMAN,NFOR, D_LTF);
-pg_fix_accum(ffx,  sx,                 NFOR,NACC,      D_FAC);
+architecture rtl of dmar_start_adr is
+component dmaw_start_adr
+  port (
+    CLK       : in std_logic;
+    DBUS      : in std_logic_vector(63 downto 0);
+    STATE     : in std_logic_vector(1 downto 0);
+    START_ADR : out std_logic_vector(18 downto 0) );
+end component;
+begin
+  u0 : dmaw_start_adr port map(CLK=>CLK, DBUS=>DBUS, STATE=>STATE, START_ADR=>START_ADR);
+end rtl;

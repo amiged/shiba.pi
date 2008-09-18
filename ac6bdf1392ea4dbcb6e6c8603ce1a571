@@ -1,54 +1,41 @@
-Wed Sep  3 19:53:24 JST 2008
-#!/bin/sh
+Thu Sep 18 19:31:13 JST 2008
+Release 6.2.03i - ngdbuild G.31a
+Copyright (c) 1995-2004 Xilinx, Inc.  All rights reserved.
 
-# An example hook script to verify what is about to be pushed.  Called by "git
-# push" after it has checked the remote status, but before anything has been
-# pushed.  If this script exits with a non-zero status nothing will be pushed.
-#
-# This hook is called with the following parameters:
-#
-# $1 -- Name of the remote to which the push is being done
-# $2 -- URL to which the push is being done
-#
-# If pushing without using a named remote those arguments will be equal.
-#
-# Information about the commits which are being pushed is supplied as lines to
-# the standard input in the form:
-#
-#   <local ref> <local sha1> <remote ref> <remote sha1>
-#
-# This sample shows how to prevent push of commits where the log message starts
-# with "WIP" (work in progress).
+Command Line: ngdbuild -intstyle ise -dd ./_ngo -uc ../top.ucf -p
+xc2vp70-ff1517-5 top.ngc top.ngd 
 
-remote="$1"
-url="$2"
+Reading NGO file
+"/home/hamada/pgr/Demos/PairWiseErr/pgr/ISE_PROJECT/proj/top.ngc" ...
+Reading component libraries for design expansion...
 
-z40=0000000000000000000000000000000000000000
+Annotating constraints to design from file "../top.ucf" ...
 
-IFS=' '
-while read local_ref local_sha remote_ref remote_sha
-do
-	if [ "$local_sha" = $z40 ]
-	then
-		# Handle delete
-	else
-		if [ "$remote_sha" = $z40 ]
-		then
-			# New branch, examine all commits
-			range="$local_sha"
-		else
-			# Update to existing branch, examine new commits
-			range="$remote_sha..$local_sha"
-		fi
+Checking timing specifications ...
+WARNING:XdmHelpers:793 - The TNM "CLK66" drives the CLKIN pin of DCM
+   "dcm0_dcm0". This TNM cannot be traced through the DCM because it is not used
+   in exactly one PERIOD specification. This TNM is used in the following user
+   groups and/or specifications:
+   <none>
+WARNING:XdmHelpers:625 - No instances driven from signal "CK66" are valid for
+   inclusion in TNM group "CLK66". A TNM property on a pin or signal marks only
+   the flip-flops, latches and/or RAMs which are directly or indirectly driven
+   by that pin or signal.
+INFO:XdmHelpers:851 - TNM "CK66", used in period specification "TS_CK66", was
+   traced into DCM instance "dcm0_dcm0". The following new TNM groups and period
+   specifications were generated at the DCM output(s):
+   CLK0: TS_dcm0_dcm_out=PERIOD dcm0_dcm_out TS_CK66*1.000000 HIGH 50.000000%
+   CLKFX: TS_dcm0_dcm_fx=PERIOD dcm0_dcm_fx TS_CK66*1.000000 HIGH 50.000000%
+WARNING:XdmHelpers:644 - No appropriate elements were found for the TNM group
+   "CLK66". This group has been removed from the design.
+Checking expanded design ...
 
-		# Check for WIP commit
-		commit=`git rev-list -n 1 --grep '^WIP' "$range"`
-		if [ -n "$commit" ]
-		then
-			echo "Found WIP commit in $local_ref, not pushing"
-			exit 1
-		fi
-	fi
-done
+NGDBUILD Design Results Summary:
+  Number of errors:     0
+  Number of warnings:   3
 
-exit 0
+Total memory usage is 67920 kilobytes
+
+Writing NGD file "top.ngd" ...
+
+Writing NGDBUILD log file "top.bld"...

@@ -1,82 +1,158 @@
-Sun Sep 21 19:50:34 JST 2008
------------------------------------------------
---  pgpg-b3 dual port RAM module (for IMEM)
---      32 bits
---   16384 entries
---  Copyright(c) 2004- by Tsuyoshi Hamada
---  2004/12/02 : 64KB version up for imem by Tsuyoshi Hamada 
---  2004/10/29 : for Jmem by Tsuyoshi Hamada
------------------------------------------------
-library ieee;
-use ieee.std_logic_1164.all;
-library UNISIM;
-use UNISIM.VCOMPONENTS.ALL;
+Mon Oct 27 19:42:45 JST 2008
+#define ERROR_CHECK
 
-entity dp32b16384w is
-  port (
-    clka  : in std_logic;
-    wea   : in std_logic;
-    addra : in std_logic_vector(13 downto 0);
-    dina  : in std_logic_vector(31 downto 0);
-    douta : out std_logic_vector(31 downto 0);
+#include <iostream>
+using namespace std;
+#include <fstream>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <math.h>
 
-    clkb  : in std_logic;
-    web   : in std_logic;
-    addrb : in std_logic_vector(13 downto 0);
-    dinb  : in std_logic_vector(31 downto 0);
-    doutb : out std_logic_vector(31 downto 0));
+#define NMAX (1<<17) // 131072
 
-end dp32b16384w;
+extern "C" void force(double xj[][3], double mj[], double xi[][3], double eps2, double a[][3], int ni, int nj);
 
-architecture rtl of dp32b16384w is
+#include <time.h>
+#include <unistd.h>
+#include <sys/time.h>
+#include <sys/resource.h>
+double get_time(void)
+{
+  struct rusage r;
+  double sec, usec, z;
+  getrusage(RUSAGE_SELF, &r);
+  sec   = r.ru_utime.tv_sec;
+  usec  = r.ru_utime.tv_usec;
+  z = sec + usec*1.0e-6;
+  return (z);
+}
 
-component RAMB16_S1_S1
-  generic (
-         INIT_A : bit_vector := X"0";
-         INIT_B : bit_vector := X"0";
-         SRVAL_A : bit_vector := X"0";
-         SRVAL_B : bit_vector := X"0";
-         WRITE_MODE_A : string :="WRITE_FIRST";
-         WRITE_MODE_B : string :="WRITE_FIRST");
-  port ( doa   : out std_logic_vector(0 downto 0);
-         addra : in std_logic_vector(13 downto 0);
-         clka  : in std_logic;
-         dia   : in std_logic_vector(0 downto 0);
-         ena   : in std_logic;
-         ssra  : in std_logic;
-         wea   : in std_logic;
+static double r[NMAX][3];
+static double m[NMAX];
+static double eps2 = 0.0001;
+static double a[NMAX][3];
+static double v[NMAX][3];
+static double a_h[NMAX][3];
 
-         dob   : out std_logic_vector(0 downto 0);
-         addrb : in std_logic_vector(13 downto 0);
-         clkb  : in std_logic;
-         dib   : in std_logic_vector(0 downto 0);
-         enb   : in std_logic;
-         ssrb  : in std_logic;
-         web   : in std_logic);
-end component;
+void readfile(char* fname, int* nbody, double* m, double r[][3], double v[][3])
+{
+  ifstream f;
+  f.open(fname, ios::in);
+  if(!f) {
+    cerr << "Can't open file: " <<  fname << endl;
+    exit(-1);
+  }
+  char* buf= new char [2048];
+  f.getline(buf, 511); // *ignore*
+  int n;
+  f >> n;
+  (*nbody) = n;
+  f.getline(buf, 511); // *ignore*
 
-begin
+  f.scientific;
+  for(int i=0; i<n; i++){
+    f.getline(buf, 1024);
+    char ii[256];
+    double mj, x, y, z, vx, vy, vz;
+    f >> ii >> mj >> x >> y >> z >> vx >> vy >> vz;
+    //    printf("%s   %.16E   % .16E % .16E % .16E   % .16E % .16E % .16E \n", ii, m, x, y, z, vx, vy, vz);
+    m[i]    = mj;
+    r[i][0] = x;
+    r[i][1] = y;
+    r[i][2] = z;
+    v[i][0] = vx;
+    v[i][1] = vy;
+    v[i][2] = vz;
+  }
+  f.close();
 
-  forgen1: for i in 0 to 31 generate
-    uraml: RAMB16_S1_S1 -- GENERIC MAP(WRITE_MODE=>"WRITE_FIRST");
-	      PORT MAP(-- FIFO SIDE --
-                       clka=>clka,
-                       addra=>addra,
-                       dia=>dina(i downto i),
-                       doa=>douta(i downto i),
-                       ena=>'1',
-                       ssra=>'0',
-                       wea=>wea,
-                       -- LOCAL SIDE --
-                       clkb=>clkb,
-                       addrb=>addrb,
-                       dib=>dinb(i downto i),
-                       dob=>doutb(i downto i),
-                       enb=>'1',
-                       ssrb=>'0',
-                       web=>web);
-  end generate forgen1;
+  delete[] buf;
+}
+
+void force_host(double xj[][3],
+								double m[],
+								double xi[][3],
+								double eps2,
+								double a[][3],
+								int ni,
+								int nj)
+{
+  int i,j,d;
+  double dx[3];
+  for(i=0;i<ni;i++) for(d=0;d<3;d++) a[i][d] = 0.0;
+
+  for(i=0;i<ni;i++){
+    for(j=0;j<nj;j++){
+      double r2,r3;
+      r2 = eps2;
+      for(d=0;d<3;d++){
+				dx[d] = xj[j][d] - xi[i][d];
+				r2 += dx[d] * dx[d];
+      }
+      r3 = sqrt(r2)*r2;
+      for(d=0;d<3;d++){
+				a[i][d] +=  m[j]*dx[d]/r3;
+      }
+    }
+  }
+}
+
+int main(int argc,char** argv)
+{
+  int n=0;
+  int nstep = 1;
+
+  if((argc == 2)||(argc == 3)){
+    char ifile[256];
+    strcpy(ifile,argv[1]);
+    readfile(ifile, &n, m, r, v);
+    if(argc == 3)  nstep = atoi(argv[2]);
+  }else{
+    fprintf(stderr, "argc = %d\n",argc);
+    fprintf(stderr, "cmd <init file> <nstep>\n");
+    exit(-1);
+  }
+
+  int ni=n;
+  int nj=n;
+
+  force(r, m, r, eps2, a, ni, nj);
+
+  double eps2 = (1./256.);
+  double tt = get_time();
+  for(int step = 0; step < nstep; step++) force(r, m, r, eps2, a, ni, nj);
+  tt = get_time() - tt;
+
+  double nfloat = 38.0 * ((double)ni)*((double)nj) * ((double)nstep);
+  double gflops = nfloat * (1.e-9) / tt;
+  //  fprintf(stdout, "n=%d\t%g sec/gpucall\t%g Gflops\n", n, tt/(double)nstep, gflops );
+  fprintf(stdout, "n=%d\n", n);
+  fprintf(stdout, "%g sec/gpucall\n", tt/(double)nstep);
+  fprintf(stdout, "%g Gflops\n",  gflops );
 
 
-end rtl;
+  if(0){
+    cout << "Start Error check: " << n <<endl;
+    force_host(r, m, r, eps2, a_h, ni, nj);
+    double err_max = 0.0;
+    for(int i=0;i<ni;i++){
+      double err=0.0;
+      for(int d=0;d<3;d++){
+				double diff = fabs(a[i][d] - a_h[i][d]);
+				err += (diff*diff);
+      }
+      err = sqrt(err);
+      err = err/sqrt(a_h[i][0]*a_h[i][0]+a_h[i][1]*a_h[i][1]+a_h[i][2]*a_h[i][2]);
+      if (err > err_max){
+				err_max = err;
+				printf("[%d]:\t", i);
+				printf("%.7e:\t", err);
+				printf("%e,%e,%e:\t%e,%e,%e\n",a_h[i][0], a_h[i][1], a_h[i][2],a[i][0], a[i][1], a[i][2]);
+      }
+    }
+    printf("Max Err %.7e\n", err_max);
+  }
 
+  return (0);
+}

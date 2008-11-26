@@ -1,324 +1,344 @@
-Wed Nov 19 19:26:36 JST 2008
-# ---------------------------------------
-# pfpga ucf < for ISE6.3i >
-# 2004/11/16 by T.Hamada
-# ---------------------------------------
+Wed Nov 26 19:40:06 JST 2008
+/***************************************************
+ * The lowest level library for PROGRAPE-4
+ *
+ * Copyright(c) by Tsuyoshi Hamada.
+ * All rights reserved.
+ *
+ * PLEASE DO NOT BRANCH !!
+ *
+ * 20060916.rev1 : Development start
+ ***************************************************/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <unistd.h>
+#include <sys/ioctl.h> // ioctl()
+#include <sys/mman.h>  // mmap()
+#include <sys/types.h> // open()
+#include <sys/stat.h>  // open()
+#include <sys/fcntl.h> // open()
+
+#undef CERR
+#define CERR(fmt, args...) fprintf(stderr, fmt, ## args)
+
+#undef _CERR
+#define _CERR(fmt, args...) 
+
+#define MAX_NBOARD 8
+unsigned int* bar0[MAX_NBOARD];
+unsigned int* bar1[MAX_NBOARD];
+
+//---------------------------------------
+#include "progrape.h"
+
+static char *devname[] = {
+  "/dev/progrape0",
+  "/dev/progrape1",
+  "/dev/progrape2",
+  "/dev/progrape3",
+  "/dev/progrape4",
+  "/dev/progrape5",
+  "/dev/progrape6",
+  "/dev/progrape7",
+  "/dev/progrape8",
+};
+
+static int pg4_dev[] = {
+  -1,-1,-1,-1,-1,-1,-1,-1,
+};
+
+unsigned int *dmar_buf[MAX_NBOARD];
+unsigned int *dmaw_buf[MAX_NBOARD];
+
+unsigned int* pg4_get_bar0ptr(int devid){ return bar0[devid]; }
+unsigned int* pg4_get_bar1ptr(int devid){ return bar1[devid]; }
+
+#define DMA_BSIZE (0x1<<10) // 4KB
+
+static void * __mmap_bar     (int devid, int bar);
+//    static int __pg4_DMA         (int devid, unsigned int size, unsigned int offset, unsigned int dir);
+//    static int __pg4_DMA_noInterrupt(int devid, unsigned int size, unsigned int offset, unsigned int dir);
+//    static int __pg4_DMA_with_retry(int devid, unsigned int size, unsigned int offset, unsigned int dir);
+int           pg4_DMAget     (int devid, unsigned int size);
+int           pg4_DMAput     (int devid, unsigned int size);
+int           pg4_DMAput_offset (int devid, unsigned int size, unsigned offset);
+int           pg4_DMAget_offset (int devid, unsigned int size, unsigned offset);
+void          pg4_wait       (int devid, int n);
+void          pg4_DMAcheck   (int devid);
+int           pg4_DMAretry   (int devid);
+unsigned long pg4_getbaseaddr(int devid, int j);
+unsigned long pg4_getbaseaddr_size(int devid, int bar);
+unsigned long pg4_read_pciconfig_dword(int devid, int adr);
+void pg4_get_pfpga_info(int devid, char *info);
+void pg4_set_pfpga_info(int devid, char *info);
 
 
-################################################################################
-# Timing specification
-################################################################################
-NET "CK133"							TNM_NET = "CLK133";
-NET "CK66"							TNM_NET = "CLK66";
+static void * __mmap_dmabuf(int id, int is_wbuf)
+{
+  unsigned long size;
+  void *mapped_ptr;
+
+  switch (is_wbuf) {
+  case 0:
+    {
+      if (ioctl(pg4_dev[id], IOC_SV_MMAPMODE, MMAP_BUF_DMAR)) {
+	CERR("mmap dmar buf failed | %s:%d\n", __FILE__, __LINE__);
+	exit (-1);
+      }
+      size = ioctl(pg4_dev[id], IOC_GV_DMA_SIZE);
+
+    }
+    break;
+  case 1:
+    {
+      if (ioctl(pg4_dev[id], IOC_SV_MMAPMODE, MMAP_BUF_DMAW)) {
+	CERR("mmap dmaw buf failed | %s:%d\n", __FILE__, __LINE__);
+	exit (-1);
+      }
+      size = ioctl(pg4_dev[id], IOC_GV_DMA_SIZE);
+    }
+    break;
+  default :
+    CERR("mmap dmabuf %d invalid | %s:%d\n", is_wbuf, __FILE__, __LINE__);
+    exit (-1);
+  }
+
+  mapped_ptr = mmap(NULL,
+		    size,
+		    (PROT_READ| PROT_WRITE),
+		    MAP_SHARED,
+		    pg4_dev[id],
+		    0);
+  _CERR("mmap_ptr called\n");
+
+  return (mapped_ptr);
+}
 
 
-################################################################################
-# I/O property
-################################################################################
-NET	"CBUS<0>"				LOC = "AU10";
-NET	"CBUS<1>"				LOC = "AT10";
-NET	"CBUS<2>"				LOC = "AJ12";
-NET	"CBUS<3>"				LOC = "AJ13";
-NET	"CBUS<4>"				LOC = "AL10";
-NET	"CBUS<5>"				LOC = "AL11";
-NET	"CBUS<6>"				LOC = "AN11";
-NET	"CBUS<7>"				LOC = "AM11";
+static void * __mmap_bar(int id, int bar)
+{
+  unsigned long size;
+  unsigned long pagesize = getpagesize();
+  void *mapped_ptr;
 
-NET	"CBUS<0>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS<1>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS<2>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS<3>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS<4>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS<5>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS<6>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS<7>"				IOSTANDARD	=	LVCMOS25;
-NET	"CK66"					IOSTANDARD	=	LVCMOS25;
-NET	"CK133"					IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<0>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<1>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<2>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<3>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<4>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<5>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<6>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<7>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<8>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<9>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<10>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<11>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<12>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<13>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<14>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<15>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<16>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<17>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<18>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<19>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<20>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<21>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<22>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<23>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<24>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<25>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<26>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<27>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<28>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<29>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<30>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<31>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<32>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<33>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<34>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<35>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<36>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<37>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<38>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<39>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<40>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<41>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<42>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<43>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<44>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<45>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<46>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<47>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<48>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<49>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<50>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<51>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<52>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<53>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<54>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<55>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<56>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<57>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<58>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<59>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<60>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<61>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<62>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<63>"				IOSTANDARD	=	LVCMOS25;
-NET	"RST"					IOSTANDARD	=	LVCMOS25;
-NET	"FPGA_NO<0>"			IOSTANDARD	=	LVCMOS25;
-NET	"FPGA_NO<1>"			IOSTANDARD	=	LVCMOS25;
-NET	"LED<0>"				IOSTANDARD	=	LVCMOS25;
-NET	"LED<1>"				IOSTANDARD	=	LVCMOS25;
-NET	"LED<2>"				IOSTANDARD	=	LVCMOS25;
-NET	"LED<3>"				IOSTANDARD	=	LVCMOS25;
-NET	"LED<4>"				IOSTANDARD	=	LVCMOS25;
-NET	"LED<5>"				IOSTANDARD	=	LVCMOS25;
-NET	"LED<6>"				IOSTANDARD	=	LVCMOS25;
-NET	"LED<7>"				IOSTANDARD	=	LVCMOS25;
-NET	"DSW<0>"			IOSTANDARD	=	LVCMOS25;
-NET	"DSW<1>"			IOSTANDARD	=	LVCMOS25;
-NET	"DSW<2>"			IOSTANDARD	=	LVCMOS25;
-NET	"DSW<3>"			IOSTANDARD	=	LVCMOS25;
-NET	"DSW<4>"			IOSTANDARD	=	LVCMOS25;
-NET	"DSW<5>"			IOSTANDARD	=	LVCMOS25;
-NET	"DSW<6>"			IOSTANDARD	=	LVCMOS25;
-NET	"DSW<7>"			IOSTANDARD	=	LVCMOS25;
+  switch (bar) {
+  case 0:
+    {
+      if (ioctl(pg4_dev[id], IOC_SV_MMAPMODE, MMAP_REG_PIORW)) {
+	CERR("mmap bar%d failed | %s:%d\n",bar,__FILE__,__LINE__);
+	exit (-1);
+      }
+      size = ioctl(pg4_dev[id], IOC_GV_REG_SIZE);
+    }
+    break;
+  case 1:
+    {
+      if (ioctl(pg4_dev[id], IOC_SV_MMAPMODE, MMAP_MEM_PIORW)) {
+	CERR("mmap bar%d failed | %s:%d\n",bar,__FILE__,__LINE__);
+	exit (-1);
+      }
+      size = ioctl(pg4_dev[id], IOC_GV_MEM_SIZE);
+    }
+    break;
+  default :
+    CERR("mmap bar%d invalid | %s:%d\n",bar,__FILE__,__LINE__);
+    exit (-1);
+  }
 
-NET	"CBUS<0>"				FAST;
-NET	"CBUS<1>"				FAST;
-NET	"CBUS<2>"				FAST;
-NET	"CBUS<3>"				FAST;
-NET	"CBUS<4>"				FAST;
-NET	"CBUS<5>"				FAST;
-NET	"CBUS<6>"				FAST;
-NET	"CBUS<7>"				FAST;
-NET	"DBUS<0>"				FAST;
-NET	"DBUS<1>"				FAST;
-NET	"DBUS<2>"				FAST;
-NET	"DBUS<3>"				FAST;
-NET	"DBUS<4>"				FAST;
-NET	"DBUS<5>"				FAST;
-NET	"DBUS<6>"				FAST;
-NET	"DBUS<7>"				FAST;
-NET	"DBUS<8>"				FAST;
-NET	"DBUS<9>"				FAST;
-NET	"DBUS<10>"				FAST;
-NET	"DBUS<11>"				FAST;
-NET	"DBUS<12>"				FAST;
-NET	"DBUS<13>"				FAST;
-NET	"DBUS<14>"				FAST;
-NET	"DBUS<15>"				FAST;
-NET	"DBUS<16>"				FAST;
-NET	"DBUS<17>"				FAST;
-NET	"DBUS<18>"				FAST;
-NET	"DBUS<19>"				FAST;
-NET	"DBUS<20>"				FAST;
-NET	"DBUS<21>"				FAST;
-NET	"DBUS<22>"				FAST;
-NET	"DBUS<23>"				FAST;
-NET	"DBUS<24>"				FAST;
-NET	"DBUS<25>"				FAST;
-NET	"DBUS<26>"				FAST;
-NET	"DBUS<27>"				FAST;
-NET	"DBUS<28>"				FAST;
-NET	"DBUS<29>"				FAST;
-NET	"DBUS<30>"				FAST;
-NET	"DBUS<31>"				FAST;
-NET	"DBUS<32>"				FAST;
-NET	"DBUS<33>"				FAST;
-NET	"DBUS<34>"				FAST;
-NET	"DBUS<35>"				FAST;
-NET	"DBUS<36>"				FAST;
-NET	"DBUS<37>"				FAST;
-NET	"DBUS<38>"				FAST;
-NET	"DBUS<39>"				FAST;
-NET	"DBUS<40>"				FAST;
-NET	"DBUS<41>"				FAST;
-NET	"DBUS<42>"				FAST;
-NET	"DBUS<43>"				FAST;
-NET	"DBUS<44>"				FAST;
-NET	"DBUS<45>"				FAST;
-NET	"DBUS<46>"				FAST;
-NET	"DBUS<47>"				FAST;
-NET	"DBUS<48>"				FAST;
-NET	"DBUS<49>"				FAST;
-NET	"DBUS<50>"				FAST;
-NET	"DBUS<51>"				FAST;
-NET	"DBUS<52>"				FAST;
-NET	"DBUS<53>"				FAST;
-NET	"DBUS<54>"				FAST;
-NET	"DBUS<55>"				FAST;
-NET	"DBUS<56>"				FAST;
-NET	"DBUS<57>"				FAST;
-NET	"DBUS<58>"				FAST;
-NET	"DBUS<59>"				FAST;
-NET	"DBUS<60>"				FAST;
-NET	"DBUS<61>"				FAST;
-NET	"DBUS<62>"				FAST;
-NET	"DBUS<63>"				FAST;
+  mapped_ptr = mmap(NULL,
+		    (size/pagesize+1)*pagesize,
+		    (PROT_READ| PROT_WRITE),
+		    MAP_SHARED,
+		    pg4_dev[id],
+		    0);
 
-NET	"TPIN<0>"				FAST;
-NET	"TPIN<1>"				FAST;
-NET	"TPIN<2>"				FAST;
-NET	"TPIN<3>"				FAST;
-NET	"TPIN<4>"				FAST;
-NET	"TPIN<5>"				FAST;
-NET	"TPIN<6>"				FAST;
-NET	"TPIN<7>"				FAST;
-NET	"TPIN<8>"				FAST;
-NET	"TPIN<9>"				FAST;
-NET	"TPIN<10>"				FAST;
-NET	"TPIN<11>"				FAST;
-NET	"TPIN<12>"				FAST;
-NET	"TPIN<13>"				FAST;
-NET	"TPIN<14>"				FAST;
-NET	"TPIN<15>"				FAST;
-NET	"LED<0>"				FAST;
-NET	"LED<1>"				FAST;
-NET	"LED<2>"				FAST;
-NET	"LED<3>"				FAST;
-NET	"LED<4>"				FAST;
-NET	"LED<5>"				FAST;
-NET	"LED<6>"				FAST;
-NET	"LED<7>"				FAST;
+  return (mapped_ptr);
+}
 
-################################################################################
-# I/O Assignment
-################################################################################
-NET	"CK66"					LOC = "AG20";
-NET	"CK133"					LOC = "AK20";
-NET	"DBUS<0>"				LOC = "AH13";
-NET	"DBUS<1>"				LOC = "AH14";
-NET	"DBUS<2>"				LOC = "AR11";
-NET	"DBUS<3>"				LOC = "AP11";
-NET	"DBUS<4>"				LOC = "AU11";
-NET	"DBUS<5>"				LOC = "AT11";
-NET	"DBUS<6>"				LOC = "AL14";
-NET	"DBUS<7>"				LOC = "AK14";
-NET	"DBUS<8>"				LOC = "AM12";
-NET	"DBUS<9>"				LOC = "AL12";
-NET	"DBUS<10>"				LOC = "AT12";
-NET	"DBUS<11>"				LOC = "AR12";
-NET	"DBUS<12>"				LOC = "AJ14";
-NET	"DBUS<13>"				LOC = "AJ15";
-NET	"DBUS<14>"				LOC = "AM13";
-NET	"DBUS<15>"				LOC = "AL13";
-NET	"DBUS<16>"				LOC = "AP12";
-NET	"DBUS<17>"				LOC = "AN13";
-NET	"DBUS<18>"				LOC = "AL15";
-NET	"DBUS<19>"				LOC = "AK15";
-NET	"DBUS<20>"				LOC = "AT13";
-NET	"DBUS<21>"				LOC = "AR13";
-NET	"DBUS<22>"				LOC = "AN14";
-NET	"DBUS<23>"				LOC = "AM14";
-NET	"DBUS<24>"				LOC = "AH15";
-NET	"DBUS<25>"				LOC = "AH16";
-NET	"DBUS<26>"				LOC = "AR14";
-NET	"DBUS<27>"				LOC = "AP14";
-NET	"DBUS<28>"				LOC = "AU14";
-NET	"DBUS<29>"				LOC = "AT14";
-NET	"DBUS<30>"				LOC = "AH17";
-NET	"DBUS<31>"				LOC = "AG17";
-NET	"DBUS<32>"				LOC = "AN15";
-NET	"DBUS<33>"				LOC = "AM15";
-NET	"DBUS<34>"				LOC = "AR15";
-NET	"DBUS<35>"				LOC = "AP15";
-NET	"DBUS<36>"				LOC = "AK16";
-NET	"DBUS<37>"				LOC = "AJ17";
-NET	"DBUS<38>"				LOC = "AU15";
-NET	"DBUS<39>"				LOC = "AT15";
-NET	"DBUS<40>"				LOC = "AM16";
-NET	"DBUS<41>"				LOC = "AL16";
-NET	"DBUS<42>"				LOC = "AM17";
-NET	"DBUS<43>"				LOC = "AL17";
-NET	"DBUS<44>"				LOC = "AR16";
-NET	"DBUS<45>"				LOC = "AR17";
-NET	"DBUS<46>"				LOC = "AH18";
-NET	"DBUS<47>"				LOC = "AG18";
-NET	"DBUS<48>"				LOC = "AU17";
-NET	"DBUS<49>"				LOC = "AT17";
-NET	"DBUS<50>"				LOC = "AM18";
-NET	"DBUS<51>"				LOC = "AL18";
-NET	"DBUS<52>"				LOC = "AK18";
-NET	"DBUS<53>"				LOC = "AJ18";
-NET	"DBUS<54>"				LOC = "AP18";
-NET	"DBUS<55>"				LOC = "AN18";
-NET	"DBUS<56>"				LOC = "AT18";
-NET	"DBUS<57>"				LOC = "AR18";
-NET	"DBUS<58>"				LOC = "AH19";
-NET	"DBUS<59>"				LOC = "AG19";
-NET	"DBUS<60>"				LOC = "AU18";
-NET	"DBUS<61>"				LOC = "AU19";
-NET	"DBUS<62>"				LOC = "AM19";
-NET	"DBUS<63>"				LOC = "AL19";
-NET	"RST"					LOC = "AR19";
-NET	"TPIN<0>"				LOC = "Y36";
-NET	"TPIN<2>"				LOC = "Y37";
-NET	"TPIN<4>"				LOC = "Y31";
-NET	"TPIN<6>"				LOC = "W31";
-NET	"TPIN<8>"				LOC = "Y32";
-NET	"TPIN<10>"				LOC = "Y33";
-NET	"TPIN<12>"				LOC = "W36";
-NET	"TPIN<14>"				LOC = "W37";
-NET	"TPIN<1>"				LOC = "W27";
-NET	"TPIN<3>"				LOC = "W28";
-NET	"TPIN<5>"				LOC = "W34";
-NET	"TPIN<7>"				LOC = "W35";
-NET	"TPIN<9>"				LOC = "G38";
-NET	"TPIN<11>"				LOC = "G39";
-NET	"TPIN<13>"				LOC = "G36";
-NET	"TPIN<15>"				LOC = "G37";
-NET	"FPGA_NO<0>"			LOC = "AP19";
-NET	"FPGA_NO<1>"			LOC = "AN19";
-NET	"LED<0>"				LOC = "P34";
-NET	"LED<1>"				LOC = "P33";
-NET	"LED<2>"				LOC = "R27";
-NET	"LED<3>"				LOC = "T27";
-NET	"LED<4>"				LOC = "P36";
-NET	"LED<5>"				LOC = "P35";
-NET	"LED<6>"				LOC = "P37";
-NET	"LED<7>"				LOC = "N37";
-NET	"DSW<0>"			LOC = "T30";
-NET	"DSW<1>"			LOC = "T29";
-NET	"DSW<2>"			LOC = "P39";
-NET	"DSW<3>"			LOC = "P38";
-NET	"DSW<4>"			LOC = "R33";
-NET	"DSW<5>"			LOC = "R32";
-NET	"DSW<6>"			LOC = "T28";
-NET	"DSW<7>"			LOC = "U28";
-NET "CK66" TNM_NET = "CK66";
-TIMESPEC "TS_CK66" = PERIOD "CK66" 20 ns HIGH 50 %;
+
+int pg4_open(int id)
+{
+  pg4_dev[id] = open(devname[id], O_RDWR);
+  if(pg4_dev[id] == -1) {
+    CERR("open failed %s | %s:%d\n",devname[id] ,__FILE__,__LINE__);
+    return -1;
+  }
+
+  bar0[id] = (unsigned int *) __mmap_bar(id, 0); // mmap BAR0
+  bar1[id] = (unsigned int *) __mmap_bar(id, 1); // mmap BAR1
+
+  dmaw_buf[id] = (unsigned int *) __mmap_dmabuf(id, 1); // mmap DMAW buf
+  dmar_buf[id] = (unsigned int *) __mmap_dmabuf(id, 0); // mmap DMAR buf
+
+  if(dmaw_buf[id] == NULL){
+    CERR("mmap dmaw_buf failed %s | %s:%d\n",devname[id] ,__FILE__,__LINE__);
+    return (-1);
+  }
+
+  if(dmar_buf[id] == NULL){
+    CERR("mmap dmar_buf failed %s | %s:%d\n",devname[id] ,__FILE__,__LINE__);
+    return (-1);
+  }
+
+  _CERR("DMAW Buff at 0x%x\n",(unsigned int)dmaw_buf[id]);
+  _CERR("DMAR Buff at 0x%x\n",(unsigned int)dmar_buf[id]);
+
+  return 1;
+}
+
+
+void pg4_close(int id){
+  close(pg4_dev[id]);
+  pg4_dev[id] = -1;
+}
+
+
+void pg4_close_and_exit(int id){
+  //  pg4_DMAcheck(id);
+  pg4_close(id);
+  exit(1);
+}
+
+
+inline unsigned int pg4_readbase0(int id, unsigned int index){ return *(bar0[id] + index); }
+inline void         pg4_writebase0(int id, unsigned int index, unsigned int val){ *(bar0[id] + index) = val; }
+inline unsigned int pg4_readbase1(int id, unsigned int index){ return *(bar1[id] + index); }
+inline void         pg4_writebase1(int id, unsigned int index, unsigned int val){ *(bar1[id] + index) = val; }
+inline unsigned int ReadBase0(int id, unsigned int addr){return pg4_readbase0(id, addr>>2);}
+inline unsigned int ReadBase1(int id, unsigned int addr){return pg4_readbase1(id, addr>>2);}
+inline void         WriteBase0(int id, unsigned int addr, unsigned int val){pg4_writebase0(id, addr>>2, val);}
+inline void         WriteBase1(int id, unsigned int addr, unsigned int val){pg4_writebase1(id, addr>>2, val);}
+
+
+unsigned int pg4_get_dma_size(int id) {
+  return ( (unsigned int)ioctl(pg4_dev[id], IOC_GV_DMA_SIZE) );
+}
+
+
+unsigned int* pg4_get_dmawptr(int id) {
+  return ( (unsigned int*)dmaw_buf[id] );
+}
+
+
+unsigned int* pg4_get_dmarptr(int id) {
+  return ( (unsigned int*)dmar_buf[id] );
+}
+
+
+int pg4_DMAput(int id, unsigned int size)
+{
+  int ret = ioctl(pg4_dev[id], IOC_SV_DMAW, size);
+  if(ret){
+    CERR("DMAW failed %d| %s:%d\n",ret ,__FILE__, __LINE__);
+    exit (-1);
+  }
+  return (0);
+}
+
+
+int pg4_DMAget(int id, unsigned int size)
+{
+  int ret = ioctl(pg4_dev[id], IOC_SV_DMAR, size);
+  if(ret){
+    CERR("DMAR failed %d| %s:%d\n",ret ,__FILE__, __LINE__);
+    exit (-1);
+  }
+  return (0);
+}
+
+
+void pg4_DMAcheck(int devid)
+{
+  unsigned int flag, retry;
+  fprintf(stderr,"\t INT_STAT       (0x%X) : %x\n", REG_INT_STAT,       ReadBase0(devid, REG_INT_STAT));
+  fprintf(stderr,"\t INT_MASK       (0x%X) : %x\n", REG_INT_MASK,       ReadBase0(devid, REG_INT_MASK));
+  fprintf(stderr,"\t DMA_PCI_ADRS   (0x%X) : %x\n", REG_DMA_PCI_ADRS,   ReadBase0(devid, REG_DMA_PCI_ADRS));
+  fprintf(stderr,"\t DMA_LOCAL_ADRS (0x%X) : %x\n", REG_DMA_LOCAL_ADRS, ReadBase0(devid, REG_DMA_LOCAL_ADRS));
+  fprintf(stderr,"\t DMA_COUNT      (0x%X) : %x\n", REG_DMA_COUNT,      ReadBase0(devid, REG_DMA_COUNT));
+  fprintf(stderr,"\t DMA_CTRL       (0x%X) : %x\n", REG_DMA_CTRL,       ReadBase0(devid, REG_DMA_CTRL));
+  fprintf(stderr,"\t DMA_INTERVAL   (0x%X) : %x\n", REG_DMA_INTERVAL,   ReadBase0(devid, REG_DMA_INTERVAL));
+  fprintf(stderr,"\t DMA_STAT       (0x%X) : %x\n", REG_DMA_STAT,       ReadBase0(devid, REG_DMA_STAT));
+
+  flag = ReadBase0(devid, REG_DMA_STAT);
+
+  retry = ((0x1<<16)-1)&flag;
+  fprintf(stderr,"\t DMA dissconnect count %i\n", (flag>>16));
+  fprintf(stderr,"\t DMA retry count       %i\n", retry);
+  fprintf(stderr,"\n");
+  fflush(NULL);
+}
+
+int pg4_DMAretry(int devid)
+{
+  unsigned int flag, retry;
+  flag = ReadBase0(devid, REG_DMA_STAT);
+  retry = ((0x1<<16)-1)&flag;
+  return retry;
+}
+
+int pg4_DMAput_offset(int devid, unsigned int size, unsigned offset)
+{
+  CERR("REMOVED, %s:%d\n", __FILE__, __LINE__);exit(-1);
+  return -1;
+}
+
+int pg4_DMAget_offset(int devid, unsigned int size, unsigned offset)
+{
+  CERR("REMOVED, %s:%d\n", __FILE__, __LINE__);exit(-1);
+  return -1;
+}
+
+void pg4_wait(int devid, int n)
+{
+  CERR("REMOVED, %s:%d\n", __FILE__, __LINE__);exit(-1);
+}
+
+unsigned long pg4_getbaseaddr(int id, int bar)
+{
+  unsigned long ret;
+  if( (bar==0) || (bar==1)){
+    int bar0_dword_adr = 0x4;
+    ret = pg4_read_pciconfig_dword(id, bar0_dword_adr + bar);
+  }else{
+    CERR("bar %d invalid | %s:%d\n",bar ,__FILE__ ,__LINE__);
+    exit(-1);
+  }
+  return ret;
+}
+
+unsigned long pg4_getbaseaddr_size(int id, int bar)
+{
+  unsigned long size;
+  switch (bar) {
+  case 0:
+    size = ioctl(pg4_dev[id], IOC_GV_REG_SIZE);
+    break;
+  case 1:
+    size = ioctl(pg4_dev[id], IOC_GV_MEM_SIZE);
+    break;
+  default :
+    CERR("bar%d invalid | %s:%d\n",bar,__FILE__,__LINE__);
+    exit (-1);
+  }
+
+  return (size); // [Bytes]
+}
+
+unsigned long pg4_read_pciconfig_dword(int id, int adr)
+{
+  // note : 'adr' uses dword address (not byte address).
+  return (unsigned long) ioctl(pg4_dev[id], IOC_GV_PCICFG, adr);
+}
+
+void pg4_get_pfpga_info(int id, char* ret){
+  char info[NB_FPGA_INFO];
+  ioctl(pg4_dev[id], IOC_GP_FPGA_INFO, info);
+  strcpy(ret, info);
+}
+
+void pg4_set_pfpga_info(int id, char* info){
+  ioctl(pg4_dev[id], IOC_SP_FPGA_INFO, info);
+}

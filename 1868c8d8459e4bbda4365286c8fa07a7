@@ -1,418 +1,109 @@
-Thu Nov  6 19:28:13 JST 2008
-// Time-stamp: "2007-01-24 20:26:48 hamada"
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/time.h>
-#include <sys/resource.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/mman.h>
-#include <asm/page.h>
-#include <errno.h>
-#include <memory.h>
-#include <sys/ioctl.h>
-#include <unistd.h>
-#include <time.h>
-
-void pg4_close_and_exit(int devid);
-
-#include "pg4.h"
-
-/* Function macros not implemented in C language */
-#define   MAX(x,y)     (((x) > (y)) ?  (x) : (y))
-#define   MIN(x,y)     (((x) < (y)) ?  (x) : (y))
-
-//#define NMAX (0x1<<10) // 4KB
-#define NMAX (0x1<<14)   // 64KB
-
-unsigned int buf[NMAX], buf2[NMAX];
-int devid;
-unsigned int* ptr;
-unsigned int* bar0;
-unsigned int* bar1;
-unsigned int* dmaw_buf;
-unsigned int* dmar_buf;
-
-double Rpeak, Wpeak;
-
-double e_time(void)
-{
-  static struct timeval now;
-  static struct timezone tz;
-
-  gettimeofday(&now, &tz);
-  return (double)(now.tv_sec  + now.tv_usec/1000000.0);
-}
-
-void PIO(void)
-{
-  int i, n, j, count, size;
-  double lap, dum;
-
-  n = NMAX;
-  for(i = 0; i < n; i++) {
-    buf[i] = rand();
-  }
-  size = n*sizeof(int);
-
-  // PIO write
-  count = 0x1000;
-  dum = e_time();
-  for(j = 0; j < count; j++) {
-
-    //    for(i = 0; i < n; i++)  pg4_writebase1(devid, i, buf[i]);
-    memcpy(bar1, buf, n*sizeof(unsigned int));
-
-  }
-  lap = e_time() - dum;
-  printf("PIO Write %f MB/sec (%f)\n", (double)size*count/lap/1.0e6, lap);
-  Wpeak = MAX(Wpeak, (double)size*count/lap/1.0e6);
-
-
-  // PIO read
-  count = 0x100;
-  dum = e_time();
-  for(j = 0; j < count; j++) {
-    for(i = 0; i < n; i++) {
-      buf[i] = pg4_readbase1(devid, i);
-    }
-  }
-  lap = e_time() - dum;
-  printf("PIO Read %f MB/sec (%f)\n", size*count/lap/1.0e6, lap);
-}
-
-
-void DMA(void)
-{
-  int i, n, j, count, size, ret;
-  double lap, dum;
-
-  n = NMAX;
-  for(i = 0; i < n; i++) {
-    buf[i] = rand();
-  }
-  size = n*sizeof(int);
-
-  // write speed
-  count = 0x800;
-  dum = e_time();
-  for(j = 0; j < count; j++) {
-    ret = pg4_DMAput(devid, size);
-  }
-  lap = e_time() - dum;
-  printf("BusMaster Write %f MB/sec (%f)\n", size*count/lap/1.0e6, lap);
-  //  pg4_DMAcheck(devid);
-
-
-  // read speed
-  count = 0x3000;
-  dum = e_time();
-  for(j = 0; j < count; j++) {
-    ret = pg4_DMAget(devid, size);
-    if (ret < 0) {
-      printf("count %i\n", j);
-      pg4_DMAcheck(devid);
-    }
-  }
-  lap = e_time() - dum;
-  printf("BusMaster Read %f MB/sec (%f)\n", (double)size*count/lap/1.0e6, lap);
-  //  pg4_DMAcheck(devid);
-
-  Rpeak = MAX(Rpeak, (double)size*count/lap/1.0e6);
-
-}
-
-void PIO_W_speed(int count)
-{
-  int i, n, j, size;
-  double lap, dum;
-
-  n = NMAX;
-  for(i = 0; i < n; i++) {
-    buf[i] = rand();
-  }
-  size = n*sizeof(int);
-
-  // PIO write
-  dum = e_time();
-  for(j = 0; j < count; j++) {
-    //    for(i = 0; i < n; i++)  pg4_writebase1(devid, i, buf[i]);
-    memcpy(bar1, buf, n*sizeof(unsigned int));
-  }
-  lap = e_time() - dum;
-  printf("PIO Write %f MB/sec (%f)\n", (double)size*count/lap/1.0e6, lap);
-  Wpeak = MAX(Wpeak, (double)size*count/lap/1.0e6);
-}
-
-void PIO_R_speed(int count)
-{
-  int i, n, j, size;
-  double lap, dum;
-
-  n = NMAX;
-  for(i = 0; i < n; i++) {
-    buf[i] = rand();
-  }
-  size = n*sizeof(int);
-
-  // PIO read
-  dum = e_time();
-  for(j = 0; j < count; j++) {
-    for(i = 0; i < n; i++) {
-      buf[i] = pg4_readbase1(devid, i);
-    }
-  }
-  lap = e_time() - dum;
-  printf("PIO Read %f MB/sec (%f)\n", size*count/lap/1.0e6, lap);
-}
-
-void DMA_W_speed(int count)
-{
-  int i, n, j, size, ret;
-  double lap, dum;
-
-  n = NMAX;
-  for(i = 0; i < n; i++) {
-    //    buf[i] = rand();
-    buf[i] = i;
-  }
-  size = n*sizeof(int);
-
-  // write speed
-  dum = e_time();
-  for(j = 0; j < count; j++) {
-    ret = pg4_DMAput(devid, size);
-  }
-  lap = e_time() - dum;
-  printf("BusMaster Write %f MB/sec (%f)\n", size*count/lap/1.0e6, lap);
-  //  pg4_DMAcheck(devid);
-
-}
-
-void DMA_R_speed(int count)
-{
-  int i, n, j, size, ret;
-  double lap, dum;
-
-  n = NMAX;
-  for(i = 0; i < n; i++) {
-    buf[i] = rand();
-  }
-  size = n*sizeof(int);
-
-  // read speed
-  dum = e_time();
-  for(j = 0; j < count; j++) {
-    ret = pg4_DMAget(devid, size);
-    if (ret < 0) {
-      printf("count %i\n", j);
-      pg4_DMAcheck(devid);
-    }
-  }
-  lap = e_time() - dum;
-  printf("BusMaster Read %f MB/sec (%f)\n", (double)size*count/lap/1.0e6, lap);
-  //  pg4_DMAcheck(devid);
-
-  Rpeak = MAX(Rpeak, (double)size*count/lap/1.0e6);
-
-}
-
-
-void DMA_R_check(void)
-{
-  int i, j, n, ret, size, is_err=0;
-  n = NMAX;
-  size = n*sizeof(int);
-
-  // read test
-  for(j = 0; j < 200; j++) {
-    for(i = 0; i < n; i++) {
-      //      buf[i] = rand();
-      buf[i] = i;
-      pg4_writebase1(devid, i, buf[i]);
-    }
-
-    ret = pg4_DMAget(devid, size);
-
-    if (ret < 0) {
-      fprintf(stderr, "DMA failed!!!!!\n");
-    }
-
-
-    is_err = 0;
-    for(i = 0; i < n; i++) {
-      if (dmar_buf[i] != buf[i]) {
-	//	if(is_err <20) printf("DMAR error(%d) buf[%i] %x %x %x\n", 
-	printf("DMAR error(%d) buf[%i] %x %x %x\n", 
-			      is_err, i, buf[i], dmar_buf[i], buf[i] - dmar_buf[i]);
-	is_err++;
-      }
-    }
-
-    if(is_err == 0){
-      //      printf("R");
-    } else {
-      puts("----------- FAILED DMA_R");
-      pg4_close_and_exit(devid);
-    }
-  }
-  printf("R");
-  fflush(NULL);
-}
-
-
-void DMA_W_check(void)
-{
-  int i, j, n, ret, size, is_err=0;
-  n = NMAX;
-
-  size = n*sizeof(int);
-
-  // write test
-  for(j = 0; j < 50; j++) {
-    for(i = 0; i < n; i++) {
-      unsigned int x = rand();
-      //      unsigned int x = 0x222<<16 | i;
-      x = i;
-      dmaw_buf[i] = x;
-      buf[i]      = x;
-      //      pg4_writebase1(devid, i, 0x777);
-    }
-
-    ret = pg4_DMAput(devid, size);
-
-    if (ret < 0) {
-      fprintf(stderr, "DMA failed!!!!!\n");
-    }
-
-    is_err=0;
-    for(i = 0; i < n; i++) {
-      unsigned int x = pg4_readbase1(devid, i);
-      if (buf[i] != x) {
-	if(is_err < 100)	printf("DMAW error %i %x %x %x\n", i, buf[i], x, buf[i]-x);
-	is_err++;
-      }
-    }
-
-    if(is_err == 0){
-      //      printf("W");
-    }else{
-      puts("----------- FAILED");
-      exit(-1);
-    }
-
-  }
-  printf("W");
-  fflush(NULL);
-}
-
-
-void ErrorCheck_PIOW(void)
-{
-  int i, j, k, n, size;
-  int is_err=0;
-  n = NMAX;
-  size = n*sizeof(int);
-
-  for(k = 0; k < 20000; k++) {
-    // write test
-    for(j = 0; j < 100; j++) {
-      for(i = 0; i < n; i++) {
-	buf[i] = rand();
-      }
-
-
-      //      for(i = 0; i < n; i++) {
-      //	pg4_writebase1(devid, i, buf[i]);
-      //      }
-      memcpy(bar1, buf, n*sizeof(unsigned int));
-
-
-      for(i = 0; i < n; i++) {
-	unsigned int x = pg4_readbase1(devid, i);
-	if (buf[i] != x) {
-	  printf("error %i %x %x %x\n", i, buf[i], x, buf[i]-x);
-	  is_err++;
-	}
-      }
-      if(is_err != 0) {printf("is_err %d\n",is_err);exit(-1);}
-    }
-    printf(".");
-    fflush(NULL);
-  }
-
-  printf("\n");
-  fflush(NULL);
-}
-
-
-
-
-int main(int argc,char *argv[])
-{
-  int i;
-  int dma_size;
-  Rpeak = Wpeak = 0.0;
-  srand(time(NULL));
-
-  devid = 0;
-
-  pg4_open(devid);
-
-  bar0 = pg4_get_bar0ptr(devid);
-  bar1 = pg4_get_bar1ptr(devid);
-
-  dmaw_buf = pg4_get_dmawptr(devid);
-  dmar_buf = pg4_get_dmarptr(devid);
-  dma_size = pg4_get_dma_size(devid);
-
-  printf("DMA SIZE=0x%x\n",dma_size);
-  printf("BAR0 (%ld Bytes)    : %lx\n"
-	 ,pg4_getbaseaddr_size(devid,0)
-	 ,pg4_getbaseaddr(devid,0));
-  printf("BAR1 (%ld Bytes)    : %lx\n"
-	 ,pg4_getbaseaddr_size(devid,1)
-	 ,pg4_getbaseaddr(devid,1));
-
-
-  //  DMA_W_speed();
-  //  DMA_R_speed();
-
-  if(0){
-    int i, n;
-    n = (dma_size >> 2);
-    for(i = 0; i < n; i++) buf[i] = i;
-    memcpy(bar1, buf, n*sizeof(unsigned int));
-
-    pg4_DMAput(devid, dma_size);
-
-    for(i = 0; i < (dma_size>>2); i++) {
-      int res  = dmar_buf[i];
-      int diff = i  - res;
-      if(diff != 0)
-	printf("dmar_buf[%i] %i %i\n",i ,res, diff);
-    }
-  }
-
-
-
-  PIO_W_speed(1000);
-  PIO_R_speed(40);
-  
-  DMA_W_speed(40);
-  DMA_R_speed(1000);
-
-  while(0) {
-    DMA_W_check();
-    DMA_R_check();
-  }
-
-
-  ErrorCheck_PIOW();
-  return 0;
-}
-
-
+Sat Nov 29 19:27:37 JST 2008
+info x 101 510 0 0 0 0 0 0 0 0 0 0 0 0 0 0 VHDL
+col x 516 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+radix x 16 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+entity name 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 pfpga_dma
+term mark 194 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+vlib save 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
+
+var add 18 0 0 226 35 0 516 100 50 50 5 85 0 0 0 0 RSTInstd_logicRISING_EDGECLK
+var add 19 0 0 226 36 0 516 100 50 50 5 85 0 0 0 0 CLKInstd_logicRISING_EDGECLK
+var add 1 31 0 228 10 0 516 100 50 50 5 85 0 0 0 0 PGPG_REG3Instd_logic_vectorRISING_EDGECLK
+var add 3 0 0 226 12 0 516 100 50 50 5 85 0 0 0 0 Hit_PGPG_REG3Instd_logicRISING_EDGECLK
+var add 4 12 0 228 15 0 516 100 50 50 5 85 0 0 0 0 MEM_ADAInstd_logic_vectorRISING_EDGECLK
+var add 5 0 0 226 16 0 516 100 50 50 5 85 0 0 0 0 MEM_WEHAInstd_logicRISING_EDGECLK
+var add 6 0 0 226 17 0 516 100 50 50 5 85 0 0 0 0 MEM_WELAInstd_logicRISING_EDGECLK
+var add 7 63 0 228 18 0 516 100 50 50 5 85 0 0 0 0 MEM_DTIAInstd_logic_vectorRISING_EDGECLK
+var add 11 63 0 228 25 0 516 100 50 50 5 85 0 0 0 0 DBUS_idataInstd_logic_vectorRISING_EDGECLK
+var add 17 63 0 228 33 0 516 100 50 50 5 85 0 0 0 0 MEM_DTOBInstd_logic_vectorRISING_EDGECLK
+var add 2 31 0 228 11 0 516 100 50 50 5 85 0 0 0 0 GPREG0Outstd_logic_vectorRISING_EDGECLK
+var add 8 3 0 228 22 0 516 100 50 50 5 85 0 0 0 0 DMAW_ENABLEOutstd_logic_vectorRISING_EDGECLK
+var add 9 3 0 228 23 0 516 100 50 50 5 85 0 0 0 0 DMAR_ENABLEOutstd_logic_vectorRISING_EDGECLK
+var add 10 63 0 228 24 0 516 100 50 50 5 85 0 0 0 0 DBUS_PortOutstd_logic_vectorRISING_EDGECLK
+var add 12 0 0 226 26 0 516 100 50 50 5 85 0 0 0 0 DBUS_HiZOutstd_logicRISING_EDGECLK
+var add 13 12 0 228 29 0 516 100 50 50 5 85 0 0 0 0 MEM_ADBOutstd_logic_vectorRISING_EDGECLK
+var add 14 0 0 226 30 0 516 100 50 50 5 85 0 0 0 0 MEM_WEHBOutstd_logicRISING_EDGECLK
+var add 15 0 0 226 31 0 516 100 50 50 5 85 0 0 0 0 MEM_WELBOutstd_logicRISING_EDGECLK
+var add 16 63 0 228 32 0 516 100 50 50 5 85 0 0 0 0 MEM_DTIBOutstd_logic_vectorRISING_EDGECLK
+vdone xxx 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+npos xxx 179 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+cell fill 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+cell fill 1 20 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
+cell fill 1 24 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+cell fill 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 00000000000000000000000000000000
+cell fill 4 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+cell fill 5 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0000000000000
+cell fill 5 48 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0111111110000
+cell fill 5 52 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0111111110010
+cell fill 5 56 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0111111110100
+cell fill 5 60 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0111111110110
+cell fill 5 76 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0011101110000
+cell fill 5 80 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0011101110010
+cell fill 5 84 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0011101110100
+cell fill 5 88 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0011101110110
+cell fill 5 92 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0011101111000
+cell fill 5 96 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0011101111010
+cell fill 5 100 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0011101111100
+cell fill 5 108 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0000000000100
+cell fill 5 116 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0000000000110
+cell fill 5 140 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0011101111000
+cell fill 5 144 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0011101111010
+cell fill 6 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+cell fill 6 48 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
+cell fill 6 64 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+cell fill 6 76 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
+cell fill 6 104 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+cell fill 6 108 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
+cell fill 6 112 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+cell fill 6 116 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
+cell fill 6 120 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+cell fill 6 140 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
+cell fill 6 148 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+cell fill 7 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+cell fill 7 48 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
+cell fill 7 64 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+cell fill 7 76 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
+cell fill 7 104 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+cell fill 7 108 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
+cell fill 7 112 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+cell fill 7 116 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
+cell fill 7 120 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+cell fill 7 140 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
+cell fill 7 148 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+cell fill 8 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0000000000000000000000000000000000000000000000000000000000000000
+cell fill 8 48 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0000000000000000000000000000000000000000000000000000000000001010
+cell fill 8 52 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0000000000000000000000000000000000000000000000000000000000001011
+cell fill 8 56 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0000000000000000000000000000000000000000000000000000000000001100
+cell fill 8 60 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0000000000000000000000000000000000000000000000000000000000001101
+cell fill 8 76 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0000000000000000000000000000000000001111111111110000000000000001
+cell fill 8 80 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0000000000000000000000000000000000001111111111110000000000000010
+cell fill 8 84 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0000000000000000000000000000000000001111111111110000000000000011
+cell fill 8 88 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0000000000000000000000000000000000001111111111110000000000000100
+cell fill 8 92 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0000000000000000000000000000000000001111111111110000000000000101
+cell fill 8 96 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0000000000000000000000000000000000001111111111110000000000000110
+cell fill 8 100 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0000000000000000000000000000000000001111111111110000000000000111
+cell fill 8 108 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0000000000000000000000000000011101110111011101110000000000000100
+cell fill 8 116 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0000000000000000000000000000011101110111011101110000000000000110
+cell fill 8 140 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1001100110011001100110011001100110001000100010001000100010001000
+cell fill 8 144 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1011101110111011101110111011101110101010101010101010101010101010
+cell fill 9 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0000000000000000000000000000000000000000000000000000000000000000
+cell fill 10 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0000000000000000000000000000000000000000000000000000000000000000
+time info 50 50 5 85 50 50 1 1 0 0 0 0 0 0 0 0 nsCLK
+font save -14 0 400 49 0 0 0 0 0 0 0 0 0 0 0 0 Times New Roman
+src mod 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 c:\cygwin\home\administrator\fkit\pci64\rtl\pfpga_dma.vhd
+utd true 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+cellenab on 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+grid on 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+com add 1 1 0 404 21 0 -67 0 0 0 0 0 0 0 0 0 Waveform created by
+HDL Bencher 6.1i
+Source = c:\cygwin\home\administrator\fkit\pci64\rtl\pfpga_dma.vhd
+Thu Dec 16 14:21:33 2004
+type info 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 std_logicBITDOWNTO
+type info 31 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 std_logic_vectorVECTORDOWNTO
+opt vhdl87 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+NumClocks x 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+clock_1 name 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 CLK
+Zoom_level x 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1.00000000000000

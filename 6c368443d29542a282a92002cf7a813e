@@ -1,29 +1,24 @@
-Wed Oct 29 19:46:18 JST 2008
-#! /bin/sh
-# Time-stamp: <2006-11-22 17:38:27 hamada>
-# Copyright (c) 2006 by Tsuyoshi Hamada, All rights reserved.
-#
-# init script for PGR & PROGRAPE-4 (for developers)
-#
+Thu Dec  4 19:30:29 JST 2008
+// Time-stamp: "2006-12-07 19:19:22 hamada"
+// Copyright (c) 2006 by Tsuyoshi Hamada, All rights reserved.
 
-rm -rf /tmp/*
-ln -s /usr/local/src/Xilinx.8_1_03i_lin /tmp/Xilinx
-ln -s /usr/local/src/intel_cc_80 /tmp/intel_cc_80
-ln -s /usr/local/src/package.20060613 /tmp/pgr
-ln -s /usr/local/src/progrape /tmp/progrape
-cd /pciDriver/src/driver/; ./insmod.sh
+#include <stdio.h>
+#include <stdlib.h>
+#include "pg4.h"
 
-cd /tmp/progrape/driver;  make load
+unsigned int* ptr;
+unsigned int* bar1;
 
+int main(int argc,char *argv[])
+{
+  int devid = 0;
 
-umount /mnt/ram
-rm -rf /mnt/ram
-mkdir /mnt/ram
-mke2fs /dev/ram0
-mount -t ext2 /dev/ram0 /mnt/ram
-chmod -R 777 /mnt/ram
+  pg4_open(devid);
+  bar1 = pg4_get_bar1ptr(devid);
+  printf("BAR0: %lx\n",pg4_getbaseaddr(devid,0));
+  printf("BAR1: %lx\n",pg4_getbaseaddr(devid,1));
 
-cp /usr/local/bin/xxx.log /mnt/ram
-chmod -R 777 /mnt/ram
+  pg4_DMAcheck(devid);
 
-
+  return 0;
+}

@@ -1,127 +1,211 @@
-Sat Jan  3 19:40:50 JST 2009
-//-------------------------
-#define NMAX (1<<17)
-#include <cstdio>
-#include <cstdlib>
-#define USE_CUDA_MALLOC_HOST (yes)
-#define IDIM (4)
-#define JDIM (4)
-#define FDIM (3)
-#define NJ_SHMEM (NTHRE)
+Mon Jan 19 19:50:04 JST 2009
 
-float4* h_xj;
-float* h_xi;
-float* h_fo;
-float4* d_xj;
-float* d_xi;
-float* d_fo;
+-- **************************************
+--               INREVIUM                
+-- **************************************
 
-extern "C" void 
-force(double xj[][3], double mj[], double xi[][3], double eps2, double a[][3], int ni, int nj)
-{
-  static bool is_open = false;
-  int devid = 0;
-  int ndev;
-  int nj1 = ((nj+NJ_SHMEM-1)/NJ_SHMEM)*NJ_SHMEM;
+--------------------------------------------------------------------------------
+-- Copyright(C) 2004 - TOKYO ELECTRON DEVICE LIMITED. All rigths reserved.
+--------------------------------------------------------------------------------
+-- PCI_RDTFIFO MODEL
+--------------------------------------------------------------------------------
+-- PCI_RDTFIFO (64 bit X 4 word) Module
+--------------------------------------------------------------------------------
+-- File                      : PCI_RDTFIFO.vhd
+-- Entity                    : PCI_RDTFIFO
+-- Architecture              : PCI_RDTFIFO_rtl
+--------------------------------------------------------------------------------
+-- Project Navigator version : ISE6.2.03i
+-- Design Flow               : XST
+--------------------------------------------------------------------------------
+-- Ver.     Data        Coded by        Contents
+-- 01.00    2004/08/10  TED)DDC         V‹K
+--------------------------------------------------------------------------------
 
-  if( ni > NMAX ){
-    printf("ERROR %s|%d\n",__FILE__, __LINE__);
-    printf(" ni > %d : ni=%d\n",ni, NMAX);
-    exit(-1);
-  }
 
-  if( nj > NMAX ){
-    printf("ERROR %s|%d\n",__FILE__, __LINE__);
-    printf(" nj > %d : nj=%d\n",nj, NMAX);
-    exit(-1);
-  }
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
 
-  unsigned int ip_size = sizeof(float) * ni * IDIM;
-  unsigned int jp_size = sizeof(float4) * nj1;
-  unsigned int fo_size = sizeof(float) * ni * FDIM;
 
-  if(is_open == false){
-    char gpu_name[256];
-    CUDA_SAFE_CALL(cudaSetDevice(devid));
-    CUDA_SAFE_CALL(cudaGetDeviceCount(&ndev));
-    if(ndev == 0){
-      fprintf(stdout, "ndev = %d @ %s|%d\n", ndev, __FILE__, __LINE__);
-      exit(-1);
-    }else{
-      int dev = devid;
-      cudaDeviceProp deviceProp;
-      CUDA_SAFE_CALL(cudaGetDeviceProperties(&deviceProp, dev));
-      if (deviceProp.major == 9999 && deviceProp.minor == 9999){
-	printf("There is no device supporting CUDA.\n");
-      }
-      fprintf(stderr, "  GPU : %s\n", deviceProp.name);
-      sprintf(gpu_name,"%s", deviceProp.name);
-    }
+entity PCI_RDTFIFO is
+	port (
+		RST 			: in	std_logic;							-- PCI Bus Reset
+		CLK 			: in	std_logic;							-- PCI bus Clock
 
-    unsigned int _nmax = NMAX;
-    unsigned int _ip_size = sizeof( float) * _nmax * IDIM;
-    unsigned int _jp_size = sizeof(float4) * _nmax;
-    unsigned int _fo_size = sizeof(float) * _nmax * FDIM;
+		FIFO_ENB		: in	std_logic;							-- FIFO Enable Signal
 
-#if defined(USE_CUDA_MALLOC_HOST)
-    CUDA_SAFE_CALL(  cudaMallocHost( (void**)&h_xj, _jp_size)  );
-    CUDA_SAFE_CALL(  cudaMallocHost( (void**)&h_xi, _ip_size)  );
-    CUDA_SAFE_CALL(  cudaMallocHost( (void**)&h_fo, _fo_size)  );
-#else
-    h_xj = (float4*) malloc(_jp_size);
-    h_xi = (float*)  malloc(_ip_size);
-    h_fo = (float*)  malloc(_fo_size);
-#endif
-    CUDA_SAFE_CALL( cudaMalloc( (void**) &d_xj, _jp_size));
-    CUDA_SAFE_CALL( cudaMalloc( (void**) &d_xi, _ip_size));
-    CUDA_SAFE_CALL( cudaMalloc( (void**) &d_fo, _fo_size));
-    for(int i = 0; i < _nmax ; i++) h_xj[i] = make_float4(0.0, 0.0, 0.0, 0.0);
-    CUDA_SAFE_CALL( cudaMemcpy( d_xj, h_xj, _jp_size, cudaMemcpyHostToDevice) );
-    CUDA_SAFE_CALL( cudaMemcpy( d_xi, h_xj, _ip_size, cudaMemcpyHostToDevice) );
-    CUDA_SAFE_CALL( cudaMemcpy( d_fo, h_xj, _fo_size, cudaMemcpyHostToDevice) );
-    fprintf(stderr, "open %s by CUNBODY-1 library: rev.hamada20080905  (^<_^)/ %d\n", gpu_name, devid);
-    is_open = true;
-  }
-  for(int i = 0; i < nj; i++){
-    h_xj[i].x = (float) xj[i][0];
-    h_xj[i].y = (float) xj[i][1];
-    h_xj[i].z = (float) xj[i][2];
-    h_xj[i].w = (float) mj[i];
-    //    printf("h_xj:%d\t%e\t%e\t%e\t%e\n",i, h_xj[i].x, h_xj[i].y, h_xj[i].z, h_xj[i].w );
-  }
-  if(nj < nj1){
-    for(int i = nj; i < nj1; i++){
-      h_xj[i] = make_float4(0.0, 0.0, 0.0, 0.0);
-      //      printf("h_xj:%d\t%e\t%e\t%e\t%e\n",i, h_xj[i].x, h_xj[i].y, h_xj[i].z, h_xj[i].w );
-    }
-  }
-  CUDA_SAFE_CALL( cudaMemcpy( d_xj, h_xj, jp_size, cudaMemcpyHostToDevice) );
-  for(int i = 0; i < ni; i++){
-    h_xi[i     ] = (float) xi[i][0];
-    h_xi[i+ni  ] = (float) xi[i][1];
-    h_xi[i+ni*2] = (float) xi[i][2];
-    h_xi[i+ni*3] = (float) eps2;
-    //    printf("h_xi:%d\t%e\t%e\t%e\t%e\n",i, h_xi[i], h_xi[i+ni], h_xi[i+ni*2], h_xi[i+ni*3] );
-  }
-  CUDA_SAFE_CALL( cudaMemcpy( d_xi, h_xi, ip_size, cudaMemcpyHostToDevice) );
+		-- FIFO Data Write ports
+		FIFO_WRDT		: in	std_logic_vector(63 downto 0);		-- FIFO Write Data
+		FIFO_WE			: in	std_logic;					  		-- FIFO Write Enable
 
-  //  printf("Nj=%d\n",nj1);
-  /*
-  dim3 grid((ni+NTHRE)/NTHRE);
-  dim3 threads  (NTHRE);
-  */
-  //  printf("------------------------ %d, %d\n",ni, nj1);
-  dim3 grid(ni/128);
-  dim3 threads  (128);
-  kernel<<< grid, threads >>>(d_xj, d_xi, d_fo, ni, nj1);
-  CUT_CHECK_ERROR("Kernel execution failed");
+		-- FIFO Data Read ports
+		FIFO_RE			: in	std_logic;							-- FIFO Read Enable
+		FIFO_RDDT		: out	std_logic_vector(63 downto 0);		-- FIFO Read Data
+		FIFO_RDTEN		: out	std_logic							-- FIFO Read Data Enable
+		);
+end PCI_RDTFIFO;
 
-  CUDA_SAFE_CALL( cudaMemcpy( h_fo, d_fo, fo_size, cudaMemcpyDeviceToHost) );
 
-  for(int i=0;i<ni; i++){
-    a[i][0] = (double)h_fo[i];
-    a[i][1] = (double)h_fo[i+ni];
-    a[i][2] = (double)h_fo[i+ni*2];
-    //    printf("a:%d\t%e\t%e\t%e\n",i, h_fo[i], h_fo[i+ni], h_fo[i+ni*2] );
-  }
-}
+architecture PCI_RDTFIFO_rtl of PCI_RDTFIFO is
+
+
+--------------------------------------------------
+-- signals
+--------------------------------------------------
+
+--	type FIFO_TYPE is array (0 to 3) of std_logic_vector(64 downto 0);		------ Define Data Buffer Type (65bit X 4)
+
+	signal FIFO_DATA0	: std_logic_vector(64 downto 0);					------ FIFO Data Buffer 0
+	signal FIFO_DATA1	: std_logic_vector(64 downto 0);					------ FIFO Data Buffer 1
+	signal FIFO_DATA2	: std_logic_vector(64 downto 0);					------ FIFO Data Buffer 2
+	signal FIFO_DATA3	: std_logic_vector(64 downto 0);					------ FIFO Data Buffer 3
+
+	signal FIFO_WRADRS	: std_logic_vector( 1 downto 0);					------ FIFO Write Address
+	signal FIFO_RDADRS	: std_logic_vector( 1 downto 0);					------ FIFO Read Address
+
+
+begin
+
+
+--***************************************************************
+--*
+--*  FIFO Data Write Control Block
+--*
+--***************************************************************
+
+--------------------------------------------------------------------------------
+-- FIFO_DATA0 Data Write Control Process
+--------------------------------------------------------------------------------
+
+	process (RST,CLK) begin
+		if (RST='1') then
+			FIFO_DATA0 <= (others=>'0');
+		elsif (CLK'event and CLK='1') then
+			if (FIFO_ENB='0') then											------ FIFO Disable ?
+				FIFO_DATA0 <= (others=>'0');								------ FIFO Data Clear
+			elsif (FIFO_WRADRS="00" and FIFO_WE='1') then					------ FIFO Data Write ?
+				FIFO_DATA0 <= FIFO_WE & FIFO_WRDT;							------ FIFO Write Data Set
+			end if;
+		end if;
+	end process;
+
+--------------------------------------------------------------------------------
+-- FIFO_DATA1 Data Write Control Process
+--------------------------------------------------------------------------------
+
+	process (RST,CLK) begin
+		if (RST='1') then
+			FIFO_DATA1 <= (others=>'0');
+		elsif (CLK'event and CLK='1') then
+			if (FIFO_ENB='0') then											------ FIFO Disable ?
+				FIFO_DATA1 <= (others=>'0');								------ FIFO Data Clear
+			elsif (FIFO_WRADRS="01" and FIFO_WE='1') then					------ FIFO Data Write ?
+				FIFO_DATA1 <= FIFO_WE & FIFO_WRDT;							------ FIFO Write Data Set
+			end if;
+		end if;
+	end process;
+
+--------------------------------------------------------------------------------
+-- FIFO_DATA2 Data Write Control Process
+--------------------------------------------------------------------------------
+
+	process (RST,CLK) begin
+		if (RST='1') then
+			FIFO_DATA2 <= (others=>'0');
+		elsif (CLK'event and CLK='1') then
+			if (FIFO_ENB='0') then											------ FIFO Disable ?
+				FIFO_DATA2 <= (others=>'0');								------ FIFO Data Clear
+			elsif (FIFO_WRADRS="10" and FIFO_WE='1') then					------ FIFO Data Write ?
+				FIFO_DATA2 <= FIFO_WE & FIFO_WRDT;							------ FIFO Write Data Set
+			end if;
+		end if;
+	end process;
+
+--------------------------------------------------------------------------------
+-- FIFO_DATA3 Data Write Control Process
+--------------------------------------------------------------------------------
+
+	process (RST,CLK) begin
+		if (RST='1') then
+			FIFO_DATA3 <= (others=>'0');
+		elsif (CLK'event and CLK='1') then
+			if (FIFO_ENB='0') then											------ FIFO Disable ?
+				FIFO_DATA3 <= (others=>'0');								------ FIFO Data Clear
+			elsif (FIFO_WRADRS="11" and FIFO_WE='1') then					------ FIFO Data Write ?
+				FIFO_DATA3 <= FIFO_WE & FIFO_WRDT;							------ FIFO Write Data Set
+			end if;
+		end if;
+	end process;
+
+--------------------------------------------------------------------------------
+-- FIFO Write Address Control Process
+--------------------------------------------------------------------------------
+
+	process (RST,CLK) begin
+		if (RST='1') then
+			FIFO_WRADRS <= (others=>'0');
+		elsif (CLK'event and CLK='1') then
+			if (FIFO_ENB='0') then											------ FIFO Disable ?
+				FIFO_WRADRS <= (others=>'0');								------ FIFO Write Address Clear
+			elsif (FIFO_WE='1') then										------ FIFO Data Write ?
+				FIFO_WRADRS <= FIFO_WRADRS+1;								------ FIFO Write Address Increment
+			end if;
+		end if;
+	end process;
+
+
+--***************************************************************
+--*
+--*  FIFO Data Read Control Block
+--*
+--***************************************************************
+
+--------------------------------------------------------------------------------
+-- FIFO Read Data Select Control Process
+--------------------------------------------------------------------------------
+
+	process (FIFO_RDADRS,FIFO_DATA0,FIFO_DATA1,FIFO_DATA2,FIFO_DATA3) begin
+		case FIFO_RDADRS is
+			when "00"	=> FIFO_RDDT <= FIFO_DATA0(63 downto 0);			------ Buffer0 Read
+			when "01"	=> FIFO_RDDT <= FIFO_DATA1(63 downto 0);			------ Buffer1 Read
+			when "10"	=> FIFO_RDDT <= FIFO_DATA2(63 downto 0);			------ Buffer2 Read
+			when "11"	=> FIFO_RDDT <= FIFO_DATA3(63 downto 0);			------ Buffer3 Read
+			when others => FIFO_RDDT <= (others=>'0');
+		end case;
+	end process;
+
+--------------------------------------------------------------------------------
+-- FIFO Read Data Enable Signal Select Control Process
+--------------------------------------------------------------------------------
+
+	process (FIFO_RDADRS,FIFO_DATA0,FIFO_DATA1,FIFO_DATA2,FIFO_DATA3) begin
+		case FIFO_RDADRS is
+			when "00"	=> FIFO_RDTEN <= FIFO_DATA0(64);					------ Buffer0 Read Enable Signal
+			when "01"	=> FIFO_RDTEN <= FIFO_DATA1(64);					------ Buffer1 Read Enable Signal
+			when "10"	=> FIFO_RDTEN <= FIFO_DATA2(64);					------ Buffer2 Read Enable Signal
+			when "11"	=> FIFO_RDTEN <= FIFO_DATA3(64);					------ Buffer3 Read Enable Signal
+			when others => FIFO_RDTEN <= '0';
+		end case;
+	end process;
+
+--------------------------------------------------------------------------------
+-- FIFO Read Address Control Process
+--------------------------------------------------------------------------------
+
+	process (RST,CLK) begin
+		if (RST='1') then
+			FIFO_RDADRS <= (others=>'0');
+		elsif (CLK'event and CLK='1') then
+			if (FIFO_ENB='0') then											------ FIFO Disable ?
+				FIFO_RDADRS <= (others=>'0');								------ FIFO Read Address Clear
+			elsif (FIFO_RE='1') then										------ FIFO Data Read ?
+				FIFO_RDADRS <= FIFO_RDADRS+1;								------ FIFO Read Address Increment
+			end if;
+		end if;
+	end process;
+
+
+
+end PCI_RDTFIFO_rtl;

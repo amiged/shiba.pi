@@ -1,189 +1,127 @@
-Fri Jan 23 19:49:11 JST 2009
--- C:\CYGWIN\HOME\ADMINISTRATOR\FKIT\PCI64\PROJ
--- VHDL Test Bench created by
--- HDL Bencher 6.1i
--- Wed Dec 29 19:47:04 2004
--- 
--- Notes:
--- 1) This testbench has been automatically generated from
---   your Test Bench Waveform
--- 2) To use this as a user modifiable testbench do the following:
---   - Save it as a file with a .vhd extension (i.e. File->Save As...)
---   - Add it to your project as a testbench source (i.e. Project->Add Source...)
--- 
+Sun Jan 25 19:40:52 JST 2009
+//-------------------------
+#define NMAX (1<<17)
+#include <cstdio>
+#include <cstdlib>
+#define USE_CUDA_MALLOC_HOST (yes)
+#define IDIM (4)
+#define JDIM (4)
+#define FDIM (3)
+#define NJ_SHMEM (NTHRE)
 
-LIBRARY IEEE;
-USE IEEE.STD_LOGIC_1164.ALL;
-USE IEEE.STD_LOGIC_UNSIGNED.ALL;
-USE IEEE.STD_LOGIC_ARITH.ALL;
-USE IEEE.STD_LOGIC_TEXTIO.ALL;
-USE STD.TEXTIO.ALL;
+float4* h_xj;
+float* h_xi;
+float* h_fo;
+float4* d_xj;
+float* d_xi;
+float* d_fo;
 
-ENTITY sim_writecomb_check IS
-END sim_writecomb_check;
+extern "C" void 
+force(double xj[][3], double mj[], double xi[][3], double eps2, double a[][3], int ni, int nj)
+{
+  static bool is_open = false;
+  int devid = 0;
+  int ndev;
+  int nj1 = ((nj+NJ_SHMEM-1)/NJ_SHMEM)*NJ_SHMEM;
 
-ARCHITECTURE testbench_arch OF sim_writecomb_check IS
--- If you get a compiler error on the following line,
--- from the menu do Options->Configuration select VHDL 87
-FILE RESULTS: TEXT OPEN WRITE_MODE IS "results.txt";
-	COMPONENT writecomb_check
-		PORT (
-			MEM_WEHA : In  std_logic;
-			MEM_WELA : In  std_logic;
-			IS_ERR : Out  std_logic_vector (1 DOWNTO 0);
-			RST : In  std_logic;
-			CLK : In  std_logic
-		);
-	END COMPONENT;
+  if( ni > NMAX ){
+    printf("ERROR %s|%d\n",__FILE__, __LINE__);
+    printf(" ni > %d : ni=%d\n",ni, NMAX);
+    exit(-1);
+  }
 
-	SIGNAL MEM_WEHA : std_logic;
-	SIGNAL MEM_WELA : std_logic;
-	SIGNAL IS_ERR : std_logic_vector (1 DOWNTO 0);
-	SIGNAL RST : std_logic;
-	SIGNAL CLK : std_logic;
+  if( nj > NMAX ){
+    printf("ERROR %s|%d\n",__FILE__, __LINE__);
+    printf(" nj > %d : nj=%d\n",nj, NMAX);
+    exit(-1);
+  }
 
-BEGIN
-	UUT : writecomb_check
-	PORT MAP (
-		MEM_WEHA => MEM_WEHA,
-		MEM_WELA => MEM_WELA,
-		IS_ERR => IS_ERR,
-		RST => RST,
-		CLK => CLK
-	);
+  unsigned int ip_size = sizeof(float) * ni * IDIM;
+  unsigned int jp_size = sizeof(float4) * nj1;
+  unsigned int fo_size = sizeof(float) * ni * FDIM;
 
-	PROCESS -- clock process for CLK,
-	BEGIN
-		CLOCK_LOOP : LOOP
-		CLK <= transport '0';
-		WAIT FOR 5 ns;
-		CLK <= transport '1';
-		WAIT FOR 50 ns;
-		CLK <= transport '0';
-		WAIT FOR 35 ns;
-		WAIT FOR 10 ns;
-		END LOOP CLOCK_LOOP;
-	END PROCESS;
+  if(is_open == false){
+    char gpu_name[256];
+    CUDA_SAFE_CALL(cudaSetDevice(devid));
+    CUDA_SAFE_CALL(cudaGetDeviceCount(&ndev));
+    if(ndev == 0){
+      fprintf(stdout, "ndev = %d @ %s|%d\n", ndev, __FILE__, __LINE__);
+      exit(-1);
+    }else{
+      int dev = devid;
+      cudaDeviceProp deviceProp;
+      CUDA_SAFE_CALL(cudaGetDeviceProperties(&deviceProp, dev));
+      if (deviceProp.major == 9999 && deviceProp.minor == 9999){
+	printf("There is no device supporting CUDA.\n");
+      }
+      fprintf(stderr, "  GPU : %s\n", deviceProp.name);
+      sprintf(gpu_name,"%s", deviceProp.name);
+    }
 
-	PROCESS   -- Process for CLK
-		VARIABLE TX_OUT : LINE;
-		VARIABLE TX_ERROR : INTEGER := 0;
+    unsigned int _nmax = NMAX;
+    unsigned int _ip_size = sizeof( float) * _nmax * IDIM;
+    unsigned int _jp_size = sizeof(float4) * _nmax;
+    unsigned int _fo_size = sizeof(float) * _nmax * FDIM;
 
-		PROCEDURE CHECK_IS_ERR(
-			next_IS_ERR : std_logic_vector (1 DOWNTO 0);
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			-- If compiler error ("/=" is ambiguous) occurs in the next line of code
-			-- change compiler settings to use explicit declarations only
-			IF (IS_ERR /= next_IS_ERR) THEN 
-				STD.TEXTIO.write(TX_LOC,string'("Error at time="));
-				STD.TEXTIO.write(TX_LOC, TX_TIME);
-				STD.TEXTIO.write(TX_LOC,string'("ns IS_ERR="));
-				IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, IS_ERR);
-				STD.TEXTIO.write(TX_LOC, string'(", Expected = "));
-				IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, next_IS_ERR);
-				STD.TEXTIO.write(TX_LOC, string'(" "));
-				TX_STR(TX_LOC.all'range) := TX_LOC.all;
-				STD.TEXTIO.writeline(results, TX_LOC);
-				STD.TEXTIO.Deallocate(TX_LOC);
-				ASSERT (FALSE) REPORT TX_STR SEVERITY ERROR;
-				TX_ERROR := TX_ERROR + 1;
-			END IF;
-		END;
+#if defined(USE_CUDA_MALLOC_HOST)
+    CUDA_SAFE_CALL(  cudaMallocHost( (void**)&h_xj, _jp_size)  );
+    CUDA_SAFE_CALL(  cudaMallocHost( (void**)&h_xi, _ip_size)  );
+    CUDA_SAFE_CALL(  cudaMallocHost( (void**)&h_fo, _fo_size)  );
+#else
+    h_xj = (float4*) malloc(_jp_size);
+    h_xi = (float*)  malloc(_ip_size);
+    h_fo = (float*)  malloc(_fo_size);
+#endif
+    CUDA_SAFE_CALL( cudaMalloc( (void**) &d_xj, _jp_size));
+    CUDA_SAFE_CALL( cudaMalloc( (void**) &d_xi, _ip_size));
+    CUDA_SAFE_CALL( cudaMalloc( (void**) &d_fo, _fo_size));
+    for(int i = 0; i < _nmax ; i++) h_xj[i] = make_float4(0.0, 0.0, 0.0, 0.0);
+    CUDA_SAFE_CALL( cudaMemcpy( d_xj, h_xj, _jp_size, cudaMemcpyHostToDevice) );
+    CUDA_SAFE_CALL( cudaMemcpy( d_xi, h_xj, _ip_size, cudaMemcpyHostToDevice) );
+    CUDA_SAFE_CALL( cudaMemcpy( d_fo, h_xj, _fo_size, cudaMemcpyHostToDevice) );
+    fprintf(stderr, "open %s by CUNBODY-1 library: rev.hamada20080905  (^<_^)/ %d\n", gpu_name, devid);
+    is_open = true;
+  }
+  for(int i = 0; i < nj; i++){
+    h_xj[i].x = (float) xj[i][0];
+    h_xj[i].y = (float) xj[i][1];
+    h_xj[i].z = (float) xj[i][2];
+    h_xj[i].w = (float) mj[i];
+    //    printf("h_xj:%d\t%e\t%e\t%e\t%e\n",i, h_xj[i].x, h_xj[i].y, h_xj[i].z, h_xj[i].w );
+  }
+  if(nj < nj1){
+    for(int i = nj; i < nj1; i++){
+      h_xj[i] = make_float4(0.0, 0.0, 0.0, 0.0);
+      //      printf("h_xj:%d\t%e\t%e\t%e\t%e\n",i, h_xj[i].x, h_xj[i].y, h_xj[i].z, h_xj[i].w );
+    }
+  }
+  CUDA_SAFE_CALL( cudaMemcpy( d_xj, h_xj, jp_size, cudaMemcpyHostToDevice) );
+  for(int i = 0; i < ni; i++){
+    h_xi[i     ] = (float) xi[i][0];
+    h_xi[i+ni  ] = (float) xi[i][1];
+    h_xi[i+ni*2] = (float) xi[i][2];
+    h_xi[i+ni*3] = (float) eps2;
+    //    printf("h_xi:%d\t%e\t%e\t%e\t%e\n",i, h_xi[i], h_xi[i+ni], h_xi[i+ni*2], h_xi[i+ni*3] );
+  }
+  CUDA_SAFE_CALL( cudaMemcpy( d_xi, h_xi, ip_size, cudaMemcpyHostToDevice) );
 
-		BEGIN
-		-- --------------------
-		RST <= transport '0';
-		MEM_WEHA <= transport '0';
-		MEM_WELA <= transport '0';
-		-- --------------------
-		WAIT FOR 200 ns; -- Time=200 ns
-		RST <= transport '0';
-		-- --------------------
-		WAIT FOR 500 ns; -- Time=700 ns
-		MEM_WEHA <= transport '0';
-		MEM_WELA <= transport '0';
-		-- --------------------
-		WAIT FOR 200 ns; -- Time=900 ns
-		RST <= transport '1';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=1000 ns
-		RST <= transport '0';
-		-- --------------------
-		WAIT FOR 1900 ns; -- Time=2900 ns
-		MEM_WEHA <= transport '1';
-		MEM_WELA <= transport '1';
-		-- --------------------
-		WAIT FOR 500 ns; -- Time=3400 ns
-		MEM_WEHA <= transport '0';
-		MEM_WELA <= transport '0';
-		-- --------------------
-		WAIT FOR 1100 ns; -- Time=4500 ns
-		MEM_WEHA <= transport '1';
-		MEM_WELA <= transport '1';
-		-- --------------------
-		WAIT FOR 200 ns; -- Time=4700 ns
-		MEM_WEHA <= transport '0';
-		MEM_WELA <= transport '0';
-		-- --------------------
-		WAIT FOR 1300 ns; -- Time=6000 ns
-		MEM_WELA <= transport '1';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=6100 ns
-		MEM_WELA <= transport '0';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=6200 ns
-		MEM_WEHA <= transport '0';
-		-- --------------------
-		WAIT FOR 300 ns; -- Time=6500 ns
-		MEM_WEHA <= transport '1';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=6600 ns
-		MEM_WEHA <= transport '0';
-		-- --------------------
-		WAIT FOR 1300 ns; -- Time=7900 ns
-		MEM_WELA <= transport '1';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=8000 ns
-		MEM_WEHA <= transport '1';
-		MEM_WELA <= transport '0';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=8100 ns
-		MEM_WEHA <= transport '0';
-		MEM_WELA <= transport '1';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=8200 ns
-		MEM_WEHA <= transport '1';
-		MEM_WELA <= transport '0';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=8300 ns
-		MEM_WEHA <= transport '0';
-		-- --------------------
-		WAIT FOR 2005 ns; -- Time=10305 ns
-		-- --------------------
+  //  printf("Nj=%d\n",nj1);
+  /*
+  dim3 grid((ni+NTHRE)/NTHRE);
+  dim3 threads  (NTHRE);
+  */
+  //  printf("------------------------ %d, %d\n",ni, nj1);
+  dim3 grid(ni/128);
+  dim3 threads  (128);
+  kernel<<< grid, threads >>>(d_xj, d_xi, d_fo, ni, nj1);
+  CUT_CHECK_ERROR("Kernel execution failed");
 
-		IF (TX_ERROR = 0) THEN 
-			STD.TEXTIO.write(TX_OUT,string'("No errors or warnings"));
-			STD.TEXTIO.writeline(results, TX_OUT);
-			ASSERT (FALSE) REPORT
-				"Simulation successful (not a failure).  No problems detected. "
-				SEVERITY FAILURE;
-		ELSE
-			STD.TEXTIO.write(TX_OUT, TX_ERROR);
-			STD.TEXTIO.write(TX_OUT, string'(
-				" errors found in simulation"));
-			STD.TEXTIO.writeline(results, TX_OUT);
-			ASSERT (FALSE) REPORT
-				"Errors found during simulation"
-				SEVERITY FAILURE;
-		END IF;
-	END PROCESS;
-END testbench_arch;
+  CUDA_SAFE_CALL( cudaMemcpy( h_fo, d_fo, fo_size, cudaMemcpyDeviceToHost) );
 
-CONFIGURATION writecomb_check_cfg OF sim_writecomb_check IS
-	FOR testbench_arch
-	END FOR;
-END writecomb_check_cfg;
+  for(int i=0;i<ni; i++){
+    a[i][0] = (double)h_fo[i];
+    a[i][1] = (double)h_fo[i+ni];
+    a[i][2] = (double)h_fo[i+ni*2];
+    //    printf("a:%d\t%e\t%e\t%e\n",i, h_fo[i], h_fo[i+ni], h_fo[i+ni*2] );
+  }
+}

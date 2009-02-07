@@ -1,47 +1,47 @@
-Wed Jan 21 19:27:40 JST 2009
+Sat Feb  7 19:50:24 JST 2009
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
+#include <stdlib.h>
 
-void b3_init(int devid);
-void b3_init_config(int devid, char* fpga_conf_file);
+/*
+ * ifpga_get_barinfo.c -- to get infomation of pci bar regsters
+ *
+ * Copyright (C) 2006-2007 Tsuyoshi Hamada
+ *                                All rights reserved.
+ * 
+ * No warranty is attached; 
+ * I cannot take responsibility for errors or fitness for use.
+ *
+ */
 
+#include "pg4.h"
 
+int main(int argc, char* argv[])
+{
+  int devid  = 0;
+  int bar    = 0;
+  int is_size = 0;
+  unsigned long z = 0;
 
-void b3_set_idata(unsigned int devid,      // device id
-		  unsigned int chip_sel,   // chip select
-                  unsigned int npipe,      // pipeline number
-                  unsigned int ireg_index, // iregister index
-                  unsigned int data);      // data
+  if (argc < 3) {
+    fprintf(stderr, "%s <devid> <bar_num> <adr=0/size=1>\n", argv[0]);
+    exit(-1);
+  }
+  
+  if(argc == 3) is_size = 0; else is_size = atoi(argv[3]);
 
-void b3_reset_jmem_adr();
-void b3_reset_jmem_adr_n(int nchip);
+  devid = atoi(argv[1]);
+  bar   = atoi(argv[2]);
+  
+  pg4_open(devid);
 
-void b3_set_jdata(unsigned int devid,      // device id
-                  unsigned int nword,      // number of jdata
-                  unsigned int jdata[] );  // 
+  if(is_size)
+    z = 0xffffffff & pg4_getbaseaddr_size(devid, bar);
+  else
+    z = 0xffffffff & pg4_getbaseaddr(devid, bar);
 
-void b3_set_jdata_n_chip(unsigned int devid,    // device id
-			 unsigned int nchip,    // 0, 1, 2, 3
-			 unsigned int nword,    // number of jdata
-			 unsigned int jdata[]);
+  printf("0x%08lx\n",z);
+  pg4_close(devid);
 
-
-void b3_get_jdata(unsigned int devid,      // device id
-                  unsigned int chip_sel,   // chip_sel
-		  unsigned int jmem_adr,   // mem adr
-                  unsigned int* data );    // data 
-
-void b3_start_calc(unsigned int n,
-		   unsigned int chip_sel);
-
-void b3_start_calc_sepa4jM(unsigned int nrun[]);
-
-unsigned int b3_get_calcsts(unsigned int chip_sel);
-
-
-void b3_get_fodata(unsigned int devid,     // device id
-		  unsigned int chip_sel,   // chip select
-                  unsigned int npipe,      // pipeline number
-                  unsigned int fo_index,   // iregister index
-                  unsigned int* data);     // data
+  return 1;
+}

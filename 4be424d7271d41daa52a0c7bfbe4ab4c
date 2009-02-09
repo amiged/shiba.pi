@@ -1,44 +1,53 @@
-Wed Sep 10 19:54:09 JST 2008
-// Time-stamp: " "
-#include <stdio.h> 
-#include <string.h>
+Mon Feb  9 19:33:18 JST 2009
+/*
+ * ifpga_bram_clear.c
+ *
+ * Copyright (C) 2006-2007 Tsuyoshi Hamada
+ *                                All rights reserved.
+ * 
+ * No warranty is attached; 
+ * I cannot take responsibility for errors or fitness for use.
+ *
+ */
+
+#include <stdio.h>
 #include <stdlib.h>
+#include "pg4.h"
 
-void read_data(char* fname, int* nbody, double posi[][2])
+//#define NMAX (0x1<<10) // 4KB
+//#define NMAX (0x1<<11) // 8KB
+//#define NMAX (0x1<<12) // 16KB
+//#define NMAX (0x1<<13) // 32KB
+#define NMAX (0x1<<14) // 64KB
+
+unsigned int* ptr;
+unsigned int* bar1;
+
+int main(int argc,char *argv[])
 {
-  int idx,n;
-  char line[2560];
-  FILE *fp;
-  fp = fopen(fname,"r");
-  idx=0;
+  int devid = 0;
+  int n = NMAX;
+  int val = 0x1234567;
+  int i;
 
-  { // get N (number of particles)
-    char* p;
-    fgets(line,100,fp);
-    p = (char* )strtok(line,"\n");
-    sscanf(p,"%d",&n);
-    *nbody = n;
+  if(argc > 1){
+    n = atoi(argv[1]);
+  }
+  if(argc > 2){
+    val = atoi(argv[2]);
   }
 
-  // get all data
-  for(idx=0;idx<n;idx++){
-    char* p;
-    char col[10][400];
-    int i=0;
-    if(fgets(line,300,fp)==NULL){printf("Error at loading logfiles\n");exit(0);}
-    p = (char* )strtok(line,"\t");
-    strcpy(col[i],p);
-    i++;
-    while((p = (char* )strtok(NULL, "\t"))!=NULL){
-      strcpy(col[i],p);
-      i++;
-    }
-    //--- for debug ---
-    //    for(i=0;i<7;i++) printf("[%s]",col[i]);
-    //    printf("\n");
+  printf("n = %d\n",n);
+  printf("filled by %x\n",val);
 
-    posi[idx][0]=atof(col[0]);
-    posi[idx][1]=atof(col[1]);
+  pg4_open(devid);
+  bar1 = pg4_get_bar1ptr(devid);
+  printf("BAR0: %lx\n",pg4_getbaseaddr(devid,0));
+  printf("BAR1: %lx\n",pg4_getbaseaddr(devid,1));
+
+  for(i = 0; i < n; i++) {
+    pg4_writebase1(devid, i, val);
   }
-  fclose(fp);
+
+  return 0;
 }

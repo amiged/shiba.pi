@@ -1,25 +1,47 @@
-Fri Dec 19 19:29:36 JST 2008
-#!/bin/sh
-#
-# An example hook script to check the commit log message.
-# Called by "git commit" with one argument, the name of the file
-# that has the commit message.  The hook should exit with non-zero
-# status after issuing an appropriate message if it wants to stop the
-# commit.  The hook is allowed to edit the commit message file.
-#
-# To enable this hook, rename this file to "commit-msg".
+Sat Feb 14 19:47:16 JST 2009
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-# Uncomment the below to add a Signed-off-by line to the message.
-# Doing this in a hook is a bad idea in general, but the prepare-commit-msg
-# hook is more suited to it.
-#
-# SOB=$(git var GIT_AUTHOR_IDENT | sed -n 's/^\(.*>\).*$/Signed-off-by: \1/p')
-# grep -qs "^$SOB" "$1" || echo "$SOB" >> "$1"
+void b3_init(int devid);
+void b3_init_config(int devid, char* fpga_conf_file);
 
-# This example catches duplicate Signed-off-by lines.
 
-test "" = "$(grep '^Signed-off-by: ' "$1" |
-	 sort | uniq -c | sed -e '/^[ 	]*1[ 	]/d')" || {
-	echo >&2 Duplicate Signed-off-by lines.
-	exit 1
-}
+
+void b3_set_idata(unsigned int devid,      // device id
+		  unsigned int chip_sel,   // chip select
+                  unsigned int npipe,      // pipeline number
+                  unsigned int ireg_index, // iregister index
+                  unsigned int data);      // data
+
+void b3_reset_jmem_adr();
+void b3_reset_jmem_adr_n(int nchip);
+
+void b3_set_jdata(unsigned int devid,      // device id
+                  unsigned int nword,      // number of jdata
+                  unsigned int jdata[] );  // 
+
+void b3_set_jdata_n_chip(unsigned int devid,    // device id
+			 unsigned int nchip,    // 0, 1, 2, 3
+			 unsigned int nword,    // number of jdata
+			 unsigned int jdata[]);
+
+
+void b3_get_jdata(unsigned int devid,      // device id
+                  unsigned int chip_sel,   // chip_sel
+		  unsigned int jmem_adr,   // mem adr
+                  unsigned int* data );    // data 
+
+void b3_start_calc(unsigned int n,
+		   unsigned int chip_sel);
+
+void b3_start_calc_sepa4jM(unsigned int nrun[]);
+
+unsigned int b3_get_calcsts(unsigned int chip_sel);
+
+
+void b3_get_fodata(unsigned int devid,     // device id
+		  unsigned int chip_sel,   // chip select
+                  unsigned int npipe,      // pipeline number
+                  unsigned int fo_index,   // iregister index
+                  unsigned int* data);     // data

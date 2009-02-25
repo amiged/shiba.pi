@@ -1,91 +1,57 @@
-Sun Feb 22 19:36:21 JST 2009
--- Copyright 2004 Tsuyoshi Hamada
---
---
---clk         __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __
---[ENABLE]    _______/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
---[ DBUS ]          >< n ><d0 ><d1 ><d2 ><d3 ><d4 ><d5 ><d6 ><d7 >
+Wed Feb 25 19:29:03 JST 2009
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.std_logic_arith.all;                                        
+use ieee.std_logic_unsigned.all;                                    
 
---  ena0      _______/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
---  ena1           _______/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
---[ DBUS ]          >< n ><d0 ><d1 ><d2 ><d3 ><d4 ><d5 ><d6 ><d7 >
--- acnt                0 >< n ><n+1><n+2><n+3><n+4><n+5><n+6><n+7>< 0
---MEM_ADR                   0 >< n ><n+1><n+2><n+3><n+4><n+5><n+6><n+7>< 0
---MEM_DATA                     <d0 ><d1 ><d2 ><d3 ><d4 ><d5 ><d6 ><d7 >
---MEM_WE                   ____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______
-
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL;
-
-entity dmaw is
+entity pipe_sts is
   port (
-    RST       : in std_logic;
-    CLK       : in std_logic;
-    ENABLE    : in std_logic;
-    DBUS      : in std_logic_vector(63 downto 0);
-    MEM_WE    : out std_logic;
-    MEM_ADR   : out std_logic_vector(18 downto 0);
-    MEM_DATA  : out std_logic_vector(63 downto 0)   );
-end dmaw;
+    rst        : in  std_logic;
+    clk        : in  std_logic;
+    run        : in  std_logic;
+    runret     : in  std_logic;
+    status     : out std_logic_vector(31 downto 0)
+  );
+end pipe_sts;
 
-architecture rtl of dmaw is
-
-signal ena0,ena1,ena2,ena3,ena4 : std_logic :='0';
-signal acnt,acntr : std_logic_vector(18 downto 0) :=(others=>'0');
-signal we : std_logic :='0';
+architecture rtl of pipe_sts is
+signal sts_reg  : std_logic_vector(7 downto 0) :=X"77";
+signal rund,sts : std_logic;
+signal cntr : std_logic_vector(7 downto 0);
+signal irun : std_logic := '0';
 
 begin
 
-  -- MEM_DATA --
-  process (CLK) begin
-    if(CLK'event and CLK = '1') then
-      MEM_DATA <= DBUS;
+-- clk    ____~~~~____~~~~____~~~~____~~~~__
+-- runret _____~~~~~~~~_____________________
+-- rund   _____________~~~~~~~~_____________
+-- status                      <finish     >
+
+-- status
+status(31 downto 8) <= (others=>'0');
+process(clk,rst) begin
+  if(rst='1') then
+    status(7 downto 0) <= (others=>'1');
+  elsif(clk'event and clk='1') then
+    if((runret='0') AND (rund='1')) then  -- 計算終了
+      status(7 downto 0) <= (others=>'1');
+    elsif((run='1') AND (irun='0')) then -- 計算開始
+      status(7 downto 0) <= (others=>'0');
     end if;
-  end process;
+  end if;
+end process;
 
-  -- MEM_WE --
-  process (CLK) begin
-    if(CLK'event and CLK = '1') then
-      MEM_WE <= ena1;
-    end if;
-  end process;
+process(clk) begin
+  if(clk'event and clk='1') then
+    rund  <= runret;
+  end if;
+end process;
 
-  -- MEM_ADR --
-  process (CLK) begin
-    if(CLK'event and CLK = '1') then
-      MEM_ADR <= acnt;
-    end if;
-  end process;
-
-  -- acnt
-  acntr <= acnt;
-  process (RST,CLK,ena0,ena1) begin
-    if(RST = '1') then
-      acnt  <= (others=>'0');
-    elsif(CLK'event and CLK = '1') then
-      if((ena0='1') AND (ena1='0')) then
-        acnt <= DBUS(18 downto 0);
-      elsif((ena0='1') AND (ena1='1')) then
-        acnt <= acntr + "0000000000000000001";
-      else
-        acnt <= (others=>'0');
-      end if;
-    end if;
-  end process;
-
-
-
-  -- ENABLE delays
-  ena0 <= ENABLE;
-  process (CLK) begin
-    if(CLK'event and CLK = '1') then
-      ena4 <= ena3;
-      ena3 <= ena2;
-      ena2 <= ena1;
-      ena1 <= ena0;
-    end if;
-  end process;
+process(clk) begin
+  if(clk'event and clk='1') then
+    irun  <= run;
+  end if;
+end process;
 
 
 end rtl;

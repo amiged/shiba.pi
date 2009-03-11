@@ -1,57 +1,56 @@
-Wed Feb 25 19:29:03 JST 2009
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.std_logic_arith.all;                                        
-use ieee.std_logic_unsigned.all;                                    
+Wed Mar 11 19:27:34 JST 2009
+#!/usr/bin/env python3
+#Time-stamp: <2017-06-04 15:57:17 hamada>
+import argparse
+import numpy as np
+import cv2
+from datetime import datetime
+import mkdir
 
-entity pipe_sts is
-  port (
-    rst        : in  std_logic;
-    clk        : in  std_logic;
-    run        : in  std_logic;
-    runret     : in  std_logic;
-    status     : out std_logic_vector(31 downto 0)
-  );
-end pipe_sts;
+class State(object):
+    def __init__(self):
+        self.is_record = False
 
-architecture rtl of pipe_sts is
-signal sts_reg  : std_logic_vector(7 downto 0) :=X"77";
-signal rund,sts : std_logic;
-signal cntr : std_logic_vector(7 downto 0);
-signal irun : std_logic := '0';
+if (__name__ == '__main__'):
+    state = State()
 
-begin
-
--- clk    ____~~~~____~~~~____~~~~____~~~~__
--- runret _____~~~~~~~~_____________________
--- rund   _____________~~~~~~~~_____________
--- status                      <finish     >
-
--- status
-status(31 downto 8) <= (others=>'0');
-process(clk,rst) begin
-  if(rst='1') then
-    status(7 downto 0) <= (others=>'1');
-  elsif(clk'event and clk='1') then
-    if((runret='0') AND (rund='1')) then  -- 計算終了
-      status(7 downto 0) <= (others=>'1');
-    elsif((run='1') AND (irun='0')) then -- 計算開始
-      status(7 downto 0) <= (others=>'0');
-    end if;
-  end if;
-end process;
-
-process(clk) begin
-  if(clk'event and clk='1') then
-    rund  <= runret;
-  end if;
-end process;
-
-process(clk) begin
-  if(clk'event and clk='1') then
-    irun  <= run;
-  end if;
-end process;
+    parser = argparse.ArgumentParser(description = "description goes here")
+    parser.add_argument("--devid", type=int, help = "set device id", required=False)
+    args = parser.parse_args()
+    devid = 0
+    if args.devid:
+        devid = int(args.devid)
+        print ("set devid = ", devid)
 
 
-end rtl;
+    log_base = '../log/'
+    cap = cv2.VideoCapture(devid)
+
+    cap_width  = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+    cap_height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+    cap_fps    = cap.get(cv2.CAP_PROP_FPS)
+
+    print(cap_width, "x", cap_height, ":", cap_fps)
+
+
+    while(cap.isOpened()):
+        ret, frame = cap.read()
+        cv2.imshow('camera: %d'%(devid), frame)
+
+        tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S_%f')
+        if(state.is_record):
+            basedir = '../log.%d/'% (devid)
+            ofname = mkdir.get_filename_frame(basedir, tnow)
+            cv2.imwrite(ofname, frame)
+            print(ofname, "devid = %d"%devid)
+            tnow0 = tnow
+
+        key = cv2.waitKey(1) & 0xFF
+        if key == ord('q'): break
+        if key == ord(' '): state.is_record = not (state.is_record)
+
+
+    cap.release()
+    cv2.destroyAllWindows()
+
+    print("Done.")

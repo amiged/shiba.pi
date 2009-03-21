@@ -1,23 +1,15 @@
-Sat Mar 21 19:48:47 JST 2009
-#include <stdio.h>
-#include "nbodysim.h"
+Sat Mar 21 19:54:31 JST 2009
+#!/bin/sh
+#
+# An example hook script to verify what is about to be committed
+# by applypatch from an e-mail message.
+#
+# The hook should exit with non-zero status after issuing an
+# appropriate message if it wants to stop the commit.
+#
+# To enable this hook, rename this file to "pre-applypatch".
 
-void debug_func_force(double x[][DIM],double m[], double eps2,double a[][DIM],int n)
-{
-    int i,j;
-
-    printf("-------------------------------\n");
-    printf("The debuging routine is called.\n");
-    printf("-------------------------------\n");
-    printf("n = %d\n",n);
-    printf("eps2 = %e\n",eps2);
-
-    for(i=0;i<n;i++){
-        printf("---\n");
-        printf("particle %d\n",i);
-        printf("m[%d] = %e\n",i,m[i]);
-        for(j=0;j<3;j++) printf("x[%d][%d] = %e\n",i,j,x[i][j]);
-        for(j=0;j<3;j++) printf("a[%d][%d] = %e\n",i,j,a[i][j]);
-    }
-}
-
+. git-sh-setup
+test -x "$GIT_DIR/hooks/pre-commit" &&
+	exec "$GIT_DIR/hooks/pre-commit" ${1+"$@"}
+:

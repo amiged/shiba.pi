@@ -1,113 +1,124 @@
-Fri Apr  3 19:50:45 JST 2009
--- LOCAL WRITE ( ifpga -> pfpga )
--- by Tsuyoshi Hamada
---
--- CLK     __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ 
--- MEM_WE            __/~~~~~~~~~~\_____ 
--- MEM_AD              < a0 >< a1 >
--- MEM_DTI             < d0 >< d1 >
--- DMAW_ENABLE                      __/~~~~~~~~~~\___  
--- DBUS_Port                     < a0 >< d0 >< d1 >
-
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL;
-use IEEE.STD_LOGIC_ARITH.ALL;
-
-entity LOCAL_WRITE is
-  port (
-    -- pcicnt input
-    MEM_AD  : in std_logic_vector(19 downto 0);
-    MEM_WE  : in std_logic;
-    MEM_DTI : in std_logic_vector(63 downto 0);
-
-    -- CBUS/DBUS
-    DMAW_ENABLE : out std_logic_vector(3 downto 0); -- for 4 pfpga chip
-    DBUS_Port : out std_logic_vector(63 downto 0);  -- outside of this module, 1 delay is inserted.
-    RST : in  std_logic;
-    CLK : in  std_logic
-    );
-end LOCAL_WRITE;
-
-architecture rtl of LOCAL_WRITE is
-
-  signal we0  : std_logic := '0';
-  signal we1  : std_logic := '0';
-  signal adr          : std_logic_vector(63 downto 0) := (others=>'0');
-  signal data0,data1 : std_logic_vector(63 downto 0) := (others=>'0');
-  signal dbus_o       : std_logic_vector(63 downto 0) := (others=>'0');
-
-begin
-  ------------------------------
-  --- we0,1                  ---
-  ------------------------------
-  process (RST,CLK) begin
-    if(RST='1') then
-      we0 <= '0';
-    elsif(CLK'event and CLK='1') then
-      we0 <= MEM_WE;
-    end if;
-  end process;
-
-  process (CLK) begin
-    if(CLK'event and CLK='1') then
-      we1 <= we0;
-    end if;
-  end process;
-  
-  ------------------------------
-  --- adr                    ---
-  ------------------------------
-  process (RST,CLK,MEM_WE,we0) begin
-    if(RST='1') then
-      adr <= (others=>'0');
-    elsif(CLK'event and CLK='1') then
-      if((MEM_WE = '1') and (we0 = '0')) then
-        adr(18 downto 0) <= MEM_AD(19 downto 1);
-      end if;
-      adr(63 downto 19) <= (others=>'0');
-    end if;
-  end process;
-
-  ------------------------------
-  --- data delay             ---
-  ------------------------------
-  process (RST,CLK) begin
-    if(RST='1') then
-      data1 <= (others=>'0');
-      data0 <= (others=>'0');
-    elsif(CLK'event and CLK='1') then
-      data1 <= data0;
-      data0 <= MEM_DTI;
-    end if;
-  end process;
-
-  ------------------------------
-  --- DBUS_Port              ---
-  ------------------------------
-  process (RST,CLK,we0,we1) begin
-    if(RST='1') then
-      DBUS_Port <= (others=>'0');
-    elsif(CLK'event and CLK='1') then
-      if(we0 = '1' and we1 = '0') then
-        DBUS_Port <= adr;
-      else
-        DBUS_Port <= data1;
-      end if;
-    end if;
-  end process;
-
-  --- DMAW_ENABLE
-  process (RST,CLK) begin
-    if(RST='1') then
-      DMAW_ENABLE    <= (others=>'0');
-    elsif(CLK'event and CLK='1') then
-      DMAW_ENABLE(0) <= we1;
-      DMAW_ENABLE(1) <= we1;
-      DMAW_ENABLE(2) <= we1;
-      DMAW_ENABLE(3) <= we1;
-    end if;
-  end process;
+Wed Apr 15 19:34:43 JST 2009
+#include "pg_util.h"
+// Funtion Prototyping
+void            pg_float_sub_26_16(LONG x, LONG y, LONG * z);
+void            pg_float_sub_26_16(LONG x, LONG y, LONG * z);
+void            pg_float_sub_26_16(LONG x, LONG y, LONG * z);
+void            pg_float_mult_26_16(LONG x, LONG y, LONG * z);
+void            pg_float_mult_26_16(LONG x, LONG y, LONG * z);
+void            pg_float_mult_26_16(LONG x, LONG y, LONG * z);
+void            pg_float_unsigned_add_26_16(LONG x, LONG y, LONG * z);
+void            pg_float_unsigned_add_26_16(LONG x, LONG y, LONG * z);
+void            pg_float_unsigned_add_26_16(LONG x, LONG y, LONG * z);
+void            pg_float_sqrt_26_16(LONG x, LONG * z);
+void            pg_float_mult_26_16(LONG x, LONG y, LONG * z);
+void            pg_float_recipro_26_16(LONG x, LONG * z);
+void            pg_float_mult_26_16(LONG x, LONG y, LONG * z);
+void            pg_float_expadd_31_26_16(LONG x, LONG * z);
+void            pg_float_mult_26_16(LONG x, LONG y, LONG * z);
+void            pg_float_mult_26_16(LONG x, LONG y, LONG * z);
+void            pg_float_mult_26_16(LONG x, LONG y, LONG * z);
+void            pg_float_fixaccum_26_16(LONG x, LONG * z);
+void            pg_float_fixaccum_26_16(LONG x, LONG * z);
+void            pg_float_fixaccum_26_16(LONG x, LONG * z);
 
 
-end rtl;
+// API
+void
+force(double x[][3], double m[], double eps2, double a[][3], int n)
+{
+    int             i, j;
+    LONG            sx_0;
+    LONG            sx_1;
+    LONG            sx_2;
+    LONG            xi_0;
+    LONG            xj_0;
+    LONG            xi_1;
+    LONG            xj_1;
+    LONG            xi_2;
+    LONG            xj_2;
+    LONG            dx2_0;
+    LONG            dx2_1;
+    LONG            dx2_2;
+    LONG            ieps2;
+    LONG            x2y2;
+    LONG            z2e2;
+    LONG            r2;
+    LONG            r1;
+    LONG            r3;
+    LONG            r3i;
+    LONG            mj;
+    LONG            mf;
+    LONG            dx_0;
+    LONG            dx_1;
+    LONG            fs;
+    LONG            dx_2;
+    LONG            fx_0;
+    LONG            fx_1;
+    LONG            fx_2;
+
+
+    for (i = 0; i < n; i++) {
+	/*
+	 * CONVERT(xi_0,float) 
+	 */ xi_0 = double2pgpgfloat_r(x[i][0], 26, 16, 6);
+	/*
+	 * CONVERT(xi_1,float) 
+	 */ xi_1 = double2pgpgfloat_r(x[i][1], 26, 16, 6);
+	/*
+	 * CONVERT(xi_2,float) 
+	 */ xi_2 = double2pgpgfloat_r(x[i][2], 26, 16, 6);
+	/*
+	 * CONVERT(ieps2,float) 
+	 */ ieps2 = double2pgpgfloat_r(eps2, 26, 16, 6);
+
+	sx_0 = 0;
+	sx_1 = 0;
+	sx_2 = 0;
+
+	for (j = n - 1; j >= 0; j--) {
+	    /*
+	     * CONVERT(xj_0,float) 
+	     */ xj_0 = double2pgpgfloat_r(x[j][0], 26, 16, 6);
+	    /*
+	     * CONVERT(xj_1,float) 
+	     */ xj_1 = double2pgpgfloat_r(x[j][1], 26, 16, 6);
+	    /*
+	     * CONVERT(xj_2,float) 
+	     */ xj_2 = double2pgpgfloat_r(x[j][2], 26, 16, 6);
+	    /*
+	     * CONVERT(mj,float) 
+	     */ mj = double2pgpgfloat_r(m[j], 26, 16, 6);
+
+	    pg_float_sub_26_16(xi_0, xj_0, &dx_0);
+	    pg_float_sub_26_16(xi_1, xj_1, &dx_1);
+	    pg_float_sub_26_16(xi_2, xj_2, &dx_2);
+	    pg_float_mult_26_16(dx_0, dx_0, &dx2_0);
+	    pg_float_mult_26_16(dx_1, dx_1, &dx2_1);
+	    pg_float_mult_26_16(dx_2, dx_2, &dx2_2);
+	    pg_float_unsigned_add_26_16(dx2_0, dx2_1, &x2y2);
+	    pg_float_unsigned_add_26_16(dx2_2, ieps2, &z2e2);
+	    pg_float_unsigned_add_26_16(x2y2, z2e2, &r2);
+	    pg_float_sqrt_26_16(r2, &r1);
+	    pg_float_mult_26_16(r2, r1, &r3);
+	    pg_float_recipro_26_16(r3, &r3i);
+	    pg_float_mult_26_16(r3i, mj, &mf);
+	    pg_float_expadd_31_26_16(mf, &fs);
+	    pg_float_mult_26_16(fs, dx_0, &fx_0);
+	    pg_float_mult_26_16(fs, dx_1, &fx_1);
+	    pg_float_mult_26_16(fs, dx_2, &fx_2);
+	    pg_float_fixaccum_26_16_57_64(fx_0, &sx_0);
+	    pg_float_fixaccum_26_16_57_64(fx_1, &sx_1);
+	    pg_float_fixaccum_26_16_57_64(fx_2, &sx_2);
+	}
+	a[i][0] =
+	    ((double) (((long long int) sx_0) << 0)) *
+	    ((-1.0 / pow(2.0, (double) 31))) / pow(2.0, 0.0);
+	a[i][1] =
+	    ((double) (((long long int) sx_1) << 0)) *
+	    ((-1.0 / pow(2.0, (double) 31))) / pow(2.0, 0.0);
+	a[i][2] =
+	    ((double) (((long long int) sx_2) << 0)) *
+	    ((-1.0 / pow(2.0, (double) 31))) / pow(2.0, 0.0);
+    }
+}

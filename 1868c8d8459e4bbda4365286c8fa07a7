@@ -1,56 +1,12 @@
-Thu Mar 26 19:26:56 JST 2009
-#!/usr/bin/env python3
-#Time-stamp: <2017-06-04 15:57:17 hamada>
-import argparse
-import numpy as np
-import cv2
-from datetime import datetime
-import mkdir
+Sun Apr 19 19:44:09 JST 2009
 
-class State(object):
-    def __init__(self):
-        self.is_record = False
+all:
+	cp top.ucf.ISE6.3i_Synplify top.ucf
+	rm -rf proj
+	tar xvf proj.synplify.tar
+	cd proj;ngdbuild -intstyle ise -dd /home/hamada/VHDL/proj/_ngo -uc ../top.ucf  -p xc2vp70-ff1517-5 top.edn top.ngd
+	cd proj;map -intstyle ise -p xc2vp70-ff1517-5 -cm area -pr b -k 4 -c 100 -tx off -o top_map.ncd top.ngd top.pcf
+	cd proj;par -w -intstyle ise -ol std -t 1 top_map.ncd top.ncd top.pcf
+	cd proj;trce -intstyle ise -e 3 -l 3 -xml top top.ncd -o top.twr top.pcf
+	cd proj;bitgen -intstyle ise -f top.ut top.ncd
 
-if (__name__ == '__main__'):
-    state = State()
-
-    parser = argparse.ArgumentParser(description = "description goes here")
-    parser.add_argument("--devid", type=int, help = "set device id", required=False)
-    args = parser.parse_args()
-    devid = 0
-    if args.devid:
-        devid = int(args.devid)
-        print ("set devid = ", devid)
-
-
-    log_base = '../log/'
-    cap = cv2.VideoCapture(devid)
-
-    cap_width  = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
-    cap_height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
-    cap_fps    = cap.get(cv2.CAP_PROP_FPS)
-
-    print(cap_width, "x", cap_height, ":", cap_fps)
-
-
-    while(cap.isOpened()):
-        ret, frame = cap.read()
-        cv2.imshow('camera: %d'%(devid), frame)
-
-        tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S_%f')
-        if(state.is_record):
-            basedir = '../log.%d/'% (devid)
-            ofname = mkdir.get_filename_frame(basedir, tnow)
-            cv2.imwrite(ofname, frame)
-            print(ofname, "devid = %d"%devid)
-            tnow0 = tnow
-
-        key = cv2.waitKey(1) & 0xFF
-        if key == ord('q'): break
-        if key == ord(' '): state.is_record = not (state.is_record)
-
-
-    cap.release()
-    cv2.destroyAllWindows()
-
-    print("Done.")

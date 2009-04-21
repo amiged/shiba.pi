@@ -1,40 +1,28 @@
-Sat Apr  4 19:54:54 JST 2009
- 
--w
--g DebugBitstream:No
--g Binary:no
--g CRC:Enable
--g ConfigRate:4
--g CclkPin:PullUp
--g M0Pin:PullUp
--g M1Pin:PullUp
--g M2Pin:PullUp
--g ProgPin:PullUp
--g DonePin:PullUp
--g PowerdownPin:PullUp
--g TckPin:PullUp
--g TdiPin:PullUp
--g TdoPin:PullUp
--g TmsPin:PullUp
--g UnusedPin:PullDown
--g UserID:0xFFFFFFFF
--g DCMShutDown:Disable
--g DisableBandgap:No
--g DCIUpdateMode:AsRequired
--g StartUpClk:CClk
--g DONE_cycle:4
--g GTS_cycle:5
--g GWE_cycle:6
--g LCK_cycle:NoWait
--g Match_cycle:Auto
--g Security:None
--g DonePipe:No
--g DriveDone:No
--g Encrypt:No
+Tue Apr 21 19:34:42 JST 2009
+#!/usr/bin/env python3
+import numpy as np
+import cv2
+from datetime import datetime
 
 
+def put_text(image, text):
+    font_size = 1.0
+    font_type = cv2.FONT_HERSHEY_PLAIN
+    font_color = (0xff, 0xf, 0xff)
+    cv2.putText(image, text, (460, 15), font_type, font_size, font_color)
+    
+
+image = cv2.imread("/tmp/tmp.jpg")
+
+tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S') # ('%Y%m%d_%H_%M_%S_%f')
+put_text(image, tnow)
+cv2.imshow('test', image)
 
 
+while(True):
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
 
+cv2.destroyAllWindows()
 
-
+print("Done.")

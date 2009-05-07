@@ -1,44 +1,54 @@
-Fri Apr 24 19:47:33 JST 2009
-// Time-stamp: " "
-#include <stdio.h> 
-#include <string.h>
-#include <stdlib.h>
+Thu May  7 19:41:58 JST 2009
+#!/bin/sh
 
-void read_data(char* fname, int* nbody, double posi[][2])
-{
-  int idx,n;
-  char line[2560];
-  FILE *fp;
-  fp = fopen(fname,"r");
-  idx=0;
+# An example hook script to verify what is about to be pushed.  Called by "git
+# push" after it has checked the remote status, but before anything has been
+# pushed.  If this script exits with a non-zero status nothing will be pushed.
+#
+# This hook is called with the following parameters:
+#
+# $1 -- Name of the remote to which the push is being done
+# $2 -- URL to which the push is being done
+#
+# If pushing without using a named remote those arguments will be equal.
+#
+# Information about the commits which are being pushed is supplied as lines to
+# the standard input in the form:
+#
+#   <local ref> <local sha1> <remote ref> <remote sha1>
+#
+# This sample shows how to prevent push of commits where the log message starts
+# with "WIP" (work in progress).
 
-  { // get N (number of particles)
-    char* p;
-    fgets(line,100,fp);
-    p = (char* )strtok(line,"\n");
-    sscanf(p,"%d",&n);
-    *nbody = n;
-  }
+remote="$1"
+url="$2"
 
-  // get all data
-  for(idx=0;idx<n;idx++){
-    char* p;
-    char col[10][400];
-    int i=0;
-    if(fgets(line,300,fp)==NULL){printf("Error at loading logfiles\n");exit(0);}
-    p = (char* )strtok(line,"\t");
-    strcpy(col[i],p);
-    i++;
-    while((p = (char* )strtok(NULL, "\t"))!=NULL){
-      strcpy(col[i],p);
-      i++;
-    }
-    //--- for debug ---
-    //    for(i=0;i<7;i++) printf("[%s]",col[i]);
-    //    printf("\n");
+z40=0000000000000000000000000000000000000000
 
-    posi[idx][0]=atof(col[0]);
-    posi[idx][1]=atof(col[1]);
-  }
-  fclose(fp);
-}
+IFS=' '
+while read local_ref local_sha remote_ref remote_sha
+do
+	if [ "$local_sha" = $z40 ]
+	then
+		# Handle delete
+	else
+		if [ "$remote_sha" = $z40 ]
+		then
+			# New branch, examine all commits
+			range="$local_sha"
+		else
+			# Update to existing branch, examine new commits
+			range="$remote_sha..$local_sha"
+		fi
+
+		# Check for WIP commit
+		commit=`git rev-list -n 1 --grep '^WIP' "$range"`
+		if [ -n "$commit" ]
+		then
+			echo "Found WIP commit in $local_ref, not pushing"
+			exit 1
+		fi
+	fi
+done
+
+exit 0

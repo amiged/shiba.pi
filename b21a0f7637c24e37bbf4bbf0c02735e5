@@ -1,192 +1,180 @@
-Wed May 13 19:48:33 JST 2009
+Sat May 16 19:47:59 JST 2009
 /*
- * progrape.h -- the device driver header for PROGRAPE-4
- *
- * Copyright (C) 2006-2007 Tsuyoshi Hamada.
- *                                All rights reserved.
- *
- * The source code in this file can be freely used, 
- * so long as an acknowledgment from Tsuyoshi Hamada.
- * 
- * The source code in this file can be modified, branched, and
- * redistributed in source or binary form in the following situation.  
- * If you want to modify, redistribute or make another version based on
- * this source code, you should get distinct agreement from Tsuyoshi
- * Hamada.  The modified, redistributed or branched(another version based
- * on this source code) source code should include the citation that the
- * code comes from the "progrape.c by Tsuyoshi Hamada".
- * 
- * No warranty is attached; 
- * I cannot take responsibility for errors or fitness for use.
- *
- */
-#ifndef _PROGRAPE_H_
-#define _PROGRAPE_H_
-
-#include <linux/ioctl.h> /* for the _IOW etc */
-
-// -------------------------------------------------------------------- for DEBUG
-/*
- * Macros to help debugging
- */
-#undef PDEBUG             /* undef it, just in case */
-#ifdef DEBUG
-#  ifdef __KERNEL__
-     /* This one if debugging is on, and kernel space */
-#    define PDEBUG(fmt, args...) printk( KERN_DEBUG "progrape: " fmt, ## args)
-#  else
-     /* This one for user space */
-#    define PDEBUG(fmt, args...) fprintf(stderr, fmt, ## args)
-#  endif
-#else
-#  define PDEBUG(fmt, args...) /* not debugging: nothing */
-#endif
-
-#undef _PDEBUG
-#define _PDEBUG(fmt, args...) /* nothing: it's a placeholder */
-// -------------------------------------------------------------------- for DEBUG. 
-
-/* 
- * IOCTL definitions
- */
-
-#define PG_IOC_MAGIC (7)
-/*
- * SP : Set by Pointer
- * SV : Set by Value
- * GP : Get by Pointer
- * GV : Get by Value
- */
-#define IOC_SV_MMAPMODE  _IOW(PG_IOC_MAGIC,  1, unsigned)
-#define IOC_GV_REG_ADR   _IOR(PG_IOC_MAGIC,  2, unsigned long)
-#define IOC_GV_REG_SIZE  _IOR(PG_IOC_MAGIC,  3, unsigned long)
-#define IOC_GV_MEM_ADR   _IOR(PG_IOC_MAGIC,  4, unsigned long)
-#define IOC_GV_MEM_SIZE  _IOR(PG_IOC_MAGIC,  5, unsigned long)
-#define IOC_SP_FPGA_INFO _IOW(PG_IOC_MAGIC,  6, char* )
-#define IOC_GP_FPGA_INFO _IOR(PG_IOC_MAGIC,  7, char* )
-#define IOC_GV_PCICFG    _IOR(PG_IOC_MAGIC,  8, unsigned long)
-#define IOC_SV_DMAW      _IOW(PG_IOC_MAGIC,  9, unsigned long)
-#define IOC_SV_DMAR      _IOW(PG_IOC_MAGIC, 10, unsigned long)
-#define IOC_GV_DMA_SIZE  _IOR(PG_IOC_MAGIC, 11, unsigned long)
-
-#define PG_IOC_MAXNR (11)
-
-/*
- * modes for pg_mmap
- * "pcidev->mmap_mode" has one of these mode.
- */
-enum {
-  MMAP_REG_PIOW = 0,      // bar0 for PG4, 0
-  MMAP_REG_PIOR,          // bar0 for PG4, 1
-  MMAP_REG_PIORW,         // bar0 for PG4, 2
-  MMAP_MEM_PIOW,          // bar1 for PG4, 3
-  MMAP_MEM_PIOR,          // bar1 for PG4, 4
-  MMAP_MEM_PIORW,         // bar1 for PG4, 5
-  MMAP_MEM_PIOW_PREFETCH, // bar1 for PG4, 6
-  MMAP_BUF_DMAW,          // DMABUF for Host->Device direction, 7
-  MMAP_BUF_DMAR,          // DMABUF for Device->Host direction, 8
-};
-
-#define NB_FPGA_INFO (256)  // Length(Bytes) of the FPGA information
+  Copyright(c) 2003-2004 by Tsuyoshi Hamada
+  Nbody program for programmable GRAPE
+  Last Modified at 2004/04/13
+*/
+#include <stdio.h>
+#include <stdlib.h> // exit()
+#include <string.h> // strcpy()
+#include "nbodysim.h"
 
 
-/* 
- * IFPGA register definitions
- */
-#define REG_PFPGA_RST         (0x04)
-#define REG_INT_STAT          (0x10)
-#define REG_INT_MASK          (0x14)
-#define REG_DMA_PCI_ADRS      (0x20)
-#define REG_DMA_LOCAL_ADRS    (0x24)
-#define REG_DMA_COUNT         (0x28)
-#define REG_DMA_CTRL          (0x2C)
-#define REG_DMA_INTERVAL      (0x30)
-#define REG_DMA_STAT          (0x34)
+#define PI (3.1415926535897932)
+//#define TRIALS_PER_R (6000)
+//#define TRIALS_PER_R (300)
 
 
-#ifdef __KERNEL__
-// -------------------------------------------------------------------- Private Members
-#include <linux/cdev.h>
-#include <asm/semaphore.h> // struct semaphore
-#include <linux/wait.h>    // wait_queue_head_t
-
-struct pg_dev {
-  struct pci_dev *pcidev;  // only for my debugging. Don't use it.
-  unsigned long *buf_dmar; // Kernel logical address     ,also called CPU address
-  unsigned long *buf_dmaw; // Kernel logical address     ,also called CPU address
-  dma_addr_t buf_dmar_pa;  // bus address (type) for DMA ,also called physical address
-  dma_addr_t buf_dmaw_pa;  // bus address (type) for DMA ,also called physical address
-  unsigned long pci_reg_adr;
-  unsigned long pci_reg_size;
-  unsigned long pci_reg_flag;
-  unsigned long pci_mem_adr;
-  unsigned long pci_mem_size;
-  unsigned long pci_mem_flag;  // IORESOURCE_{IO,MEM,PREFETCH,READONLY} @<linux/ioport.h>
-  unsigned long pci_irq_num;
-  unsigned long mmap_mode;
-  wait_queue_head_t wq;        // wait queue for interrupt handler -> tasklet in future
-  unsigned long wq_count;      // wait counter for interrupt handler
-  struct semaphore sem;        // mutual exclusion semaphore
-  struct semaphore sem_open;   // lock device while a person is opening it.
-  unsigned long ntimes_open;   // the number of times for pg_open()
-  struct cdev cdev;	       // Char device structure
-  char fpga_info[NB_FPGA_INFO];// text for FPGA information (for bitfile)
-};
-
-#ifndef PROGRAPE_MAJOR
-#    define PROGRAPE_MAJOR 0  // dynamically allocated if 0
-#endif 
-
-#ifndef PROGRAPE_MAJOR
-#    define PROGRAPE_MAJOR 0  // dynamically allocated if 0
-#endif 
-
-// Number of maximum character device
-#ifndef PROGRAPE_NR_DEVS
-#    define PROGRAPE_NR_DEVS 1
-#endif 
-
-// -------------------------------------------------------------------- Private Members.
-#endif
+//#define N_PLOTS (1920)
+//#define N_PLOTS (640)
 
 
-// for the different configurable parameters
-extern int pg_major;
-extern int pg_minor;
-extern int pg_nr_devs;
-
-// Prototyepes for shared functions
-int check_license(void);
-int get_license(void);
+#define TRIALS_PER_R (300)
+#define N_PLOTS (640)
 
 
-// --- ISA bridge: Advanced Micro Devices [AMD] AMD-8111 LPC (rev 05)
-#undef PCI_VENDOR_ID_PG
-#undef PCI_DEVICE_ID_PG
-#undef PCI_REVISION_ID_PG
-#define PCI_VENDOR_ID_PG   (0x1022)
-#define PCI_DEVICE_ID_PG   (0x7468)
-#define PCI_REVISION_ID_PG (0x05)
-
-// --- PCI bridge: Advanced Micro Devices [AMD] AMD-8131 PCI-X Bridge (rev 12)
-#undef PCI_VENDOR_ID_PG
-#undef PCI_DEVICE_ID_PG
-#undef PCI_REVISION_ID_PG
-#define PCI_VENDOR_ID_PG   (0x1022)
-#define PCI_DEVICE_ID_PG   (0x7450)
-#define PCI_REVISION_ID_PG (0x12)
-
-// --- PROGRAPE-4 
-#undef PCI_VENDOR_ID_PG
-#undef PCI_DEVICE_ID_PG
-#undef PCI_REVISION_ID_PG
-#define PCI_VENDOR_ID_PG   (0x1679)
-#define PCI_DEVICE_ID_PG   (0x0005)
-#define PCI_REVISION_ID_PG (0x00)
+#define XSIZE (1.0)
+#define RMAX (XSIZE*2.0)
+//#define EPS2 (pow((RMAX*9e-7),2.0))
+#define EPS2 (pow((RMAX*1e-6),2.0))
 
 
-#define PG_DMA_BUFSIZE (0x1<<16) // 64 KB : IFPGA Block-RAM size 
-//#define PG_DMA_BUFSIZE (0x1<<12) // 4 KB : IFPGA Block-RAM size 
-#define PG_PCITRANS_64BIT (1)    // 1: 64-bit / 0: 32-bit
+#define MASS (1.0)
 
-#endif // _PROGRAPE_H_
+//#define R_START (6.6)  //-- for G3
+#define R_START (9.9)  //-- for G5
+
+void get_xi(double x[])
+{
+  x[0] = XSIZE*rand()/(RAND_MAX+1.0);
+  x[1] = XSIZE*rand()/(RAND_MAX+1.0);
+  x[2] = XSIZE*rand()/(RAND_MAX+1.0);
+  if(rand()/(RAND_MAX+1.0)<0.5) x[0] *= -1.0;
+  if(rand()/(RAND_MAX+1.0)<0.5) x[1] *= -1.0;
+  if(rand()/(RAND_MAX+1.0)<0.5) x[2] *= -1.0;
+}
+
+int check_position(double xi[],double xj[],double r)
+{
+  static unsigned int count=0;
+  int d;
+  if(r>= RMAX){
+    fprintf(stderr,"r(%f)>%f, finished\n",r,RMAX);
+    exit(0);
+  }
+  if(count > 0x4000){
+    fprintf(stderr,"r %f\tlog(r/RMAX) %f\n",r,log(r/RMAX)/log(10.0));
+    exit(0);
+  }
+  count++;
+  for(d=0;d<3;d++){
+    if((xi[d]>=XSIZE)||(xi[d]<=-XSIZE)){
+      //      fprintf(stderr,"xi bad \t %f\t%f\t%f\n",xi[0],xi[1],xi[2]);
+      return 0;
+    }
+    if((xj[d]>=XSIZE)||(xj[d]<=-XSIZE)){
+      //      fprintf(stderr,"xj bad \t %f\t%f\t%f\n",xj[0],xj[1],xj[2]);
+      return 0;
+    }
+  }
+  count=0;
+  return 1;
+}
+
+void get_xj(double xi[],double r,double theta,double phi,double xj[])
+{
+  xj[0] = xi[0] + r*cos(phi)*cos(theta);
+  xj[1] = xi[1] + r*cos(phi)*sin(theta);
+  xj[2] = xi[2] + r*sin(phi);
+}
+
+int main(int argc,char** argv)
+{
+  double x[NMAX][DIM];
+  double m[NMAX];
+  double radmax=TRIALS_PER_R;
+  double r=R_START;
+  double eps2 = EPS2;
+  int i,k,n=2;
+
+  srand(0x1192296);
+  m[0]=MASS;  m[1]=MASS;
+
+  for(k=0;k<N_PLOTS;k++){
+    double Sr=0.0;
+    double a_host[2][DIM];
+    double a_b3[2][DIM];
+
+    r = pow(10,R_START*(k-N_PLOTS)/N_PLOTS)*RMAX;
+    for(i=0;i<radmax;i++){
+      int j,d, is_in_range;
+      double theta,phi;
+      is_in_range=0;
+
+      while(is_in_range==0){
+	get_xi(x[0]);
+	phi   = 2.0*PI*(double)(rand()/(RAND_MAX+1.0));
+	theta = 2.0*PI*(double)(rand()/(RAND_MAX+1.0));
+	get_xj(x[0],r,theta,phi,x[1]);
+	is_in_range = check_position(x[0],x[1],r);
+      }
+
+      force_on_host(x,m,eps2,a_host,n);
+      force(x,m,eps2,a_b3,n);
+      /*************************
+      if(0){
+	void scale_1f(int n, double x[],    double s, double z[]);
+	void scale_3f(int n, double x[][3], double s, double z[][3]);
+	double _m[NMAX];
+	double _a[NMAX][3];
+	double _e;
+	double s;
+	s = 1.0;
+	s = pow(2.0,-18.0);
+	scale_1f(n, m, s,             _m);
+	force(x,_m,_e,_a, n);
+	scale_3f(n, _a, 1.0/s, a_b3);
+      }
+      *****************************/
+      {
+	double df2,f2;
+	df2 = f2 = 0.0;
+	for(d=0;d<DIM;d++) df2 += (a_b3[0][d]-a_host[0][d])*(a_b3[0][d]-a_host[0][d]);
+	for(d=0;d<DIM;d++) f2 += a_host[0][d]*a_host[0][d];
+	Sr += df2/f2;
+      }
+    }
+    //    exit(0);
+
+    Sr /= (double)(radmax);
+    Sr = pow(Sr,0.5);
+    printf("%e\t",log(r/XSIZE)/log(10.0));
+    printf("%e\t",Sr);
+    printf("%e\t",r);
+
+
+    /****
+      printf("%e\t",a_host[0][1]);
+      printf("%e |\t",  a_b3[0][1]);
+      printf("%e\t",a_host[0][2]);
+      printf("%e |\t",  a_b3[0][2]);
+      printf("%e\t",a_host[0][3]);
+      printf("%e\n",  a_b3[0][3]);
+    ***/
+    printf("%e\t",a_host[0][0]);
+    printf("%e\t",  a_b3[0][0]);
+    puts("");    
+
+
+  }
+  return 0;
+}
+
+
+
+/////////////////////////////////////////
+void scale_1f(int n, double x[], double scale, double z[])
+{
+  int i;
+  for(i=0;i<n;i++) z[i] = x[i]*scale;
+}
+
+void scale_3f(int n, double x[][3], double scale, double z[][3])
+{
+  int i;
+  for(i=0;i<n;i++){
+    z[i][0] = x[i][0]*scale;
+    z[i][1] = x[i][1]*scale;
+    z[i][2] = x[i][2]*scale;
+  }
+}

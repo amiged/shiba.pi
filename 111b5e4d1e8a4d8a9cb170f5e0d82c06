@@ -1,36 +1,20 @@
-Thu Apr  9 19:28:00 JST 2009
--- Copyright 2004 Tsuyoshi Hamada
---
---
---
--- DMAR_STATE is used only 
---                dmar_mem_adr.vhd  
---                dmar_mem_re.vhd
---                dmar_start_adr.vhd
--- dmar_dbus_hiz and dma_mem_data do not used DMAR_STATE.
+Wed May 27 19:28:45 JST 2009
+#!/usr/bin/perl
 
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
-entity dmar_state is
-  port (
-    RST      : in std_logic;
-    CLK      : in std_logic;
-    ENABLE   : in std_logic;
-    STATE    : out std_logic_vector(1 downto 0) );
-end dmar_state;
+my $is_stop = 0;
 
-architecture rtl of dmar_state is
+if($ARGV[0]){
+    $is_stop = 1;
+}
 
-component dmaw_state
-  port (
-    RST      : in std_logic;
-    CLK      : in std_logic;
-    ENABLE   : in std_logic;
-    STATE    : out std_logic_vector(1 downto 0) );
-end component;
+my $cmd ="cat /sys/class/fpga/fpga0/irq_count";
 
-begin
-  u0 : dmaw_state port map(RST=>RST, CLK=>CLK, ENABLE=>ENABLE, STATE=>STATE);
-end rtl;
+while(1){
+    my $exe = `$cmd`;
+    print $exe;
+    exit (1) if($is_stop == 1);
+    sleep (2);
+}
+
+1;

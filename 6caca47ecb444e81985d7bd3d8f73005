@@ -1,324 +1,90 @@
-Fri Apr 17 19:26:39 JST 2009
--- C:\CYGWIN\HOME\ADMINISTRATOR\FKIT\PCI64\TMP2
--- VHDL Annotation Test Bench created by
--- HDL Bencher 6.1i
--- Wed Nov 10 11:38:24 2004
-
-LIBRARY IEEE;
-USE IEEE.STD_LOGIC_1164.ALL;
-USE IEEE.STD_LOGIC_ARITH.ALL;
-USE IEEE.STD_LOGIC_UNSIGNED.ALL;
-USE IEEE.STD_LOGIC_TEXTIO.ALL;
-USE STD.TEXTIO.ALL;
-
-ENTITY sim IS
-END sim;
-
-ARCHITECTURE testbench_arch OF sim IS
--- If you get a compiler error on the following line,
--- from the menu do Options->Configuration select VHDL 87
-FILE RESULTS: TEXT OPEN WRITE_MODE IS "c:\cygwin\home\administrator\fkit\pci64\tmp2\sim.ano";
-	COMPONENT pfpga_config
-		PORT (
-			clk : In  std_logic;
-			rst_n : In  std_logic;
-			cmd_reg : In  std_logic_vector (8 DOWNTO 0);
-			data_reg : In  std_logic_vector (31 DOWNTO 0);
-			CFG_D : Out  std_logic_vector (7 DOWNTO 0);
-			CFG_CCLK : Out  std_logic;
-			CFG_PROG_B0 : Out  std_logic;
-			CFG_PROG_B1 : Out  std_logic;
-			CFG_PROG_B2 : Out  std_logic;
-			CFG_PROG_B3 : Out  std_logic;
-			CFG_CS_B0 : Out  std_logic;
-			CFG_CS_B1 : Out  std_logic;
-			CFG_CS_B2 : Out  std_logic;
-			CFG_CS_B3 : Out  std_logic;
-			CFG_RDWR_B : Out  std_logic
-		);
-	END COMPONENT;
-
-	SIGNAL clk : std_logic;
-	SIGNAL rst_n : std_logic;
-	SIGNAL cmd_reg : std_logic_vector (8 DOWNTO 0);
-	SIGNAL data_reg : std_logic_vector (31 DOWNTO 0);
-	SIGNAL CFG_D : std_logic_vector (7 DOWNTO 0);
-	SIGNAL CFG_CCLK : std_logic;
-	SIGNAL CFG_PROG_B0 : std_logic;
-	SIGNAL CFG_PROG_B1 : std_logic;
-	SIGNAL CFG_PROG_B2 : std_logic;
-	SIGNAL CFG_PROG_B3 : std_logic;
-	SIGNAL CFG_CS_B0 : std_logic;
-	SIGNAL CFG_CS_B1 : std_logic;
-	SIGNAL CFG_CS_B2 : std_logic;
-	SIGNAL CFG_CS_B3 : std_logic;
-	SIGNAL CFG_RDWR_B : std_logic;
-
-BEGIN
-	UUT : pfpga_config
-	PORT MAP (
-		clk => clk,
-		rst_n => rst_n,
-		cmd_reg => cmd_reg,
-		data_reg => data_reg,
-		CFG_D => CFG_D,
-		CFG_CCLK => CFG_CCLK,
-		CFG_PROG_B0 => CFG_PROG_B0,
-		CFG_PROG_B1 => CFG_PROG_B1,
-		CFG_PROG_B2 => CFG_PROG_B2,
-		CFG_PROG_B3 => CFG_PROG_B3,
-		CFG_CS_B0 => CFG_CS_B0,
-		CFG_CS_B1 => CFG_CS_B1,
-		CFG_CS_B2 => CFG_CS_B2,
-		CFG_CS_B3 => CFG_CS_B3,
-		CFG_RDWR_B => CFG_RDWR_B
-	);
-
-	PROCESS -- clock process for clk,
-		VARIABLE TX_TIME : INTEGER :=0;
-
-		PROCEDURE ANNOTATE_CFG_D(
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
-			STD.TEXTIO.write(TX_LOC, TX_TIME);
-			STD.TEXTIO.write(TX_LOC,string'(",CFG_D,"));
-			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, CFG_D);
-			STD.TEXTIO.write(TX_LOC, string'("]"));
-			TX_STR(TX_LOC.all'range) := TX_LOC.all;
-			STD.TEXTIO.writeline(results, TX_LOC);
-			STD.TEXTIO.Deallocate(TX_LOC);
-		END;
-
-		PROCEDURE ANNOTATE_CFG_CCLK(
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
-			STD.TEXTIO.write(TX_LOC, TX_TIME);
-			STD.TEXTIO.write(TX_LOC,string'(",CFG_CCLK,"));
-			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, CFG_CCLK);
-			STD.TEXTIO.write(TX_LOC, string'("]"));
-			TX_STR(TX_LOC.all'range) := TX_LOC.all;
-			STD.TEXTIO.writeline(results, TX_LOC);
-			STD.TEXTIO.Deallocate(TX_LOC);
-		END;
-
-		PROCEDURE ANNOTATE_CFG_PROG_B0(
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
-			STD.TEXTIO.write(TX_LOC, TX_TIME);
-			STD.TEXTIO.write(TX_LOC,string'(",CFG_PROG_B0,"));
-			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, CFG_PROG_B0);
-			STD.TEXTIO.write(TX_LOC, string'("]"));
-			TX_STR(TX_LOC.all'range) := TX_LOC.all;
-			STD.TEXTIO.writeline(results, TX_LOC);
-			STD.TEXTIO.Deallocate(TX_LOC);
-		END;
-
-		PROCEDURE ANNOTATE_CFG_PROG_B1(
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
-			STD.TEXTIO.write(TX_LOC, TX_TIME);
-			STD.TEXTIO.write(TX_LOC,string'(",CFG_PROG_B1,"));
-			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, CFG_PROG_B1);
-			STD.TEXTIO.write(TX_LOC, string'("]"));
-			TX_STR(TX_LOC.all'range) := TX_LOC.all;
-			STD.TEXTIO.writeline(results, TX_LOC);
-			STD.TEXTIO.Deallocate(TX_LOC);
-		END;
-
-		PROCEDURE ANNOTATE_CFG_PROG_B2(
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
-			STD.TEXTIO.write(TX_LOC, TX_TIME);
-			STD.TEXTIO.write(TX_LOC,string'(",CFG_PROG_B2,"));
-			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, CFG_PROG_B2);
-			STD.TEXTIO.write(TX_LOC, string'("]"));
-			TX_STR(TX_LOC.all'range) := TX_LOC.all;
-			STD.TEXTIO.writeline(results, TX_LOC);
-			STD.TEXTIO.Deallocate(TX_LOC);
-		END;
-
-		PROCEDURE ANNOTATE_CFG_PROG_B3(
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
-			STD.TEXTIO.write(TX_LOC, TX_TIME);
-			STD.TEXTIO.write(TX_LOC,string'(",CFG_PROG_B3,"));
-			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, CFG_PROG_B3);
-			STD.TEXTIO.write(TX_LOC, string'("]"));
-			TX_STR(TX_LOC.all'range) := TX_LOC.all;
-			STD.TEXTIO.writeline(results, TX_LOC);
-			STD.TEXTIO.Deallocate(TX_LOC);
-		END;
-
-		PROCEDURE ANNOTATE_CFG_CS_B0(
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
-			STD.TEXTIO.write(TX_LOC, TX_TIME);
-			STD.TEXTIO.write(TX_LOC,string'(",CFG_CS_B0,"));
-			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, CFG_CS_B0);
-			STD.TEXTIO.write(TX_LOC, string'("]"));
-			TX_STR(TX_LOC.all'range) := TX_LOC.all;
-			STD.TEXTIO.writeline(results, TX_LOC);
-			STD.TEXTIO.Deallocate(TX_LOC);
-		END;
-
-		PROCEDURE ANNOTATE_CFG_CS_B1(
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
-			STD.TEXTIO.write(TX_LOC, TX_TIME);
-			STD.TEXTIO.write(TX_LOC,string'(",CFG_CS_B1,"));
-			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, CFG_CS_B1);
-			STD.TEXTIO.write(TX_LOC, string'("]"));
-			TX_STR(TX_LOC.all'range) := TX_LOC.all;
-			STD.TEXTIO.writeline(results, TX_LOC);
-			STD.TEXTIO.Deallocate(TX_LOC);
-		END;
-
-		PROCEDURE ANNOTATE_CFG_CS_B2(
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
-			STD.TEXTIO.write(TX_LOC, TX_TIME);
-			STD.TEXTIO.write(TX_LOC,string'(",CFG_CS_B2,"));
-			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, CFG_CS_B2);
-			STD.TEXTIO.write(TX_LOC, string'("]"));
-			TX_STR(TX_LOC.all'range) := TX_LOC.all;
-			STD.TEXTIO.writeline(results, TX_LOC);
-			STD.TEXTIO.Deallocate(TX_LOC);
-		END;
-
-		PROCEDURE ANNOTATE_CFG_CS_B3(
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
-			STD.TEXTIO.write(TX_LOC, TX_TIME);
-			STD.TEXTIO.write(TX_LOC,string'(",CFG_CS_B3,"));
-			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, CFG_CS_B3);
-			STD.TEXTIO.write(TX_LOC, string'("]"));
-			TX_STR(TX_LOC.all'range) := TX_LOC.all;
-			STD.TEXTIO.writeline(results, TX_LOC);
-			STD.TEXTIO.Deallocate(TX_LOC);
-		END;
-
-		PROCEDURE ANNOTATE_CFG_RDWR_B(
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
-			STD.TEXTIO.write(TX_LOC, TX_TIME);
-			STD.TEXTIO.write(TX_LOC,string'(",CFG_RDWR_B,"));
-			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, CFG_RDWR_B);
-			STD.TEXTIO.write(TX_LOC, string'("]"));
-			TX_STR(TX_LOC.all'range) := TX_LOC.all;
-			STD.TEXTIO.writeline(results, TX_LOC);
-			STD.TEXTIO.Deallocate(TX_LOC);
-		END;
-
-	BEGIN
-		CLOCK_LOOP : LOOP
-		clk <= transport '0';
-		WAIT FOR 5 us;
-		TX_TIME := TX_TIME + 5;
-		clk <= transport '1';
-		WAIT FOR 5 us;
-		TX_TIME := TX_TIME + 5;
-		ANNOTATE_CFG_D(TX_TIME);
-		ANNOTATE_CFG_CCLK(TX_TIME);
-		ANNOTATE_CFG_PROG_B0(TX_TIME);
-		ANNOTATE_CFG_PROG_B1(TX_TIME);
-		ANNOTATE_CFG_PROG_B2(TX_TIME);
-		ANNOTATE_CFG_PROG_B3(TX_TIME);
-		ANNOTATE_CFG_CS_B0(TX_TIME);
-		ANNOTATE_CFG_CS_B1(TX_TIME);
-		ANNOTATE_CFG_CS_B2(TX_TIME);
-		ANNOTATE_CFG_CS_B3(TX_TIME);
-		ANNOTATE_CFG_RDWR_B(TX_TIME);
-		WAIT FOR 45 us;
-		TX_TIME := TX_TIME + 45;
-		clk <= transport '0';
-		WAIT FOR 45 us;
-		TX_TIME := TX_TIME + 45;
-		END LOOP CLOCK_LOOP;
-	END PROCESS;
-
-	PROCESS   -- Process for clk
-		VARIABLE TX_OUT : LINE;
-
-		BEGIN
-		-- --------------------
-		rst_n <= transport '0';
-		cmd_reg <= transport std_logic_vector'("000000000"); --0
-		data_reg <= transport std_logic_vector'("00000000000000000000000000000000"); --0
-		-- --------------------
-		WAIT FOR 300 us; -- Time=300 us
-		rst_n <= transport '1';
-		-- --------------------
-		WAIT FOR 500 us; -- Time=800 us
-		cmd_reg <= transport std_logic_vector'("011110001"); --F1
-		-- --------------------
-		WAIT FOR 400 us; -- Time=1200 us
-		cmd_reg <= transport std_logic_vector'("011100001"); --E1
-		-- --------------------
-		WAIT FOR 400 us; -- Time=1600 us
-		cmd_reg <= transport std_logic_vector'("011110001"); --F1
-		-- --------------------
-		WAIT FOR 800 us; -- Time=2400 us
-		data_reg <= transport std_logic_vector'("10000000100000001000000011111111"); --808080FF
-		-- --------------------
-		WAIT FOR 700 us; -- Time=3100 us
-		cmd_reg <= transport std_logic_vector'("111110001"); --1F1
-		-- --------------------
-		WAIT FOR 3355 us; -- Time=6455 us
-		-- --------------------
-
-		STD.TEXTIO.write(TX_OUT, string'("Total[]"));
-		STD.TEXTIO.writeline(results, TX_OUT);
-		ASSERT (FALSE) REPORT
-			"Success! Simulation for annotation completed"
-			SEVERITY FAILURE;
-	END PROCESS;
-END testbench_arch;
-
-CONFIGURATION pfpga_config_cfg OF sim IS
-	FOR testbench_arch
-	END FOR;
-END pfpga_config_cfg;
+Sat May 30 19:29:58 JST 2009
+/EQNINJ
+/IPSET xi_0,x[][0],float,26,16
+/IPSET xi_1,x[][1],float,26,16
+/IPSET xi_2,x[][2],float,26,16
+/IPSET vi_0,v[][0],float,26,16
+/IPSET vi_1,v[][1],float,26,16
+/IPSET vi_2,v[][2],float,26,16
+/JPSET xj_0,0,0,25,x[][0],float,26,16
+/JPSET xj_1,0,26,51,x[][1],float,26,16
+/JPSET xj_2,0,52,77,x[][2],float,26,16
+/JPSET vj_0,0,78,103,v[][0],float,26,16
+/JPSET vj_1,0,104,129,v[][1],float,26,16
+/JPSET vj_2,0,130,155,v[][2],float,26,16
+/JPSET mj,0,156,181,m[],float,26,16
+/FOSET rx,p[],fix,64,(1.0/pow(2.0,(double)31))
+/FOSET sx_0,a[][0],fix,64,(1.0/pow(2.0,(double)31))
+/FOSET sx_1,a[][1],fix,64,(1.0/pow(2.0,(double)31))
+/FOSET sx_2,a[][2],fix,64,(1.0/pow(2.0,(double)31))
+/FOSET tx_0,jk[][0],fix,64,(1.0/pow(2.0,(double)31))
+/FOSET tx_1,jk[][1],fix,64,(1.0/pow(2.0,(double)31))
+/FOSET tx_2,jk[][2],fix,64,(1.0/pow(2.0,(double)31))
+/NPIPE 1
+/NVMP 1
+void force(double x[][3], double v[][3], double m[], double p[], double a[][3], double jk[][3], int n){
+  pg_float_sub(xj_0,xi_0,dx_0,26,16,4,6)
+  pg_float_sub(xj_1,xi_1,dx_1,26,16,4,6)
+  pg_float_sub(xj_2,xi_2,dx_2,26,16,4,6)
+  pg_float_mult(dx_0,dx_0,dx2_0,26,16,2,6)
+  pg_float_mult(dx_1,dx_1,dx2_1,26,16,2,6)
+  pg_float_mult(dx_2,dx_2,dx2_2,26,16,2,6)
+  pg_float_unsigned_add(dx2_0,dx2_1,x2y2,26,16,4,6)
+  pg_float_unsigned_add(dx2_2r,x2y2,r2,26,16,4,6)
+  pg_float_sqrt(r2,r1,26,16,3,6)
+  pg_float_mult(r2r,r1,r3,26,16,2,6)
+  pg_float_mult(r3,r2r1,r5,26,16,2,6)
+  pg_float_recipro(r5,r5i,26,16,2,6)
+  pg_float_mult(r5i,mjr,mr5i,26,16,2,6)
+  pg_float_mult(mr5i,r2r2,mf,26,16,2,6)
+  pg_bits_regifile(r2,rx,26,14)
+  pg_float_expadd(mf,fs,31,26,16,1)
+  pg_float_mult(fs,dx_0r,fx_0,26,16,2,6)
+  pg_float_mult(fs,dx_1r,fx_1,26,16,2,6)
+  pg_float_mult(fs,dx_2r,fx_2,26,16,2,6)
+  pg_float_fixaccum(fx_0,sx_0,26,16,57,64,2,30,6)
+  pg_float_fixaccum(fx_1,sx_1,26,16,57,64,2,30,6)
+  pg_float_fixaccum(fx_2,sx_2,26,16,57,64,2,30,6)
+  pg_float_sub(vj_0,vi_0,dv_0,26,16,4,6)
+  pg_float_sub(vj_1,vi_1,dv_1,26,16,4,6)
+  pg_float_sub(vj_2,vi_2,dv_2,26,16,4,6)
+  pg_float_mult(fs,dv_0r,jk1_0,26,16,2,6)
+  pg_float_mult(fs,dv_1r,jk1_1,26,16,2,6)
+  pg_float_mult(fs,dv_2r,jk1_2,26,16,2,6)
+  pg_float_mult(dx_0,dv_0,xv_0,26,16,2,6)
+  pg_float_mult(dx_1,dv_1,xv_1,26,16,2,6)
+  pg_float_mult(dx_2,dv_2,xv_2,26,16,2,6)
+  pg_float_unsigned_add(xv_0,xv_1,xv1,26,16,4,6)
+  pg_float_unsigned_add(xv_2r,xv1,xv2,26,16,4,6)
+  pg_float_expadd(xv2,xv2x2,1,26,16,1)
+  pg_float_unsigned_add(xv2x2,xv2r,xv2x3,26,16,4,6)
+  pg_float_mult(mr5i,xv2x3r,jk2a,26,16,2,6)
+  pg_float_expadd(jk2a,jk2s,31,26,16,1)
+  pg_float_mult(jk2s,dx_0r1,jk2_0,26,16,2,6)
+  pg_float_mult(jk2s,dx_1r1,jk2_1,26,16,2,6)
+  pg_float_mult(jk2s,dx_2r1,jk2_2,26,16,2,6)
+  pg_float_sub(jk1_0,jk2_0,jk0_0,26,16,4,6)
+  pg_float_sub(jk1_1,jk2_1,jk0_1,26,16,4,6)
+  pg_float_sub(jk1_2,jk2_2,jk0_2,26,16,4,6)
+  pg_float_fixaccum(jk0_0,tx_0,26,16,57,64,2,34,6)
+  pg_float_fixaccum(jk0_1,tx_1,26,16,57,64,2,34,6)
+  pg_float_fixaccum(jk0_2,tx_2,26,16,57,64,2,34,6)
+  pg_pdelay(dx2_2,dx2_2r,26,4)
+  pg_pdelay(r2,r2r,26,3)
+  pg_pdelay(r2,r2r1,26,5)
+  pg_pdelay(mj,mjr,26,23)
+  pg_pdelay(r2,r2r2,26,11)
+  pg_pdelay(dv_1,dv_1r,26,24)
+  pg_pdelay(dv_0,dv_0r,26,24)
+  pg_pdelay(xv_2,xv_2r,26,4)
+  pg_pdelay(dv_2,dv_2r,26,24)
+  pg_pdelay(dx_0,dx_0r,26,24)
+  pg_pdelay(dx_1,dx_1r,26,24)
+  pg_pdelay(dx_2,dx_2r,26,24)
+  pg_pdelay(xv2,xv2r,26,1)
+  pg_pdelay(xv2x3,xv2x3r,26,6)
+  pg_pdelay(dx_1,dx_1r1,26,24)
+  pg_pdelay(dx_2,dx_2r1,26,24)
+  pg_pdelay(dx_0,dx_0r1,26,24)
+  pg_rundelay(36)
+}

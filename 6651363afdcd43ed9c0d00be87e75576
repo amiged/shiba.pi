@@ -1,25 +1,50 @@
-Sat Apr 18 19:29:30 JST 2009
-#!/usr/bin/env python3
-#Time-stamp: <2017-06-03 00:45:13 hamada>
-import cv2
-import glob
-import aieye_find
-from datetime import datetime
+Wed Jun 10 19:33:30 JST 2009
+-- Copyright 2004 Tsuyoshi Hamada
+--
+--
+--clk         __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __
+--[DMAR_ENABLE] _____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
+--en0                _____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
+--en1                     _____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
+--en2                          _____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
+--en3                               _____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
+--DBUS_HiZ            ~~~~~~~~~~~~~~\_________________________________________________/~~~~
 
-iflist = [] 
-for fname in aieye_find.find('../log.0/20170602/18/', 'sss_*.jpg'):
-    iflist.append(fname)
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
 
-iflist.sort()
-i = 0
-index = 0
+entity dmar_dbus_hiz is
+  port (
+    RST       : in std_logic;
+    CLK       : in std_logic;
+    ENABLE    : in std_logic;
+    DBUS_HiZ  : out std_logic :='1');
+end dmar_dbus_hiz;
 
-for fname in iflist:
-    fname_src = fname # fname.replace('../log/', "/mnt/data/work/bak/log/")
-    fname_dst = fname.replace('sss_', 'CanonG1X_')
-    if( i % 1 == 0):  # every 30 sec 
-#        cmd =  "ln -s " + fname_src + " " + "../conv/%08d.jpg" % (index)
-        cmd =  "mv " + fname_src + " " + fname_dst
-        print (cmd, "; echo '%d/%d: %s'; "%(i, len(iflist), fname_src) )
-        index += 1
-    i += 1
+architecture rtl of dmar_dbus_hiz is
+signal en0,en1,en2,en3 : std_logic :='0';
+begin
+
+  process(CLK) begin
+    if(CLK'event and CLK = '1') then
+      en3 <= en2;
+      en2 <= en1;
+      en1 <= en0;
+      en0 <= ENABLE;
+    end if;
+  end process;
+
+
+  process(RST,CLK,en2,en3) begin
+    if(RST='1') then
+      DBUS_HiZ <= '1';
+    elsif(CLK'event and CLK = '1') then
+     if( (en1='1') AND (en2='0') ) then
+       DBUS_HiZ <= '0';
+     elsif( (en2='0') AND (en3='1') ) then
+       DBUS_HiZ <= '1';
+     end if;
+    end if;
+  end process;
+
+end rtl;

@@ -1,292 +1,192 @@
-Thu May  7 19:34:11 JST 2009
-#!/usr/bin/env python3
-#Time-stamp: <2017-06-12 07:42:18 hamada>
-import cv2
-import urllib.request
-import numpy as np
-import argparse
-from datetime import datetime
-import mkdir
-import math
+Sun Jun 14 19:29:56 JST 2009
+/*
+ * progrape.h -- the device driver header for PROGRAPE-4
+ *
+ * Copyright (C) 2006-2007 Tsuyoshi Hamada.
+ *                                All rights reserved.
+ *
+ * The source code in this file can be freely used, 
+ * so long as an acknowledgment from Tsuyoshi Hamada.
+ * 
+ * The source code in this file can be modified, branched, and
+ * redistributed in source or binary form in the following situation.  
+ * If you want to modify, redistribute or make another version based on
+ * this source code, you should get distinct agreement from Tsuyoshi
+ * Hamada.  The modified, redistributed or branched(another version based
+ * on this source code) source code should include the citation that the
+ * code comes from the "progrape.c by Tsuyoshi Hamada".
+ * 
+ * No warranty is attached; 
+ * I cannot take responsibility for errors or fitness for use.
+ *
+ */
+#ifndef _PROGRAPE_H_
+#define _PROGRAPE_H_
 
-class DroidCam(object):
-    def __init__(self):
-        self.droidapp = 'IP Webcam'
-        self.ipadr  = '192.168.43.1'
-#        self.ipadr  = '133.45.9.162'
-        self.port  = '3389'
-        self.stream = -1
-        self.URL = -1
-        self.image = -1
-    def get_stream(self):
-        stub = ''
-        if (self.droidapp == 'DroidCam'):
-            stub = '/mjpegfeed?960x720'
-        elif (self.droidapp == 'IP Webcam'):
-            stub = '/video?dummy=param.mjpg'
-        else:
-            stub = '/mjpegfeed?640x480'
+#include <linux/ioctl.h> /* for the _IOW etc */
 
-        url = 'http://'+self.ipadr+':'+self.port + stub
+// -------------------------------------------------------------------- for DEBUG
+/*
+ * Macros to help debugging
+ */
+#undef PDEBUG             /* undef it, just in case */
+#ifdef DEBUG
+#  ifdef __KERNEL__
+     /* This one if debugging is on, and kernel space */
+#    define PDEBUG(fmt, args...) printk( KERN_DEBUG "progrape: " fmt, ## args)
+#  else
+     /* This one for user space */
+#    define PDEBUG(fmt, args...) fprintf(stderr, fmt, ## args)
+#  endif
+#else
+#  define PDEBUG(fmt, args...) /* not debugging: nothing */
+#endif
 
-        print ('URL: ', url)
-        self.URL = url
-        self.stream = urllib.request.urlopen(self.URL)
-        return (self.stream)
+#undef _PDEBUG
+#define _PDEBUG(fmt, args...) /* nothing: it's a placeholder */
+// -------------------------------------------------------------------- for DEBUG. 
 
-    def get_stream_jpg(self):
-        stub = '/shot.jpg'
-        url = 'http://'+self.ipadr+':'+self.port + stub
-        print ('URL: ', url)
-        self.URL = url
-        self.stream = urllib.request.urlopen(self.URL)
-        return (self.stream)
+/* 
+ * IOCTL definitions
+ */
 
-    def get_jpg(self):
-        stub = '/shot.jpg'
-        url = 'http://'+self.ipadr+':'+self.port + stub
-        urlObj = urllib.request.urlopen(url)
-        #print ('URL: ', url, urlObj.getcode())
-        ofname = '/dev/shm/now.jpg'
-        with open(ofname, "wb") as file:
-            file.write(urlObj.read())
-        self.image = cv2.imread(ofname)
-        return (self.image)
-        
-    def set_focus(self):
-        stub = '/focus'
-        url = 'http://'+self.ipadr+':'+self.port + stub
-        print ('focus: ', url)
-        urlObj = urllib.request.urlopen(url)
-        
+#define PG_IOC_MAGIC (7)
+/*
+ * SP : Set by Pointer
+ * SV : Set by Value
+ * GP : Get by Pointer
+ * GV : Get by Value
+ */
+#define IOC_SV_MMAPMODE  _IOW(PG_IOC_MAGIC,  1, unsigned)
+#define IOC_GV_REG_ADR   _IOR(PG_IOC_MAGIC,  2, unsigned long)
+#define IOC_GV_REG_SIZE  _IOR(PG_IOC_MAGIC,  3, unsigned long)
+#define IOC_GV_MEM_ADR   _IOR(PG_IOC_MAGIC,  4, unsigned long)
+#define IOC_GV_MEM_SIZE  _IOR(PG_IOC_MAGIC,  5, unsigned long)
+#define IOC_SP_FPGA_INFO _IOW(PG_IOC_MAGIC,  6, char* )
+#define IOC_GP_FPGA_INFO _IOR(PG_IOC_MAGIC,  7, char* )
+#define IOC_GV_PCICFG    _IOR(PG_IOC_MAGIC,  8, unsigned long)
+#define IOC_SV_DMAW      _IOW(PG_IOC_MAGIC,  9, unsigned long)
+#define IOC_SV_DMAR      _IOW(PG_IOC_MAGIC, 10, unsigned long)
+#define IOC_GV_DMA_SIZE  _IOR(PG_IOC_MAGIC, 11, unsigned long)
 
-class State(object):
-    def __init__(self):
-        self.is_record = False
-        self.drawing = False
-        self.moving = False
-        self.posi0 = [-1,-1]
-        self.posi1 = [-1,-1]
-        self.posi2 = [-1,-1]
-        self.image = -1
-        self.image_size = [-1, -1] # [height, width]
-        self.image_orig = -1
-        self.class_num = 777
-        self.image_num = 0
+#define PG_IOC_MAXNR (11)
 
-    def draw_rect(self):
-        # print ("posi0, posi1: ", self.posi0, self.posi1)
-        cv2.rectangle(self.image, (self.posi0[0], self.posi0[1]), (self.posi1[0], self.posi1[1]), (0, 255, 0), 1)
+/*
+ * modes for pg_mmap
+ * "pcidev->mmap_mode" has one of these mode.
+ */
+enum {
+  MMAP_REG_PIOW = 0,      // bar0 for PG4, 0
+  MMAP_REG_PIOR,          // bar0 for PG4, 1
+  MMAP_REG_PIORW,         // bar0 for PG4, 2
+  MMAP_MEM_PIOW,          // bar1 for PG4, 3
+  MMAP_MEM_PIOR,          // bar1 for PG4, 4
+  MMAP_MEM_PIORW,         // bar1 for PG4, 5
+  MMAP_MEM_PIOW_PREFETCH, // bar1 for PG4, 6
+  MMAP_BUF_DMAW,          // DMABUF for Host->Device direction, 7
+  MMAP_BUF_DMAR,          // DMABUF for Device->Host direction, 8
+};
 
-    def draw_text(self):
-        if(self.is_record):
-            font = cv2.FONT_HERSHEY_TRIPLEX # cv2.FONT_HERSHEY_PLAIN
-            font_size = 0.8
-            text = "<<%d>>"% (self.image_num)
-            color = (0x0, 0x0, 0xBF)
-            px = int(self.image_size[1]/2)
-            py = 30
-            cv2.putText(self.image, text,(px, py), font, font_size, color)
-
-state = State()
-
-def mouse_event(event,x,y,flags,param):
-    global state
-
-    if x < 0: x = 0
-    if y < 0: y = 0
-    if x >= state.image_size[1]: x = state.image_size[1] - 1
-    if y >= state.image_size[0]: y = state.image_size[0] - 1
-
-    if event == (cv2.EVENT_LBUTTONDOWN):
-        state.posi0[0] = x0 = state.posi1[0]
-        state.posi0[1] = y0 = state.posi1[1]
-        state.posi1[0] = x
-        state.posi1[1] = y
-        print ("Rect: (%d, %d) - (%d, %d)"%(x0, y0, x, y) )
-
-    if event == (cv2.EVENT_RBUTTONDOWN): 
-        state.moving = True
-        state.posi2[0] = x
-        state.posi2[1] = y
-
-    if event == (cv2.EVENT_RBUTTONUP): 
-        state.moving = False
-        state.posi2[0] = x
-        state.posi2[1] = y
-    
-
-    if event == (cv2.EVENT_MOUSEMOVE):
-        if state.moving == True:
-            width  = abs(state.posi0[0] - state.posi1[0])
-            height = abs(state.posi0[1] - state.posi1[1])
-            x0 = x - int(width/2)
-            x1 = x + int(width/2)
-            y0 = y - int(height/2)
-            y1 = y + int(height/2)
-
-            x_min = min(x0, x1)
-            x_max = max(x0, x1)
-            y_min = min(y0, y1)
-            y_max = max(y0, y1)
-
-            if x_min < 0: x_min = 0
-            if y_min < 0: y_min = 0
-            if x_max >= state.image_size[1]: x_max = state.image_size[1] - 1
-            if y_max >= state.image_size[0]: y_max = state.image_size[0] - 1
-
-            state.posi0[0] = x_min
-            state.posi0[1] = y_min
-            state.posi1[0] = x_max
-            state.posi1[1] = y_max
+#define NB_FPGA_INFO (256)  // Length(Bytes) of the FPGA information
 
 
-#------------------------------------------------------------------------ save_data
-def save_data_bbox(image_dbg, image_orig, fnum):
-    global state
-    class_num = state.class_num
-    posi0 = state.posi0
-    posi1 = state.posi1
-    basedir = '../data4bbox/'
-    fname_body = "image_%08d" % fnum
-
-    # save image_orig (for Images/)
-    fname = fname_body + ".jpg"
-    basedir_images = basedir+"Images/%03d/"%(class_num)
-    ofname_images = mkdir.get_filename_frame_simple(basedir_images , fname)
-    print (ofname_images)
-    cv2.imwrite(ofname_images, image_orig)
-
-    # save image_dbg (for Debug/)
-    fname = fname_body + ".jpg"
-    basedir_dbg = basedir+"Debug/%03d/"%(class_num)
-    ofname_dbg  = mkdir.get_filename_frame_simple(basedir_dbg , fname)
-    print (ofname_dbg)
-    cv2.imwrite(ofname_dbg, image_dbg)
-
-    # save labes
-    fname = fname_body + ".txt"
-    basedir_labels = basedir+"Labels/%03d/"%(class_num)
-    ofname_labels  = mkdir.get_filename_frame_simple(basedir_labels , fname)
-    print (ofname_labels)
-    bbox_posi = []
-    bbox_posi.append(min(posi0[0], posi1[0]))
-    bbox_posi.append(min(posi0[1], posi1[1]))
-    bbox_posi.append(max(posi0[0], posi1[0]))
-    bbox_posi.append(max(posi0[1], posi1[1]))
-    with open(ofname_labels, "w") as file:
-        file.write("1\n")
-        file.write("%d %d %d %d\n" % (tuple(bbox_posi)))
-
-def save_data_darknet(image_dbg, image_orig, fnum):
-    global state
-    class_num = state.class_num
-    posi0 = state.posi0
-    posi1 = state.posi1
-    basedir = '../data4darknet/'
-    fname_body = "image_%08d" % fnum
-
-    # save image_orig (for Images/)
-    fname = fname_body + ".jpg"
-    basedir_images = basedir+"images/%03d/"%(class_num)
-    ofname_images = mkdir.get_filename_frame_simple(basedir_images , fname)
-    #print (ofname_images)
-    cv2.imwrite(ofname_images, image_orig)
-
-    # save image_dbg (for Debug/)
-    fname = fname_body + ".jpg"
-    basedir_dbg = basedir+"debug/%03d/"%(class_num)
-    ofname_dbg  = mkdir.get_filename_frame_simple(basedir_dbg , fname)
-    #print (ofname_dbg)
-    cv2.imwrite(ofname_dbg, image_dbg)
-
-    # save labes
-    fname = fname_body + ".txt"
-    basedir_labels = basedir+"labels/%03d/"%(class_num)
-    ofname_labels  = mkdir.get_filename_frame_simple(basedir_labels , fname)
-    print (ofname_labels)
-    bbox_posi = []
-    bbox_posi.append(min(posi0[0], posi1[0]))
-    bbox_posi.append(min(posi0[1], posi1[1]))
-    bbox_posi.append(max(posi0[0], posi1[0]))
-    bbox_posi.append(max(posi0[1], posi1[1]))
-    
-    label_format = 'BBox'
-    label_format = 'darknet'
-
-    if label_format == 'BBox': 
-        with open(ofname_labels, "w") as file:
-            file.write("1\n")
-            file.write("%d %d %d %d\n" % (tuple(bbox_posi)))
-
-    if label_format == 'darknet': 
-        img_h, img_w = image_orig.shape[:2]
-        dh = float(img_h)
-        dw = float(img_w)
-        x0 = bbox_posi[0]
-        y0 = bbox_posi[1]
-        x1 = bbox_posi[2]
-        y1 = bbox_posi[3]
-        dnet_x = (x0 + x1)/(2.0*dw)
-        dnet_y = (y0 + y1)/(2.0*dh)
-        dnet_w = (x1 - x0)/dw
-        dnet_h = (y1 - y0)/dh
-        with open(ofname_labels, "w") as file:
-            file.write("0 %1.17f %1.17f %1.17f %1.17f\n" % (dnet_x, dnet_y, dnet_w, dnet_h))
+/* 
+ * IFPGA register definitions
+ */
+#define REG_PFPGA_RST         (0x04)
+#define REG_INT_STAT          (0x10)
+#define REG_INT_MASK          (0x14)
+#define REG_DMA_PCI_ADRS      (0x20)
+#define REG_DMA_LOCAL_ADRS    (0x24)
+#define REG_DMA_COUNT         (0x28)
+#define REG_DMA_CTRL          (0x2C)
+#define REG_DMA_INTERVAL      (0x30)
+#define REG_DMA_STAT          (0x34)
 
 
-def save_data(image_dbg, image_orig, fnum, label_format='darknet'):
-    if False:                      save_data_bbox(image_dbg, image_orig, fnum)
-    if label_format == 'darknet': save_data_darknet(image_dbg, image_orig, fnum)
+#ifdef __KERNEL__
+// -------------------------------------------------------------------- Private Members
+#include <linux/cdev.h>
+#include <asm/semaphore.h> // struct semaphore
+#include <linux/wait.h>    // wait_queue_head_t
 
-#------------------------------------------------------------------------ save_data./
+struct pg_dev {
+  struct pci_dev *pcidev;  // only for my debugging. Don't use it.
+  unsigned long *buf_dmar; // Kernel logical address     ,also called CPU address
+  unsigned long *buf_dmaw; // Kernel logical address     ,also called CPU address
+  dma_addr_t buf_dmar_pa;  // bus address (type) for DMA ,also called physical address
+  dma_addr_t buf_dmaw_pa;  // bus address (type) for DMA ,also called physical address
+  unsigned long pci_reg_adr;
+  unsigned long pci_reg_size;
+  unsigned long pci_reg_flag;
+  unsigned long pci_mem_adr;
+  unsigned long pci_mem_size;
+  unsigned long pci_mem_flag;  // IORESOURCE_{IO,MEM,PREFETCH,READONLY} @<linux/ioport.h>
+  unsigned long pci_irq_num;
+  unsigned long mmap_mode;
+  wait_queue_head_t wq;        // wait queue for interrupt handler -> tasklet in future
+  unsigned long wq_count;      // wait counter for interrupt handler
+  struct semaphore sem;        // mutual exclusion semaphore
+  struct semaphore sem_open;   // lock device while a person is opening it.
+  unsigned long ntimes_open;   // the number of times for pg_open()
+  struct cdev cdev;	       // Char device structure
+  char fpga_info[NB_FPGA_INFO];// text for FPGA information (for bitfile)
+};
 
+#ifndef PROGRAPE_MAJOR
+#    define PROGRAPE_MAJOR 0  // dynamically allocated if 0
+#endif 
 
-if (__name__ == '__main__'):
+#ifndef PROGRAPE_MAJOR
+#    define PROGRAPE_MAJOR 0  // dynamically allocated if 0
+#endif 
 
-    droidcam = DroidCam()
-#    stream = droidcam.get_stream()
+// Number of maximum character device
+#ifndef PROGRAPE_NR_DEVS
+#    define PROGRAPE_NR_DEVS 1
+#endif 
 
-    parser = argparse.ArgumentParser(description = "description goes here")
-    parser.add_argument("--devid", type=int, help = "set device id", required=False)
-    args = parser.parse_args()
-    devid = 0
-    if args.devid:
-        devid = int(args.devid)
-        print ("set devid = ", devid)
-
-    while True:
-        frame = droidcam.get_jpg()
-        state.image_orig = frame.copy()
-        state.image      = frame.copy()
-        state.image_size[0], state.image_size[1] = frame.shape[:2]
-        state.draw_rect()
-        state.draw_text()
-        cv2.imshow('droidcam',state.image)
-        cv2.setMouseCallback("droidcam", mouse_event)
-        tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S_%f')
-        if(state.is_record):
-            if False:
-                basedir = '../log.%d/'% (devid)
-                ofname = mkdir.get_filename_frame(basedir, tnow)
-                cv2.imwrite(ofname, state.image)
-                print(ofname, "devid = %d, image_num = %d"%(devid, state.image_num))
-                tnow0 = tnow
-            save_data(state.image, state.image_orig, state.image_num)
-            state.image_num += 1
-
-        key = cv2.waitKey(1) & 0xFF
-        if key == ord('q'): break
-        if ( (key == ord(' ')) or 
-             (key == 34) or # Muhenkan
-             (key == 35) or # Henkan
-             (key == 39) or # katakana
-             (key == 10)    # Enter
-        ):
-            state.is_record = not (state.is_record)
-        if key == ord('f'): droidcam.set_focus()
+// -------------------------------------------------------------------- Private Members.
+#endif
 
 
-    cv2.destroyAllWindows()
-    print("Done.")
+// for the different configurable parameters
+extern int pg_major;
+extern int pg_minor;
+extern int pg_nr_devs;
 
+// Prototyepes for shared functions
+int check_license(void);
+int get_license(void);
+
+
+// --- ISA bridge: Advanced Micro Devices [AMD] AMD-8111 LPC (rev 05)
+#undef PCI_VENDOR_ID_PG
+#undef PCI_DEVICE_ID_PG
+#undef PCI_REVISION_ID_PG
+#define PCI_VENDOR_ID_PG   (0x1022)
+#define PCI_DEVICE_ID_PG   (0x7468)
+#define PCI_REVISION_ID_PG (0x05)
+
+// --- PCI bridge: Advanced Micro Devices [AMD] AMD-8131 PCI-X Bridge (rev 12)
+#undef PCI_VENDOR_ID_PG
+#undef PCI_DEVICE_ID_PG
+#undef PCI_REVISION_ID_PG
+#define PCI_VENDOR_ID_PG   (0x1022)
+#define PCI_DEVICE_ID_PG   (0x7450)
+#define PCI_REVISION_ID_PG (0x12)
+
+// --- PROGRAPE-4 
+#undef PCI_VENDOR_ID_PG
+#undef PCI_DEVICE_ID_PG
+#undef PCI_REVISION_ID_PG
+#define PCI_VENDOR_ID_PG   (0x1679)
+#define PCI_DEVICE_ID_PG   (0x0005)
+#define PCI_REVISION_ID_PG (0x00)
+
+
+#define PG_DMA_BUFSIZE (0x1<<16) // 64 KB : IFPGA Block-RAM size 
+//#define PG_DMA_BUFSIZE (0x1<<12) // 4 KB : IFPGA Block-RAM size 
+#define PG_PCITRANS_64BIT (1)    // 1: 64-bit / 0: 32-bit
+
+#endif // _PROGRAPE_H_

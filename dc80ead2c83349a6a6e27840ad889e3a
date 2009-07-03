@@ -1,53 +1,96 @@
-Mon Jun 29 19:49:39 JST 2009
-info x 45 510 0 0 0 0 0 0 0 0 0 0 0 0 0 0 VHDL
-col x 292 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-radix x 16 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-entity name 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 pfpga_config
-term mark 255 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-vlib save 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 library ieee;
-use ieee.std_logic_1164.all;
-use ieee.std_logic_arith.all;
-use ieee.std_logic_unsigned.all;
-
-var add 1 0 0 226 12 0 292 100 50 50 5 5 0 0 0 0 clkInstd_logicRISING_EDGEclk
-var add 2 0 0 162 13 0 276 100 50 50 5 5 0 0 0 0 rst_nInstd_logicRISING_EDGEclk
-var add 3 8 0 164 14 0 276 100 50 50 5 5 0 0 0 0 cmd_regInstd_logic_vectorRISING_EDGEclk
-var add 4 31 0 164 15 0 276 100 50 50 5 5 0 0 0 0 data_regInstd_logic_vectorRISING_EDGEclk
-var add 5 7 0 164 17 0 276 100 50 50 5 5 0 0 0 0 CFG_DOutstd_logic_vectorRISING_EDGEclk
-var add 6 0 0 162 18 0 276 100 50 50 5 5 0 0 0 0 CFG_CCLKOutstd_logicRISING_EDGEclk
-var add 7 0 0 162 19 0 276 100 50 50 5 5 0 0 0 0 CFG_PROG_B0Outstd_logicRISING_EDGEclk
-var add 8 0 0 162 20 0 276 100 50 50 5 5 0 0 0 0 CFG_PROG_B1Outstd_logicRISING_EDGEclk
-var add 9 0 0 162 21 0 276 100 50 50 5 5 0 0 0 0 CFG_PROG_B2Outstd_logicRISING_EDGEclk
-var add 10 0 0 162 22 0 276 100 50 50 5 5 0 0 0 0 CFG_PROG_B3Outstd_logicRISING_EDGEclk
-var add 11 0 0 162 23 0 276 100 50 50 5 5 0 0 0 0 CFG_CS_B0Outstd_logicRISING_EDGEclk
-var add 12 0 0 162 24 0 276 100 50 50 5 5 0 0 0 0 CFG_CS_B1Outstd_logicRISING_EDGEclk
-var add 13 0 0 162 25 0 276 100 50 50 5 5 0 0 0 0 CFG_CS_B2Outstd_logicRISING_EDGEclk
-var add 14 0 0 162 26 0 276 100 50 50 5 5 0 0 0 0 CFG_CS_B3Outstd_logicRISING_EDGEclk
-var add 15 0 0 162 27 0 276 100 50 50 5 5 0 0 0 0 CFG_RDWR_BOutstd_logicRISING_EDGEclk
-vdone xxx 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-npos xxx 137 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-cell fill 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-cell fill 2 12 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
-cell fill 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 000000000
-cell fill 3 32 0 0 0 0 0 0 0 0 0 0 0 0 0 0 011110001
-cell fill 3 48 0 0 0 0 0 0 0 0 0 0 0 0 0 0 011100001
-cell fill 3 64 0 0 0 0 0 0 0 0 0 0 0 0 0 0 011110001
-cell fill 3 124 0 0 0 0 0 0 0 0 0 0 0 0 0 0 111110001
-cell fill 4 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 00000000000000000000000000000000
-cell fill 4 96 0 0 0 0 0 0 0 0 0 0 0 0 0 0 10000000100000001000000011111111
-time info 50 50 5 5 50 50 1 1 0 0 0 0 0 0 0 0 usclk
-font save -14 0 400 49 0 0 0 0 0 0 0 0 0 0 0 0 Times New Roman
-src mod 0 261533364 29673166 0 0 0 0 0 0 0 0 0 0 0 0 0 pfpga_config.vhd
-utd true 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-cellenab on 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-grid on 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-com add 1 1 0 169 17 0 -67 0 0 0 0 0 0 0 0 0 Waveform created by
-HDL Bencher 6.1i
-Source = pfpga_config.vhd
-Wed Nov 10 11:36:42 2004
-type info 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 std_logicBITDOWNTO
-type info 31 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 std_logic_vectorVECTORDOWNTO
-opt vhdl87 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-NumClocks x 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-clock_1 name 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 clk
-Zoom_level x 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1.00000000000000
+Fri Jul  3 19:43:26 JST 2009
+//-----------------------------------------------------------------------------
+// hermite.C
+// Code: Standard 4th order Hermite integrator with constant time step
+// Ref.: J. Makino, S. J. Aarseth, PASJ 44, 141 (1992)
+// Author: Andreas Ernst Jan, 2006
+// Modify: Tsuyoshi Hamada, Nov, 2006
+//-----------------------------------------------------------------------------
+#include  <iostream>
+#include  <cmath>
+#include  <cstdlib>
+#include  <iomanip> // cout << setw() << setprecision() 
+using namespace std;
+
+extern "C" void  force(double x[][3], double v[][3], double m[], double p[], double a[][3], double j[][3], int n);
+extern "C" void _force(double x[][3], double v[][3], double m[], double p[], double a[][3], double j[][3], int n);
+
+extern "C" void debug_position_snap(double x[][3], double Gflops, int n, int nstep);
+
+
+// Calculate energy
+
+double energy(double m[], double r[][3], double v[][3], double p[], int n) {
+  double ekin = 0, epot = 0;
+  for (int i = 0; i < n; i++) {
+    epot -= 0.5 * m[i] * p[i];
+    for (int k = 0; k < 3; k++) ekin += 0.5 * m[i] * v[i][k] * v[i][k];
+  }
+  return ekin + epot;
+}
+
+int main(int argc, char *argv[]) {
+
+// Read initial conditions from stdin, declaration of variables
+
+  if (argc < 3 ) {
+    cout << "Usage: hermite <dt> <t_end> <dt_opt>" << endl;
+    return 0;
+  }
+
+  double dt = atof(argv[1]); // time step
+  double dt2 = dt*dt;
+  double dt3 = dt2*dt;
+  double dt4 = dt2*dt2;
+  double dt5 = dt4*dt;
+  double t_end = atof(argv[2]);
+  double dt_opt = atof(argv[3]);
+  double t_opt = 0.0;
+
+  int n;
+  cin >> n;
+
+  double t;
+  cin >> t;
+
+  double * m = new double[n];
+  double (* r)[3] = new double[n][3];
+  double (* v)[3] = new double[n][3];
+
+  double * p = new double[n];
+  double (* a)[3] = new double[n][3];
+  double (* jk)[3] = new double[n][3];
+
+  double * _p = new double[n];
+  double (* _a)[3] = new double[n][3];
+  double (* _jk)[3] = new double[n][3];
+
+
+  for (int i = 0; i < n ; i++){
+    cin >> m[i];
+    for (int k = 0; k < 3; k++) cin >> r[i][k];
+    for (int k = 0; k < 3; k++) cin >> v[i][k];
+  }
+  
+  _force(r, v, m, _p, _a, _jk, n);
+   force(r, v, m,  p,  a,  jk, n);
+
+
+  for (int i = 0; i < n ; i++){
+    double err_p, err_a[3], err_jk[3];
+    double rad;
+    rad = sqrt(r[i][0]*r[i][0]+r[i][1]*r[i][1]+r[i][2]*r[i][2]);
+
+    err_p = fabs(p[i]-_p[i])/_p[i];
+
+    for (int k = 0; k < 3; k++){
+      err_a[k]  = fabs(a[i][k]  - _a[i][k])  / _a[i][k];
+      err_jk[k] = fabs(jk[i][k] - _jk[i][k]) / _jk[i][k];
+    }
+    
+    for (int k = 0; k < 3; k++) cout << rad << "\t" << err_a[k] << endl;
+
+  }
+  
+  return 0;
+}

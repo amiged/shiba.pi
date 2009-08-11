@@ -1,59 +1,49 @@
-Mon Aug  3 19:43:03 JST 2009
-//-----------------------------------------------------------------------------
-// mk_eight.C:  prints initial conditions for the figure eight
-//              of the three-body problem
-//-----------------------------------------------------------------------------
-#include  <iostream>
-using namespace std;
+Tue Aug 11 19:29:00 JST 2009
+//Time-stamp: <2006-09-07 13:50:20 hamada>
 
-typedef double  real;                      // "real" as a general name for the
-                                           // standard floating-point data type
-#define  NDIM     3                        // number of spatial dimensions
+/NPIPE 1;
 
-int main()
-{
-    const int n = 3;           // number of particles
-    const real t = 0;          // time
-    real r[n][NDIM];           // r[i][k] : position component k for particle i
-    real v[n][NDIM];           // v[i][k] : velocity component k for particle i
-    real m[n];                 // m[i] : mass for particle i
+#define NPOS 32
+#define NLOG 17
+#define NMAN 8
+#define NCUT 6
+#define NFOR 57
+#define NACC 64
+#define xsize (2.0)
+#define mmin  (1.0e-2)
+#define xscale (pow(2.0,(double)NPOS)/xsize)
+#define mscale (pow(2.0,95.38)/mmin)
+#define escale (xscale*xscale)
 
-    m[0] = 1;
-    m[1] = 1;
-    m[2] = 1;
+#define NEXAD -31
+#define fshift pow(2.0,-1.0*(double)NEXAD)
+#define fscale (-xscale*xscale*fshift/mscale)
 
-    r[0][0] = 0.9700436;
-    r[0][1] = -0.24308753;
-    r[0][2] = 0;
-    v[0][0] = 0.466203685;
-    v[0][1] = 0.43236573;
-    v[0][2] = 0;
+/MEM xj[3] <= x[][] : fix(NPOS);
+/MEM mj    <= m[]   : log(NLOG,NMAN);
+/REG xi[3] <= x[][] : fix(NPOS);
+/REG ieps2 <= eps2  : log(NLOG,NMAN);
+/REG sx[3] => a[][] : fix(NACC);
 
-    r[1][0] = -r[0][0];
-    r[1][1] = -r[0][1];
-    r[1][2] = -r[0][2];
-    v[1][0] = v[0][0];
-    v[1][1] = v[0][1];
-    v[1][2] = v[0][2];
+/SCALE xj[3] : xscale;
+/SCALE mj    : mscale;
+/SCALE xi[3] : xscale;
+/SCALE ieps2 : escale;
+/SCALE sx[3] : fscale;
+/NVMP 1;
 
-    r[2][0] = 0;
-    r[2][1] = 0;
-    r[2][2] = 0;
-    v[2][0] = -2 * v[0][0];
-    v[2][1] = -2 * v[0][1];
-    v[2][2] = -2 * v[0][2];
+pg_fix_addsub(SUB,xi,xj,xij,           NPOS,           3);
+pg_conv_ftol(xij,dx,                   NPOS,NLOG,NMAN, 4);
+pg_log_shift(1,dx,x2,                  NLOG);
 
-    cout.precision(16);
+pg_log_unsigned_add_itp(x2[0],x2[1], x2y2,   NLOG,NMAN,9,NCUT);
+pg_log_unsigned_add_itp(x2[2],ieps2, z2e2,   NLOG,NMAN,9,NCUT);
+pg_log_unsigned_add_itp(x2y2,z2e2,   r2,     NLOG,NMAN,9,NCUT);
 
-    cout << n << endl;                      // first output line:  N
-    cout << t << endl;                      // second output line:  time
-    for (int i = 0; i < n; i++){
-        cout << m[i];                       // each next output line:
-        for (int k = 0; k < NDIM; k++)      //   m r_x r_y r_z v_x v_y v_z
-            cout << ' ' << r[i][k];
-        for (int k = 0; k < NDIM; k++)
-            cout << ' ' << v[i][k];
-        cout << endl;
-    }
-}
-//-----------------------------------------------------------------------------
+pg_log_shift(-1,r2,       r1,          NLOG);
+pg_log_muldiv(MUL,r2,r1,  r3,          NLOG,2);
+pg_log_muldiv(SDIV,mj,r3,  mf,         NLOG,2);
+pg_log_muldiv(MUL,mf,dx,  fx,          NLOG,2);
+pg_log_expadd(fx,fxs,                  NEXAD,NLOG,NMAN,1);
+pg_conv_ltof(fxs, ffx,                 NLOG,NMAN,NFOR,5);
+pg_fix_smaccum(ffx, sx,                NFOR,NACC,4);

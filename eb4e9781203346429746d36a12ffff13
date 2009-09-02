@@ -1,36 +1,50 @@
-Sat Aug 29 19:35:21 JST 2009
-#!/usr/bin/env python3
-import os
-from datetime import datetime
-import time
+Wed Sep  2 19:30:36 JST 2009
+#include <math.h>
+#define DIM (3)              /* ŸŒ³” */
+#define NMAX (65536)         /* Å‘å—±q” */
+//#define NTOTAL 1000      /* —±q” (NTOTAL <= NMAX) */
 
-# YYYYMMDD_HH_MM_SS
-def get_filename_frame(basedir, str_datetime):
-    cell = list(str_datetime)
-    str_YYYYMMDD = ''.join(cell[0:8])
-    str_HH = ''.join(cell[9:11])
-    str_MM = ''.join(cell[12:14])
-    str_SS = ''.join(cell[15:17])
-    dirname = basedir + str_YYYYMMDD + "/" + str_HH
-    if os.path.exists(dirname) != True:
-        os.makedirs(dirname)
-    ret = dirname + "/" + str_datetime+".jpg"
-    ret = ret.replace(' ','')
-    return ret
+//b3_force_sepaj4.c
+void b3_force_sepaj4(double x[][3],
+		     double m[],
+		     double eps2,
+		     double a[][3],
+		     int n);
 
+//pg_pipe.c
+void force_gravity_on_emulator(double x[][3],
+			       double m[],
+			       double eps2,
+			       double a[][3],
+			       int n);
 
-def get_filename_frame_simple(basedir, fname):
-    dirname = basedir
-    if os.path.exists(dirname) != True:
-        os.makedirs(dirname)
-    ret = dirname + fname
-    ret = ret.replace(' ','')
-    return ret
+//force_gravity_on_b3.c
+void force(double x[][3],
+	   double m[],
+	   double eps2,
+	   double a[][3],
+	   int n);
 
 
-if __name__ == '__main__':
-    while(True):
-        tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S')
-        fname = get_filename_frame('../work/', tnow)
-        print (fname)
-        time.sleep(0.5)
+//check_pg2emu.c
+void check_pg2emu(long long int a[][3],long long int a_pg2[3],int n);
+
+
+//
+void force_on_host(double x[][DIM], double m[], double eps2, double a[][DIM], int n);
+
+double energy(double m[], double x[][DIM], double v[][DIM], double eps2, int n);
+
+void leapflog(double dt,double x[][DIM],double v[][DIM],int n);
+void leapflog_half(double dt,double x[][DIM],double v[][DIM],int n);
+
+void debug_func_force(double x[][DIM],double m[], double eps2,double a[][DIM],int n);
+void debug_position(double x[][DIM], double dt, int n);
+
+void writelog(double m[], double x[][DIM], double v[][DIM], double eps2, int n);
+
+void init_particles(char* fname,
+		    int* npar,
+		    double mass[],
+		    double posi[][DIM],
+		    double veloc[][DIM]);

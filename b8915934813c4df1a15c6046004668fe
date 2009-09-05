@@ -1,45 +1,49 @@
-Sun Jun 28 19:36:44 JST 2009
-all:
-	./pycam.py |tee log.txt
+Sat Sep  5 19:27:30 JST 2009
+//Time-stamp: <2006-09-07 13:50:20 hamada>
 
+/NPIPE 1;
 
-clean:
-	rm -rf ../conv
-	mkdir ../conv
-	rm -f *~ .*~
-	rm -rf __pycache__
+#define NPOS 32
+#define NLOG 17
+#define NMAN 8
+#define NCUT 6
+#define NFOR 57
+#define NACC 64
+#define xsize (2.0)
+#define mmin  (1.0e-2)
+#define xscale (pow(2.0,(double)NPOS)/xsize)
+#define mscale (pow(2.0,95.38)/mmin)
+#define escale (xscale*xscale)
 
-c: clean
+#define NEXAD -31
+#define fshift pow(2.0,-1.0*(double)NEXAD)
+#define fscale (-xscale*xscale*fshift/mscale)
 
-conv:
-	rm -rf ../conv
-	mkdir ../conv
-	./gen_cmd.py > xxx
-	bash ./xxx
+/MEM xj[3] <= x[][] : fix(NPOS);
+/MEM mj    <= m[]   : log(NLOG,NMAN);
+/REG xi[3] <= x[][] : fix(NPOS);
+/REG ieps2 <= eps2  : log(NLOG,NMAN);
+/REG sx[3] => a[][] : fix(NACC);
 
+/SCALE xj[3] : xscale;
+/SCALE mj    : mscale;
+/SCALE xi[3] : xscale;
+/SCALE ieps2 : escale;
+/SCALE sx[3] : fscale;
+/NVMP 1;
 
-mov:
-	./mov.py 1 0
+pg_fix_addsub(SUB,xi,xj,xij,           NPOS,           3);
+pg_conv_ftol(xij,dx,                   NPOS,NLOG,NMAN, 4);
+pg_log_shift(1,dx,x2,                  NLOG);
 
+pg_log_unsigned_add_itp(x2[0],x2[1], x2y2,   NLOG,NMAN,9,NCUT);
+pg_log_unsigned_add_itp(x2[2],ieps2, z2e2,   NLOG,NMAN,9,NCUT);
+pg_log_unsigned_add_itp(x2y2,z2e2,   r2,     NLOG,NMAN,9,NCUT);
 
-0.mov: 
-	rm -f out.mp4
-	ffmpeg -r 1 -start_number 0 -i ../conv/%08d.jpg -vcodec libx264 -pix_fmt yuv420p -r 1 out.mp4
-
-r: run
-
-run:
-	./mpycam.py
-
-run3:
-	./pycam.py --devid=0 &
-	./pycam.py --devid=1 &
-	./pycam.py --devid=2 &
-
-kill:
-	killall python3
-	killall pycam.py
-
-clog: clean
-	rm -rf ../log* ../data4bbox ../data4darknet ../conv
-	rm -rf ./tmp.mp4
+pg_log_shift(-1,r2,       r1,          NLOG);
+pg_log_muldiv(MUL,r2,r1,  r3,          NLOG,2);
+pg_log_muldiv(SDIV,mj,r3,  mf,         NLOG,2);
+pg_log_muldiv(MUL,mf,dx,  fx,          NLOG,2);
+pg_log_expadd(fx,fxs,                  NEXAD,NLOG,NMAN,1);
+pg_conv_ltof(fxs, ffx,                 NLOG,NMAN,NFOR,5);
+pg_fix_smaccum(ffx, sx,                NFOR,NACC,4);

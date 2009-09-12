@@ -1,192 +1,387 @@
-Sun Jun 14 19:29:56 JST 2009
-/*
- * progrape.h -- the device driver header for PROGRAPE-4
- *
- * Copyright (C) 2006-2007 Tsuyoshi Hamada.
- *                                All rights reserved.
- *
- * The source code in this file can be freely used, 
- * so long as an acknowledgment from Tsuyoshi Hamada.
- * 
- * The source code in this file can be modified, branched, and
- * redistributed in source or binary form in the following situation.  
- * If you want to modify, redistribute or make another version based on
- * this source code, you should get distinct agreement from Tsuyoshi
- * Hamada.  The modified, redistributed or branched(another version based
- * on this source code) source code should include the citation that the
- * code comes from the "progrape.c by Tsuyoshi Hamada".
- * 
- * No warranty is attached; 
- * I cannot take responsibility for errors or fitness for use.
- *
- */
-#ifndef _PROGRAPE_H_
-#define _PROGRAPE_H_
+Sat Sep 12 19:54:17 JST 2009
 
-#include <linux/ioctl.h> /* for the _IOW etc */
+-- **************************************
+--               INREVIUM                
+-- **************************************
 
-// -------------------------------------------------------------------- for DEBUG
-/*
- * Macros to help debugging
- */
-#undef PDEBUG             /* undef it, just in case */
-#ifdef DEBUG
-#  ifdef __KERNEL__
-     /* This one if debugging is on, and kernel space */
-#    define PDEBUG(fmt, args...) printk( KERN_DEBUG "progrape: " fmt, ## args)
-#  else
-     /* This one for user space */
-#    define PDEBUG(fmt, args...) fprintf(stderr, fmt, ## args)
-#  endif
-#else
-#  define PDEBUG(fmt, args...) /* not debugging: nothing */
-#endif
-
-#undef _PDEBUG
-#define _PDEBUG(fmt, args...) /* nothing: it's a placeholder */
-// -------------------------------------------------------------------- for DEBUG. 
-
-/* 
- * IOCTL definitions
- */
-
-#define PG_IOC_MAGIC (7)
-/*
- * SP : Set by Pointer
- * SV : Set by Value
- * GP : Get by Pointer
- * GV : Get by Value
- */
-#define IOC_SV_MMAPMODE  _IOW(PG_IOC_MAGIC,  1, unsigned)
-#define IOC_GV_REG_ADR   _IOR(PG_IOC_MAGIC,  2, unsigned long)
-#define IOC_GV_REG_SIZE  _IOR(PG_IOC_MAGIC,  3, unsigned long)
-#define IOC_GV_MEM_ADR   _IOR(PG_IOC_MAGIC,  4, unsigned long)
-#define IOC_GV_MEM_SIZE  _IOR(PG_IOC_MAGIC,  5, unsigned long)
-#define IOC_SP_FPGA_INFO _IOW(PG_IOC_MAGIC,  6, char* )
-#define IOC_GP_FPGA_INFO _IOR(PG_IOC_MAGIC,  7, char* )
-#define IOC_GV_PCICFG    _IOR(PG_IOC_MAGIC,  8, unsigned long)
-#define IOC_SV_DMAW      _IOW(PG_IOC_MAGIC,  9, unsigned long)
-#define IOC_SV_DMAR      _IOW(PG_IOC_MAGIC, 10, unsigned long)
-#define IOC_GV_DMA_SIZE  _IOR(PG_IOC_MAGIC, 11, unsigned long)
-
-#define PG_IOC_MAXNR (11)
-
-/*
- * modes for pg_mmap
- * "pcidev->mmap_mode" has one of these mode.
- */
-enum {
-  MMAP_REG_PIOW = 0,      // bar0 for PG4, 0
-  MMAP_REG_PIOR,          // bar0 for PG4, 1
-  MMAP_REG_PIORW,         // bar0 for PG4, 2
-  MMAP_MEM_PIOW,          // bar1 for PG4, 3
-  MMAP_MEM_PIOR,          // bar1 for PG4, 4
-  MMAP_MEM_PIORW,         // bar1 for PG4, 5
-  MMAP_MEM_PIOW_PREFETCH, // bar1 for PG4, 6
-  MMAP_BUF_DMAW,          // DMABUF for Host->Device direction, 7
-  MMAP_BUF_DMAR,          // DMABUF for Device->Host direction, 8
-};
-
-#define NB_FPGA_INFO (256)  // Length(Bytes) of the FPGA information
+--------------------------------------------------------------------------------
+-- Copyright(C) 2004 - TOKYO ELECTRON DEVICE LIMITED. All rigths reserved.
+--------------------------------------------------------------------------------
+-- PCI_TARGETCNT MODEL
+--------------------------------------------------------------------------------
+-- PCI64_CORE Target Access Control Module
+--------------------------------------------------------------------------------
+-- File                      : PCI_TARGETCNT.vhd
+-- Entity                    : PCI_TARGETCNT
+-- Architecture              : PCI_TARGETCNT_rtl
+--------------------------------------------------------------------------------
+-- Project Navigator version : ISE6.2.03i
+-- Design Flow               : XST
+--------------------------------------------------------------------------------
+-- Ver.     Data        Coded by        Contents
+-- 01.00    2004/08/10  TED)DDC         êVãK
+--------------------------------------------------------------------------------
 
 
-/* 
- * IFPGA register definitions
- */
-#define REG_PFPGA_RST         (0x04)
-#define REG_INT_STAT          (0x10)
-#define REG_INT_MASK          (0x14)
-#define REG_DMA_PCI_ADRS      (0x20)
-#define REG_DMA_LOCAL_ADRS    (0x24)
-#define REG_DMA_COUNT         (0x28)
-#define REG_DMA_CTRL          (0x2C)
-#define REG_DMA_INTERVAL      (0x30)
-#define REG_DMA_STAT          (0x34)
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
 
 
-#ifdef __KERNEL__
-// -------------------------------------------------------------------- Private Members
-#include <linux/cdev.h>
-#include <asm/semaphore.h> // struct semaphore
-#include <linux/wait.h>    // wait_queue_head_t
+entity PCI_TARGETCNT is
+	port (
+	-- Interface to PCI Logicore.
+		FRAMEQ_N		: in	std_logic;							-- Latched FRAME# Signal
+		REQ64Q_N		: in	std_logic;							-- Latched REQ64# Signal
+		TRDYQ_N 		: in	std_logic;							-- Latched TRDY# Signal
+		IRDYQ_N 		: in	std_logic;							-- Latched IRDY# Signal
+		STOPQ_N 		: in	std_logic;							-- Latched STOP# Signal
+		DEVSELQ_N		: in	std_logic;							-- Latched DEVSEL# Signal
+		ACK64Q_N		: in	std_logic;							-- Latched ACK64# Signal
 
-struct pg_dev {
-  struct pci_dev *pcidev;  // only for my debugging. Don't use it.
-  unsigned long *buf_dmar; // Kernel logical address     ,also called CPU address
-  unsigned long *buf_dmaw; // Kernel logical address     ,also called CPU address
-  dma_addr_t buf_dmar_pa;  // bus address (type) for DMA ,also called physical address
-  dma_addr_t buf_dmaw_pa;  // bus address (type) for DMA ,also called physical address
-  unsigned long pci_reg_adr;
-  unsigned long pci_reg_size;
-  unsigned long pci_reg_flag;
-  unsigned long pci_mem_adr;
-  unsigned long pci_mem_size;
-  unsigned long pci_mem_flag;  // IORESOURCE_{IO,MEM,PREFETCH,READONLY} @<linux/ioport.h>
-  unsigned long pci_irq_num;
-  unsigned long mmap_mode;
-  wait_queue_head_t wq;        // wait queue for interrupt handler -> tasklet in future
-  unsigned long wq_count;      // wait counter for interrupt handler
-  struct semaphore sem;        // mutual exclusion semaphore
-  struct semaphore sem_open;   // lock device while a person is opening it.
-  unsigned long ntimes_open;   // the number of times for pg_open()
-  struct cdev cdev;	       // Char device structure
-  char fpga_info[NB_FPGA_INFO];// text for FPGA information (for bitfile)
-};
+		ADDR			: in	std_logic_vector( 31 downto 0);		-- Latched Target Address Bus
+		ADIO			: inout std_logic_vector( 63 downto 0);		-- Internal Address/Data Bus
 
-#ifndef PROGRAPE_MAJOR
-#    define PROGRAPE_MAJOR 0  // dynamically allocated if 0
-#endif 
+		CFG_VLD 		: in	std_logic;							-- Configulation Cycle Valid
+		CFG_HIT 		: in	std_logic;							-- Configuration Cycle Start
+		C_TERM			: out	std_logic;							-- Configuraton Cycle Terminate Signal
+		C_READY 		: out	std_logic;							-- Configuration Data Transfer Ready Signal
 
-#ifndef PROGRAPE_MAJOR
-#    define PROGRAPE_MAJOR 0  // dynamically allocated if 0
-#endif 
+		ADDR_VLD		: in	std_logic;							-- Internal Address Valid
+		BASE_HIT		: in	std_logic_vector(  7 downto 0);		-- Base Address Hit
 
-// Number of maximum character device
-#ifndef PROGRAPE_NR_DEVS
-#    define PROGRAPE_NR_DEVS 1
-#endif 
+		S_CYCLE64		: in	std_logic;							-- 64 bit Transaction Go On
+		S_TERM			: out	std_logic;							-- Target Transaction Terminate Signal
+		S_READY 		: out	std_logic;							-- Target Transaction Data Transfer Ready Siganl
+		S_ABORT 		: out	std_logic;							-- Target Abort Request Signal
+		S_WRDN			: in	std_logic;							-- Target Transaction Data Direction (0:Write, 1:Read)
+		S_SRC_EN		: in	std_logic;							-- Target Transaction Data Source Enable
+		S_DATA_VLD		: in	std_logic;							-- Target Transaction Data Phase Valid Signal
+		S_CBE			: in	std_logic_vector(  7 downto 0);		-- Target Command & Byte Enable Signal
+		PCI_CMD 		: in	std_logic_vector( 15 downto 0);		-- Latched Bus Command
 
-// -------------------------------------------------------------------- Private Members.
-#endif
+		IDLE			: in	std_logic;							-- Target Idle State
+		B_BUSY			: in	std_logic;							-- PCI Bus Busy State
+		S_DATA			: in	std_logic;							-- Target Data Transfer State
+		BACKOFF 		: in	std_logic;							-- Target State Machine Transaction End State
 
+		SLOT64			: out	std_logic;							-- 64 bit Extended Signal Eable
+		PERRQ_N 		: in	std_logic;							-- latched PERR# Signal
+		SERRQ_N 		: in	std_logic;							-- Latched SERR# Signal
+		KEEPOUT 		: out	std_logic;							-- ADIO Bus Disable Request Signal
 
-// for the different configurable parameters
-extern int pg_major;
-extern int pg_minor;
-extern int pg_nr_devs;
+		CSR 			: in	std_logic_vector( 39 downto 0);		-- Command/Status Register State
+		SUB_DATA		: out	std_logic_vector( 31 downto 0);		-- Sub-Identification
+		CFG 			: in	std_logic_vector(255 downto 0);		-- Confiuration Data
 
-// Prototyepes for shared functions
-int check_license(void);
-int get_license(void);
+		RST 			: in	std_logic;							-- PCI Bus Reset
+		CLK 			: in	std_logic;							-- PCI bus Clock
 
+	-- Internal Block Target Access Control Signal
+		TARGET_AD		: out	std_logic_vector(31 downto 0);		-- Target Access Address
 
-// --- ISA bridge: Advanced Micro Devices [AMD] AMD-8111 LPC (rev 05)
-#undef PCI_VENDOR_ID_PG
-#undef PCI_DEVICE_ID_PG
-#undef PCI_REVISION_ID_PG
-#define PCI_VENDOR_ID_PG   (0x1022)
-#define PCI_DEVICE_ID_PG   (0x7468)
-#define PCI_REVISION_ID_PG (0x05)
+		FIFO_RDDT		: in	std_logic_vector(63 downto 0);		-- FIFO Read Data
+		FIFO_RDTEN		: in	std_logic;							-- FIFO Read Data Enable Signel
 
-// --- PCI bridge: Advanced Micro Devices [AMD] AMD-8131 PCI-X Bridge (rev 12)
-#undef PCI_VENDOR_ID_PG
-#undef PCI_DEVICE_ID_PG
-#undef PCI_REVISION_ID_PG
-#define PCI_VENDOR_ID_PG   (0x1022)
-#define PCI_DEVICE_ID_PG   (0x7450)
-#define PCI_REVISION_ID_PG (0x12)
+	-- Base Address 0 Area (Internal Register) Target Access Control Signal
+		BAR0_WRDT		: out	std_logic_vector(31 downto 0);		-- BAR0 Area Target Access Write Data
+		BAR0_WR			: out	std_logic_vector( 3 downto 0);		-- BAR0 Area Target Access Write Signal
+		BAR0_RD			: out	std_logic;							-- BAR0 Area Target Access Read  Signal
 
-// --- PROGRAPE-4 
-#undef PCI_VENDOR_ID_PG
-#undef PCI_DEVICE_ID_PG
-#undef PCI_REVISION_ID_PG
-#define PCI_VENDOR_ID_PG   (0x1679)
-#define PCI_DEVICE_ID_PG   (0x0005)
-#define PCI_REVISION_ID_PG (0x00)
+	-- Base Address 1 Area (Internal Memoery) Target Access Control Signal
+		BAR1_WRDT		: out	std_logic_vector(63 downto 0);		-- BAR1 Area Target Access Write Data
+		BAR1_WR			: out	std_logic_vector( 7 downto 0);		-- BAR1 Area Target Access Write Signal
+		BAR1_RD			: out	std_logic							-- BAR1 Area Target Access Read  Signal
+		);
+end PCI_TARGETCNT;
 
 
-#define PG_DMA_BUFSIZE (0x1<<16) // 64 KB : IFPGA Block-RAM size 
-//#define PG_DMA_BUFSIZE (0x1<<12) // 4 KB : IFPGA Block-RAM size 
-#define PG_PCITRANS_64BIT (1)    // 1: 64-bit / 0: 32-bit
+architecture PCI_TARGETCNT_rtl of PCI_TARGETCNT is
 
-#endif // _PROGRAPE_H_
+--------------------------------------------------
+-- Components
+--------------------------------------------------
+
+
+--------------------------------------------------
+-- signals
+--------------------------------------------------
+
+-- Internal Block R/W Select Signal
+--
+--	BAR0 : Internal Register
+--	BAR1 : Internal Memory Block
+
+	signal	BAR0_WRENB		: std_logic;							-- BAR0 Block Write Select Signal
+	signal	BAR0_RDENB		: std_logic;							-- BAR0 Block Read  Select Signal
+
+	signal	BAR1_WRENB		: std_logic;							-- BAR1 Block Write Select Signal
+	signal	BAR1_RDENB		: std_logic;							-- BAR1 Block Read  Select Signal
+
+-- Internal Block Access Control Signal
+	signal	TARGET_ADRS		: std_logic_vector(31 downto 2);		-- Target Access Address
+
+	signal	PRERD_CNT		: std_logic_vector(3 downto 0);			-- Pre READ Signal Assert Control
+
+	signal	BAR0_PRERD		: std_logic;							-- BAR0 Block Pre-Read Signal
+	signal	BAR1_PRERD		: std_logic;							-- BAR1 Block Pre-Read Signal
+
+	signal	BAR0_READ		: std_logic;							-- Internal BAR0 Block Read Signal
+	signal	BAR1_READ		: std_logic;							-- Internal BAR1 Block Read Signal
+
+	signal	DTRD_FLG		: std_logic;							-- Data Read Flag
+
+
+
+begin
+
+
+
+--***************************************************************
+--*
+--*  Base Address 0 Area Access Control Signal Generate Block
+--*
+--***************************************************************
+
+--------------------------------------------------------------------------------
+-- BAR0(Internal Register) R/W Select Signal Control Process
+--------------------------------------------------------------------------------
+
+	process (RST,CLK) begin
+		if (RST='1') then
+			BAR0_WRENB <= '0';
+			BAR0_RDENB <= '0';
+		elsif (CLK'event and CLK='1') then
+			if (BASE_HIT(0)='1') then										------ Base Address 0 Area Access ?
+				BAR0_WRENB <= S_WRDN;										------ R/W Status Set
+				BAR0_RDENB <= (not S_WRDN);
+			elsif (S_DATA='0') then											------ Transaction End ?
+				BAR0_WRENB <= '0';											------ Select Signal Clear
+				BAR0_RDENB <= '0';
+			end if;
+		end if;
+	end process;
+
+--------------------------------------------------------------------------------
+-- BAR0(Internal Register) Area Write Signal Control Process
+--------------------------------------------------------------------------------
+
+	process (BAR0_WRENB,S_DATA_VLD,S_CBE) begin
+		if (BAR0_WRENB='1' and S_DATA_VLD='1') then							------ BAR0 Target Data Write Available ?
+			BAR0_WR <= (not S_CBE(3 downto 0));								------ High Word Write Signal Set
+		else
+			BAR0_WR <= (others => '0');										------ BAR0_WR Signal Negate
+		end if;
+	end process;
+
+--------------------------------------------------------------------------------
+-- BAR0(Internal Register) Area Write Data Control Process
+--------------------------------------------------------------------------------
+
+	process (BAR0_WRENB,S_DATA_VLD,ADIO) begin
+		if (BAR0_WRENB='1' and S_DATA_VLD='1') then							------ BAR0 Target Data Write Available ?
+			BAR0_WRDT(31 downto  0) <= ADIO(31 downto 0);					------ Low  Word Write Data Set
+		else
+			BAR0_WRDT <= (others => '0');									------ Write Data Clear
+		end if;
+	end process;
+
+--------------------------------------------------------------------------------
+-- BAR0(Internal Register) Area Pre-Read Signal Control Process
+--------------------------------------------------------------------------------
+
+	process (RST,CLK) begin
+		if (RST='1') then
+			BAR0_PRERD <= '0';
+		elsif (CLK'event and CLK='1') then
+			if (BASE_HIT(0)='1' and S_WRDN='0') then						------ Base Address 0 Area Read Access ?
+				BAR0_PRERD <= '1';											------ Base Address 0 Area Pre-Read Start
+			elsif (PRERD_CNT(3)='1') then									------ Pre Read Data Transfer End ?
+				BAR0_PRERD <= '0';											------ Base Address 0 Area Pre-Read End
+			end if;
+		end if;
+	end process;
+
+--------------------------------------------------------------------------------
+-- BAR0(Internal Register) Area Read Signal Control Process
+--------------------------------------------------------------------------------
+
+		BAR0_READ <= (BAR0_PRERD or S_SRC_EN) and BAR0_RDENB;			------ Data Read Signal Set
+
+		BAR0_RD   <= BAR0_READ;												------ Data Read Signal Output
+
+
+--***************************************************************
+--*
+--*  Base Address 1 Area Access Control Signal Generate Block
+--*
+--***************************************************************
+
+--------------------------------------------------------------------------------
+-- BAR1(Internal Memory) R/W Select Signal Control Process
+--------------------------------------------------------------------------------
+
+	process (RST,CLK) begin
+		if (RST='1') then
+			BAR1_WRENB <= '0';
+			BAR1_RDENB <= '0';
+		elsif (CLK'event and CLK='1') then
+			if (BASE_HIT(1)='1') then										------ Base Address 1 Area Access ?
+				BAR1_WRENB <= S_WRDN;										------ R/W Status Set
+				BAR1_RDENB <= (not S_WRDN);
+			elsif (S_DATA='0') then											------ Transaction End ?
+				BAR1_WRENB <= '0';											------ Select Signal Clear
+				BAR1_RDENB <= '0';
+			end if;
+		end if;
+	end process;
+
+--------------------------------------------------------------------------------
+-- BAR1(Internal Memory) Area Write Signal Control Process
+--------------------------------------------------------------------------------
+
+	process (BAR1_WRENB,S_DATA_VLD,S_CYCLE64,TARGET_ADRS,S_CBE) begin
+		if (BAR1_WRENB='1' and S_DATA_VLD='1') then							------ BAR1 Target Data Write Available ?
+			if (S_CYCLE64='1') then											------ 64 bit Access ?
+				BAR1_WR <= (not S_CBE);										------ S_CBE Signal Set
+			else
+				if (TARGET_ADRS(2)='1') then								------ 32 bit Odd Address Write ?
+					BAR1_WR <= (not S_CBE(3 downto 0)) & "0000";			------ High Word Write Signal Set
+				else
+					BAR1_WR <=  "0000" & (not S_CBE(3 downto 0));			------ High Word Write Signal Set
+				end if;
+			end if;
+		else
+				BAR1_WR <= (others => '0');									------ BAR1_WR Signal Negate
+		end if;
+	end process;
+
+--------------------------------------------------------------------------------
+-- BAR1(Internal Memory) Area Write Data Control Process
+--------------------------------------------------------------------------------
+
+	process (BAR1_WRENB,S_DATA_VLD,S_CYCLE64,TARGET_ADRS,ADIO) begin
+		if (BAR1_WRENB='1' and S_DATA_VLD='1') then							------ BAR1 Target Data Write Available ?
+			if (S_CYCLE64='1') then											------ 64 bit Access ?
+				BAR1_WRDT <= ADIO;											------ 64 bit Write Data Output
+			else
+				if (TARGET_ADRS(2)='1') then								------ 32 bit Odd Address Write ?
+					BAR1_WRDT(31 downto  0) <= (others => '0');				------ Low  Word Write Data Clear
+					BAR1_WRDT(63 downto 32) <= ADIO(31 downto 0);			------ High Word Write Data Set
+				else
+					BAR1_WRDT(31 downto  0) <= ADIO(31 downto 0);			------ Low  Word Write Data Set
+					BAR1_WRDT(63 downto 32) <= (others => '0');				------ High Word Write Data Clear
+				end if;
+			end if;
+		else
+				BAR1_WRDT <= (others => '0');								------ Write Data Clear
+		end if;
+	end process;
+
+--------------------------------------------------------------------------------
+-- BAR1(Internal Memory) Area Pre-Read Signal Control Process
+--------------------------------------------------------------------------------
+
+	process (RST,CLK) begin
+		if (RST='1') then
+			BAR1_PRERD <= '0';
+		elsif (CLK'event and CLK='1') then
+			if (BASE_HIT(1)='1' and S_WRDN='0') then						------ Base Address 1 Area Read Access ?
+				BAR1_PRERD <= '1';											------ Base Address 1 Area Pre-Read Start
+			elsif (PRERD_CNT(3)='1') then									------ Pre Read Data Transfer End ?
+				BAR1_PRERD <= '0';											------ Base Address 1 Area Pre-Read End
+			end if;
+		end if;
+	end process;
+
+--------------------------------------------------------------------------------
+-- BAR1(Internal Memory) Area Read Signal Control Process
+--------------------------------------------------------------------------------
+
+		BAR1_READ <= (BAR1_PRERD or S_SRC_EN) and BAR1_RDENB;			------ Data Read Signal Set
+
+		BAR1_RD   <= BAR1_READ;												------ Data Read Signal Output
+
+--------------------------------------------------------------------------------
+-- S_READY Signal Output Control Process
+--------------------------------------------------------------------------------
+
+		S_READY <= BAR0_WRENB or BAR1_WRENB or FIFO_RDTEN;					------ Target Write Access Start or Read Data Available
+
+--------------------------------------------------------------------------------
+-- Internal Block Pre-Read Signal Control Process
+--------------------------------------------------------------------------------
+
+	process (RST,CLK) begin
+		if (RST='1') then
+			PRERD_CNT <= (others=>'0');
+		elsif (CLK'event and CLK='1') then
+			PRERD_CNT <= PRERD_CNT(2 downto 0) & (BAR0_PRERD or BAR1_PRERD);		------ FRAMEQ_N Signal Sampling
+		end if;
+	end process;
+
+--------------------------------------------------------------------------------
+-- Target Access Address Output Control Process
+--------------------------------------------------------------------------------
+
+	process (RST,CLK) begin
+		if (RST='1') then
+			TARGET_ADRS <= (others=>'0');
+		elsif (CLK'event and CLK='1') then
+			if (ADDR_VLD='1') then											------- Target Access Start ?
+				TARGET_ADRS <= ADIO(31 downto 2);							------- Start Address Set
+			elsif (S_WRDN='1' and S_DATA_VLD='1') then						------- Target Write Access ?
+				if (S_CYCLE64='1') then										------- 64 bit Access ?
+					TARGET_ADRS <= TARGET_ADRS+2;							------- Access Address Increment +2
+				else
+					TARGET_ADRS <= TARGET_ADRS+1;							------- Access Address Increment +1
+				end if;
+			elsif (BAR0_READ='1' or BAR1_READ='1') then						------- Target Read Access ?
+				if (S_CYCLE64='1') then										------- 64 bit Access ?
+					TARGET_ADRS <= TARGET_ADRS+2;							------- Access Address Increment +2
+				else
+					TARGET_ADRS <= TARGET_ADRS+1;							------- Access Address Increment +1
+				end if;
+			end if;
+		end if;
+	end process;
+
+		TARGET_AD <= TARGET_ADRS & "00";									------- Target Access Address Output
+
+--------------------------------------------------------------------------------
+-- ADIO Signal Output Control Process
+--------------------------------------------------------------------------------
+
+	process (S_DATA,FIFO_RDTEN,FIFO_RDDT) begin
+		if (S_DATA='1' and FIFO_RDTEN='1') then								------ PCI Target Read Transaction & Data Valid ?
+			ADIO <= FIFO_RDDT;												------ Read Data Output
+		else
+			ADIO <= (others=>'Z');									--: inout std_logic_vector( 63 downto 0);
+		end if;
+	end process;
+
+
+--***************************************************************
+--*
+--*  Unused or Fixed PCI Core Signal Control Block
+--*
+--***************************************************************
+
+
+		C_TERM			<= '0'; --: out   std_logic;
+		C_READY 		<= '1'; --: out   std_logic;
+
+		S_TERM			<= '0'; --: out   std_logic;
+		S_ABORT 		<= '0'; --: out   std_logic;
+
+		SLOT64			<= '1'; --: out   std_logic;
+		KEEPOUT 		<= '0'; --: out   std_logic;
+
+		SUB_DATA		<= (others=>'0'); 								--: out	 std_logic_vector( 31 downto 0);
+
+
+
+
+
+end PCI_TARGETCNT_rtl;

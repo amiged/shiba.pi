@@ -1,45 +1,41 @@
-Wed Sep  2 19:38:48 JST 2009
-all:
-	./pycam.py |tee log.txt
+Wed Sep 16 19:29:21 JST 2009
+// Time-stamp: <2006-09-04 13:41:34 hamada>
+// by T.Hamada
+//
+// <2006-09-04 13:33:47 hamada>
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
-clean:
-	rm -rf ../conv
-	mkdir ../conv
-	rm -f *~ .*~
-	rm -rf __pycache__
+#include "pg4.h"
 
-c: clean
+void rst(int devid, int d, int msec)
+{
+  d = 0xff & d;
+  WriteBase0(devid, 0x4, d);
+  usleep(msec*1000);
+}
 
-conv:
-	rm -rf ../conv
-	mkdir ../conv
-	./gen_cmd.py > xxx
-	bash ./xxx
+int main(int argc, char* argv[])
+{
+  int devid=0;
+  int i;
 
+  pg4_open(devid);
+  
+  for(i=0;i<16;i++){
+    int x;
+    x = 0xff&(1<<(i%8));
+    rst(devid, x, 100);
+    rst(devid, 0, 1);
+  }
 
-mov:
-	./mov.py 1 0
+  rst(devid, 0xff, 1000);
+  rst(devid, 0x0, 0);
 
+  pg4_close(devid);
 
-0.mov: 
-	rm -f out.mp4
-	ffmpeg -r 1 -start_number 0 -i ../conv/%08d.jpg -vcodec libx264 -pix_fmt yuv420p -r 1 out.mp4
-
-r: run
-
-run:
-	./mpycam.py
-
-run3:
-	./pycam.py --devid=0 &
-	./pycam.py --devid=1 &
-	./pycam.py --devid=2 &
-
-kill:
-	killall python3
-	killall pycam.py
-
-clog: clean
-	rm -rf ../log* ../data4bbox ../data4darknet ../conv
-	rm -rf ./tmp.mp4
+  return 0;
+}

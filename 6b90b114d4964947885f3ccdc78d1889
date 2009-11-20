@@ -1,26 +1,29 @@
-Wed Nov 18 19:29:55 JST 2009
-#include <stdio.h>
-#include "nbodysim.h"
+Fri Nov 20 19:40:44 JST 2009
+#! /bin/sh
+# Time-stamp: <2006-11-22 17:38:27 hamada>
+# Copyright (c) 2006 by Tsuyoshi Hamada, All rights reserved.
+#
+# init script for PGR & PROGRAPE-4 (for developers)
+#
 
-void debug(double x[][DIM],double a[][DIM], int n, int nstep)
-{
-  int i;
-  static int flag=0;
-  static FILE* fp;
+rm -rf /tmp/*
+ln -s /usr/local/src/Xilinx.8_1_03i_lin /tmp/Xilinx
+ln -s /usr/local/src/intel_cc_80 /tmp/intel_cc_80
+ln -s /usr/local/src/package.20060613 /tmp/pgr
+ln -s /usr/local/src/progrape /tmp/progrape
+cd /pciDriver/src/driver/; ./insmod.sh
 
-  if(flag==0){
-    fp = fopen("aaa.log","w");
-    flag = 1;
-  }else{
-    rewind(fp);
-  }
+cd /tmp/progrape/driver;  make load
 
-  for(i=0;i<n;i++){
-    fprintf(fp,"%d\t",nstep);
-    fprintf(fp,"%1.8e\t%1.8e\t%1.8e\t",x[i][0],x[i][1],x[i][2]);
-    fprintf(fp,"%1.8e\t%1.8e\t%1.8e\n",a[i][0],a[i][1],a[i][2]);
-  }
 
-  fflush(fp);
-}
+umount /mnt/ram
+rm -rf /mnt/ram
+mkdir /mnt/ram
+mke2fs /dev/ram0
+mount -t ext2 /dev/ram0 /mnt/ram
+chmod -R 777 /mnt/ram
+
+cp /usr/local/bin/xxx.log /mnt/ram
+chmod -R 777 /mnt/ram
+
 

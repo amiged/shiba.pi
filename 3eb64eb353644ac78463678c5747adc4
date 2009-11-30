@@ -1,292 +1,48 @@
-Sun Sep 13 19:29:14 JST 2009
-#!/usr/bin/env python3
-#Time-stamp: <2017-06-12 07:42:18 hamada>
-import cv2
-import urllib.request
-import numpy as np
-import argparse
-from datetime import datetime
-import mkdir
-import math
+Mon Nov 30 19:56:37 JST 2009
+#include <stdio.h>
+#include <math.h>
+#include "nbodysim.h"
 
-class DroidCam(object):
-    def __init__(self):
-        self.droidapp = 'IP Webcam'
-        self.ipadr  = '192.168.43.1'
-#        self.ipadr  = '133.45.9.162'
-        self.port  = '3389'
-        self.stream = -1
-        self.URL = -1
-        self.image = -1
-    def get_stream(self):
-        stub = ''
-        if (self.droidapp == 'DroidCam'):
-            stub = '/mjpegfeed?960x720'
-        elif (self.droidapp == 'IP Webcam'):
-            stub = '/video?dummy=param.mjpg'
-        else:
-            stub = '/mjpegfeed?640x480'
-
-        url = 'http://'+self.ipadr+':'+self.port + stub
-
-        print ('URL: ', url)
-        self.URL = url
-        self.stream = urllib.request.urlopen(self.URL)
-        return (self.stream)
-
-    def get_stream_jpg(self):
-        stub = '/shot.jpg'
-        url = 'http://'+self.ipadr+':'+self.port + stub
-        print ('URL: ', url)
-        self.URL = url
-        self.stream = urllib.request.urlopen(self.URL)
-        return (self.stream)
-
-    def get_jpg(self):
-        stub = '/shot.jpg'
-        url = 'http://'+self.ipadr+':'+self.port + stub
-        urlObj = urllib.request.urlopen(url)
-        #print ('URL: ', url, urlObj.getcode())
-        ofname = '/dev/shm/now.jpg'
-        with open(ofname, "wb") as file:
-            file.write(urlObj.read())
-        self.image = cv2.imread(ofname)
-        return (self.image)
-        
-    def set_focus(self):
-        stub = '/focus'
-        url = 'http://'+self.ipadr+':'+self.port + stub
-        print ('focus: ', url)
-        urlObj = urllib.request.urlopen(url)
-        
-
-class State(object):
-    def __init__(self):
-        self.is_record = False
-        self.drawing = False
-        self.moving = False
-        self.posi0 = [-1,-1]
-        self.posi1 = [-1,-1]
-        self.posi2 = [-1,-1]
-        self.image = -1
-        self.image_size = [-1, -1] # [height, width]
-        self.image_orig = -1
-        self.class_num = 777
-        self.image_num = 0
-
-    def draw_rect(self):
-        # print ("posi0, posi1: ", self.posi0, self.posi1)
-        cv2.rectangle(self.image, (self.posi0[0], self.posi0[1]), (self.posi1[0], self.posi1[1]), (0, 255, 0), 1)
-
-    def draw_text(self):
-        if(self.is_record):
-            font = cv2.FONT_HERSHEY_TRIPLEX # cv2.FONT_HERSHEY_PLAIN
-            font_size = 0.8
-            text = "<<%d>>"% (self.image_num)
-            color = (0x0, 0x0, 0xBF)
-            px = int(self.image_size[1]/2)
-            py = 30
-            cv2.putText(self.image, text,(px, py), font, font_size, color)
-
-state = State()
-
-def mouse_event(event,x,y,flags,param):
-    global state
-
-    if x < 0: x = 0
-    if y < 0: y = 0
-    if x >= state.image_size[1]: x = state.image_size[1] - 1
-    if y >= state.image_size[0]: y = state.image_size[0] - 1
-
-    if event == (cv2.EVENT_LBUTTONDOWN):
-        state.posi0[0] = x0 = state.posi1[0]
-        state.posi0[1] = y0 = state.posi1[1]
-        state.posi1[0] = x
-        state.posi1[1] = y
-        print ("Rect: (%d, %d) - (%d, %d)"%(x0, y0, x, y) )
-
-    if event == (cv2.EVENT_RBUTTONDOWN): 
-        state.moving = True
-        state.posi2[0] = x
-        state.posi2[1] = y
-
-    if event == (cv2.EVENT_RBUTTONUP): 
-        state.moving = False
-        state.posi2[0] = x
-        state.posi2[1] = y
-    
-
-    if event == (cv2.EVENT_MOUSEMOVE):
-        if state.moving == True:
-            width  = abs(state.posi0[0] - state.posi1[0])
-            height = abs(state.posi0[1] - state.posi1[1])
-            x0 = x - int(width/2)
-            x1 = x + int(width/2)
-            y0 = y - int(height/2)
-            y1 = y + int(height/2)
-
-            x_min = min(x0, x1)
-            x_max = max(x0, x1)
-            y_min = min(y0, y1)
-            y_max = max(y0, y1)
-
-            if x_min < 0: x_min = 0
-            if y_min < 0: y_min = 0
-            if x_max >= state.image_size[1]: x_max = state.image_size[1] - 1
-            if y_max >= state.image_size[0]: y_max = state.image_size[0] - 1
-
-            state.posi0[0] = x_min
-            state.posi0[1] = y_min
-            state.posi1[0] = x_max
-            state.posi1[1] = y_max
+double energy(double m[], double x[][DIM], double v[][DIM], double eps2 , int n)
+{
+    int i,j,d;
+    double v2,r2;
+    double dx[3];
+    double Ep;  /* ånÇÃà íuÉGÉlÉãÉMÅ[ */
+    double Em;  /* ånÇÃâ^ìÆÉGÉlÉãÉMÅ[ */
+    double Ea;  /* ånÇÃëSóÕäwìIÉGÉlÉãÉMÅ[ */
 
 
-#------------------------------------------------------------------------ save_data
-def save_data_bbox(image_dbg, image_orig, fnum):
-    global state
-    class_num = state.class_num
-    posi0 = state.posi0
-    posi1 = state.posi1
-    basedir = '../data4bbox/'
-    fname_body = "image_%08d" % fnum
-
-    # save image_orig (for Images/)
-    fname = fname_body + ".jpg"
-    basedir_images = basedir+"Images/%03d/"%(class_num)
-    ofname_images = mkdir.get_filename_frame_simple(basedir_images , fname)
-    print (ofname_images)
-    cv2.imwrite(ofname_images, image_orig)
-
-    # save image_dbg (for Debug/)
-    fname = fname_body + ".jpg"
-    basedir_dbg = basedir+"Debug/%03d/"%(class_num)
-    ofname_dbg  = mkdir.get_filename_frame_simple(basedir_dbg , fname)
-    print (ofname_dbg)
-    cv2.imwrite(ofname_dbg, image_dbg)
-
-    # save labes
-    fname = fname_body + ".txt"
-    basedir_labels = basedir+"Labels/%03d/"%(class_num)
-    ofname_labels  = mkdir.get_filename_frame_simple(basedir_labels , fname)
-    print (ofname_labels)
-    bbox_posi = []
-    bbox_posi.append(min(posi0[0], posi1[0]))
-    bbox_posi.append(min(posi0[1], posi1[1]))
-    bbox_posi.append(max(posi0[0], posi1[0]))
-    bbox_posi.append(max(posi0[1], posi1[1]))
-    with open(ofname_labels, "w") as file:
-        file.write("1\n")
-        file.write("%d %d %d %d\n" % (tuple(bbox_posi)))
-
-def save_data_darknet(image_dbg, image_orig, fnum):
-    global state
-    class_num = state.class_num
-    posi0 = state.posi0
-    posi1 = state.posi1
-    basedir = '../data4darknet/'
-    fname_body = "image_%08d" % fnum
-
-    # save image_orig (for Images/)
-    fname = fname_body + ".jpg"
-    basedir_images = basedir+"images/%03d/"%(class_num)
-    ofname_images = mkdir.get_filename_frame_simple(basedir_images , fname)
-    #print (ofname_images)
-    cv2.imwrite(ofname_images, image_orig)
-
-    # save image_dbg (for Debug/)
-    fname = fname_body + ".jpg"
-    basedir_dbg = basedir+"debug/%03d/"%(class_num)
-    ofname_dbg  = mkdir.get_filename_frame_simple(basedir_dbg , fname)
-    #print (ofname_dbg)
-    cv2.imwrite(ofname_dbg, image_dbg)
-
-    # save labes
-    fname = fname_body + ".txt"
-    basedir_labels = basedir+"labels/%03d/"%(class_num)
-    ofname_labels  = mkdir.get_filename_frame_simple(basedir_labels , fname)
-    print (ofname_labels)
-    bbox_posi = []
-    bbox_posi.append(min(posi0[0], posi1[0]))
-    bbox_posi.append(min(posi0[1], posi1[1]))
-    bbox_posi.append(max(posi0[0], posi1[0]))
-    bbox_posi.append(max(posi0[1], posi1[1]))
-    
-    label_format = 'BBox'
-    label_format = 'darknet'
-
-    if label_format == 'BBox': 
-        with open(ofname_labels, "w") as file:
-            file.write("1\n")
-            file.write("%d %d %d %d\n" % (tuple(bbox_posi)))
-
-    if label_format == 'darknet': 
-        img_h, img_w = image_orig.shape[:2]
-        dh = float(img_h)
-        dw = float(img_w)
-        x0 = bbox_posi[0]
-        y0 = bbox_posi[1]
-        x1 = bbox_posi[2]
-        y1 = bbox_posi[3]
-        dnet_x = (x0 + x1)/(2.0*dw)
-        dnet_y = (y0 + y1)/(2.0*dh)
-        dnet_w = (x1 - x0)/dw
-        dnet_h = (y1 - y0)/dh
-        with open(ofname_labels, "w") as file:
-            file.write("0 %1.17f %1.17f %1.17f %1.17f\n" % (dnet_x, dnet_y, dnet_w, dnet_h))
+    /* ånÇÃà íuÉGÉlÉãÉMÅ[ Ep ÇåvéZÇ∑ÇÈÅB */ 
+    Ep=0.0;
+    for(i=0;i<n-1;i++){
+        for(j=i+1;j<n;j++){
+            r2 = eps2;           /* ëäëŒãóó£èâä˙âª */
+            for(d=0;d<3;d++){
+                dx[d] = x[j][d] - x[i][d];
+                r2 += dx[d] * dx[d];
+            }
+            Ep -= m[i] * m[j] * ( 1/sqrt(r2)  );
+        }
+    }
 
 
-def save_data(image_dbg, image_orig, fnum, label_format='darknet'):
-    if False:                      save_data_bbox(image_dbg, image_orig, fnum)
-    if label_format == 'darknet': save_data_darknet(image_dbg, image_orig, fnum)
+    /* ånÇÃâ^ìÆÉGÉlÉãÉMÅ[ Em ÇåvéZÇ∑ÇÈÅB */ 
+    Em=0.0;
+    for(i=0;i<n;i++){
+        v2=0.0;    /* ê‚ëŒë¨ìx2èÊílèâä˙âª */
+        for(d=0;d<3;d++){
+            v2 += v[i][d]*v[i][d];
+        }
+        Em += 0.5 * m[i] * v2;
+    }
 
-#------------------------------------------------------------------------ save_data./
+    /* ånÇÃëSóÕäwìIÉGÉlÉãÉMÅ[ Ea ÇåvéZÇ∑ÇÈÅB */ 
+    Ea=0.0;
+    Ea = Em + Ep;
 
+/*    printf("Emove=%1.6e,   Epot=%1.3e,   Eall=%1.25e\n",Em,Ep,Ea);*/
+/*    printf("%e\n",Ea);*/
 
-if (__name__ == '__main__'):
-
-    droidcam = DroidCam()
-#    stream = droidcam.get_stream()
-
-    parser = argparse.ArgumentParser(description = "description goes here")
-    parser.add_argument("--devid", type=int, help = "set device id", required=False)
-    args = parser.parse_args()
-    devid = 0
-    if args.devid:
-        devid = int(args.devid)
-        print ("set devid = ", devid)
-
-    while True:
-        frame = droidcam.get_jpg()
-        state.image_orig = frame.copy()
-        state.image      = frame.copy()
-        state.image_size[0], state.image_size[1] = frame.shape[:2]
-        state.draw_rect()
-        state.draw_text()
-        cv2.imshow('droidcam',state.image)
-        cv2.setMouseCallback("droidcam", mouse_event)
-        tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S_%f')
-        if(state.is_record):
-            if False:
-                basedir = '../log.%d/'% (devid)
-                ofname = mkdir.get_filename_frame(basedir, tnow)
-                cv2.imwrite(ofname, state.image)
-                print(ofname, "devid = %d, image_num = %d"%(devid, state.image_num))
-                tnow0 = tnow
-            save_data(state.image, state.image_orig, state.image_num)
-            state.image_num += 1
-
-        key = cv2.waitKey(1) & 0xFF
-        if key == ord('q'): break
-        if ( (key == ord(' ')) or 
-             (key == 34) or # Muhenkan
-             (key == 35) or # Henkan
-             (key == 39) or # katakana
-             (key == 10)    # Enter
-        ):
-            state.is_record = not (state.is_record)
-        if key == ord('f'): droidcam.set_focus()
-
-
-    cv2.destroyAllWindows()
-    print("Done.")
-
+    return Ea;
+}

@@ -1,15 +1,2 @@
-Sun Oct 18 19:30:44 JST 2009
-#!/usr/bin/env python3
-import cv2
-import glob
-from datetime import datetime
-import time 
-
-while(True):
-    tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S_%f')
-    print(tnow)
-
-    with open(".tc~", "w") as file:
-        file.write(tnow +"\n")
-
-    time.sleep(3)
+Sat Dec  5 19:54:31 JST 2009
+EN pfpga_config NULL c:/cygwin/home/administrator/fkit/pci64/tmp2/pfpga_config.vhd sub00/vhpl00

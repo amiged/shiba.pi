@@ -1,13 +1,16 @@
-Sun Aug 23 19:35:13 JST 2009
-#!/usr/bin/env python3
-# ./mov.py <fps> <start_number>
-import sys
+Wed Feb  3 19:27:59 JST 2010
+/** 
+# vを1/2ステップ進める
+# v(k+1/2) = v(k) + a(k)*dt/2
+*/
 
+#include <stdio.h>
+#include "nbodysim.h"
 
-if __name__ == '__main__':
-	 args = sys.argv
-	 assert len(args) == 3
-	 fps          = int(args[1])
-	 start_number = int(args[2])
-	 cmd = "ffmpeg -r %d -start_number %d -i ../conv/%%08d.jpg -vcodec libx264 -pix_fmt yuv420p -r %d tmp.mp4"% (fps, start_number, fps)
-	 print (cmd)
+void leapflog_half(double dt, double v[][DIM], double a[][DIM], int n)
+{
+    int i,d;
+    for(i=0;i<n;i++)
+      for(d=0;d<3;d++)
+	v[i][d] = v[i][d] + (a[i][d]*dt)/2.0;
+}

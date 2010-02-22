@@ -1,48 +1,50 @@
-Thu Jan 28 19:46:01 JST 2010
+Mon Feb 22 19:26:25 JST 2010
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 import numpy as np
 import cv2
+from datetime import datetime
+import mkdir
+import sys
 
-drawing = False
-mode = True
-ix,iy = -1,-1
-
-def draw_circle(event,x,y,flags,param):
-    global ix,iy,drawing,mode
-    if event == cv2.EVENT_LBUTTONDOWN:
-        print ('Push')
-        drawing = True
-        ix,iy = x,y
-
-    elif event == cv2.EVENT_MOUSEMOVE:
-        if drawing == True:
-            print ('Drawing...')
-            if mode == True:
-                pass
-            else:
-                cv2.circle(img,(x,y),5,(0,0,255),-1)
-        else:
-            pass
-    elif event == cv2.EVENT_LBUTTONUP:
-        print ('Up')
-        drawing = False
-        if mode == True:
-            cv2.rectangle(img,(ix,iy),(x,y),(0,255,0),2)
-        else:
-            cv2.circle(img,(x,y),5,(0,0,255),-1)
-
-if '__main__' == __name__ :
-    img = np.zeros((512,512,3), np.uint8)
-    cv2.namedWindow('image')
-    cv2.setMouseCallback('image',draw_circle)
+def put_text(image, text):
+    font_size = 1.0
+    font_type = cv2.FONT_HERSHEY_PLAIN
+    font_color = (0xf, 0xf, 0xff)
+    cv2.putText(image, text, (460, 15), font_type, font_size, font_color)
     
-    while(1):
-        cv2.imshow('image',img)
-        k = cv2.waitKey(1) & 0xFF
-        if k == ord('m'):
-            mode = not mode
-        elif k == 27:
+
+
+if (__name__ == '__main__'):
+    argv = sys.argv
+    devid = int(argv[1])
+    log_base = '../log/'
+    cap = cv2.VideoCapture(devid)
+
+    cap_width  = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+    cap_height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+    cap_fps    = cap.get(cv2.CAP_PROP_FPS)
+
+    print(cap_width, "x", cap_height, ":", cap_fps)
+
+    tnow0 = datetime.now().strftime('%Y%m%d_%H_%M_%S') # ('%Y%m%d_%H_%M_%S_%f')
+
+    while(cap.isOpened()):
+        ret, frame = cap.read()
+        cv2.imshow('frame', frame)
+
+        tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S')
+        if(tnow != tnow0):
+            put_text(frame, tnow)
+            ofname = mkdir.get_filename_frame('../log/', tnow)
+#            cv2.imwrite(ofname, frame)
+            print(ofname, ": TEST on devid=%d"%devid)
+            tnow0 = tnow
+ 
+
+        if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
+    cap.release()
     cv2.destroyAllWindows()
+
+    print("Done.")

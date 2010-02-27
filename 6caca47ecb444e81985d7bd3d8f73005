@@ -1,91 +1,50 @@
-Sat Dec 26 19:33:52 JST 2009
-//-----------------------------------------------------------------------------
-// Output Pair-Wise Error
-// Modify: Tsuyoshi Hamada, Nov, 2006
-//-----------------------------------------------------------------------------
-#include  <iostream>
-#include  <cmath>
-#include  <cstdlib>
-#include  <iomanip> // cout << setw() << setprecision() 
-using namespace std;
-
-extern "C" void  force(double x[][3], double v[][3], double m[], double p[], double a[][3], double j[][3], int n);
-extern "C" void _force(double x[][3], double v[][3], double m[], double p[], double a[][3], double j[][3], int n);
-
-extern "C" void debug_position_snap(double x[][3], double Gflops, int n, int nstep);
-
-#define NMAX 1024
-
-double rsv[65536][3];
-
-int main(int argc, char *argv[]) {
-  int index;
-  int n = 2;
-
-  double m[NMAX];
-  double r[NMAX][3];
-  double v[NMAX][3];
-
-  double p[NMAX];
-  double a[NMAX][3];
-  double jk[NMAX][3];
-
-  double _p[NMAX];
-  double _a[NMAX][3];
-  double _jk[NMAX][3];
-
-  m[0] = m[1] = 1.0;
-
-  for (int i = 0; i < 3 ; i++) r[i][0] = 0.0;
-  for (int i = 0; i < 3 ; i++) v[i][0] = 0.0;
-  for (int i = 0; i < 3 ; i++) v[i][1] = 0.0;
-
-  index=0;
-  srand(0x12345);
-
-  for (int t = 0; t < 1000 ; t++){
-    
-
-    //    for (int i = 0; i < 3 ; i++) r[1][i] = pow(10.0, 2.0*rand()/(RAND_MAX+1.0));
-
-
-
-    for (int i = 0; i < 3 ; i++) r[1][i] = 1.0*rand()/(RAND_MAX+1.0);
-
-    for (int i = 0; i < 3 ; i++)  rsv[index][i] = r[1][i];
-    index++;
-
-
-    _force(r, v, m, _p, _a, _jk, n);
-     force(r, v, m,  p,  a,  jk, n);
-
-     double err_p, err_a[3], err_jk[3];
-     double rad;
-     rad = sqrt(r[1][0]*r[1][0]+r[1][1]*r[1][1]+r[1][2]*r[1][2]);
-     err_p = fabs(p[0]-_p[0])/_p[0];
-
-    
-     for (int k = 0; k < 3; k++){
-       double host  = _a[0][k];
-       double pipe  =  a[0][k];
-       double err = sqrt((host - pipe)*(host - pipe))/host;
-
-       cout << setw(8);
-       cout.precision(6);
-       cout << rad  << "\t";
-       cout.precision(6);
-       cout << err  << "\t";
-       cout.precision(6);
-       cout << host << "\t";
-       cout.precision(6);
-       cout << pipe << endl;
-
-     }
-
-  }
-  
-
-  debug_position_snap(rsv, 123.456, index, 10);
-
-  return 0;
+Sat Feb 27 19:44:56 JST 2010
+/EQNINJ
+/IPSET xi_0,x[][0],fix,32,(pow(2.0,(double)32)/(2.0))
+/IPSET xi_1,x[][1],fix,32,(pow(2.0,(double)32)/(2.0))
+/IPSET xi_2,x[][2],fix,32,(pow(2.0,(double)32)/(2.0))
+/IPSET ieps2,eps2,log,17,8,((pow(2.0,(double)32)/(2.0))*(pow(2.0,(double)32)/(2.0)))
+/JPSET xj_0,0,0,31,x[][0],fix,32,(pow(2.0,(double)32)/(2.0))
+/JPSET xj_1,0,32,63,x[][1],fix,32,(pow(2.0,(double)32)/(2.0))
+/JPSET xj_2,0,64,95,x[][2],fix,32,(pow(2.0,(double)32)/(2.0))
+/JPSET mj,0,96,112,m[],log,17,8,(pow(2.0,95.38)/(1.0e-2))
+/FOSET sx_0,a[][0],fix,64,(-(pow(2.0,(double)32)/(2.0))*(pow(2.0,(double)32)/(2.0))*pow(2.0,-1.0*(double)-31)/(pow(2.0,95.38)/(1.0e-2)))
+/FOSET sx_1,a[][1],fix,64,(-(pow(2.0,(double)32)/(2.0))*(pow(2.0,(double)32)/(2.0))*pow(2.0,-1.0*(double)-31)/(pow(2.0,95.38)/(1.0e-2)))
+/FOSET sx_2,a[][2],fix,64,(-(pow(2.0,(double)32)/(2.0))*(pow(2.0,(double)32)/(2.0))*pow(2.0,-1.0*(double)-31)/(pow(2.0,95.38)/(1.0e-2)))
+/NPIPE 1
+/NVMP 1
+void force(double x[][3], double m[], double eps2, double a[][3], int n){
+  pg_fix_addsub(SUB,xi_0,xj_0,xij_0,32,3)
+  pg_fix_addsub(SUB,xi_1,xj_1,xij_1,32,3)
+  pg_fix_addsub(SUB,xi_2,xj_2,xij_2,32,3)
+  pg_conv_ftol(xij_0,dx_0,32,17,8,4)
+  pg_conv_ftol(xij_1,dx_1,32,17,8,4)
+  pg_conv_ftol(xij_2,dx_2,32,17,8,4)
+  pg_log_shift(1,dx_0,x2_0,17)
+  pg_log_shift(1,dx_1,x2_1,17)
+  pg_log_shift(1,dx_2,x2_2,17)
+  pg_log_unsigned_add_itp(x2_0,x2_1,x2y2,17,8,9,6)
+  pg_log_unsigned_add_itp(x2_2,ieps2r,z2e2,17,8,9,6)
+  pg_log_unsigned_add_itp(x2y2,z2e2,r2,17,8,9,6)
+  pg_log_shift(-1,r2,r1,17)
+  pg_log_muldiv(MUL,r2,r1,r3,17,2)
+  pg_log_muldiv(SDIV,mjr,r3,mf,17,2)
+  pg_log_muldiv(MUL,mf,dx_0r,fx_0,17,2)
+  pg_log_muldiv(MUL,mf,dx_1r,fx_1,17,2)
+  pg_log_muldiv(MUL,mf,dx_2r,fx_2,17,2)
+  pg_log_expadd(fx_0,fxs_0,-31,17,8,1)
+  pg_log_expadd(fx_1,fxs_1,-31,17,8,1)
+  pg_log_expadd(fx_2,fxs_2,-31,17,8,1)
+  pg_conv_ltof(fxs_0,ffx_0,17,8,57,5)
+  pg_conv_ltof(fxs_1,ffx_1,17,8,57,5)
+  pg_conv_ltof(fxs_2,ffx_2,17,8,57,5)
+  pg_fix_smaccum(ffx_0,sx_0,57,64,4,37)
+  pg_fix_smaccum(ffx_1,sx_1,57,64,4,37)
+  pg_fix_smaccum(ffx_2,sx_2,57,64,4,37)
+  pg_pdelay(ieps2,ieps2r,17,7)
+  pg_pdelay(mj,mjr,17,27)
+  pg_pdelay(dx_0,dx_0r,17,22)
+  pg_pdelay(dx_1,dx_1r,17,22)
+  pg_pdelay(dx_2,dx_2r,17,22)
+  pg_rundelay(41)
 }

@@ -1,25 +1,13 @@
-Tue Mar 16 19:35:37 JST 2010
-JDF G
-// Created by Project Navigator ver 1.0
-PROJECT tmp2
-DESIGN tmp2
-DEVFAM virtex2
-DEVFAMTIME 0
-DEVICE xc2v1000
-DEVICETIME 0
-DEVPKG fg456
-DEVPKGTIME 0
-DEVSPEED -5
-DEVSPEEDTIME 0
-DEVTOPLEVELMODULETYPE HDL
-TOPLEVELMODULETYPETIME 0
-DEVSYNTHESISTOOL XST (VHDL/Verilog)
-SYNTHESISTOOLTIME 0
-DEVSIMULATOR Modelsim
-SIMULATORTIME 0
-DEVGENERATEDSIMULATIONMODEL VHDL
-GENERATEDSIMULATIONMODELTIME 0
-SOURCE pfpga_config.vhd
-STIMULUS sim.tbw
-[STRATEGY-LIST]
-Normal=True
+Wed Mar 17 19:45:19 JST 2010
+#include <stdio.h>
+#include "nbodysim.h"
+
+void debug_position(double x[][DIM], double time,int n)
+{
+    int i;
+    for(i=0;i<n;i++){
+      //        printf("%d,%e,%1.8e,%1.8e,%1.8e\n",i,t,x[i][0],x[i][1],x[i][2]);
+        printf("%1.8e\t%1.8e\t%1.8e\t%1.1e\n",x[i][0],x[i][1],x[i][2],time);
+    }
+}
+

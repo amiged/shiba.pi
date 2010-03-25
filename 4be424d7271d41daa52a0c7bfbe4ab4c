@@ -1,90 +1,153 @@
-Sat Dec  5 19:26:46 JST 2009
-/EQNINJ
-/IPSET xi_0,x[][0],float,26,16
-/IPSET xi_1,x[][1],float,26,16
-/IPSET xi_2,x[][2],float,26,16
-/IPSET vi_0,v[][0],float,26,16
-/IPSET vi_1,v[][1],float,26,16
-/IPSET vi_2,v[][2],float,26,16
-/JPSET xj_0,0,0,25,x[][0],float,26,16
-/JPSET xj_1,0,26,51,x[][1],float,26,16
-/JPSET xj_2,0,52,77,x[][2],float,26,16
-/JPSET vj_0,0,78,103,v[][0],float,26,16
-/JPSET vj_1,0,104,129,v[][1],float,26,16
-/JPSET vj_2,0,130,155,v[][2],float,26,16
-/JPSET mj,0,156,181,m[],float,26,16
-/FOSET rx,p[],fix,64,(1.0/pow(2.0,(double)31))
-/FOSET sx_0,a[][0],fix,64,(1.0/pow(2.0,(double)31))
-/FOSET sx_1,a[][1],fix,64,(1.0/pow(2.0,(double)31))
-/FOSET sx_2,a[][2],fix,64,(1.0/pow(2.0,(double)31))
-/FOSET tx_0,jk[][0],fix,64,(1.0/pow(2.0,(double)31))
-/FOSET tx_1,jk[][1],fix,64,(1.0/pow(2.0,(double)31))
-/FOSET tx_2,jk[][2],fix,64,(1.0/pow(2.0,(double)31))
-/NPIPE 1
-/NVMP 1
-void force(double x[][3], double v[][3], double m[], double p[], double a[][3], double jk[][3], int n){
-  pg_float_sub(xj_0,xi_0,dx_0,26,16,4,6)
-  pg_float_sub(xj_1,xi_1,dx_1,26,16,4,6)
-  pg_float_sub(xj_2,xi_2,dx_2,26,16,4,6)
-  pg_float_mult(dx_0,dx_0,dx2_0,26,16,2,6)
-  pg_float_mult(dx_1,dx_1,dx2_1,26,16,2,6)
-  pg_float_mult(dx_2,dx_2,dx2_2,26,16,2,6)
-  pg_float_unsigned_add(dx2_0,dx2_1,x2y2,26,16,4,6)
-  pg_float_unsigned_add(dx2_2r,x2y2,r2,26,16,4,6)
-  pg_float_sqrt(r2,r1,26,16,3,6)
-  pg_float_mult(r2r,r1,r3,26,16,2,6)
-  pg_float_mult(r3,r2r1,r5,26,16,2,6)
-  pg_float_recipro(r5,r5i,26,16,2,6)
-  pg_float_mult(r5i,mjr,mr5i,26,16,2,6)
-  pg_float_mult(mr5i,r2r2,mf,26,16,2,6)
-  pg_bits_regifile(r2,rx,26,14)
-  pg_float_expadd(mf,fs,31,26,16,1)
-  pg_float_mult(fs,dx_0r,fx_0,26,16,2,6)
-  pg_float_mult(fs,dx_1r,fx_1,26,16,2,6)
-  pg_float_mult(fs,dx_2r,fx_2,26,16,2,6)
-  pg_float_fixaccum(fx_0,sx_0,26,16,57,64,2,30,6)
-  pg_float_fixaccum(fx_1,sx_1,26,16,57,64,2,30,6)
-  pg_float_fixaccum(fx_2,sx_2,26,16,57,64,2,30,6)
-  pg_float_sub(vj_0,vi_0,dv_0,26,16,4,6)
-  pg_float_sub(vj_1,vi_1,dv_1,26,16,4,6)
-  pg_float_sub(vj_2,vi_2,dv_2,26,16,4,6)
-  pg_float_mult(fs,dv_0r,jk1_0,26,16,2,6)
-  pg_float_mult(fs,dv_1r,jk1_1,26,16,2,6)
-  pg_float_mult(fs,dv_2r,jk1_2,26,16,2,6)
-  pg_float_mult(dx_0,dv_0,xv_0,26,16,2,6)
-  pg_float_mult(dx_1,dv_1,xv_1,26,16,2,6)
-  pg_float_mult(dx_2,dv_2,xv_2,26,16,2,6)
-  pg_float_unsigned_add(xv_0,xv_1,xv1,26,16,4,6)
-  pg_float_unsigned_add(xv_2r,xv1,xv2,26,16,4,6)
-  pg_float_expadd(xv2,xv2x2,1,26,16,1)
-  pg_float_unsigned_add(xv2x2,xv2r,xv2x3,26,16,4,6)
-  pg_float_mult(mr5i,xv2x3r,jk2a,26,16,2,6)
-  pg_float_expadd(jk2a,jk2s,31,26,16,1)
-  pg_float_mult(jk2s,dx_0r1,jk2_0,26,16,2,6)
-  pg_float_mult(jk2s,dx_1r1,jk2_1,26,16,2,6)
-  pg_float_mult(jk2s,dx_2r1,jk2_2,26,16,2,6)
-  pg_float_sub(jk1_0,jk2_0,jk0_0,26,16,4,6)
-  pg_float_sub(jk1_1,jk2_1,jk0_1,26,16,4,6)
-  pg_float_sub(jk1_2,jk2_2,jk0_2,26,16,4,6)
-  pg_float_fixaccum(jk0_0,tx_0,26,16,57,64,2,34,6)
-  pg_float_fixaccum(jk0_1,tx_1,26,16,57,64,2,34,6)
-  pg_float_fixaccum(jk0_2,tx_2,26,16,57,64,2,34,6)
-  pg_pdelay(dx2_2,dx2_2r,26,4)
-  pg_pdelay(r2,r2r,26,3)
-  pg_pdelay(r2,r2r1,26,5)
-  pg_pdelay(mj,mjr,26,23)
-  pg_pdelay(r2,r2r2,26,11)
-  pg_pdelay(dv_1,dv_1r,26,24)
-  pg_pdelay(dv_0,dv_0r,26,24)
-  pg_pdelay(xv_2,xv_2r,26,4)
-  pg_pdelay(dv_2,dv_2r,26,24)
-  pg_pdelay(dx_0,dx_0r,26,24)
-  pg_pdelay(dx_1,dx_1r,26,24)
-  pg_pdelay(dx_2,dx_2r,26,24)
-  pg_pdelay(xv2,xv2r,26,1)
-  pg_pdelay(xv2x3,xv2x3r,26,6)
-  pg_pdelay(dx_1,dx_1r1,26,24)
-  pg_pdelay(dx_2,dx_2r1,26,24)
-  pg_pdelay(dx_0,dx_0r1,26,24)
-  pg_rundelay(36)
-}
+Thu Mar 25 19:28:50 JST 2010
+-- Copyright 2004,2005,2006 by Tsuyoshi Hamada
+-- 2006/06/22 : add some comments (T.H)
+-- 2006/02/08 : Fixed (T.H)
+-- LOCAL IO (READ & WRITE)
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
+
+entity LOCAL_IO is
+  generic (NBIT_L_ADRO : integer := 3);
+  port (
+    
+    CALC_STS : in std_logic;                               -- from PFPGA CBUS INPUT (1: pipe done, 0: pipe idle or running) 
+    NPIPE : in std_logic_vector(7 downto 0) := "00000001"; -- from PGPG_REG3
+    BUSY_LOCAL_READ : out std_logic :='0';                 -- to GPREG0(0)
+
+    -- pcicnt input
+    MEM_ADA  : in std_logic_vector(19 downto 0);     -- DPRAM Port B R/W Address
+    MEM_WEHA : in std_logic;
+    MEM_WELA : in std_logic;
+    MEM_DTIA : in std_logic_vector(63 downto 0);
+
+    -- CBUS/DBUS
+    DMAW_ENABLE : out std_logic_vector(3 downto 0); -- for 4 pfpga chip
+    DMAR_ENABLE : out std_logic_vector(3 downto 0); -- for 4 pfpga chip
+    DBUS_Port : out std_logic_vector(63 downto 0);
+    DBUS_idata: in std_logic_vector(63 downto 0);
+    DBUS_HiZ  : out std_logic;
+
+    -- DPRAM R/W ports
+    MEM_ADB     : out std_logic_vector(12 downto 0);     -- DPRAM Port B R/W Address
+    MEM_WEHB    : out std_logic;                         -- DPRAM Port B Write Enable (High Word)
+    MEM_WELB    : out std_logic;                         -- DPRAM Port B Write Enable (Low  Word)
+    MEM_DTIB    : out std_logic_vector(63 downto 0);     -- DPRAM Port B Write Data
+    MEM_DTOB    : in  std_logic_vector(63 downto 0);     -- DPRAM Port B Read Data
+
+    RST : in  std_logic;
+    CLK : in  std_logic
+    );
+end LOCAL_IO;
+architecture rtl of LOCAL_IO is
+
+component LOCAL_WRITE
+  port (
+    -- pcicnt input
+    MEM_AD  : in std_logic_vector(19 downto 0);
+    MEM_WE  : in std_logic;
+    MEM_DTI : in std_logic_vector(63 downto 0);
+
+    -- CBUS/DBUS
+    DMAW_ENABLE : out std_logic_vector(3 downto 0); -- for 4 pfpga chip
+    DBUS_Port : out std_logic_vector(63 downto 0);  -- outside of this module, 1 delay is inserted.
+    RST : in  std_logic;
+    CLK : in  std_logic
+    );
+end component;
+
+component LOCAL_READ
+  generic ( NBIT_L_ADRO : integer := 3);
+  port (
+    NPIPE : in std_logic_vector(7 downto 0); -- from PGPG_REG3
+    CALC_STS : in std_logic;    -- from PFPGA
+    BUSY : out std_logic :='0'; -- to GPREG0
+
+    -- CBUS/DBUS
+    DMAR_ENABLE : out std_logic_vector(3 downto 0); -- for 4 pfpga chip
+    DBUS_Port : out std_logic_vector(63 downto 0);
+    DBUS_idata: in std_logic_vector(63 downto 0);
+    DBUS_HiZ  : out std_logic;
+
+    -- DPRAM R/W ports
+    MEM_ADB     : out std_logic_vector(12 downto 0);     -- DPRAM Port B R/W Address
+    MEM_WEHB    : out std_logic;                         -- DPRAM Port B Write Enable (High Word)
+    MEM_WELB    : out std_logic;                         -- DPRAM Port B Write Enable (Low  Word)
+    MEM_DTIB    : out std_logic_vector(63 downto 0);     -- DPRAM Port B Write Data
+
+    RST : in  std_logic;
+    CLK : in  std_logic
+    );
+end component;
+  signal dbus_port0   : std_logic_vector(63 downto 0) := (others=>'0'); 
+-- DMAW
+  signal dmaw_dbus_o  : std_logic_vector(63 downto 0) := (others=>'0');
+-- DMAR
+  signal dmar_dbus_o  : std_logic_vector(63 downto 0) := (others=>'0');
+  signal busy_dmar    : std_logic;
+
+begin
+
+  -- DMA BUSY or IDLE
+  process (CLK,busy_dmar,CALC_STS) begin
+    if(CLK'event and CLK='1') then
+      if   (CALC_STS='1' AND busy_dmar='0') then
+        BUSY_LOCAL_READ <= '0';
+      elsif(CALC_STS='1' AND busy_dmar='1') then
+        BUSY_LOCAL_READ <= '1';
+      elsif(CALC_STS='1' AND busy_dmar='0') then
+        BUSY_LOCAL_READ <= '1';
+      elsif(CALC_STS='0') then
+        BUSY_LOCAL_READ <= '1';
+      end if;
+    end if;
+  end process;
+
+
+
+  ------------------------------
+  --- DBUS_Port              ---
+  ------------------------------
+  process (CLK) begin
+    if(CLK'event and CLK='1') then
+      DBUS_Port <= dbus_port0;
+    end if;
+  end process;
+
+  with busy_dmar select
+    dbus_port0 <= dmar_dbus_o when '1',
+                  dmaw_dbus_o when others;
+
+-------------------------------------------------------------------------------
+-- Write : IFPGA --> PFPGAs
+-------------------------------------------------------------------------------
+u0 : LOCAL_WRITE
+  port map (MEM_AD      => MEM_ADA,
+            MEM_WE      => MEM_WELA,
+            MEM_DTI     => MEM_DTIA,
+            DMAW_ENABLE => DMAW_ENABLE,
+            DBUS_Port   => dmaw_dbus_o,
+            RST         => RST,
+            CLK         => CLK);
+
+-------------------------------------------------------------------------------
+-- Read : IFPGA <-- PFPGAs
+-------------------------------------------------------------------------------
+u1 : LOCAL_READ
+  generic map (NBIT_L_ADRO => NBIT_L_ADRO)
+  port map (NPIPE       => NPIPE,
+            CALC_STS    => CALC_STS,
+            BUSY        => busy_dmar,
+            DMAR_ENABLE => DMAR_ENABLE,
+            DBUS_Port   => dmar_dbus_o,
+            DBUS_idata  => DBUS_idata,
+            DBUS_HiZ    => DBUS_HiZ,
+            MEM_ADB     => MEM_ADB,
+            MEM_WEHB    => MEM_WEHB,
+            MEM_WELB    => MEM_WELB,
+            MEM_DTIB    => MEM_DTIB,
+            RST         => RST,
+            CLK         => CLK);
+
+end rtl;

@@ -1,27 +1,13 @@
-Sun May 23 19:52:33 JST 2010
-vlib work
-vcom -93 -explicit  ../rtl/local_write.vhd
-vcom -93 -explicit  ../rtl/local_read_cnt.vhd
-vcom -93 -explicit  ../rtl/local_read_if.vhd
-vcom -93 -explicit  ../rtl/local_read.vhd
-vcom -93 -explicit  ../rtl/local_io.vhd
-vcom -93 -explicit  sim_local_io.vhw
-vsim -t 1ps   -lib work sim_local_io
-do sim_local_io.udo
-view wave
-add wave -hex /uut/busy_dmar
-add wave -hex *
+Sat Jun 12 19:39:03 JST 2010
+#!/usr/bin/env python3
+# ./mov.py <fps> <start_number>
+import sys
 
 
-add wave -hex /uut/u1/u0/clk
-add wave -hex /uut/u1/u0/CALC_DONE
-add wave -dec /uut/u1/u0/cnt
-add wave -hex /uut/u1/u0/cnt_en
-add wave -hex /uut/u1/u0/is_finish
-add wave -hex /uut/u1/u0/EXEC
-add wave -hex /uut/u1/u0/CHIPSEL
-add wave -hex /uut/u1/u0/START_AD
-add wave -hex /uut/u1/u0/NQWORD
-add wave -hex /uut/u1/u0/MEM_AD_BASE
-
-run -all
+if __name__ == '__main__':
+	 args = sys.argv
+	 assert len(args) == 3
+	 fps          = int(args[1])
+	 start_number = int(args[2])
+	 cmd = "ffmpeg -r %d -start_number %d -i ../conv/%%08d.jpg -vcodec libx264 -pix_fmt yuv420p -r %d tmp.mp4"% (fps, start_number, fps)
+	 print (cmd)

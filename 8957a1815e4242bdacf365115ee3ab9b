@@ -1,27 +1,9 @@
-Tue May  4 19:30:41 JST 2010
-#!/usr/bin/env python3
-#Time-stamp: <2017-06-10 01:52:29 hamada>
-import cv2
-import urllib.request
-import numpy as np
-
-#stream=urllib.request.urlopen('http://133.45.9.162:3389/mjpegfeed?640x480')        # for DroidCam
-stream=urllib.request.urlopen('http://192.168.101.160:3389/video?dummy=param.mjpg') # for IP Webcam
-
-bytes = b''
-while True:
-    raw = stream.read(1024)
-    bytes += raw
-    #print (bytes)
-    a = bytes.find(b'\xff\xd8')
-    b = bytes.find(b'\xff\xd9')
-    if a!=-1 and b!=-1:
-        jpg = bytes[a:b+2]
-        bytes= bytes[b+2:]
-        image = cv2.imdecode(np.fromstring(jpg, dtype=np.uint8),cv2.IMREAD_COLOR)
-        cv2.imshow('droidcam',image)
-        key = cv2.waitKey(1) & 0xFF
-        if key == ord('q'): break
-
-cv2.destroyAllWindows()
-
+Sun Jun 13 19:45:58 JST 2010
+V1 3
+FL c:/cygwin/home/administrator/fkit/pci64/tmp2/pfpga_config.vhd 2004/11/10.11:36:20
+EN work/PFPGA_CONFIG \
+      FL c:/cygwin/home/administrator/fkit/pci64/tmp2/pfpga_config.vhd \
+      PB ieee/STD_LOGIC_1164 PB ieee/STD_LOGIC_ARITH PB ieee/STD_LOGIC_UNSIGNED
+AR work/PFPGA_CONFIG/RTL \
+      FL c:/cygwin/home/administrator/fkit/pci64/tmp2/pfpga_config.vhd \
+      EN work/PFPGA_CONFIG

@@ -1,59 +1,52 @@
-Fri Jun 25 19:27:33 JST 2010
-//-----------------------------------------------------------------------------
-// mk_eight.C:  prints initial conditions for the figure eight
-//              of the three-body problem
-//-----------------------------------------------------------------------------
-#include  <iostream>
-using namespace std;
+Sun Jul  4 19:26:37 JST 2010
+#include "cutil.h"
 
-typedef double  real;                      // "real" as a general name for the
-                                           // standard floating-point data type
-#define  NDIM     3                        // number of spatial dimensions
-
-int main()
+__device__ float4 
+inter(float4 xj, float4 xi, float4 apot)
 {
-    const int n = 3;           // number of particles
-    const real t = 0;          // time
-    real r[n][NDIM];           // r[i][k] : position component k for particle i
-    real v[n][NDIM];           // v[i][k] : velocity component k for particle i
-    real m[n];                 // m[i] : mass for particle i
-
-    m[0] = 1;
-    m[1] = 1;
-    m[2] = 1;
-
-    r[0][0] = 0.9700436;
-    r[0][1] = -0.24308753;
-    r[0][2] = 0;
-    v[0][0] = 0.466203685;
-    v[0][1] = 0.43236573;
-    v[0][2] = 0;
-
-    r[1][0] = -r[0][0];
-    r[1][1] = -r[0][1];
-    r[1][2] = -r[0][2];
-    v[1][0] = v[0][0];
-    v[1][1] = v[0][1];
-    v[1][2] = v[0][2];
-
-    r[2][0] = 0;
-    r[2][1] = 0;
-    r[2][2] = 0;
-    v[2][0] = -2 * v[0][0];
-    v[2][1] = -2 * v[0][1];
-    v[2][2] = -2 * v[0][2];
-
-    cout.precision(16);
-
-    cout << n << endl;                      // first output line:  N
-    cout << t << endl;                      // second output line:  time
-    for (int i = 0; i < n; i++){
-        cout << m[i];                       // each next output line:
-        for (int k = 0; k < NDIM; k++)      //   m r_x r_y r_z v_x v_y v_z
-            cout << ' ' << r[i][k];
-        for (int k = 0; k < NDIM; k++)
-            cout << ' ' << v[i][k];
-        cout << endl;
-    }
+  /* ここは図5.と同じ */ 
+  float mj    = xj.w;        // Mass Mj
+  float ieps2 = xi.w;        // epsilon^2
+  float dx = xj.x - xi.x;    // Coordinates Xj - Xi
+  float dy = xj.y - xi.y;    // Coordinates Yj - Yi
+  float dz = xj.z - xi.z;    // Coordinates Zj - Zi
+  float r2 = dx*dx+dy*dy+dz*dz+ieps2;
+  float r1i = 1/sqrt(r2);
+  float r2i = r1i * r1i;
+  float mr3i = mj * r2i * r1i;
+  apot.x += dx * mr3i;       // Accel AXi
+  apot.y += dy * mr3i;       // Accel AYi
+  apot.z += dz * mr3i;       // Accel AZi
+  return (apot);
 }
-//-----------------------------------------------------------------------------
+#define NTHRE (128) // blockDim.xと同値
+__global__ void
+kernel(float4* g_xj,
+       float* g_xi,
+       float* g_fi,
+       int ni,
+       int nj)
+{
+  int tid      = threadIdx.x;
+  int i = blockIdx.x*NTHRE+tid;
+  float4 ai = make_float4(0.0, 0.0, 0.0, 0.0);
+  float4 xi;
+  xi.x = g_xi[i];
+  xi.y = g_xi[i+ni];
+  xi.z = g_xi[i+ni*2];
+  xi.w = g_xi[i+ni*3];
+  __shared__ float4 s_xj[NTHRE];
+  for(int j = 0; j<nj; j+=NTHRE){
+    __syncthreads();
+    s_xj[tid] = g_xj[j+tid];
+    __syncthreads();
+    for(int js = 0; js<NTHRE; js++) ai = inter(s_xj[js], xi, ai);
+  }
+  if(i<ni){
+    g_fi[i]      = ai.x;
+    g_fi[i+ni]   = ai.y;
+    g_fi[i+ni*2] = ai.z;
+  }
+}
+
+#include "api.h"

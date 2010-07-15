@@ -1,4 +1,3 @@
-Tue Jul  6 19:28:00 JST 2010
-C:\cygwin\home\Administrator\hamada\PG4\pci64\proj\ifpga.ngc 1139757967
-C:\cygwin\home\Administrator\hamada\PG4\pci64\proj\PCI_LC_I.ngo 1139541920
-OK
+Thu Jul 15 19:27:17 JST 2010
+MODULE local_write
+SUBMODULE local_write

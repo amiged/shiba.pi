@@ -1,18 +1,13 @@
-Wed Jun  2 19:48:06 JST 2010
-FILES
+Sat Aug  7 19:40:58 JST 2010
+#include <stdio.h>
+#include "nbodysim.h"
+
+void debug_position(double x[][DIM], double time,int n)
 {
-	VHDL_FILE = pgfpga.vhd;
+    int i;
+    for(i=0;i<n;i++){
+      //        printf("%d,%e,%1.8e,%1.8e,%1.8e\n",i,t,x[i][0],x[i][1],x[i][2]);
+        printf("%1.8e\t%1.8e\t%1.8e\t%1.1e\n",x[i][0],x[i][1],x[i][2],time);
+    }
 }
-COMPILER_SETTINGS_LIST
-{
-	COMPILER_SETTINGS = pgfpga;
-}
-SIMULATOR_SETTINGS_LIST
-{
-	SIMULATOR_SETTINGS = pgfpga;
-}
-SOFTWARE_SETTINGS_LIST
-{
-	SOFTWARE_SETTINGS = Debug;
-	SOFTWARE_SETTINGS = Release;
-}
+

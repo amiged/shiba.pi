@@ -1,36 +1,34 @@
-Wed Jul  7 19:28:24 JST 2010
-#!/usr/bin/env python3
-import os
-from datetime import datetime
-import time
+Thu Aug 12 19:30:20 JST 2010
+// Time-stamp: "2006-12-07 19:19:07 hamada"
+// Copyright (c) 2006 by Tsuyoshi Hamada, All rights reserved.
 
-# YYYYMMDD_HH_MM_SS
-def get_filename_frame(basedir, str_datetime):
-    cell = list(str_datetime)
-    str_YYYYMMDD = ''.join(cell[0:8])
-    str_HH = ''.join(cell[9:11])
-    str_MM = ''.join(cell[12:14])
-    str_SS = ''.join(cell[15:17])
-    dirname = basedir + str_YYYYMMDD + "/" + str_HH
-    if os.path.exists(dirname) != True:
-        os.makedirs(dirname)
-    ret = dirname + "/" + str_datetime+".jpg"
-    ret = ret.replace(' ','')
-    return ret
+#include <stdio.h>
+#include <stdlib.h>
+#include "pg4.h"
 
+unsigned int* ptr;
+unsigned int* bar1;
 
-def get_filename_frame_simple(basedir, fname):
-    dirname = basedir
-    if os.path.exists(dirname) != True:
-        os.makedirs(dirname)
-    ret = dirname + fname
-    ret = ret.replace(' ','')
-    return ret
+int main(int argc,char *argv[])
+{
+  int devid = 0;
+  int i;
 
+  pg4_open(devid);
+  bar1 = pg4_get_bar1ptr(devid);
+  printf("BAR0: %lx\n",pg4_getbaseaddr(devid,0));
+  printf("BAR1: %lx\n",pg4_getbaseaddr(devid,1));
 
-if __name__ == '__main__':
-    while(True):
-        tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S')
-        fname = get_filename_frame('../work/', tnow)
-        print (fname)
-        time.sleep(0.5)
+  puts("clear DMA_CTRL register(0x2C).");
+  WriteBase0(devid, 0x2C,   0); // 0x2C : DMA_CTRL ... clear
+
+  puts("clear INT_STAT register(0x10).");
+  WriteBase0(devid, 0x10,   0); // 0x14 : INT_MASK  [1:Enable INT/ 0:Disable INT]
+
+  puts("clear INT_MASK register(0x14).");
+  WriteBase0(devid, 0x14,   0); // 0x14 : INT_MASK  [1:Enable INT/ 0:Disable INT]
+
+  pg4_DMAcheck(devid);
+
+  return 0;
+}

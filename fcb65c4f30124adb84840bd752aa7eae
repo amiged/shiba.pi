@@ -1,17 +1,36 @@
-Fri Aug 13 19:30:26 JST 2010
-Release 8.1.03i - par I.27
-Copyright (c) 1995-2005 Xilinx, Inc.  All rights reserved.
+Mon Aug 23 19:28:02 JST 2010
+-- Copyright 2004 Tsuyoshi Hamada
+--
+--
+--
+-- DMAR_STATE is used only 
+--                dmar_mem_adr.vhd  
+--                dmar_mem_re.vhd
+--                dmar_start_adr.vhd
+-- dmar_dbus_hiz and dma_mem_data do not used DMAR_STATE.
 
-Sun Nov 19 22:38:31 2006
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
-There are 0 unrouted networks: 
+entity dmar_state is
+  port (
+    RST      : in std_logic;
+    CLK      : in std_logic;
+    ENABLE   : in std_logic;
+    STATE    : out std_logic_vector(1 downto 0) );
+end dmar_state;
 
+architecture rtl of dmar_state is
 
-There are 6 sourceless or loadless networks: 
+component dmaw_state
+  port (
+    RST      : in std_logic;
+    CLK      : in std_logic;
+    ENABLE   : in std_logic;
+    STATE    : out std_logic_vector(1 downto 0) );
+end component;
 
-   CBUS<2>_IBUF
-   CBUS<3>_IBUF
-   CBUS<4>_IBUF
-   CBUS<5>_IBUF
-   CBUS<6>_IBUF
-   FPGA_NO<2>_IBUF
+begin
+  u0 : dmaw_state port map(RST=>RST, CLK=>CLK, ENABLE=>ENABLE, STATE=>STATE);
+end rtl;

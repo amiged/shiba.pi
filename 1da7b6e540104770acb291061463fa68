@@ -1,26 +1,34 @@
-Wed Aug 25 19:27:41 JST 2010
+Mon Sep 13 19:30:30 JST 2010
 -- Copyright 2004 Tsuyoshi Hamada
 --
 --
+--clk         __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __
+--state_dmaw          0  >< 1 >< 2                                    >< 3 >< 0 
+--mem_we                        ____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______
+
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
-entity dmar_start_adr is
+entity dmaw_mem_we is
   port (
     CLK       : in std_logic;
-    DBUS      : in std_logic_vector(63 downto 0);
     STATE     : in std_logic_vector(1 downto 0);
-    START_ADR : out std_logic_vector(18 downto 0) );
-end dmar_start_adr;
+    MEM_WE    : out std_logic );
+end dmaw_mem_we;
 
-architecture rtl of dmar_start_adr is
-component dmaw_start_adr
-  port (
-    CLK       : in std_logic;
-    DBUS      : in std_logic_vector(63 downto 0);
-    STATE     : in std_logic_vector(1 downto 0);
-    START_ADR : out std_logic_vector(18 downto 0) );
-end component;
+architecture rtl of dmaw_mem_we is
+
 begin
-  u0 : dmaw_start_adr port map(CLK=>CLK, DBUS=>DBUS, STATE=>STATE, START_ADR=>START_ADR);
+
+  process (CLK,STATE) begin
+    if(CLK'event and CLK = '1') then
+      if(STATE="10") then
+        MEM_WE <= '1';
+      else
+        MEM_WE <= '0';
+      end if;
+    end if;
+  end process;
+
 end rtl;

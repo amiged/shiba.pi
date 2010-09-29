@@ -1,118 +1,52 @@
-Sun Aug  8 19:44:45 JST 2010
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL;
-use IEEE.STD_LOGIC_ARITH.ALL;
+Wed Sep 29 19:52:09 JST 2010
+#include "cutil.h"
 
+__device__ float4 
+inter(float4 xj, float4 xi, float4 apot)
+{
+  /* ここは図5.と同じ */ 
+  float mj    = xj.w;        // Mass Mj
+  float ieps2 = xi.w;        // epsilon^2
+  float dx = xj.x - xi.x;    // Coordinates Xj - Xi
+  float dy = xj.y - xi.y;    // Coordinates Yj - Yi
+  float dz = xj.z - xi.z;    // Coordinates Zj - Zi
+  float r2 = dx*dx+dy*dy+dz*dz+ieps2;
+  float r1i = 1/sqrt(r2);
+  float r2i = r1i * r1i;
+  float mr3i = mj * r2i * r1i;
+  apot.x += dx * mr3i;       // Accel AXi
+  apot.y += dy * mr3i;       // Accel AYi
+  apot.z += dz * mr3i;       // Accel AZi
+  return (apot);
+}
+#define NTHRE (128) // blockDim.xと同値
+__global__ void
+kernel(float4* g_xj,
+       float* g_xi,
+       float* g_fi,
+       int ni,
+       int nj)
+{
+  int tid      = threadIdx.x;
+  int i = blockIdx.x*NTHRE+tid;
+  float4 ai = make_float4(0.0, 0.0, 0.0, 0.0);
+  float4 xi;
+  xi.x = g_xi[i];
+  xi.y = g_xi[i+ni];
+  xi.z = g_xi[i+ni*2];
+  xi.w = g_xi[i+ni*3];
+  __shared__ float4 s_xj[NTHRE];
+  for(int j = 0; j<nj; j+=NTHRE){
+    __syncthreads();
+    s_xj[tid] = g_xj[j+tid];
+    __syncthreads();
+    for(int js = 0; js<NTHRE; js++) ai = inter(s_xj[js], xi, ai);
+  }
+  if(i<ni){
+    g_fi[i]      = ai.x;
+    g_fi[i+ni]   = ai.y;
+    g_fi[i+ni*2] = ai.z;
+  }
+}
 
-entity PFPGA_DMA is
-  port (
-    -- pcicnt input
-    MEM_AD  : in std_logic_vector(16 downto 0);     -- DPRAM Port B R/W Address
-    MEM_WE  : in std_logic;
-    MEM_WE  : in std_logic;
-    MEM_DTI : in std_logic_vector(63 downto 0);
-
-    -- CBUS/DBUS
-    DMAW_ENABLE : out std_logic_vector(3 downto 0); -- for 4 pfpga chip
-    DBUS_Port : out std_logic_vector(63 downto 0);
-
-    RST : in  std_logic;
-    CLK : in  std_logic
-    );
-end PFPGA_DMA;
-
-architecture rtl of PFPGA_DMA is
-
------------------------------------------------------------------
--- DMAW
-  signal mem_wea   : std_logic := '0';
-  signal dmaw_we0  : std_logic := '0';
-  signal dmaw_we1  : std_logic := '0';
-  signal dmaw_adr          : std_logic_vector(63 downto 0) := (others=>'0');
-  signal dmaw_dt0,dmaw_dt1 : std_logic_vector(63 downto 0) := (others=>'0');
-  signal dmaw_dbus_o       : std_logic_vector(63 downto 0) := (others=>'0');
-
-begin
-
--- WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
--- DMA WRITE ( ifpga -> pfpga )
--- WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
-  ------------------------------
-  --- mem_wea                ---
-  ------------------------------
-  mem_wea <= MEM_WE;
-
-  ------------------------------
-  --- dmaw_we0,1             ---
-  ------------------------------
-  process (RST,CLK) begin
-    if(RST='1') then
-      dmaw_we0 <= '0';
-    elsif(CLK'event and CLK='1') then
-      dmaw_we0 <= mem_wea;
-    end if;
-  end process;
-
-  process (CLK) begin
-    if(CLK'event and CLK='1') then
-      dmaw_we1 <= dmaw_we0;
-    end if;
-  end process;
-  
-  ------------------------------
-  --- dmaw_adr               ---
-  ------------------------------
-  process (RST,CLK,mem_wea,dmaw_we0) begin
-    if(RST='1') then
-      dmaw_adr <= (others=>'0');
-    elsif(CLK'event and CLK='1') then
-      if((mem_wea = '1') and (dmaw_we0 = '0')) then
-        dmaw_adr(15 downto 0) <= MEM_AD(16 downto 1);
-      end if;
-      dmaw_adr(63 downto 16) <= (others=>'0');
-    end if;
-  end process;
-
-  ------------------------------
-  --- dmaw_dt delay          ---
-  ------------------------------
-  process (RST,CLK) begin
-    if(RST='1') then
-      dmaw_dt1 <= (others=>'0');
-      dmaw_dt0 <= (others=>'0');
-    elsif(CLK'event and CLK='1') then
-      dmaw_dt1 <= dmaw_dt0;
-      dmaw_dt0 <= MEM_DTI;
-    end if;
-  end process;
-
-  ------------------------------
-  --- dmaw_dbus_o            ---
-  ------------------------------
-  process (RST,CLK,dmaw_we0,dmaw_we1) begin
-    if(RST='1') then
-      dmaw_dbus_o <= (others=>'0');
-    elsif(CLK'event and CLK='1') then
-      if(dmaw_we0 = '1' and dmaw_we1 = '0') then
-        dmaw_dbus_o <= dmaw_adr;
-      else
-        dmaw_dbus_o <= dmaw_dt1;
-      end if;
-    end if;
-  end process;
-
-  --- DMAW_ENABLE
-  process (RST,CLK) begin
-    if(RST='1') then
-      DMAW_ENABLE    <= (others=>'0');
-    elsif(CLK'event and CLK='1') then
-      DMAW_ENABLE(0) <= dmaw_we1;
-      DMAW_ENABLE(1) <= dmaw_we1;
-      DMAW_ENABLE(2) <= dmaw_we1;
-      DMAW_ENABLE(3) <= dmaw_we1;
-    end if;
-  end process;
-
-
-end rtl;
+#include "api.h"

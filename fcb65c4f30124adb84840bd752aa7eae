@@ -1,36 +1,29 @@
-Mon Aug 23 19:28:02 JST 2010
--- Copyright 2004 Tsuyoshi Hamada
---
---
---
--- DMAR_STATE is used only 
---                dmar_mem_adr.vhd  
---                dmar_mem_re.vhd
---                dmar_start_adr.vhd
--- dmar_dbus_hiz and dma_mem_data do not used DMAR_STATE.
+Thu Oct  7 19:28:41 JST 2010
+#! /bin/sh
+# Time-stamp: <2006-11-22 17:38:27 hamada>
+# Copyright (c) 2006 by Tsuyoshi Hamada, All rights reserved.
+#
+# init script for PGR & PROGRAPE-4 (for developers)
+#
 
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL;
+rm -rf /tmp/*
+ln -s /usr/local/src/Xilinx.8_1_03i_lin /tmp/Xilinx
+ln -s /usr/local/src/intel_cc_80 /tmp/intel_cc_80
+ln -s /usr/local/src/package.20060613 /tmp/pgr
+ln -s /usr/local/src/progrape /tmp/progrape
+cd /pciDriver/src/driver/; ./insmod.sh
 
-entity dmar_state is
-  port (
-    RST      : in std_logic;
-    CLK      : in std_logic;
-    ENABLE   : in std_logic;
-    STATE    : out std_logic_vector(1 downto 0) );
-end dmar_state;
+cd /tmp/progrape/driver;  make load
 
-architecture rtl of dmar_state is
 
-component dmaw_state
-  port (
-    RST      : in std_logic;
-    CLK      : in std_logic;
-    ENABLE   : in std_logic;
-    STATE    : out std_logic_vector(1 downto 0) );
-end component;
+umount /mnt/ram
+rm -rf /mnt/ram
+mkdir /mnt/ram
+mke2fs /dev/ram0
+mount -t ext2 /dev/ram0 /mnt/ram
+chmod -R 777 /mnt/ram
 
-begin
-  u0 : dmaw_state port map(RST=>RST, CLK=>CLK, ENABLE=>ENABLE, STATE=>STATE);
-end rtl;
+cp /usr/local/bin/xxx.log /mnt/ram
+chmod -R 777 /mnt/ram
+
+

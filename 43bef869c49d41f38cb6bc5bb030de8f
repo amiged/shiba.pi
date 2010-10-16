@@ -1,41 +1,74 @@
-Sun Jul 25 19:27:18 JST 2010
-// Time-stamp: <2006-09-04 13:41:34 hamada>
-// by T.Hamada
-//
-// <2006-09-04 13:33:47 hamada>
+Sat Oct 16 19:45:30 JST 2010
+--------------------------------------------------------------------------------
+Release 6.2.03i Trace G.28
+Copyright (c) 1995-2004 Xilinx, Inc.  All rights reserved.
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
+trce -intstyle ise -e 3 -l 3 -xml top top.ncd -o top.twr top.pcf
 
-#include "pg4.h"
 
-void rst(int devid, int d, int msec)
-{
-  d = 0xff & d;
-  WriteBase0(devid, 0x4, d);
-  usleep(msec*1000);
-}
+Design file:              top.ncd
+Physical constraint file: top.pcf
+Device,speed:             xc2vp70,-5 (PRODUCTION 1.86 2004-05-01)
+Report level:             error report
 
-int main(int argc, char* argv[])
-{
-  int devid=0;
-  int i;
+Environment Variable      Effect 
+--------------------      ------ 
+NONE                      No environment variables were set
+--------------------------------------------------------------------------------
 
-  pg4_open(devid);
-  
-  for(i=0;i<16;i++){
-    int x;
-    x = 0xff&(1<<(i%8));
-    rst(devid, x, 100);
-    rst(devid, 0, 1);
-  }
+INFO:Timing:2752 - To get complete path coverage, use the unconstrained paths
+   option. All paths that are not constrained will be reported in the
+   unconstrained paths section(s) of the report.
 
-  rst(devid, 0xff, 1000);
-  rst(devid, 0x0, 0);
+================================================================================
+Timing constraint: TS_CK66 = PERIOD TIMEGRP "CK66"  20 nS   HIGH 50.000000 % ;
 
-  pg4_close(devid);
+ 0 items analyzed, 0 timing errors detected.
+--------------------------------------------------------------------------------
 
-  return 0;
-}
+================================================================================
+Timing constraint: TS_dcm0_dcm_out = PERIOD TIMEGRP "dcm0_dcm_out" TS_CK66 * 1.000000  HIGH 50.000 % ;
+
+ 43997 items analyzed, 0 timing errors detected. (0 setup errors, 0 hold errors)
+ Minimum period is  19.569ns.
+--------------------------------------------------------------------------------
+
+================================================================================
+Timing constraint: TS_dcm0_dcm_fx = PERIOD TIMEGRP "dcm0_dcm_fx" TS_CK66 * 1.000000  HIGH 50.000 % ;
+
+ 1665654 items analyzed, 0 timing errors detected. (0 setup errors, 0 hold errors)
+ Minimum period is  14.739ns.
+--------------------------------------------------------------------------------
+
+
+All constraints were met.
+
+
+Data Sheet report:
+-----------------
+All values displayed in nanoseconds (ns)
+
+Clock to Setup on destination clock CK66
+---------------+---------+---------+---------+---------+
+               | Src:Rise| Src:Fall| Src:Rise| Src:Fall|
+Source Clock   |Dest:Rise|Dest:Rise|Dest:Fall|Dest:Fall|
+---------------+---------+---------+---------+---------+
+CK66           |   19.959|         |         |         |
+---------------+---------+---------+---------+---------+
+
+
+Timing summary:
+---------------
+
+Timing errors: 0  Score: 0
+
+Constraints cover 1709651 paths, 0 nets, and 63904 connections
+
+Design statistics:
+   Minimum period:  19.569ns (Maximum frequency:  51.101MHz)
+
+
+Analysis completed Mon Jun 13 23:42:18 2005
+--------------------------------------------------------------------------------
+
+Peak Memory Usage: 279 MB

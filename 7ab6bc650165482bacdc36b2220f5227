@@ -1,56 +1,53 @@
-Wed Aug 11 19:36:42 JST 2010
-#!/usr/bin/env python3
-#Time-stamp: <2017-06-11 19:17:43 hamada>
-import argparse
-import numpy as np
-import cv2
-from datetime import datetime
-import mkdir
+Sun Oct 31 19:37:04 JST 2010
+/*
+ * ifpga_bram_clear.c
+ *
+ * Copyright (C) 2006-2007 Tsuyoshi Hamada
+ *                                All rights reserved.
+ * 
+ * No warranty is attached; 
+ * I cannot take responsibility for errors or fitness for use.
+ *
+ */
 
-def put_text(image, text):
-    font_size = 1.0
-    font_type = cv2.FONT_HERSHEY_PLAIN
-    font_color = (0xf, 0xf, 0xff)
-    cv2.putText(image, text, (440, 15), font_type, font_size, font_color)
+#include <stdio.h>
+#include <stdlib.h>
+#include "pg4.h"
 
-if (__name__ == '__main__'):
-    parser = argparse.ArgumentParser(description = "description goes here")
-    parser.add_argument("--devid", type=int, help = "set device id", required=False)
-    args = parser.parse_args()
-    devid = 0
-    if args.devid:
-        devid = int(args.devid)
-        print ("set devid = ", devid)
+//#define NMAX (0x1<<10) // 4KB
+//#define NMAX (0x1<<11) // 8KB
+//#define NMAX (0x1<<12) // 16KB
+//#define NMAX (0x1<<13) // 32KB
+#define NMAX (0x1<<14) // 64KB
 
-    log_base = '../log/'
-    cap = cv2.VideoCapture(devid)
+unsigned int* ptr;
+unsigned int* bar1;
 
-    cap_width  = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
-    cap_height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
-    cap_fps    = cap.get(cv2.CAP_PROP_FPS)
+int main(int argc,char *argv[])
+{
+  int devid = 0;
+  int n = NMAX;
+  int val = 0x1234567;
+  int i;
 
-    print(cap_width, "x", cap_height, ":", cap_fps)
+  if(argc > 1){
+    n = atoi(argv[1]);
+  }
+  if(argc > 2){
+    val = atoi(argv[2]);
+  }
 
-    tnow0 = datetime.now().strftime('%Y%m%d_%H_%M_%S') # ('%Y%m%d_%H_%M_%S_%f')
+  printf("n = %d\n",n);
+  printf("filled by %x\n",val);
 
-    while(cap.isOpened()):
-        ret, frame = cap.read()
-        cv2.imshow('camera: %d'%(devid), frame)
+  pg4_open(devid);
+  bar1 = pg4_get_bar1ptr(devid);
+  printf("BAR0: %lx\n",pg4_getbaseaddr(devid,0));
+  printf("BAR1: %lx\n",pg4_getbaseaddr(devid,1));
 
-        #tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S')
-        tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S_%f')
-        if(tnow != tnow0):
-            put_text(frame, tnow)
-            basedir = '../log.%d/'% (devid)
-            ofname = mkdir.get_filename_frame(basedir, tnow)
-            cv2.imwrite(ofname, frame)
-            print(ofname, "devid = %d"%devid)
-            tnow0 = tnow
+  for(i = 0; i < n; i++) {
+    pg4_writebase1(devid, i, val);
+  }
 
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-
-    cap.release()
-    cv2.destroyAllWindows()
-
-    print("Done.")
+  return 0;
+}

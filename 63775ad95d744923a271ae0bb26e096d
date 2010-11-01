@@ -1,16 +1,20 @@
-Mon Aug 30 19:26:33 JST 2010
-/** 
-# vを1/2ステップ進める
-# v(k+1/2) = v(k) + a(k)*dt/2
-*/
+Mon Nov  1 19:44:55 JST 2010
 
-#include <stdio.h>
-#include "nbodysim.h"
 
-void leapflog_half(double dt, double v[][DIM], double a[][DIM], int n)
-{
-    int i,d;
-    for(i=0;i<n;i++)
-      for(d=0;d<3;d++)
-	v[i][d] = v[i][d] + (a[i][d]*dt)/2.0;
-}
+all:
+	cp top.ucf.ISE6.3i top.ucf
+	rm -rf proj
+	tar xvf proj.ise6.3i.tar
+	cd proj;xst -intstyle ise -ifn __projnav/top.xst -ofn top.syr
+	cd proj;ngdbuild -intstyle ise -dd ./_ngo -uc ../top.ucf  -p xc2vp70-ff1517-5 top.ngc top.ngd
+	cd proj;map -intstyle ise -p xc2vp70-ff1517-5 -cm area -pr b -k 4 -c 100 -tx off -o top_map.ncd top.ngd top.pcf
+	cd proj;par -w -intstyle ise -ol std -t 1 top_map.ncd top.ncd top.pcf
+	cd proj;trce -intstyle ise -e 3 -l 3 -xml top top.ncd -o top.twr top.pcf
+	cd proj;bitgen -intstyle ise -f top.ut top.ncd
+
+
+
+clean:
+	rm -rf proj top.ucf *~ .*~
+
+

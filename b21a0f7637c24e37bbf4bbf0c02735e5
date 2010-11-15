@@ -1,56 +1,82 @@
-Sun Nov 14 19:37:02 JST 2010
-#!/usr/bin/env python3
-#Time-stamp: <2017-06-04 15:57:17 hamada>
-import argparse
-import numpy as np
-import cv2
-from datetime import datetime
-import mkdir
+Mon Nov 15 19:27:23 JST 2010
+-----------------------------------------------
+--  pgpg-b3 dual port RAM module (for IMEM)
+--      32 bits
+--   16384 entries
+--  Copyright(c) 2004- by Tsuyoshi Hamada
+--  2004/12/02 : 64KB version up for imem by Tsuyoshi Hamada 
+--  2004/10/29 : for Jmem by Tsuyoshi Hamada
+-----------------------------------------------
+library ieee;
+use ieee.std_logic_1164.all;
+library UNISIM;
+use UNISIM.VCOMPONENTS.ALL;
 
-class State(object):
-    def __init__(self):
-        self.is_record = False
+entity dp32b8192w is
+  port (
+    clka  : in std_logic;
+    wea   : in std_logic;
+    addra : in std_logic_vector(12 downto 0);
+    dina  : in std_logic_vector(31 downto 0);
+    douta : out std_logic_vector(31 downto 0);
 
-if (__name__ == '__main__'):
-    state = State()
+    clkb  : in std_logic;
+    web   : in std_logic;
+    addrb : in std_logic_vector(12 downto 0);
+    dinb  : in std_logic_vector(31 downto 0);
+    doutb : out std_logic_vector(31 downto 0));
 
-    parser = argparse.ArgumentParser(description = "description goes here")
-    parser.add_argument("--devid", type=int, help = "set device id", required=False)
-    args = parser.parse_args()
-    devid = 0
-    if args.devid:
-        devid = int(args.devid)
-        print ("set devid = ", devid)
+end dp32b8192w;
+
+architecture rtl of dp32b8192w is
+
+component RAMB16_S2_S2
+  generic (
+         INIT_A : bit_vector := X"0";
+         INIT_B : bit_vector := X"0";
+         SRVAL_A : bit_vector := X"0";
+         SRVAL_B : bit_vector := X"0";
+         WRITE_MODE_A : string :="WRITE_FIRST";
+         WRITE_MODE_B : string :="WRITE_FIRST");
+  port ( doa   : out std_logic_vector(1 downto 0);
+         addra : in std_logic_vector(12 downto 0);
+         clka  : in std_logic;
+         dia   : in std_logic_vector(1 downto 0);
+         ena   : in std_logic;
+         ssra  : in std_logic;
+         wea   : in std_logic;
+
+         dob   : out std_logic_vector(1 downto 0);
+         addrb : in std_logic_vector(12 downto 0);
+         clkb  : in std_logic;
+         dib   : in std_logic_vector(1 downto 0);
+         enb   : in std_logic;
+         ssrb  : in std_logic;
+         web   : in std_logic);
+end component;
+
+begin
+
+  forgen1: for i in 0 to 15 generate
+    uraml: RAMB16_S2_S2 -- GENERIC MAP(WRITE_MODE=>"WRITE_FIRST");
+	      PORT MAP(-- FIFO SIDE --
+                       clka=>clka,
+                       addra=>addra,
+                       dia=>dina(((2*i)+1) downto 2*i),
+                       doa=>douta(((2*i)+1) downto 2*i),
+                       ena=>'1',
+                       ssra=>'0',
+                       wea=>wea,
+                       -- LOCAL SIDE --
+                       clkb=>clkb,
+                       addrb=>addrb,
+                       dib=>dinb(((2*i)+1) downto 2*i),
+                       dob=>doutb(((2*i)+1) downto 2*i),
+                       enb=>'1',
+                       ssrb=>'0',
+                       web=>web);
+  end generate forgen1;
 
 
-    log_base = '../log/'
-    cap = cv2.VideoCapture(devid)
+end rtl;
 
-    cap_width  = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
-    cap_height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
-    cap_fps    = cap.get(cv2.CAP_PROP_FPS)
-
-    print(cap_width, "x", cap_height, ":", cap_fps)
-
-
-    while(cap.isOpened()):
-        ret, frame = cap.read()
-        cv2.imshow('camera: %d'%(devid), frame)
-
-        tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S_%f')
-        if(state.is_record):
-            basedir = '../log.%d/'% (devid)
-            ofname = mkdir.get_filename_frame(basedir, tnow)
-            cv2.imwrite(ofname, frame)
-            print(ofname, "devid = %d"%devid)
-            tnow0 = tnow
-
-        key = cv2.waitKey(1) & 0xFF
-        if key == ord('q'): break
-        if key == ord(' '): state.is_record = not (state.is_record)
-
-
-    cap.release()
-    cv2.destroyAllWindows()
-
-    print("Done.")

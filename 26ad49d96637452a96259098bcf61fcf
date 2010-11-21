@@ -1,20 +1,25 @@
-Mon Aug  2 19:39:34 JST 2010
-#!/usr/bin/perl
+Sun Nov 21 19:41:53 JST 2010
+-- Copyright 2004 Tsuyoshi Hamada
+--
+--
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
+entity dmar_mem_re is
+  port (
+    CLK       : in std_logic;
+    STATE     : in std_logic_vector(1 downto 0);
+    MEM_RE    : out std_logic );
+end dmar_mem_re;
 
-my $is_stop = 0;
-
-if($ARGV[0]){
-    $is_stop = 1;
-}
-
-my $cmd ="cat /sys/class/fpga/fpga0/irq_count";
-
-while(1){
-    my $exe = `$cmd`;
-    print $exe;
-    exit (1) if($is_stop == 1);
-    sleep (2);
-}
-
-1;
+architecture rtl of dmar_mem_re is
+component dmaw_mem_we 
+  port (
+    CLK       : in std_logic;
+    STATE     : in std_logic_vector(1 downto 0);
+    MEM_WE    : out std_logic );
+end component;
+begin
+ u0 : dmaw_mem_we port map(CLK=>CLK, STATE=>STATE, MEM_WE=>MEM_RE);
+end rtl;

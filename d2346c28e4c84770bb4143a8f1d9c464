@@ -1,68 +1,16 @@
-Sat Aug 21 19:54:05 JST 2010
+Sat Dec 11 19:52:44 JST 2010
+/** 
+# v¤ò1/2¥¹¥Æ¥Ã¥×¿Ê¤á¤ë
+# v(k+1/2) = v(k) + a(k)*dt/2
+*/
+
 #include <stdio.h>
-#include <math.h>
 #include "nbodysim.h"
 
-void writelog(double m[], double x[][DIM], double v[][DIM], double eps2 , int n)
+void leapflog_half(double dt, double v[][DIM], double a[][DIM], int n)
 {
-  int i,j,d;
-  double v2,r2;
-  double dx[3];
-  double Ep;        /* Še—±q‚ÌˆÊ’uƒGƒlƒ‹ƒM[ */
-  double Em;        /* Še—±q‚Ì‰^“®ƒGƒlƒ‹ƒM[ */
-  double Ea;        /* Še—±q‚Ì‘S—ÍŠw“IƒGƒlƒ‹ƒM[ */
-  static double Ea_init;
-  static int flag=0;
-  //  double a[NMAX][DIM];
-
-
-  /******************************************************  FORCE
-  for(i=0;i<n;i++) for(d = 0;d<3;d++) a[i][d] = 0.0;
-  for(i=0;i<n-1;i++){
-    for(j=i+1;j<n;j++){
-      double r2,r3;
-      r2 = eps2;
-      for(d=0;d<3;d++){
-	dx[d] = x[j][d] - x[i][d];
-	r2 += dx[d] * dx[d];
-      }
-      r3 = sqrt(r2)*r2;
-      for(d=0;d<3;d++){
-	a[i][d] =  m[j]*dx[d]/r3;
-	a[j][d] = -m[i]*dx[d]/r3;
-      }
-    }
-  }
-  ***********************************************************/
-
-  Ea = 0.0;
-  for(i=0;i<n;i++){
-    Ep=0.0;     // Potential Energy
-    for(j=0;j<n;j++){
-      r2 = eps2;           /* ‘Š‘Î‹——£‰Šú‰» */
-      for(d=0;d<3;d++){
-	dx[d] = x[j][d] - x[i][d];
-	r2 += dx[d] * dx[d];
-      }
-      if(i!=j) Ep -= m[i]*m[j]*(1/sqrt(r2));
-    }
-
-    v2=0.0;    /* â‘Î‘¬“x2æ’l‰Šú‰» */
-    for(d=0;d<3;d++) v2 += v[i][d]*v[i][d];
-    Em = 0.5 * m[i] * v2;
-
-    Ea += Em + Ep;
-    //    printf("%1.8e\t%1.8e\t%1.8e\t%d\t%1.8e\t%1.8e\t%1.8e\n",x[i][0],x[i][1],x[i][2],i,m[i],
-    //	   (v[i][0]*v[i][0]+v[i][1]*v[i][1]),
-    //	   (a[i][0]*a[i][0]+a[i][1]*a[i][1]));
-  }
-
-  if(flag==0){
-    Ea_init = Ea;
-    flag = 1;
-  }
-  printf("Eall = %e\t",Ea);
-  printf("(Eini-Eall)/Eini = %e\t",Ea_init-Ea);
-  printf("\n");
-  return;
+    int i,d;
+    for(i=0;i<n;i++)
+      for(d=0;d<3;d++)
+	v[i][d] = v[i][d] + (a[i][d]*dt)/2.0;
 }

@@ -1,57 +1,29 @@
-Thu Nov  4 19:27:24 JST 2010
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.std_logic_arith.all;                                        
-use ieee.std_logic_unsigned.all;                                    
+Sat Dec 11 19:30:51 JST 2010
+#! /bin/sh
+# Time-stamp: <2006-11-22 17:38:27 hamada>
+# Copyright (c) 2006 by Tsuyoshi Hamada, All rights reserved.
+#
+# init script for PGR & PROGRAPE-4 (for developers)
+#
 
-entity pipe_sts is
-  port (
-    rst        : in  std_logic;
-    clk        : in  std_logic;
-    run        : in  std_logic;
-    runret     : in  std_logic;
-    status     : out std_logic_vector(31 downto 0)
-  );
-end pipe_sts;
+rm -rf /tmp/*
+ln -s /usr/local/src/Xilinx.8_1_03i_lin /tmp/Xilinx
+ln -s /usr/local/src/intel_cc_80 /tmp/intel_cc_80
+ln -s /usr/local/src/package.20060613 /tmp/pgr
+ln -s /usr/local/src/progrape /tmp/progrape
+cd /pciDriver/src/driver/; ./insmod.sh
 
-architecture rtl of pipe_sts is
-signal sts_reg  : std_logic_vector(7 downto 0) :=X"77";
-signal rund,sts : std_logic;
-signal cntr : std_logic_vector(7 downto 0);
-signal irun : std_logic := '0';
-
-begin
-
--- clk    ____~~~~____~~~~____~~~~____~~~~__
--- runret _____~~~~~~~~_____________________
--- rund   _____________~~~~~~~~_____________
--- status                      <finish     >
-
--- status
-status(31 downto 8) <= (others=>'0');
-process(clk,rst) begin
-  if(rst='1') then
-    status(7 downto 0) <= (others=>'1');
-  elsif(clk'event and clk='1') then
-    if((runret='0') AND (rund='1')) then  -- 計算終了
-      status(7 downto 0) <= (others=>'1');
-    elsif((run='1') AND (irun='0')) then -- 計算開始
-      status(7 downto 0) <= (others=>'0');
-    end if;
-  end if;
-end process;
-
-process(clk) begin
-  if(clk'event and clk='1') then
-    rund  <= runret;
-  end if;
-end process;
-
-process(clk) begin
-  if(clk'event and clk='1') then
-    irun  <= run;
-  end if;
-end process;
+cd /tmp/progrape/driver;  make load
 
 
-end rtl;
+umount /mnt/ram
+rm -rf /mnt/ram
+mkdir /mnt/ram
+mke2fs /dev/ram0
+mount -t ext2 /dev/ram0 /mnt/ram
+chmod -R 777 /mnt/ram
+
+cp /usr/local/bin/xxx.log /mnt/ram
+chmod -R 777 /mnt/ram
+
+

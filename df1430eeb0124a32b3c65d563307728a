@@ -1,40 +1,25 @@
-Sun Nov 21 19:48:31 JST 2010
- 
--w
--g DebugBitstream:No
--g Binary:no
--g CRC:Enable
--g ConfigRate:4
--g CclkPin:PullUp
--g M0Pin:PullUp
--g M1Pin:PullUp
--g M2Pin:PullUp
--g ProgPin:PullUp
--g DonePin:PullUp
--g PowerdownPin:PullUp
--g TckPin:PullUp
--g TdiPin:PullUp
--g TdoPin:PullUp
--g TmsPin:PullUp
--g UnusedPin:PullDown
--g UserID:0xFFFFFFFF
--g DCMShutDown:Disable
--g DisableBandgap:No
--g DCIUpdateMode:AsRequired
--g StartUpClk:CClk
--g DONE_cycle:4
--g GTS_cycle:5
--g GWE_cycle:6
--g LCK_cycle:NoWait
--g Match_cycle:Auto
--g Security:None
--g DonePipe:No
--g DriveDone:No
--g Encrypt:No
-
-
-
-
-
-
-
+Thu Dec 16 19:26:36 JST 2010
+JDF G
+// Created by Project Navigator ver 1.0
+PROJECT tmp2
+DESIGN tmp2
+DEVFAM virtex2
+DEVFAMTIME 0
+DEVICE xc2v1000
+DEVICETIME 0
+DEVPKG fg456
+DEVPKGTIME 0
+DEVSPEED -5
+DEVSPEEDTIME 0
+DEVTOPLEVELMODULETYPE HDL
+TOPLEVELMODULETYPETIME 0
+DEVSYNTHESISTOOL XST (VHDL/Verilog)
+SYNTHESISTOOLTIME 0
+DEVSIMULATOR Modelsim
+SIMULATORTIME 0
+DEVGENERATEDSIMULATIONMODEL VHDL
+GENERATEDSIMULATIONMODELTIME 0
+SOURCE pfpga_config.vhd
+STIMULUS sim.tbw
+[STRATEGY-LIST]
+Normal=True

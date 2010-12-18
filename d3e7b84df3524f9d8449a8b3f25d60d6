@@ -1,29 +1,54 @@
-Mon Nov 15 19:42:24 JST 2010
-#! /bin/sh
-# Time-stamp: <2006-11-22 17:38:27 hamada>
-# Copyright (c) 2006 by Tsuyoshi Hamada, All rights reserved.
+Sat Dec 18 19:27:32 JST 2010
+#!/bin/sh
+
+# An example hook script to verify what is about to be pushed.  Called by "git
+# push" after it has checked the remote status, but before anything has been
+# pushed.  If this script exits with a non-zero status nothing will be pushed.
 #
-# init script for PGR & PROGRAPE-4 (for developers)
+# This hook is called with the following parameters:
 #
+# $1 -- Name of the remote to which the push is being done
+# $2 -- URL to which the push is being done
+#
+# If pushing without using a named remote those arguments will be equal.
+#
+# Information about the commits which are being pushed is supplied as lines to
+# the standard input in the form:
+#
+#   <local ref> <local sha1> <remote ref> <remote sha1>
+#
+# This sample shows how to prevent push of commits where the log message starts
+# with "WIP" (work in progress).
 
-rm -rf /tmp/*
-ln -s /usr/local/src/Xilinx.8_1_03i_lin /tmp/Xilinx
-ln -s /usr/local/src/intel_cc_80 /tmp/intel_cc_80
-ln -s /usr/local/src/package.20060613 /tmp/pgr
-ln -s /usr/local/src/progrape /tmp/progrape
-cd /pciDriver/src/driver/; ./insmod.sh
+remote="$1"
+url="$2"
 
-cd /tmp/progrape/driver;  make load
+z40=0000000000000000000000000000000000000000
 
+IFS=' '
+while read local_ref local_sha remote_ref remote_sha
+do
+	if [ "$local_sha" = $z40 ]
+	then
+		# Handle delete
+	else
+		if [ "$remote_sha" = $z40 ]
+		then
+			# New branch, examine all commits
+			range="$local_sha"
+		else
+			# Update to existing branch, examine new commits
+			range="$remote_sha..$local_sha"
+		fi
 
-umount /mnt/ram
-rm -rf /mnt/ram
-mkdir /mnt/ram
-mke2fs /dev/ram0
-mount -t ext2 /dev/ram0 /mnt/ram
-chmod -R 777 /mnt/ram
+		# Check for WIP commit
+		commit=`git rev-list -n 1 --grep '^WIP' "$range"`
+		if [ -n "$commit" ]
+		then
+			echo "Found WIP commit in $local_ref, not pushing"
+			exit 1
+		fi
+	fi
+done
 
-cp /usr/local/bin/xxx.log /mnt/ram
-chmod -R 777 /mnt/ram
-
-
+exit 0

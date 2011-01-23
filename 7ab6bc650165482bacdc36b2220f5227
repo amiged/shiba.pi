@@ -1,53 +1,37 @@
-Sun Oct 31 19:37:04 JST 2010
-/*
- * ifpga_bram_clear.c
- *
- * Copyright (C) 2006-2007 Tsuyoshi Hamada
- *                                All rights reserved.
- * 
- * No warranty is attached; 
- * I cannot take responsibility for errors or fitness for use.
- *
- */
+Sun Jan 23 19:28:11 JST 2011
+#!/bin/sh
+#
+# An example hook script to prepare the commit log message.
+# Called by "git commit" with the name of the file that has the
+# commit message, followed by the description of the commit
+# message's source.  The hook's purpose is to edit the commit
+# message file.  If the hook fails with a non-zero status,
+# the commit is aborted.
+#
+# To enable this hook, rename this file to "prepare-commit-msg".
 
-#include <stdio.h>
-#include <stdlib.h>
-#include "pg4.h"
+# This hook includes three examples.  The first comments out the
+# "Conflicts:" part of a merge commit.
+#
+# The second includes the output of "git diff --name-status -r"
+# into the message, just before the "git status" output.  It is
+# commented because it doesn't cope with --amend or with squashed
+# commits.
+#
+# The third example adds a Signed-off-by line to the message, that can
+# still be edited.  This is rarely a good idea.
 
-//#define NMAX (0x1<<10) // 4KB
-//#define NMAX (0x1<<11) // 8KB
-//#define NMAX (0x1<<12) // 16KB
-//#define NMAX (0x1<<13) // 32KB
-#define NMAX (0x1<<14) // 64KB
+case "$2,$3" in
+  merge,)
+    /usr/bin/perl -i.bak -ne 's/^/# /, s/^# #/#/ if /^Conflicts/ .. /#/; print' "$1" ;;
 
-unsigned int* ptr;
-unsigned int* bar1;
+# ,|template,)
+#   /usr/bin/perl -i.bak -pe '
+#      print "\n" . `git diff --cached --name-status -r`
+#	 if /^#/ && $first++ == 0' "$1" ;;
 
-int main(int argc,char *argv[])
-{
-  int devid = 0;
-  int n = NMAX;
-  int val = 0x1234567;
-  int i;
+  *) ;;
+esac
 
-  if(argc > 1){
-    n = atoi(argv[1]);
-  }
-  if(argc > 2){
-    val = atoi(argv[2]);
-  }
-
-  printf("n = %d\n",n);
-  printf("filled by %x\n",val);
-
-  pg4_open(devid);
-  bar1 = pg4_get_bar1ptr(devid);
-  printf("BAR0: %lx\n",pg4_getbaseaddr(devid,0));
-  printf("BAR1: %lx\n",pg4_getbaseaddr(devid,1));
-
-  for(i = 0; i < n; i++) {
-    pg4_writebase1(devid, i, val);
-  }
-
-  return 0;
-}
+# SOB=$(git var GIT_AUTHOR_IDENT | sed -n 's/^\(.*>\).*$/Signed-off-by: \1/p')
+# grep -qs "^$SOB" "$1" || echo "$SOB" >> "$1"

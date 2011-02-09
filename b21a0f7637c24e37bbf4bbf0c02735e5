@@ -1,20 +1,19 @@
-Sun Feb  6 19:30:42 JST 2011
-#!/usr/bin/perl
+Wed Feb  9 19:35:14 JST 2011
+//============================================================================
+struct flops_member {
+  double Gflops;
+  double start_time;
+  double force_time;
+  int nbody;
+  int times;
+  int nstep;
+  int nskip;
+};
+
+void flops_initialize(struct flops_member *fm, int n, int nskip);
+void flops_check(struct flops_member *fm);
+
+void flops_ftime_init(struct flops_member *fm);
+void flops_ftime_save(struct flops_member *fm);
 
 
-my $is_stop = 0;
-
-if($ARGV[0]){
-    $is_stop = 1;
-}
-
-my $cmd ="cat /sys/class/fpga/fpga0/irq_count";
-
-while(1){
-    my $exe = `$cmd`;
-    print $exe;
-    exit (1) if($is_stop == 1);
-    sleep (2);
-}
-
-1;

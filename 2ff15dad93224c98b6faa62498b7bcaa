@@ -1,16 +1,28 @@
-Wed Feb  2 19:44:50 JST 2011
-/** 
-# vを1/2ステップ進める
-# v(k+1/2) = v(k) + a(k)*dt/2
-*/
-
+Fri Feb 11 19:28:37 JST 2011
+// Copyright(c) 2004- by PGPG
+// The original source : contrib/src_h/vi/pg_util.h
 #include <stdio.h>
-#include "nbodysim.h"
+#include <stdlib.h>
+#include <time.h>
+#include <math.h>
+#ifndef LONG
+#define LONG unsigned long long int
+#endif
+LONG  double2pgpglog(double x, int nbit_log, int nbit_man);
+double pgpglog2double(LONG x,  int nbit_log, int nbit_man);
+LONG  double2pgpgfloat(double a, int nbit_float, int nbit_man);
+LONG  double2pgpgfloat_r(double a, int nbit_float, int nbit_man, int rmode);
+double pgpgfloat2double(LONG x, int nbit_float, int nbit_man);
+LONG extractbit_long(LONG in, int hi, int lo);
+void l2bit(LONG a);
+void putbits(LONG a);
+void putbits32(LONG a);
+void putbitsn(LONG a,int n);
+double gen_rand_abs(void);
+double gen_rand(void);
+double gen_rand_tamanizero(void);
 
-void leapflog_half(double dt, double v[][DIM], double a[][DIM], int n)
-{
-    int i,d;
-    for(i=0;i<n;i++)
-      for(d=0;d<3;d++)
-	v[i][d] = v[i][d] + (a[i][d]*dt)/2.0;
-}
+
+#include <sys/time.h>
+#include <sys/resource.h>
+double e_time(void);

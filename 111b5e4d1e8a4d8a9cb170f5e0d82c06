@@ -1,50 +1,75 @@
-Thu Jan 27 19:36:00 JST 2011
--- Copyright 2004 Tsuyoshi Hamada
---
---
---clk         __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __
---[DMAR_ENABLE] _____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
---en0                _____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
---en1                     _____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
---en2                          _____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
---en3                               _____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
---DBUS_HiZ            ~~~~~~~~~~~~~~\_________________________________________________/~~~~
+Sat Feb 12 19:32:11 JST 2011
+#!/usr/bin/perl
+#
+# mtrr : MTRR register resetting script for PROGRAPE-4
+#
+# Copyright (C) 2006-2007 Tsuyoshi Hamada. All rights reserved.
+# 
+# No warranty is attached; 
+#
 
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
+my $devid   = 0;
+my $bar;
+my $cmd;
+my $exe;
 
-entity dmar_dbus_hiz is
-  port (
-    RST       : in std_logic;
-    CLK       : in std_logic;
-    ENABLE    : in std_logic;
-    DBUS_HiZ  : out std_logic :='1');
-end dmar_dbus_hiz;
+if(@ARGV){
+    sprintf($devid, "%d", $ARGV[0]);
+}
 
-architecture rtl of dmar_dbus_hiz is
-signal en0,en1,en2,en3 : std_logic :='0';
-begin
+$bar = 1;
 
-  process(CLK) begin
-    if(CLK'event and CLK = '1') then
-      en3 <= en2;
-      en2 <= en1;
-      en1 <= en0;
-      en0 <= ENABLE;
-    end if;
-  end process;
+my $adr=0, $size;
+
+$cmd = "ifpga_get_barinfo $devid $bar";
+$exe = `$cmd`;
+chomp($exe);
+$adr = $exe;
+
+$cmd = "ifpga_get_barinfo $devid $bar 1";
+$exe = `$cmd`;
+chomp($exe);
+$size = $exe;
+
+print "BAR1 start at $adr, size $size bytes\n";
+
+if( ($adr eq '') || ($adr eq '0x0') || ($adr eq "0xffffffff")){
+    print "discontinued\n";
+    exit(-1);
+}
 
 
-  process(RST,CLK,en2,en3) begin
-    if(RST='1') then
-      DBUS_HiZ <= '1';
-    elsif(CLK'event and CLK = '1') then
-     if( (en1='1') AND (en2='0') ) then
-       DBUS_HiZ <= '0';
-     elsif( (en2='0') AND (en3='1') ) then
-       DBUS_HiZ <= '1';
-     end if;
-    end if;
-  end process;
+open(RD,"/proc/mtrr");
+my $hit_line = '';
+while(<RD>){
+    my $s = $_;
+    chomp($s);
+    if($s =~ /$adr/){
+	$hit_line = $s;
+    }
+}
+close(RD);
 
-end rtl;
+if($hit_line ne ''){
+    print "Hit: ". $hit_line ."\n";
+}else{
+    $cmd = "cat /proc/mtrr";
+    print `$cmd` ."\n";
+    print "Can't find the mtrr register for bar1($adr)\n";
+    print "discontinued\n";
+    exit(-1);
+}
+
+my ($reg_nr, ) = split(/\:/,$hit_line);
+$reg_nr =~ s/reg//;
+$reg_nr = sprintf("%d",$reg_nr);
+
+$cmd = "echo \"disable=$reg_nr\" >| /proc/mtrr";
+print  $cmd. "\n";
+print  `$cmd`. "\n";
+
+$cmd = "cat /proc/mtrr";
+print `$cmd`;
+
+
+1;

@@ -1,111 +1,231 @@
-Sun Dec 19 19:54:47 JST 2010
--- 2004/05/13 16:30
--- for matsubayashi simulation
+Tue Feb 15 19:29:01 JST 2011
+-- C:\CYGWIN\HOME\ADMINISTRATOR\FKIT\PCI64\PROJ
+-- VHDL Annotation Test Bench created by
+-- HDL Bencher 6.1i
+-- Tue Jan 04 15:15:30 2005
 
-#define NPOS 32
-#define NLOG 17
-#define NMAN 8
-#define NCUT 6
-#define NFOR 57
-#define NACC 64
+LIBRARY IEEE;
+USE IEEE.STD_LOGIC_1164.ALL;
+USE IEEE.STD_LOGIC_UNSIGNED.ALL;
+USE IEEE.STD_LOGIC_ARITH.ALL;
+USE IEEE.STD_LOGIC_TEXTIO.ALL;
+USE STD.TEXTIO.ALL;
 
-#define DELAY_SUB 1  /* A */
-#define DELAY_FL  1  /* B */
-#define DELAY_X2Y2 1    /* C */
-#define DELAY_R2   1    /* D */
-#define DELAY_R3   1    /* E */
-#define DELAY_MR3  1    /* F */
-#define DELAY_F    1    /* G */
-#define DELAY_OF   1    /* H */
-#define DELAY_LF   1    /* I */
-#define DELAY_AC   1    /* J */
+ENTITY sim_local_read_cnt IS
+END sim_local_read_cnt;
 
-#define DELAY_EPS  2    /* A+B */
-#define DELAY_DX   4    /* C+D+E+F */
-#define DELAY_M    5    /* A+B+C+D+E */
-#define DELAY_CLE  9    /* A+B+C+D+E+F+G+H+I */
-#define DELAY_TOT  10   /* DELAY_CLE + DELAY_AC */
+ARCHITECTURE testbench_arch OF sim_local_read_cnt IS
+-- If you get a compiler error on the following line,
+-- from the menu do Options->Configuration select VHDL 87
+FILE RESULTS: TEXT OPEN WRITE_MODE IS "c:\cygwin\home\administrator\fkit\pci64\proj\sim_local_read_cnt.ano";
+	COMPONENT local_read_cnt
+		GENERIC (
+			CNT_WIDTH : INTEGER;
+			FO_BASE : INTEGER;
+			NBIT_FO_UAD : INTEGER;
+			INTF_LAT : INTEGER
+		);
+		PORT (
+			NPIPE : In  std_logic_vector (7 DOWNTO 0);
+			CALC_DONE : In  std_logic;
+			BUSY : Out  std_logic;
+			EXEC : Out  std_logic;
+			START_AD : Out  std_logic_vector (18 DOWNTO 0);
+			NQWORD : Out  std_logic_vector (8 DOWNTO 0);
+			CHIPSEL : Out  std_logic_vector (3 DOWNTO 0);
+			MEM_AD_BASE : Out  std_logic_vector (12 DOWNTO 0);
+			BUSY_IF : In  std_logic;
+			RST : In  std_logic;
+			CLK : In  std_logic
+		);
+	END COMPONENT;
 
+	SIGNAL NPIPE : std_logic_vector (7 DOWNTO 0);
+	SIGNAL CALC_DONE : std_logic;
+	SIGNAL BUSY : std_logic;
+	SIGNAL EXEC : std_logic;
+	SIGNAL START_AD : std_logic_vector (18 DOWNTO 0);
+	SIGNAL NQWORD : std_logic_vector (8 DOWNTO 0);
+	SIGNAL CHIPSEL : std_logic_vector (3 DOWNTO 0);
+	SIGNAL MEM_AD_BASE : std_logic_vector (12 DOWNTO 0);
+	SIGNAL BUSY_IF : std_logic;
+	SIGNAL RST : std_logic;
+	SIGNAL CLK : std_logic;
 
+BEGIN
+	UUT : local_read_cnt
+	GENERIC MAP (
+		CNT_WIDTH => 16,
+		FO_BASE => 24576,
+		NBIT_FO_UAD => 3,
+		INTF_LAT => 8
+	)
+	PORT MAP (
+		NPIPE => NPIPE,
+		CALC_DONE => CALC_DONE,
+		BUSY => BUSY,
+		EXEC => EXEC,
+		START_AD => START_AD,
+		NQWORD => NQWORD,
+		CHIPSEL => CHIPSEL,
+		MEM_AD_BASE => MEM_AD_BASE,
+		BUSY_IF => BUSY_IF,
+		RST => RST,
+		CLK => CLK
+	);
 
+	PROCESS -- clock process for CLK,
+		VARIABLE TX_TIME : INTEGER :=0;
 
-#define xsize (100.0)
-#define mmin (1.220703125e-04)
-#define xoffset (xsize/2.0)
-#define xscale (pow(2.0,(double)NPOS)/xsize)
-#define mscale (pow(2.0,95.38)/mmin)
-#define escale (xscale*xscale)
-#define foffset (pow(2.0,23.0))
-#define fscale (-xscale*xscale*foffset/mscale)
---mmin 0xdf61
+		PROCEDURE ANNOTATE_BUSY(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",BUSY,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, BUSY);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
 
-/NPIPE 1
-/NVMP 1
+		PROCEDURE ANNOTATE_EXEC(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",EXEC,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, EXEC);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
 
-/JPSET xj,0,0,31,x[][0],ufix,NPOS,xscale,xoffset
-/JPSET yj,0,32,63,x[][1],ufix,NPOS,xscale,xoffset
-/JPSET zj,0,64,95,x[][2],ufix,NPOS,xscale,xoffset
-/JPSET mj,0,96,112,m[],log,NLOG,NMAN,mscale
-/IPSET xi,x[][0],ufix,NPOS,xscale,xoffset
-/IPSET yi,x[][1],ufix,NPOS,xscale,xoffset
-/IPSET zi,x[][2],ufix,NPOS,xscale,xoffset
-/IPSET ieps2,eps2,log,NLOG,NMAN,escale
-/FOSET sx,a[][0],fix,NACC,fscale
-/FOSET sy,a[][1],fix,NACC,fscale
-/FOSET sz,a[][2],fix,NACC,fscale
-/VALSET fx_ofst,0x9700,0,16
-/VALSET fy_ofst,0x9700,0,16
-/VALSET fz_ofst,0x9700,0,16
-/DATASET fx_ofst,01001011100000000,0,16
-/DATASET fy_ofst,01001011100000000,0,16
-/DATASET fz_ofst,01001011100000000,0,16
+		PROCEDURE ANNOTATE_START_AD(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",START_AD,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, START_AD);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
 
-void force_gravity_on_emulator(x,m,eps2,a,n)
-	double x[][3];
-	double m[];
-	double eps2;
-	double a[][3];
-	int n;
-{
-  pg_rundelay(10);
-  pg_fix_addsub(SUB,xi,xj,xij,NPOS,DELAY_SUB);
-  pg_fix_addsub(SUB,yi,yj,yij,NPOS,DELAY_SUB);
-  pg_fix_addsub(SUB,zi,zj,zij,NPOS,DELAY_SUB);
-  pg_conv_ftol(xij,dx,NPOS,NLOG,NMAN,DELAY_FL);
-  pg_conv_ftol(yij,dy,NPOS,NLOG,NMAN,DELAY_FL);
-  pg_conv_ftol(zij,dz,NPOS,NLOG,NMAN,DELAY_FL);
+		PROCEDURE ANNOTATE_NQWORD(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",NQWORD,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, NQWORD);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
 
-  pg_pdelay(dx,dxr,NLOG,DELAY_DX);
-  pg_pdelay(dy,dyr,NLOG,DELAY_DX);
-  pg_pdelay(dz,dzr,NLOG,DELAY_DX);
+		PROCEDURE ANNOTATE_CHIPSEL(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",CHIPSEL,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, CHIPSEL);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
 
-  pg_log_shift(1,dx,x2,NLOG);
-  pg_log_shift(1,dy,y2,NLOG);
-  pg_log_shift(1,dz,z2,NLOG);
+		PROCEDURE ANNOTATE_MEM_AD_BASE(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",MEM_AD_BASE,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, MEM_AD_BASE);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
 
-  pg_pdelay(ieps2,ieps2r,NLOG,DELAY_EPS);
-  pg_log_unsigned_add_itp(    x2,y2,x2y2,NLOG,NMAN,DELAY_X2Y2,NCUT);
-  pg_log_unsigned_add_itp(z2,ieps2r,z2e2,NLOG,NMAN,DELAY_X2Y2,NCUT);
-  pg_log_unsigned_add_itp(  x2y2,z2e2,r2,NLOG,NMAN,DELAY_R2,NCUT);
+	BEGIN
+		CLOCK_LOOP : LOOP
+		CLK <= transport '0';
+		WAIT FOR 25 ns;
+		TX_TIME := TX_TIME + 25;
+		CLK <= transport '1';
+		WAIT FOR 25 ns;
+		TX_TIME := TX_TIME + 25;
+		ANNOTATE_BUSY(TX_TIME);
+		ANNOTATE_EXEC(TX_TIME);
+		ANNOTATE_START_AD(TX_TIME);
+		ANNOTATE_NQWORD(TX_TIME);
+		ANNOTATE_CHIPSEL(TX_TIME);
+		ANNOTATE_MEM_AD_BASE(TX_TIME);
+		WAIT FOR 25 ns;
+		TX_TIME := TX_TIME + 25;
+		CLK <= transport '0';
+		WAIT FOR 25 ns;
+		TX_TIME := TX_TIME + 25;
+		END LOOP CLOCK_LOOP;
+	END PROCESS;
 
-  pg_log_shift(-1,r2,r1,NLOG);
-  pg_log_muldiv(MUL,r2,r1,r3,NLOG,DELAY_R3);
+	PROCESS   -- Process for CLK
+		VARIABLE TX_OUT : LINE;
 
-  pg_pdelay(mj,mjr,17,DELAY_M);
-  pg_log_muldiv(DIV,mjr,r3,mf,NLOG,DELAY_MR3);
+		BEGIN
+		-- --------------------
+		CALC_DONE <= transport '0';
+		BUSY_IF <= transport '0';
+		RST <= transport '0';
+		NPIPE <= transport std_logic_vector'("00000000"); --0
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=100 ns
+		NPIPE <= transport std_logic_vector'("00000010"); --2
+		-- --------------------
+		WAIT FOR 500 ns; -- Time=600 ns
+		CALC_DONE <= transport '1';
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=700 ns
+		CALC_DONE <= transport '0';
+		-- --------------------
+		WAIT FOR 32225 ns; -- Time=32925 ns
+		-- --------------------
 
-  pg_log_muldiv(MUL,mf,dxr,fx,NLOG,DELAY_F);
-  pg_log_muldiv(MUL,mf,dyr,fy,NLOG,DELAY_F);
-  pg_log_muldiv(MUL,mf,dzr,fz,NLOG,DELAY_F);
+		STD.TEXTIO.write(TX_OUT, string'("Total[]"));
+		STD.TEXTIO.writeline(results, TX_OUT);
+		ASSERT (FALSE) REPORT
+			"Success! Simulation for annotation completed"
+			SEVERITY FAILURE;
+	END PROCESS;
+END testbench_arch;
 
-  pg_log_muldiv(SDIV,fx,fx_ofst,fxo,NLOG,DELAY_OF);
-  pg_log_muldiv(SDIV,fy,fy_ofst,fyo,NLOG,DELAY_OF);
-  pg_log_muldiv(SDIV,fz,fz_ofst,fzo,NLOG,DELAY_OF);
-
-  pg_conv_ltof(fxo,ffx,NLOG,NMAN,NFOR,DELAY_LF);
-  pg_conv_ltof(fyo,ffy,NLOG,NMAN,NFOR,DELAY_LF);
-  pg_conv_ltof(fzo,ffz,NLOG,NMAN,NFOR,DELAY_LF);
-  pg_fix_accum(ffx,sx,NFOR,NACC,DELAY_AC,DELAY_CLE);
-  pg_fix_accum(ffy,sy,NFOR,NACC,DELAY_AC,DELAY_CLE);
-  pg_fix_accum(ffz,sz,NFOR,NACC,DELAY_AC,DELAY_CLE);
-}
+CONFIGURATION local_read_cnt_cfg OF sim_local_read_cnt IS
+	FOR testbench_arch
+	END FOR;
+END local_read_cnt_cfg;

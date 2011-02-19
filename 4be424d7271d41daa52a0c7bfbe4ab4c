@@ -1,2 +1,36 @@
-Fri Dec 10 19:28:21 JST 2010
-set allSynthModules {pcim_lc.MOD cfg.MOD pci_targetcnt.MOD pci_rdtfifo.MOD pci_dmacnt.MOD pcicnt.MOD regcnt.MOD dp32b8192w.MOD dpram.MOD user.MOD pfpga_config.MOD local_write.MOD local_read_cnt.MOD local_read_if.MOD local_read.MOD local_io.MOD writecomb_check.MOD fifofifo.MOD dcm_ps_f.MOD ifpga.MOD}
+Sat Feb 19 19:36:59 JST 2011
+-- Copyright 2004 Tsuyoshi Hamada
+--
+--
+--
+-- DMAR_STATE is used only 
+--                dmar_mem_adr.vhd  
+--                dmar_mem_re.vhd
+--                dmar_start_adr.vhd
+-- dmar_dbus_hiz and dma_mem_data do not used DMAR_STATE.
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+
+entity dmar_state is
+  port (
+    RST      : in std_logic;
+    CLK      : in std_logic;
+    ENABLE   : in std_logic;
+    STATE    : out std_logic_vector(1 downto 0) );
+end dmar_state;
+
+architecture rtl of dmar_state is
+
+component dmaw_state
+  port (
+    RST      : in std_logic;
+    CLK      : in std_logic;
+    ENABLE   : in std_logic;
+    STATE    : out std_logic_vector(1 downto 0) );
+end component;
+
+begin
+  u0 : dmaw_state port map(RST=>RST, CLK=>CLK, ENABLE=>ENABLE, STATE=>STATE);
+end rtl;

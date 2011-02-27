@@ -1,111 +1,129 @@
-Mon Feb 14 19:34:38 JST 2011
--- 2004/05/13 16:30
--- for matsubayashi simulation
+Sun Feb 27 19:43:58 JST 2011
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+import argparse
+import numpy as np
+import cv2
+from datetime import datetime
+import mkdir
+import aieye_find
+import time
+import sys
 
-#define NPOS 32
-#define NLOG 17
-#define NMAN 8
-#define NCUT 6
-#define NFOR 57
-#define NACC 64
+class_num = 1 # annotate number for class: 001: hamada
+drawing = False
+posi0 = [-1,-1]
+posi1 = [-1,-1]
+image_size = [-1, -1] # [height, width]
 
-#define DELAY_SUB 1  /* A */
-#define DELAY_FL  1  /* B */
-#define DELAY_X2Y2 1    /* C */
-#define DELAY_R2   1    /* D */
-#define DELAY_R3   1    /* E */
-#define DELAY_MR3  1    /* F */
-#define DELAY_F    1    /* G */
-#define DELAY_OF   1    /* H */
-#define DELAY_LF   1    /* I */
-#define DELAY_AC   1    /* J */
+def mouse_event(event,x,y,flags,param):
+    global posi0, posi1, drawing
 
-#define DELAY_EPS  2    /* A+B */
-#define DELAY_DX   4    /* C+D+E+F */
-#define DELAY_M    5    /* A+B+C+D+E */
-#define DELAY_CLE  9    /* A+B+C+D+E+F+G+H+I */
-#define DELAY_TOT  10   /* DELAY_CLE + DELAY_AC */
+    if x < 0: x = 0 
+    if y < 0: y = 0 
+    if x >= image_size[1]: x = image_size[1] - 1
+    if y >= image_size[0]: y = image_size[0] - 1
 
 
+    if event == cv2.EVENT_LBUTTONDOWN:
+        print ('Push')
+        drawing = True
+        posi0[0] = x
+        posi0[1] = y
 
 
-#define xsize (100.0)
-#define mmin (1.220703125e-04)
-#define xoffset (xsize/2.0)
-#define xscale (pow(2.0,(double)NPOS)/xsize)
-#define mscale (pow(2.0,95.38)/mmin)
-#define escale (xscale*xscale)
-#define foffset (pow(2.0,23.0))
-#define fscale (-xscale*xscale*foffset/mscale)
---mmin 0xdf61
+    elif event == cv2.EVENT_MOUSEMOVE:
+        if drawing == True:
+            print ("Drawing... (%d, %d)" % (x, y))
+        else:
+            pass
+    elif event == cv2.EVENT_LBUTTONUP:
+        print ('Up')
+        drawing = False
+        cv2.rectangle(image, (posi0[0],posi0[1]), (x,y), (0,255,0), 1)
+        posi1[0] = x
+        posi1[1] = y
 
-/NPIPE 1
-/NVMP 1
+def save_data(image_dbg, image_orig, fnum):
+    global class_num, posi0, posi1
+    basedir = '../data4bbox/'
+    fname_body = "image_%04d" % fnum
 
-/JPSET xj,0,0,31,x[][0],ufix,NPOS,xscale,xoffset
-/JPSET yj,0,32,63,x[][1],ufix,NPOS,xscale,xoffset
-/JPSET zj,0,64,95,x[][2],ufix,NPOS,xscale,xoffset
-/JPSET mj,0,96,112,m[],log,NLOG,NMAN,mscale
-/IPSET xi,x[][0],ufix,NPOS,xscale,xoffset
-/IPSET yi,x[][1],ufix,NPOS,xscale,xoffset
-/IPSET zi,x[][2],ufix,NPOS,xscale,xoffset
-/IPSET ieps2,eps2,log,NLOG,NMAN,escale
-/FOSET sx,a[][0],fix,NACC,fscale
-/FOSET sy,a[][1],fix,NACC,fscale
-/FOSET sz,a[][2],fix,NACC,fscale
-/VALSET fx_ofst,0x9700,0,16
-/VALSET fy_ofst,0x9700,0,16
-/VALSET fz_ofst,0x9700,0,16
-/DATASET fx_ofst,01001011100000000,0,16
-/DATASET fy_ofst,01001011100000000,0,16
-/DATASET fz_ofst,01001011100000000,0,16
+    # save image_orig (for Images/)
+    fname = fname_body + ".jpg"
+    basedir_images = basedir+"Images/%03d/"%(class_num)
+    ofname_images = mkdir.get_filename_frame_simple(basedir_images , fname)
+    print (ofname_images)
+    cv2.imwrite(ofname_images, image_orig)
 
-void force_gravity_on_emulator(x,m,eps2,a,n)
-	double x[][3];
-	double m[];
-	double eps2;
-	double a[][3];
-	int n;
-{
-  pg_rundelay(10);
-  pg_fix_addsub(SUB,xi,xj,xij,NPOS,DELAY_SUB);
-  pg_fix_addsub(SUB,yi,yj,yij,NPOS,DELAY_SUB);
-  pg_fix_addsub(SUB,zi,zj,zij,NPOS,DELAY_SUB);
-  pg_conv_ftol(xij,dx,NPOS,NLOG,NMAN,DELAY_FL);
-  pg_conv_ftol(yij,dy,NPOS,NLOG,NMAN,DELAY_FL);
-  pg_conv_ftol(zij,dz,NPOS,NLOG,NMAN,DELAY_FL);
+    # save image_dbg (for Debug/)
+    fname = fname_body + ".jpg"
+    basedir_dbg = basedir+"Debug/%03d/"%(class_num)
+    ofname_dbg  = mkdir.get_filename_frame_simple(basedir_dbg , fname)
+    print (ofname_dbg)
+    cv2.imwrite(ofname_dbg, image_dbg)
 
-  pg_pdelay(dx,dxr,NLOG,DELAY_DX);
-  pg_pdelay(dy,dyr,NLOG,DELAY_DX);
-  pg_pdelay(dz,dzr,NLOG,DELAY_DX);
+    # save labes
+    fname = fname_body + ".txt"
+    basedir_labels = basedir+"Labels/%03d/"%(class_num)
+    ofname_labels  = mkdir.get_filename_frame_simple(basedir_labels , fname)
+    print (ofname_labels)
+    bbox_posi = []
+    bbox_posi.append(min(posi0[0], posi1[0]))
+    bbox_posi.append(min(posi0[1], posi1[1]))
+    bbox_posi.append(max(posi0[0], posi1[0]))
+    bbox_posi.append(max(posi0[1], posi1[1]))
+    with open(ofname_labels, "w") as file:
+        file.write("1\n")
+        file.write("%d %d %d %d\n" % (tuple(bbox_posi)))
 
-  pg_log_shift(1,dx,x2,NLOG);
-  pg_log_shift(1,dy,y2,NLOG);
-  pg_log_shift(1,dz,z2,NLOG);
+if '__main__' == __name__:
+    basedir = '../log/'
+    if (len(sys.argv) > 1 ):
+        basedir = sys.argv[1]
+    
+    iflist = [] 
+    for fname in aieye_find.find(basedir, '*.jpg'):
+        iflist.append(fname)
 
-  pg_pdelay(ieps2,ieps2r,NLOG,DELAY_EPS);
-  pg_log_unsigned_add_itp(    x2,y2,x2y2,NLOG,NMAN,DELAY_X2Y2,NCUT);
-  pg_log_unsigned_add_itp(z2,ieps2r,z2e2,NLOG,NMAN,DELAY_X2Y2,NCUT);
-  pg_log_unsigned_add_itp(  x2y2,z2e2,r2,NLOG,NMAN,DELAY_R2,NCUT);
+    iflist.sort()
+    ni = len(iflist)
+    i = 0
 
-  pg_log_shift(-1,r2,r1,NLOG);
-  pg_log_muldiv(MUL,r2,r1,r3,NLOG,DELAY_R3);
+    #    for i, fname in enumerate(iflist):
+    while( i < ni) :
+        fname = iflist[i]
+        print (fname, "%d/%d (%1.3f)"%(i, ni, i/ni))
 
-  pg_pdelay(mj,mjr,17,DELAY_M);
-  pg_log_muldiv(DIV,mjr,r3,mf,NLOG,DELAY_MR3);
+        image_orig = cv2.imread(fname, cv2.IMREAD_COLOR)
+        image = image_orig.copy()
+        image_size[0], image_size[1] = image.shape[:2]
+        is_next = False
+        while (not is_next):
+            cv2.imshow("THBox-annon.py", image)
+            cv2.namedWindow("THBox-annon.py", cv2.WINDOW_NORMAL)
+            cv2.setMouseCallback("THBox-annon.py", mouse_event)
+            key = cv2.waitKey(1) & 0xFF
+            if key == ord(' '):
+                save_data(image, image_orig, i)
+                is_next = True
+            if key  == 83:  # ->
+                is_next = True
+            if key  == 81:  # <-
+                i = i - 2
+                is_next = True
+            if key == ord('r'): # Reset
+                i = i - 1
+                is_next = True
+            if key  == ord('q'): 
+                i = ni
+                break
+        i = i+1
 
-  pg_log_muldiv(MUL,mf,dxr,fx,NLOG,DELAY_F);
-  pg_log_muldiv(MUL,mf,dyr,fy,NLOG,DELAY_F);
-  pg_log_muldiv(MUL,mf,dzr,fz,NLOG,DELAY_F);
+    cv2.destroyAllWindows()
 
-  pg_log_muldiv(SDIV,fx,fx_ofst,fxo,NLOG,DELAY_OF);
-  pg_log_muldiv(SDIV,fy,fy_ofst,fyo,NLOG,DELAY_OF);
-  pg_log_muldiv(SDIV,fz,fz_ofst,fzo,NLOG,DELAY_OF);
 
-  pg_conv_ltof(fxo,ffx,NLOG,NMAN,NFOR,DELAY_LF);
-  pg_conv_ltof(fyo,ffy,NLOG,NMAN,NFOR,DELAY_LF);
-  pg_conv_ltof(fzo,ffz,NLOG,NMAN,NFOR,DELAY_LF);
-  pg_fix_accum(ffx,sx,NFOR,NACC,DELAY_AC,DELAY_CLE);
-  pg_fix_accum(ffy,sy,NFOR,NACC,DELAY_AC,DELAY_CLE);
-  pg_fix_accum(ffz,sz,NFOR,NACC,DELAY_AC,DELAY_CLE);
-}
+
+
+
+    

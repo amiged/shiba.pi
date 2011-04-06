@@ -1,6 +1,23 @@
-Sun Mar 27 19:30:12 JST 2011
-3
-0
-1 0.9700436 -0.24308753 0 0.466203685 0.43236573 0
-1 -0.9700436 0.24308753 -0 0.466203685 0.43236573 0
-1 0 0 0 -0.93240737 -0.86473146 -0
+Wed Apr  6 19:27:24 JST 2011
+#include <stdio.h>
+#include "nbodysim.h"
+
+void debug_func_force(double x[][DIM],double m[], double eps2,double a[][DIM],int n)
+{
+    int i,j;
+
+    printf("-------------------------------\n");
+    printf("The debuging routine is called.\n");
+    printf("-------------------------------\n");
+    printf("n = %d\n",n);
+    printf("eps2 = %e\n",eps2);
+
+    for(i=0;i<n;i++){
+        printf("---\n");
+        printf("particle %d\n",i);
+        printf("m[%d] = %e\n",i,m[i]);
+        for(j=0;j<3;j++) printf("x[%d][%d] = %e\n",i,j,x[i][j]);
+        for(j=0;j<3;j++) printf("a[%d][%d] = %e\n",i,j,a[i][j]);
+    }
+}
+

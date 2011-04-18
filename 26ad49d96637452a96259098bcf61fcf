@@ -1,41 +1,23 @@
-Fri Mar  4 19:35:11 JST 2011
-// Time-stamp: <2006-09-04 13:41:34 hamada>
-// by T.Hamada
-//
-// <2006-09-04 13:33:47 hamada>
-
+Mon Apr 18 19:28:49 JST 2011
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
+#include "nbodysim.h"
 
-#include "pg4.h"
-
-void rst(int devid, int d, int msec)
+void debug_func_force(double x[][DIM],double m[], double eps2,double a[][DIM],int n)
 {
-  d = 0xff & d;
-  WriteBase0(devid, 0x4, d);
-  usleep(msec*1000);
+    int i,j;
+
+    printf("-------------------------------\n");
+    printf("The debuging routine is called.\n");
+    printf("-------------------------------\n");
+    printf("n = %d\n",n);
+    printf("eps2 = %e\n",eps2);
+
+    for(i=0;i<n;i++){
+        printf("---\n");
+        printf("particle %d\n",i);
+        printf("m[%d] = %e\n",i,m[i]);
+        for(j=0;j<3;j++) printf("x[%d][%d] = %e\n",i,j,x[i][j]);
+        for(j=0;j<3;j++) printf("a[%d][%d] = %e\n",i,j,a[i][j]);
+    }
 }
 
-int main(int argc, char* argv[])
-{
-  int devid=0;
-  int i;
-
-  pg4_open(devid);
-  
-  for(i=0;i<16;i++){
-    int x;
-    x = 0xff&(1<<(i%8));
-    rst(devid, x, 100);
-    rst(devid, 0, 1);
-  }
-
-  rst(devid, 0xff, 1000);
-  rst(devid, 0x0, 0);
-
-  pg4_close(devid);
-
-  return 0;
-}

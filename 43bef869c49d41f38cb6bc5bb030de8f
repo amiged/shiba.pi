@@ -1,41 +1,65 @@
-Tue Apr  5 19:35:56 JST 2011
-// Time-stamp: <2006-09-04 13:41:34 hamada>
-// by T.Hamada
-//
-// <2006-09-04 13:33:47 hamada>
+Mon Apr 25 19:48:28 JST 2011
+-- Copyright 2004 Tsuyoshi Hamada
+--
+--
+-- clk         __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __
+-- [ DBUS ]           X   >< n ><d0 ><d1 ><d2 ><d3 ><d4 ><d5 ><d6 ><d7 >
+-- STATE               0  >< 1 >< 2                                    >< 3 >< 0 
+-- START_ADR                    < n                                    >
+-- x                              0 >< 1 >< 2 >< 3 >< 4 >< 5 >< 6 >< 7 >< 8 >< 0 >
+-- z                              1 >< 2 >< 3 >< 4 >< 5 >< 6 >< 7 >< 8 >< 9 >< 1 >
+-- mem_adr_inc                    0 >< 1 >< 2 >< 3 >< 4 >< 5 >< 6 >< 7 >< 8 >< 0 >
+-- MEM_ADR                           < n ><n+1><n+2><n+3><n+4><n+5><n+6><n+7>
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
-#include "pg4.h"
+entity dmaw_mem_adr is
+  port (
+    CLK       : in  std_logic;
+    STATE     : in std_logic_vector(1 downto 0);  -- STATE of DMAW
+    START_ADR : in std_logic_vector(18 downto 0);
+    MEM_ADR   : out  std_logic_vector(18 downto 0)
+    );
+end dmaw_mem_adr;
 
-void rst(int devid, int d, int msec)
-{
-  d = 0xff & d;
-  WriteBase0(devid, 0x4, d);
-  usleep(msec*1000);
-}
+architecture rtl of dmaw_mem_adr is
 
-int main(int argc, char* argv[])
-{
-  int devid=0;
-  int i;
+signal mem_adr_inc : std_logic_vector(18 downto 0);
+signal   x,z : std_logic_vector(18 downto 0);
+constant one : std_logic_vector(18 downto 0) := "0000000000000000001";
 
-  pg4_open(devid);
-  
-  for(i=0;i<16;i++){
-    int x;
-    x = 0xff&(1<<(i%8));
-    rst(devid, x, 100);
-    rst(devid, 0, 1);
-  }
+begin
 
-  rst(devid, 0xff, 1000);
-  rst(devid, 0x0, 0);
+  z <= x + one;
 
-  pg4_close(devid);
+  -----------------
+  -- mem_adr_inc
+  -----------------
+  process (CLK,STATE) begin
+    if(clk'event and clk = '1') then
+      if(STATE = "10") then
+        mem_adr_inc <= z;
+      else
+        mem_adr_inc <= (others=>'0');
+      end if;
+    end if;
+  end process;
 
-  return 0;
-}
+  x <= mem_adr_inc;
+
+  -----------------
+  -- MEM_ADR
+  -----------------
+  process (CLK,STATE) begin
+    if(clk'event and clk = '1') then
+      if(STATE="10") then
+        MEM_ADR <= mem_adr_inc + START_ADR;
+      else
+        MEM_ADR <= (others=>'0');
+      end if;
+    end if;
+  end process;
+
+end rtl;

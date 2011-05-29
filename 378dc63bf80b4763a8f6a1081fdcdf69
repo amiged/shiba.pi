@@ -1,324 +1,190 @@
-Sun May 22 19:51:22 JST 2011
-# ---------------------------------------
-# pfpga ucf < for ISE6.3i >
-# 2004/11/16 by T.Hamada
-# ---------------------------------------
+Sun May 29 19:49:48 JST 2011
+#include <math.h>
+#include "pg_util.h"
+
+// Funtion Prototyping
+void            pg_fix_sub_32(int x, int y, int *z);
+void            pg_fix_sub_32(int x, int y, int *z);
+void            pg_fix_sub_32(int x, int y, int *z);
+void            pg_conv_ftol_fix32_log17_man8(int x, int *z);
+void            pg_conv_ftol_fix32_log17_man8(int x, int *z);
+void            pg_conv_ftol_fix32_log17_man8(int x, int *z);
+void            pg_log_shift_log17_1(int x, int *z);
+void            pg_log_shift_log17_1(int x, int *z);
+void            pg_log_shift_log17_1(int x, int *z);
+void            pg_log_unsigned_add_itp_log17_man8_cut6(LONG x, LONG y,
+							LONG * z);
+void            pg_log_unsigned_add_itp_log17_man8_cut6(LONG x, LONG y,
+							LONG * z);
+void            pg_log_unsigned_add_itp_log17_man8_cut6(LONG x, LONG y,
+							LONG * z);
+void            pg_log_shift_log17_m1(int x, int *z);
+void            pg_log_mul_17(int x, int y, int *z);
+void            pg_log_div_17(int x, int y, int *z);
+void            pg_log_mul_17(int x, int y, int *z);
+void            pg_log_mul_17(int x, int y, int *z);
+void            pg_log_mul_17(int x, int y, int *z);
+void            pg_log_sdiv_17(int x, int y, int *z);
+void            pg_log_sdiv_17(int x, int y, int *z);
+void            pg_log_sdiv_17(int x, int y, int *z);
+void            pg_conv_ltof_log17_man8_fix57(int x, int *z);
+void            pg_conv_ltof_log17_man8_fix57(int x, int *z);
+void            pg_conv_ltof_log17_man8_fix57(int x, int *z);
+void            pg_fix_accum_f57_s64(long long int x, long long int *z);
+void            pg_fix_accum_f57_s64(long long int x, long long int *z);
+void            pg_fix_accum_f57_s64(long long int x, long long int *z);
 
 
-################################################################################
-# Timing specification
-################################################################################
-NET "CK133"							TNM_NET = "CLK133";
-NET "CK66"							TNM_NET = "CLK66";
+#define NJMAX 16384
+static LONG _a[NJMAX][3];
+static unsigned int _xi[NJMAX][3];
+void dump_foset(int n)
+{
+  int i;
+  static int flag=0;
+  static FILE* fp;
+
+  if(flag==0){
+    fp = fopen("xxx.log","w");
+    flag=1;
+  }
+
+  for(i=0;i<n;i++){
+    fprintf(fp,"%08x,",_xi[i][0]);
+    fprintf(fp,"%08x,",_xi[i][1]);
+    fprintf(fp,"%08x,",_xi[i][2]);
+
+    fprintf(fp,"%016llx,",_a[i][0]);
+    fprintf(fp,"%016llx,",_a[i][1]);
+    fprintf(fp,"%016llx,",_a[i][2]);
+
+    fprintf(fp,"\n");
+  }
+  fflush(fp);
+}
 
 
-################################################################################
-# I/O property
-################################################################################
-NET	"CBUS<0>"				LOC = "AU10";
-NET	"CBUS<1>"				LOC = "AT10";
-NET	"CBUS<2>"				LOC = "AJ12";
-NET	"CBUS<3>"				LOC = "AJ13";
-NET	"CBUS<4>"				LOC = "AL10";
-NET	"CBUS<5>"				LOC = "AL11";
-NET	"CBUS<6>"				LOC = "AN11";
-NET	"CBUS<7>"				LOC = "AM11";
 
-NET	"CBUS<0>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS<1>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS<2>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS<3>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS<4>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS<5>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS<6>"				IOSTANDARD	=	LVCMOS25;
-NET	"CBUS<7>"				IOSTANDARD	=	LVCMOS25;
-NET	"CK66"					IOSTANDARD	=	LVCMOS25;
-NET	"CK133"					IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<0>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<1>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<2>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<3>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<4>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<5>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<6>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<7>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<8>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<9>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<10>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<11>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<12>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<13>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<14>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<15>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<16>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<17>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<18>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<19>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<20>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<21>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<22>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<23>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<24>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<25>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<26>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<27>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<28>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<29>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<30>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<31>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<32>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<33>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<34>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<35>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<36>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<37>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<38>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<39>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<40>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<41>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<42>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<43>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<44>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<45>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<46>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<47>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<48>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<49>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<50>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<51>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<52>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<53>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<54>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<55>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<56>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<57>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<58>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<59>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<60>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<61>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<62>"				IOSTANDARD	=	LVCMOS25;
-NET	"DBUS<63>"				IOSTANDARD	=	LVCMOS25;
-NET	"RST"					IOSTANDARD	=	LVCMOS25;
-NET	"FPGA_NO<0>"			IOSTANDARD	=	LVCMOS25;
-NET	"FPGA_NO<1>"			IOSTANDARD	=	LVCMOS25;
-NET	"LED<0>"				IOSTANDARD	=	LVCMOS25;
-NET	"LED<1>"				IOSTANDARD	=	LVCMOS25;
-NET	"LED<2>"				IOSTANDARD	=	LVCMOS25;
-NET	"LED<3>"				IOSTANDARD	=	LVCMOS25;
-NET	"LED<4>"				IOSTANDARD	=	LVCMOS25;
-NET	"LED<5>"				IOSTANDARD	=	LVCMOS25;
-NET	"LED<6>"				IOSTANDARD	=	LVCMOS25;
-NET	"LED<7>"				IOSTANDARD	=	LVCMOS25;
-NET	"DSW<0>"			IOSTANDARD	=	LVCMOS25;
-NET	"DSW<1>"			IOSTANDARD	=	LVCMOS25;
-NET	"DSW<2>"			IOSTANDARD	=	LVCMOS25;
-NET	"DSW<3>"			IOSTANDARD	=	LVCMOS25;
-NET	"DSW<4>"			IOSTANDARD	=	LVCMOS25;
-NET	"DSW<5>"			IOSTANDARD	=	LVCMOS25;
-NET	"DSW<6>"			IOSTANDARD	=	LVCMOS25;
-NET	"DSW<7>"			IOSTANDARD	=	LVCMOS25;
+// API
+void
+force(double x[][3], double m[], double eps2, double a[][3], int n)
+{
+    double log2(double);
+    int             i, j;
+    long long int   sx_0;
+    long long int   sx_1;
+    long long int   sx_2;
+    int             xi_0;
+    int             xj_0;
+    int             xi_1;
+    int             xj_1;
+    int             xi_2;
+    int             xj_2;
+    int             xij_0;
+    int             xij_1;
+    int             xij_2;
+    LONG            x2_0;
+    LONG            x2_1;
+    LONG            x2_2;
+    LONG            ieps2;
+    LONG            x2y2;
+    LONG            z2e2;
+    int             r2;
+    int             r1;
+    int             mj;
+    int             r3;
+    int             dx_0;
+    int             dx_1;
+    int             mf;
+    int             dx_2;
+    int             fx_0;
+    int             fx_1;
+    int             fx_2;
+    int             f_shift;
+    int             fxs_0;
+    int             fxs_1;
+    int             fxs_2;
+    long long int   ffx_0;
+    long long int   ffx_1;
+    long long int   ffx_2;
 
-NET	"CBUS<0>"				FAST;
-NET	"CBUS<1>"				FAST;
-NET	"CBUS<2>"				FAST;
-NET	"CBUS<3>"				FAST;
-NET	"CBUS<4>"				FAST;
-NET	"CBUS<5>"				FAST;
-NET	"CBUS<6>"				FAST;
-NET	"CBUS<7>"				FAST;
-NET	"DBUS<0>"				FAST;
-NET	"DBUS<1>"				FAST;
-NET	"DBUS<2>"				FAST;
-NET	"DBUS<3>"				FAST;
-NET	"DBUS<4>"				FAST;
-NET	"DBUS<5>"				FAST;
-NET	"DBUS<6>"				FAST;
-NET	"DBUS<7>"				FAST;
-NET	"DBUS<8>"				FAST;
-NET	"DBUS<9>"				FAST;
-NET	"DBUS<10>"				FAST;
-NET	"DBUS<11>"				FAST;
-NET	"DBUS<12>"				FAST;
-NET	"DBUS<13>"				FAST;
-NET	"DBUS<14>"				FAST;
-NET	"DBUS<15>"				FAST;
-NET	"DBUS<16>"				FAST;
-NET	"DBUS<17>"				FAST;
-NET	"DBUS<18>"				FAST;
-NET	"DBUS<19>"				FAST;
-NET	"DBUS<20>"				FAST;
-NET	"DBUS<21>"				FAST;
-NET	"DBUS<22>"				FAST;
-NET	"DBUS<23>"				FAST;
-NET	"DBUS<24>"				FAST;
-NET	"DBUS<25>"				FAST;
-NET	"DBUS<26>"				FAST;
-NET	"DBUS<27>"				FAST;
-NET	"DBUS<28>"				FAST;
-NET	"DBUS<29>"				FAST;
-NET	"DBUS<30>"				FAST;
-NET	"DBUS<31>"				FAST;
-NET	"DBUS<32>"				FAST;
-NET	"DBUS<33>"				FAST;
-NET	"DBUS<34>"				FAST;
-NET	"DBUS<35>"				FAST;
-NET	"DBUS<36>"				FAST;
-NET	"DBUS<37>"				FAST;
-NET	"DBUS<38>"				FAST;
-NET	"DBUS<39>"				FAST;
-NET	"DBUS<40>"				FAST;
-NET	"DBUS<41>"				FAST;
-NET	"DBUS<42>"				FAST;
-NET	"DBUS<43>"				FAST;
-NET	"DBUS<44>"				FAST;
-NET	"DBUS<45>"				FAST;
-NET	"DBUS<46>"				FAST;
-NET	"DBUS<47>"				FAST;
-NET	"DBUS<48>"				FAST;
-NET	"DBUS<49>"				FAST;
-NET	"DBUS<50>"				FAST;
-NET	"DBUS<51>"				FAST;
-NET	"DBUS<52>"				FAST;
-NET	"DBUS<53>"				FAST;
-NET	"DBUS<54>"				FAST;
-NET	"DBUS<55>"				FAST;
-NET	"DBUS<56>"				FAST;
-NET	"DBUS<57>"				FAST;
-NET	"DBUS<58>"				FAST;
-NET	"DBUS<59>"				FAST;
-NET	"DBUS<60>"				FAST;
-NET	"DBUS<61>"				FAST;
-NET	"DBUS<62>"				FAST;
-NET	"DBUS<63>"				FAST;
+    f_shift = 0x9700;
 
-NET	"TPIN<0>"				FAST;
-NET	"TPIN<1>"				FAST;
-NET	"TPIN<2>"				FAST;
-NET	"TPIN<3>"				FAST;
-NET	"TPIN<4>"				FAST;
-NET	"TPIN<5>"				FAST;
-NET	"TPIN<6>"				FAST;
-NET	"TPIN<7>"				FAST;
-NET	"TPIN<8>"				FAST;
-NET	"TPIN<9>"				FAST;
-NET	"TPIN<10>"				FAST;
-NET	"TPIN<11>"				FAST;
-NET	"TPIN<12>"				FAST;
-NET	"TPIN<13>"				FAST;
-NET	"TPIN<14>"				FAST;
-NET	"TPIN<15>"				FAST;
-NET	"LED<0>"				FAST;
-NET	"LED<1>"				FAST;
-NET	"LED<2>"				FAST;
-NET	"LED<3>"				FAST;
-NET	"LED<4>"				FAST;
-NET	"LED<5>"				FAST;
-NET	"LED<6>"				FAST;
-NET	"LED<7>"				FAST;
+    for (i = 0; i < n; i++) {
+      xi_0 = ((unsigned int)((x[i][0] + 50.0)*(42949672.96)+0.5))& 0xFFFFFFFF;
+      xi_1 = ((unsigned int)((x[i][1] + 50.0)*(42949672.96)+0.5))& 0xFFFFFFFF;
+      xi_2 = ((unsigned int)((x[i][2] + 50.0)*(42949672.96)+0.5))& 0xFFFFFFFF;
+      ieps2 = (((int)(256.0*log2(eps2*(1.844674407e+15)))) & 0x7FFF) | 0x8000;
+      _xi[i][0] = xi_0;
+      _xi[i][1] = xi_1;
+      _xi[i][2] = xi_2;
 
-################################################################################
-# I/O Assignment
-################################################################################
-NET	"CK66"					LOC = "AG20";
-NET	"CK133"					LOC = "AK20";
-NET	"DBUS<0>"				LOC = "AH13";
-NET	"DBUS<1>"				LOC = "AH14";
-NET	"DBUS<2>"				LOC = "AR11";
-NET	"DBUS<3>"				LOC = "AP11";
-NET	"DBUS<4>"				LOC = "AU11";
-NET	"DBUS<5>"				LOC = "AT11";
-NET	"DBUS<6>"				LOC = "AL14";
-NET	"DBUS<7>"				LOC = "AK14";
-NET	"DBUS<8>"				LOC = "AM12";
-NET	"DBUS<9>"				LOC = "AL12";
-NET	"DBUS<10>"				LOC = "AT12";
-NET	"DBUS<11>"				LOC = "AR12";
-NET	"DBUS<12>"				LOC = "AJ14";
-NET	"DBUS<13>"				LOC = "AJ15";
-NET	"DBUS<14>"				LOC = "AM13";
-NET	"DBUS<15>"				LOC = "AL13";
-NET	"DBUS<16>"				LOC = "AP12";
-NET	"DBUS<17>"				LOC = "AN13";
-NET	"DBUS<18>"				LOC = "AL15";
-NET	"DBUS<19>"				LOC = "AK15";
-NET	"DBUS<20>"				LOC = "AT13";
-NET	"DBUS<21>"				LOC = "AR13";
-NET	"DBUS<22>"				LOC = "AN14";
-NET	"DBUS<23>"				LOC = "AM14";
-NET	"DBUS<24>"				LOC = "AH15";
-NET	"DBUS<25>"				LOC = "AH16";
-NET	"DBUS<26>"				LOC = "AR14";
-NET	"DBUS<27>"				LOC = "AP14";
-NET	"DBUS<28>"				LOC = "AU14";
-NET	"DBUS<29>"				LOC = "AT14";
-NET	"DBUS<30>"				LOC = "AH17";
-NET	"DBUS<31>"				LOC = "AG17";
-NET	"DBUS<32>"				LOC = "AN15";
-NET	"DBUS<33>"				LOC = "AM15";
-NET	"DBUS<34>"				LOC = "AR15";
-NET	"DBUS<35>"				LOC = "AP15";
-NET	"DBUS<36>"				LOC = "AK16";
-NET	"DBUS<37>"				LOC = "AJ17";
-NET	"DBUS<38>"				LOC = "AU15";
-NET	"DBUS<39>"				LOC = "AT15";
-NET	"DBUS<40>"				LOC = "AM16";
-NET	"DBUS<41>"				LOC = "AL16";
-NET	"DBUS<42>"				LOC = "AM17";
-NET	"DBUS<43>"				LOC = "AL17";
-NET	"DBUS<44>"				LOC = "AR16";
-NET	"DBUS<45>"				LOC = "AR17";
-NET	"DBUS<46>"				LOC = "AH18";
-NET	"DBUS<47>"				LOC = "AG18";
-NET	"DBUS<48>"				LOC = "AU17";
-NET	"DBUS<49>"				LOC = "AT17";
-NET	"DBUS<50>"				LOC = "AM18";
-NET	"DBUS<51>"				LOC = "AL18";
-NET	"DBUS<52>"				LOC = "AK18";
-NET	"DBUS<53>"				LOC = "AJ18";
-NET	"DBUS<54>"				LOC = "AP18";
-NET	"DBUS<55>"				LOC = "AN18";
-NET	"DBUS<56>"				LOC = "AT18";
-NET	"DBUS<57>"				LOC = "AR18";
-NET	"DBUS<58>"				LOC = "AH19";
-NET	"DBUS<59>"				LOC = "AG19";
-NET	"DBUS<60>"				LOC = "AU18";
-NET	"DBUS<61>"				LOC = "AU19";
-NET	"DBUS<62>"				LOC = "AM19";
-NET	"DBUS<63>"				LOC = "AL19";
-NET	"RST"					LOC = "AR19";
-NET	"TPIN<0>"				LOC = "Y36";
-NET	"TPIN<2>"				LOC = "Y37";
-NET	"TPIN<4>"				LOC = "Y31";
-NET	"TPIN<6>"				LOC = "W31";
-NET	"TPIN<8>"				LOC = "Y32";
-NET	"TPIN<10>"				LOC = "Y33";
-NET	"TPIN<12>"				LOC = "W36";
-NET	"TPIN<14>"				LOC = "W37";
-NET	"TPIN<1>"				LOC = "W27";
-NET	"TPIN<3>"				LOC = "W28";
-NET	"TPIN<5>"				LOC = "W34";
-NET	"TPIN<7>"				LOC = "W35";
-NET	"TPIN<9>"				LOC = "G38";
-NET	"TPIN<11>"				LOC = "G39";
-NET	"TPIN<13>"				LOC = "G36";
-NET	"TPIN<15>"				LOC = "G37";
-NET	"FPGA_NO<0>"			LOC = "AP19";
-NET	"FPGA_NO<1>"			LOC = "AN19";
-NET	"LED<0>"				LOC = "P34";
-NET	"LED<1>"				LOC = "P33";
-NET	"LED<2>"				LOC = "R27";
-NET	"LED<3>"				LOC = "T27";
-NET	"LED<4>"				LOC = "P36";
-NET	"LED<5>"				LOC = "P35";
-NET	"LED<6>"				LOC = "P37";
-NET	"LED<7>"				LOC = "N37";
-NET	"DSW<0>"			LOC = "T30";
-NET	"DSW<1>"			LOC = "T29";
-NET	"DSW<2>"			LOC = "P39";
-NET	"DSW<3>"			LOC = "P38";
-NET	"DSW<4>"			LOC = "R33";
-NET	"DSW<5>"			LOC = "R32";
-NET	"DSW<6>"			LOC = "T28";
-NET	"DSW<7>"			LOC = "U28";
-NET "CK66" TNM_NET = "CK66";
-TIMESPEC "TS_CK66" = PERIOD "CK66" 20 ns HIGH 50 %;
+	sx_0 = 0;
+	sx_1 = 0;
+	sx_2 = 0;
+
+	for (j = n - 1; j >= 0; j--) {
+	  xj_0 = ((unsigned int) ((x[j][0] + 50.0) * 42949672.96 + 0.5)) & 0xFFFFFFFF;
+	  xj_1 = ((unsigned int) ((x[j][1] + 50.0) * 42949672.96 + 0.5)) & 0xFFFFFFFF;
+	  xj_2 = ((unsigned int) ((x[j][2] + 50.0) * 42949672.96 + 0.5)) & 0xFFFFFFFF;
+
+#define MSCALE (4.223095768e+32)
+
+	  if (m[j] == 0.0) {
+	    mj = 0;
+	  } else if (m[j] > 0.0) {
+	    mj =(((int)(256.0 * log2(m[j] * MSCALE))) & 0x7FFF) | 0x8000;
+	  } else {
+	    mj =(((int)(256.0 * log2(-m[j] * MSCALE))) & 0x7FFF) | 0x18000;
+	  }
+
+	    pg_fix_sub_32(xi_0, xj_0, &xij_0);
+	    pg_fix_sub_32(xi_1, xj_1, &xij_1);
+	    pg_fix_sub_32(xi_2, xj_2, &xij_2);
+	    pg_conv_ftol_fix32_log17_man8(xij_0, &dx_0);
+	    pg_conv_ftol_fix32_log17_man8(xij_1, &dx_1);
+	    pg_conv_ftol_fix32_log17_man8(xij_2, &dx_2);
+	    pg_log_shift_log17_1(dx_0, &x2_0);
+	    pg_log_shift_log17_1(dx_1, &x2_1);
+	    pg_log_shift_log17_1(dx_2, &x2_2);
+	    pg_log_unsigned_add_itp_log17_man8_cut6(x2_0, x2_1, &x2y2);
+	    pg_log_unsigned_add_itp_log17_man8_cut6(x2_2, ieps2, &z2e2);
+	    pg_log_unsigned_add_itp_log17_man8_cut6(x2y2, z2e2, &r2);
+	    pg_log_shift_log17_m1(r2, &r1);
+	    pg_log_mul_17(r2, r1, &r3);
+	    pg_log_div_17(mj, r3, &mf);
+	    pg_log_mul_17(mf, dx_0, &fx_0);
+	    pg_log_mul_17(mf, dx_1, &fx_1);
+	    pg_log_mul_17(mf, dx_2, &fx_2);
+	    pg_log_sdiv_17(fx_0, f_shift, &fxs_0);
+	    pg_log_sdiv_17(fx_1, f_shift, &fxs_1);
+	    pg_log_sdiv_17(fx_2, f_shift, &fxs_2);
+	    pg_conv_ltof_log17_man8_fix57(fxs_0, &ffx_0);
+	    pg_conv_ltof_log17_man8_fix57(fxs_1, &ffx_1);
+	    pg_conv_ltof_log17_man8_fix57(fxs_2, &ffx_2);
+	    pg_fix_accum_f57_s64(ffx_0, &sx_0);
+	    pg_fix_accum_f57_s64(ffx_1, &sx_1);
+	    pg_fix_accum_f57_s64(ffx_2, &sx_2);
+	}
+	_a[i][0] = sx_0;
+	_a[i][1] = sx_1;
+	_a[i][2] = sx_2;
+
+	a[i][0] =
+	    ((double) (sx_0 << 0)) *
+	    ((-(pow(2.0, (double) 32) / (100.0)) *
+	      (pow(2.0, (double) 32) / (100.0)) * 8388608.0 /
+	      (pow(2.0, 95.38) / (1.220703125e-04)))) / pow(2.0, 0.0);
+	a[i][1] =
+	    ((double) (sx_1 << 0)) *
+	    ((-(pow(2.0, (double) 32) / (100.0)) *
+	      (pow(2.0, (double) 32) / (100.0)) * 8388608.0 /
+	      (pow(2.0, 95.38) / (1.220703125e-04)))) / pow(2.0, 0.0);
+	a[i][2] =
+	    ((double) (sx_2 << 0)) *
+	    ((-(pow(2.0, (double) 32) / (100.0)) *
+	      (pow(2.0, (double) 32) / (100.0)) * 8388608.0 /
+	      (pow(2.0, 95.38) / (1.220703125e-04)))) / pow(2.0, 0.0);
+    }
+    dump_foset(n);
+}

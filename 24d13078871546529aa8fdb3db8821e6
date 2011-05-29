@@ -1,41 +1,25 @@
-Fri May  6 19:29:23 JST 2011
-Release 6.2.03i - ngdbuild G.31a
-Copyright (c) 1995-2004 Xilinx, Inc.  All rights reserved.
-
-Command Line: ngdbuild -intstyle ise -dd ./_ngo -uc ../top.ucf -p
-xc2vp70-ff1517-5 top.ngc top.ngd 
-
-Reading NGO file
-"/home/hamada/pgr/Demos/PairWiseErr/pgr/ISE_PROJECT/proj/top.ngc" ...
-Reading component libraries for design expansion...
-
-Annotating constraints to design from file "../top.ucf" ...
-
-Checking timing specifications ...
-WARNING:XdmHelpers:793 - The TNM "CLK66" drives the CLKIN pin of DCM
-   "dcm0_dcm0". This TNM cannot be traced through the DCM because it is not used
-   in exactly one PERIOD specification. This TNM is used in the following user
-   groups and/or specifications:
-   <none>
-WARNING:XdmHelpers:625 - No instances driven from signal "CK66" are valid for
-   inclusion in TNM group "CLK66". A TNM property on a pin or signal marks only
-   the flip-flops, latches and/or RAMs which are directly or indirectly driven
-   by that pin or signal.
-INFO:XdmHelpers:851 - TNM "CK66", used in period specification "TS_CK66", was
-   traced into DCM instance "dcm0_dcm0". The following new TNM groups and period
-   specifications were generated at the DCM output(s):
-   CLK0: TS_dcm0_dcm_out=PERIOD dcm0_dcm_out TS_CK66*1.000000 HIGH 50.000000%
-   CLKFX: TS_dcm0_dcm_fx=PERIOD dcm0_dcm_fx TS_CK66*1.000000 HIGH 50.000000%
-WARNING:XdmHelpers:644 - No appropriate elements were found for the TNM group
-   "CLK66". This group has been removed from the design.
-Checking expanded design ...
-
-NGDBUILD Design Results Summary:
-  Number of errors:     0
-  Number of warnings:   3
-
-Total memory usage is 67920 kilobytes
-
-Writing NGD file "top.ngd" ...
-
-Writing NGDBUILD log file "top.bld"...
+Sun May 29 19:36:29 JST 2011
+JDF G
+// Created by Project Navigator ver 1.0
+PROJECT tmp2
+DESIGN tmp2
+DEVFAM virtex2
+DEVFAMTIME 0
+DEVICE xc2v1000
+DEVICETIME 0
+DEVPKG fg456
+DEVPKGTIME 0
+DEVSPEED -5
+DEVSPEEDTIME 0
+DEVTOPLEVELMODULETYPE HDL
+TOPLEVELMODULETYPETIME 0
+DEVSYNTHESISTOOL XST (VHDL/Verilog)
+SYNTHESISTOOLTIME 0
+DEVSIMULATOR Modelsim
+SIMULATORTIME 0
+DEVGENERATEDSIMULATIONMODEL VHDL
+GENERATEDSIMULATIONMODELTIME 0
+SOURCE pfpga_config.vhd
+STIMULUS sim.tbw
+[STRATEGY-LIST]
+Normal=True

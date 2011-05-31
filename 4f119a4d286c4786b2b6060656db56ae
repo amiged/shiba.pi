@@ -1,387 +1,250 @@
-Sun May 29 19:42:07 JST 2011
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL;
-use IEEE.STD_LOGIC_ARITH.ALL;
+Tue May 31 19:44:44 JST 2011
+// Copyright(c) 2004- by PGPG
+// The original source : package/src/vi/pg_util.c
+// 2005/06/11:   xx = (double *)&hi;         ->  xx = (double *)(void*)&hi;          by T.H
+// 2005/06/11:   LONG _i_ = *((LONG *)(&a)); ->  LONG _i_ = *((LONG *)(void*)(&a));  by T.H
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+#ifndef LONG
+#define LONG unsigned long long int
+#endif
 
-entity PFPGA_DMA is
-  port (
-    -- PGPG REG input 
-    PGPG_REG3 : in std_logic_vector(31 downto 0);  -- PFPGA Read  { CHIPSEL(4b), NQWORD(9b),  STARTADR(19b) }
-    GPREG0    : out std_logic_vector(31 downto 0); -- PFPGA Read Status(BUSY or DONE)
-    Hit_PGPG_REG3 : in std_logic;
+LONG double2pgpglog(double x, int nbit_log, int nbit_man)
+{
+  LONG z;
+  if (x == 0.0){
+    z = 0;
+  }else if(x>0.0){
+    double zz = pow(2.0,(double)nbit_man) * log(x)/log(2.0);
+    z = ((int)zz);
+    z &= (0x1ULL<<(nbit_log-2))-1;
+    z |= 0x1ULL<<(nbit_log-2);
+  }else{
+    double zz = pow(2.0,(double)nbit_man) * log(-x)/log(2.0);
+    z = ((int)zz);
+    z &= (0x1ULL<<(nbit_log-2))-1;
+    z |= 0x3ULL<<(nbit_log-2);
+  }
+  return z;
+}
 
-    -- pcicnt input
-    MEM_ADA  : in std_logic_vector(16 downto 0);     -- DPRAM Port B R/W Address
-    MEM_WEHA : in std_logic;
-    MEM_WELA : in std_logic;
-    MEM_DTIA : in std_logic_vector(63 downto 0);
+double pgpglog2double(LONG x, int nbit_log, int nbit_man)
+{
+  double z;
+  LONG sign,nonz,logval;
+  sign = 0x1ULL & (x>>(nbit_log-1));
+  nonz = 0x1ULL & (x>>(nbit_log-2));
+  logval  = ((0x1ULL<<(nbit_log-2))-1) & x;
+  z = pow(2.0,((double)logval)/pow(2.0,(double)(nbit_man)));
+  if(nonz == 0) z = 0.0;
+  if(sign == 1) z *= -1.0;
+  return z;
+}
 
+LONG double2pgpgfloat(double a, int nbit_float, int nbit_man)
+{
+  LONG hi;
+  int nbit_exp;
+  nbit_exp = nbit_float - nbit_man - 2;
+  if (a == 0.0)
+    hi = 0;
+  else {
+    LONG _i_ = *((LONG *)(void*)(&a));
+    LONG h_exp, h_man, h_sign, h_nonz;
+    h_sign = (_i_ >> 63) & (0x1LL);
+    h_nonz = 0x1LL;
+    h_exp =  (_i_ >> 52) & ((0x1LL<<11)-1);
+    h_exp -= 1023LL; // subtract bias 
+    h_exp = h_exp & ((0x1LL<<nbit_exp)-1);
+    h_man = (_i_&((0x1LL<<52)-1));
+    h_man = h_man>>(52-nbit_man);
+    hi = (h_sign << (nbit_float-1)) | (h_nonz << (nbit_float-2)) | (h_exp << nbit_man) | h_man;
+  }
+  return hi;
+}
 
-    -- CBUS/DBUS
-    DMAW_ENABLE : out std_logic_vector(3 downto 0); -- for 4 pfpga chip
-    DMAR_ENABLE : out std_logic_vector(3 downto 0); -- for 4 pfpga chip
-    DBUS_Port : out std_logic_vector(63 downto 0);
-    DBUS_idata: in std_logic_vector(63 downto 0);
-    DBUS_HiZ  : out std_logic;
+/* --- ROUNDING VERSION --- */
+LONG double2pgpgfloat_r(double a, int nbit_float, int nbit_man, int rmode)
+{
+  LONG hi;
+  int nbit_exp;
+  nbit_exp = nbit_float - nbit_man - 2;
+  if (a == 0.0)
+    hi = 0;
+  else {
+    LONG _i_ = *((LONG *)(void*)(&a));
+    LONG h_exp, h_man;
+    LONG signz,nonzz;
+    LONG expz,manz;
+    LONG Guard,Sbit,Gbit,Ulp;
 
-    -- DPRAM R/W ports
-    MEM_ADB     : out std_logic_vector(12 downto 0);     -- DPRAM Port B R/W Address
-    MEM_WEHB    : out std_logic;                         -- DPRAM Port B Write Enable (High Word)
-    MEM_WELB    : out std_logic;                         -- DPRAM Port B Write Enable (Low  Word)
-    MEM_DTIB    : out std_logic_vector(63 downto 0);     -- DPRAM Port B Write Data
-    MEM_DTOB    : in  std_logic_vector(63 downto 0);     -- DPRAM Port B Read Data
+    signz = (_i_ >> 63) & (0x1LL);
+    nonzz = 0x1LL;
 
-    RST : in  std_logic;
-    CLK : in  std_logic
-    );
-end PFPGA_DMA;
+    h_exp =  (_i_ >> 52) & ((0x1LL<<11)-1);
+    h_exp -= 1023LL; // subtract bias 
+    expz  = h_exp & ((0x1LL<<nbit_exp)-1);
 
-architecture rtl of PFPGA_DMA is
+    h_man = (_i_&((0x1LL<<52)-1));
+    Guard = ((0x1ULL<<(52-nbit_man))-1)&h_man;
+    Sbit  = 0x1ULL&(Guard>>(51-nbit_man));
+    Gbit  = (((0x1ULL<<(51-nbit_man))-1)&Guard) == 0x0ULL ? 0 : 1;
+    manz  = h_man>>(52-nbit_man);
 
------------------------------------------------------------------
--- DMAW/R
-  signal Hit_DMAW,Hit_DMAWr,Hit_DMAR,Hit_DMARr : std_logic;
-  signal ChipSel    : std_logic_vector(3 downto 0);
-  signal START_ADR : std_logic_vector(18 downto 0);
+    Ulp = 0x1ULL & manz;
+    {
+      LONG man_inc;
+      if(rmode == 0)      man_inc = 0; /* Truncation */
+      else if(rmode == 1) man_inc = signz*(1-(1-Sbit)*(1-Gbit)); /* Truncation to Zero */
+      else if(rmode == 2) man_inc = Sbit; /* Rounding to Plus Infinity */
+      else if(rmode == 3) man_inc = Sbit*Gbit; /* Rounding to Minus Infinity */
+      else if(rmode == 4) man_inc = Sbit*(1-signz*(1-Gbit)); /* Rounding to Infinity */
+      else if(rmode == 5) man_inc = Sbit*(1-(1-signz)*(1-Gbit)); /* Rounding to Zero */
+      else if(rmode == 6) man_inc = Sbit*(1-(1-Ulp)*(1-Gbit)); /* Rounding to Even */
+      else if(rmode == 7) man_inc = Sbit*(1-Ulp*(1-Gbit)); /* Rounding to Odd */
+      else if(rmode == 8) man_inc = Sbit+Gbit; /* Force one */
+      else                man_inc = Sbit*(1-(1-Ulp)*(1-Gbit)); /* Rounding to Even */
+      // adder with overflow-flag
+      manz = manz+man_inc;
+      if ((manz>>(nbit_man)) == 1ULL) {
+	manz = 0x0ULL;
+	expz++;
+      }
+    }
+    hi = (signz << (nbit_float-1)) | (nonzz << (nbit_float-2)) | (expz << nbit_man) | manz;
+  }
+  return hi;
+}
 
--- DMAW
-  signal mem_wea   : std_logic := '0';
-  signal dmaw_we0  : std_logic := '0';
-  signal dmaw_we1  : std_logic := '0';
-  signal dmaw_adr          : std_logic_vector(63 downto 0) := (others=>'0');
-  signal dmaw_dt0,dmaw_dt1 : std_logic_vector(63 downto 0) := (others=>'0');
-  signal dmaw_dbus_o       : std_logic_vector(63 downto 0) := (others=>'0');
---
+double pgpgfloat2double(LONG x, int nbit_float, int nbit_man)
+{
+  LONG hi;
+  double *xx;
+  LONG h_exp, h_man, h_sign, h_nonz;
+  int nbit_exp;
+  nbit_exp = nbit_float - nbit_man - 2;
+  h_sign = 0x1LL&(x>>(nbit_float-1));
+  h_nonz = 0x1LL&(x>>(nbit_float-2));
+  h_exp  = ((0x1LL<<nbit_exp)-1)&(x>>nbit_man);
+  h_man  = ((0x1LL<<nbit_man)-1)&x;
+  if((0x1LL&(h_exp>>(nbit_exp-1)))==0x1LL){
+    h_exp |= ((0x1LL<<(11-nbit_exp))-1)<<(nbit_exp);  
+  }
+  h_exp += 1023LL; // add bias (IEEE double)
+  h_exp &= (0x1LL<<11)-1;
+  if (h_nonz == 0) return 0.0;
+  hi = (h_sign << 63) | (h_exp << 52) | h_man << (52-nbit_man);
+  xx = (double *)(void*)&hi;
+  return *xx;
+}
 
--- DMAR
-  signal dmar_enable_cnt0   : std_logic_vector(12 downto 0) :=(others=>'0');
-  signal dmar_enable_cnt0_r : std_logic_vector(12 downto 0) :=(others=>'0');
-  signal dmar_enable0 : std_logic :='0';
-  signal dmar_enable1 : std_logic :='0';
-  signal dmar_enable2 : std_logic :='0';
-  signal dmar_enable3 : std_logic :='0';
-  signal dmar_enable4 : std_logic :='0';
-  signal dmar_enable5 : std_logic :='0';
-  signal dmar_enable6 : std_logic :='0';
-  signal dmar_enable7 : std_logic :='0';
-  signal lo_mem_wad, lo_mem_wad_z : std_logic_vector(12 downto 0);
-  signal dmar_dbus_o   : std_logic_vector(63 downto 0) := (others=>'0');
----
-  signal busy_dmar : std_logic;
-  signal busy_dmaw : std_logic;
-  signal dbus_port0 : std_logic_vector(63 downto 0) := (others=>'0'); 
-begin
+void l2bit(idata,sdata,nbit)
+LONG idata;
+char sdata[];
+int nbit;
+{
+  int i;
+  LONG itmp;
+  strcpy(sdata,"");
+  for(i=0;i<nbit;i++){
+    itmp =0x1ULL&(idata>>(nbit-1-i));
+    if(itmp == 0x1ULL) strcat(sdata,"1");
+    if(itmp == 0x0ULL) strcat(sdata,"0");
+  }
+}
 
-  GPREG0(0)   <= '0'; -- not used
-  Hit_DMAW    <= '0'; -- not used
-  busy_dmaw   <= '0'; -- not used
+LONG extractbit_long(LONG in, int hi, int lo)
+{
+  int size;
+  LONG mask, res;
+  size = hi - lo + 1;
+  mask = (0x1ULL<<size) - 1;
+  res = (in>>lo) & mask;
+  return res;
+}
+void putbits(LONG a)
+{
+    int i;
+    for(i = 0; i < 64; i++) {
+	if (extractbit_long(a, 63-i, 63-i) == 1ULL) {
+	    printf("1");
+	} else {
+	    printf("0");
+	}
+    }
+    puts("");
+}
 
-  -- DMA BUSY or IDLE
-  GPREG0(1)   <= busy_dmar;
-  busy_dmar   <= Hit_DMAR or Hit_DMARr or dmar_enable0 or  dmar_enable1 or  dmar_enable2 or  dmar_enable3
-                                       or dmar_enable4 or  dmar_enable5 or  dmar_enable6 or  dmar_enable7;
-  GPREG0(31 downto 2) <= (others=>'0');
+void putbits32(LONG a)
+{
+    int i;
+    for(i = 0; i < 32; i++) {
+	if (extractbit_long(a, 31-i, 31-i) == 1ULL) {
+	    printf("1");
+	} else {
+	    printf("0");
+	}
+    }
+    puts("");
+}
 
+void putbitsn(LONG a, int n)
+{
+    int i;
+    for(i = 0; i < n; i++) {
+	if (extractbit_long(a, n-i, n-i) == 1ULL) {
+	    printf("1");
+	} else {
+	    printf("0");
+	}
+    }
+    puts("");
+}
 
-  Hit_DMAR <= Hit_PGPG_REG3;
-  process (CLK) begin
-    if (CLK'event and CLK='1') then
-      Hit_DMAWr <= Hit_DMAW;
-      Hit_DMARr <= Hit_DMAR;
-    end if;
-  end process;
+double gen_rand(void)
+{
+  double x;
+  double man,exp,sign,es;
+  if((rand()/(RAND_MAX+1.0))<0.5) sign = 1.0; else sign = -1.0;
+  if((rand()/(RAND_MAX+1.0))<0.5) es   = 1.0; else es   = -1.0;
+  man = rand()/(RAND_MAX+1.0);
+  exp = rand()/(RAND_MAX+1.0);
+//  x = sign*(2.0*man) * pow(2.0,38.0*es*exp);
+  x = sign*(2.0*man) * pow(2.0,20.0*es*exp);
+  return (x);
 
+}
+double gen_rand_abs(void)
+{
+  double x;
+  double man,exp,es;
+  if((rand()/(RAND_MAX+1.0))<0.5) es   = 1.0; else es   = -1.0;
+  man = rand()/(RAND_MAX+1.0);
+  exp = rand()/(RAND_MAX+1.0);
+  //  x = (2.0*man) * pow(2.0,1024.0*es*exp);
+  //  x = 2.0 - man*0.0001;
+  //  x = (2.0*man) * pow(2.0,39.0*es*exp);
+  //  x = (1.0+man) * pow(10.0,38.0*es);      // boundary-test
+  x = (1.0+man) * pow(10.0,38.0*es*exp);
+  return (x);
+}
 
--- WRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWR
---    WR SHARE
--- WRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWR
+double gen_rand_tamanizero(void)
+{
+  // 100 mankai ni 1 do zero
+  if((rand()/(RAND_MAX+1.0))<1.0e-7) return 0.0; else return 1.0;
+}
 
-  ----------------------------
-  --- DMAR/W START ADR     ---
-  ----------------------------
-  process (CLK,Hit_DMAW,Hit_DMAWr,Hit_DMAR,Hit_DMARr) begin
-    if(RST='1') then
-      START_ADR <= (others=>'0');
-    elsif(CLK'event and CLK='1') then
-      if   ((Hit_DMAW = '0') AND (Hit_DMAWr = '1')) then
-        START_ADR <= (others=>'0');
-      elsif((Hit_DMAR = '0') AND (Hit_DMARr = '1')) then
-        START_ADR <= PGPG_REG3(18 downto 0);
-      end if;
-    end if;
-  end process;
+#include <sys/time.h>
+#include <sys/resource.h>
+double e_time(void)
+{
+  static struct timeval now;
+  static struct timezone tz;
+  gettimeofday(&now, &tz);
+  return (double)(now.tv_sec + now.tv_usec/1000000.0);
+}
 
-  ----------------------------
-  --- ChipSel              ---
-  ----------------------------
-  process (CLK,Hit_DMAW,Hit_DMAWr,Hit_DMAR,Hit_DMARr) begin
-    if(RST='1') then
-      ChipSel <= (others=>'0');
-    elsif(CLK'event and CLK='1') then
-      if   ((Hit_DMAW = '0') AND (Hit_DMAWr = '1')) then
-        ChipSel <= (others=>'0');
-      elsif((Hit_DMAR = '0') AND (Hit_DMARr = '1')) then
-        if    (PGPG_REG3(28) = '1') then
-          ChipSel <= "0001";
-        elsif (PGPG_REG3(29) = '1') then
-          ChipSel <= "0010";
-        elsif (PGPG_REG3(30) = '1') then
-          ChipSel <= "0100";
-        else
-          ChipSel <= "1000";
-        end if;
-      end if;
-    end if;
-  end process;
-
-  ------------------------------
-  --- DBUS_Port              ---
-  ------------------------------
-  process (CLK) begin
-    if(CLK'event and CLK='1') then
-      DBUS_Port <= dbus_port0;
-    end if;
-  end process;
-
-  with busy_dmar select
-    dbus_port0 <= dmar_dbus_o when '1',
-                  dmaw_dbus_o when others;
-
-  ------------------------------
-  --- MEM_ADB                ---
-  ------------------------------
-  process (CLK) begin
-    if(CLK'event and CLK='1') then
-      MEM_ADB <= lo_mem_wad;
-    end if;
-  end process;
-
--- WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
--- DMA WRITE ( ifpga -> pfpga )
--- WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
-  ------------------------------
-  --- mem_wea                ---
-  ------------------------------
-  mem_wea <= MEM_WEHA AND MEM_WELA;
-
-  ------------------------------
-  --- dmaw_we0,1             ---
-  ------------------------------
-  process (RST,CLK) begin
-    if(RST='1') then
-      dmaw_we0 <= '0';
-    elsif(CLK'event and CLK='1') then
-      dmaw_we0 <= mem_wea;
-    end if;
-  end process;
-
-  process (CLK) begin
-    if(CLK'event and CLK='1') then
-      dmaw_we1 <= dmaw_we0;
-    end if;
-  end process;
-  
-  ------------------------------
-  --- dmaw_adr               ---
-  ------------------------------
-  process (RST,CLK,mem_wea,dmaw_we0) begin
-    if(RST='1') then
-      dmaw_adr <= (others=>'0');
-    elsif(CLK'event and CLK='1') then
-      if((mem_wea = '1') and (dmaw_we0 = '0')) then
-        dmaw_adr(15 downto 0) <= MEM_ADA(16 downto 1);
-      end if;
-      dmaw_adr(63 downto 16) <= (others=>'0');
-    end if;
-  end process;
-
-  ------------------------------
-  --- dmaw_dt delay          ---
-  ------------------------------
-  process (RST,CLK) begin
-    if(RST='1') then
-      dmaw_dt1 <= (others=>'0');
-      dmaw_dt0 <= (others=>'0');
-    elsif(CLK'event and CLK='1') then
-      dmaw_dt1 <= dmaw_dt0;
-      dmaw_dt0 <= MEM_DTIA;
-    end if;
-  end process;
-
-  ------------------------------
-  --- dmaw_dbus_o            ---
-  ------------------------------
-  process (RST,CLK,dmaw_we0,dmaw_we1) begin
-    if(RST='1') then
-      dmaw_dbus_o <= (others=>'0');
-    elsif(CLK'event and CLK='1') then
-      if(dmaw_we0 = '1' and dmaw_we1 = '0') then
-        dmaw_dbus_o <= dmaw_adr;
-      else
-        dmaw_dbus_o <= dmaw_dt1;
-      end if;
-    end if;
-  end process;
-
-  --- DMAW_ENABLE
-  process (RST,CLK) begin
-    if(RST='1') then
-      DMAW_ENABLE    <= (others=>'0');
-    elsif(CLK'event and CLK='1') then
-      DMAW_ENABLE(0) <= dmaw_we1;
-      DMAW_ENABLE(1) <= dmaw_we1;
-      DMAW_ENABLE(2) <= dmaw_we1;
-      DMAW_ENABLE(3) <= dmaw_we1;
-    end if;
-  end process;
-
--- RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
--- DMA READ (ifpga <- pfpga)
--- RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
-
-  ----------------------------
-  -- DMAR ENABLE COUNT     ---
-  ----------------------------
-  dmar_enable_cnt0_r <= dmar_enable_cnt0;
-  process (RST,CLK,Hit_DMAR,Hit_DMARr,dmar_enable_cnt0_r) begin
-    if(RST='1') then
-      dmar_enable_cnt0 <= (others=>'0');
-    elsif(CLK'event and CLK='1') then
-      if((Hit_DMAR = '0') AND (Hit_DMARr = '1'))then
-        dmar_enable_cnt0 <= "0000" & PGPG_REG3(27 downto 19);   -- SET NQWORD
-      elsif(dmar_enable_cnt0_r /= "000000000000") then
-        dmar_enable_cnt0 <= dmar_enable_cnt0_r - "000000000001";
-      end if;
-    end if;
-  end process;
-
-  ----------------------------
-  -- DMAR ENABLE 0         ---
-  ----------------------------
-  process (RST,CLK,Hit_DMAR,Hit_DMARr,dmar_enable_cnt0) begin
-    if(RST='1') then
-      dmar_enable0 <= '0';
-    elsif(CLK'event and CLK='1') then
-      if((Hit_DMAR = '0') AND (Hit_DMARr = '1'))then
-        dmar_enable0 <= '1';
-      elsif(dmar_enable_cnt0 = "000000000000") then
-        dmar_enable0 <= '0';
-      end if;
-    end if;
-  end process;
-
-  process (CLK) begin
-    if(CLK'event and CLK='1') then
-      dmar_enable7 <= dmar_enable6;
-      dmar_enable6 <= dmar_enable5;
-      dmar_enable5 <= dmar_enable4;
-      dmar_enable4 <= dmar_enable3;
-      dmar_enable3 <= dmar_enable2;
-      dmar_enable2 <= dmar_enable1;
-      dmar_enable1 <= dmar_enable0;
-    end if;
-  end process;
-
-
-  ------------------------------
-  --- DMAR ENABLE            ---
-  ------------------------------
-  process (CLK,dmar_enable1,dmar_enable2)  begin
-    if(CLK'event and CLK='1') then
-      if((dmar_enable0 = '1') OR (dmar_enable1 = '1')) then
-        DMAR_ENABLE(0) <= '1' AND ChipSel(0);
-        DMAR_ENABLE(1) <= '1' AND ChipSel(1);
-        DMAR_ENABLE(2) <= '1' AND ChipSel(2);
-        DMAR_ENABLE(3) <= '1' AND ChipSel(3);
-      else
-        DMAR_ENABLE <= (others=>'0');
-      end if;
-    end if;
-  end process;
-
-  ------------------------------
-  --- DMAR_DBUS_O            ---
-  ------------------------------
-  process (RST,CLK,dmar_enable0,dmar_enable1,dmar_enable2,dmar_enable3)  begin
-    if(RST='1') then
-      dmar_dbus_o <= (others=>'0');
-    elsif(CLK'event and CLK='1') then
-      if(    (dmar_enable0 = '1') AND (dmar_enable1 = '0') ) then
-        dmar_dbus_o <= ("000000000000000000000000000000000000000000000" & START_ADR);
-      elsif( (dmar_enable1 = '1') AND (dmar_enable2 = '0') ) then
---        dmar_dbus_o <= X"FFFFFFFFFFFFFFFF";
-        NULL;
-      elsif( (dmar_enable2 = '1') AND (dmar_enable3 = '0') ) then
-        dmar_dbus_o <= (others=>'0');
-      end if;
-    end if;
-  end process;
-
-  ------------------------------
-  --- DBUS_HiZ               ---
-  ------------------------------
-  process (RST,CLK,dmar_enable2,dmar_enable3,dmar_enable4,dmar_enable5)  begin
-    if(RST='1') then
-      DBUS_HiZ <= '0';
-    elsif(CLK'event and CLK='1') then
-      if((dmar_enable2 = '1') OR (dmar_enable3 = '1') OR (dmar_enable4 = '1') OR (dmar_enable5 = '1') ) then
-        DBUS_HiZ <= '1';
-      else
-        DBUS_HiZ <= '0';
-      end if;
-    end if;
-  end process;
-
-  ------------------------------
-  --- MEM_DTIB               ---
-  ------------------------------
-  process (CLK)  begin
-    if(CLK'event and CLK='1') then
-      MEM_DTIB <= DBUS_idata;
-    end if;
-  end process;
-
-  ------------------------------
-  --- MEM_WEHB, MEM_WELB     ---
-  ------------------------------
-  process (CLK)  begin
-    if(CLK'event and CLK='1') then
-      MEM_WEHB <= dmar_enable6;
-      MEM_WELB <= dmar_enable6;
-    end if;
-  end process;
-
-  ------------------------------
-  --- lo_mem_wad             ---
-  ------------------------------
-  lo_mem_wad_z <= lo_mem_wad;
---  process (RST,CLK,dmar_enable5,dmar_enable6)  begin
---    if(RST='1') then
---      lo_mem_wad <= "1000000000000";
---    elsif(CLK'event and CLK='1') then
---      if((dmar_enable5 = '1') AND (dmar_enable6 = '0')) then
---        lo_mem_wad <= "1000000000000";
---      elsif((dmar_enable5 = '1') AND (dmar_enable6 = '1')) then
---        lo_mem_wad <= lo_mem_wad_z + "0000000000001";
---      elsif((dmar_enable5 = '0') AND (dmar_enable6 = '1')) then
---        lo_mem_wad <= "1000000000000";
---      end if;
---    end if;
---  end process;
-  process (RST,CLK,dmar_enable5,dmar_enable6)  begin
-    if(RST='1') then
-      lo_mem_wad <= "0000000000000";
-    elsif(CLK'event and CLK='1') then
-      if((dmar_enable5 = '1') AND (dmar_enable6 = '0')) then
-        lo_mem_wad <= "0000000000000";
-      elsif((dmar_enable5 = '1') AND (dmar_enable6 = '1')) then
-        lo_mem_wad <= lo_mem_wad_z + "0000000000001";
-      elsif((dmar_enable5 = '0') AND (dmar_enable6 = '1')) then
-        lo_mem_wad <= "0000000000000";
-      end if;
-    end if;
-  end process;
-
-end rtl;

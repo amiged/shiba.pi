@@ -1,425 +1,158 @@
-Sun Mar 13 19:55:51 JST 2011
--- C:\CYGWIN\HOME\ADMINISTRATOR\FKIT\PCI64\TMP2
--- VHDL Test Bench created by
--- HDL Bencher 6.1i
--- Wed Nov 10 11:38:24 2004
--- 
--- Notes:
--- 1) This testbench has been automatically generated from
---   your Test Bench Waveform
--- 2) To use this as a user modifiable testbench do the following:
---   - Save it as a file with a .vhd extension (i.e. File->Save As...)
---   - Add it to your project as a testbench source (i.e. Project->Add Source...)
--- 
+Fri Jun  3 19:26:47 JST 2011
+#define ERROR_CHECK
 
-LIBRARY IEEE;
-USE IEEE.STD_LOGIC_1164.ALL;
-USE IEEE.STD_LOGIC_ARITH.ALL;
-USE IEEE.STD_LOGIC_UNSIGNED.ALL;
-USE IEEE.STD_LOGIC_TEXTIO.ALL;
-USE STD.TEXTIO.ALL;
+#include <iostream>
+using namespace std;
+#include <fstream>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <math.h>
 
-ENTITY sim IS
-END sim;
+#define NMAX (1<<17) // 131072
 
-ARCHITECTURE testbench_arch OF sim IS
--- If you get a compiler error on the following line,
--- from the menu do Options->Configuration select VHDL 87
-FILE RESULTS: TEXT OPEN WRITE_MODE IS "results.txt";
-	COMPONENT pfpga_config
-		PORT (
-			clk : In  std_logic;
-			rst_n : In  std_logic;
-			cmd_reg : In  std_logic_vector (8 DOWNTO 0);
-			data_reg : In  std_logic_vector (31 DOWNTO 0);
-			CFG_D : Out  std_logic_vector (7 DOWNTO 0);
-			CFG_CCLK : Out  std_logic;
-			CFG_PROG_B0 : Out  std_logic;
-			CFG_PROG_B1 : Out  std_logic;
-			CFG_PROG_B2 : Out  std_logic;
-			CFG_PROG_B3 : Out  std_logic;
-			CFG_CS_B0 : Out  std_logic;
-			CFG_CS_B1 : Out  std_logic;
-			CFG_CS_B2 : Out  std_logic;
-			CFG_CS_B3 : Out  std_logic;
-			CFG_RDWR_B : Out  std_logic
-		);
-	END COMPONENT;
+extern "C" void force(double xj[][3], double mj[], double xi[][3], double eps2, double a[][3], int ni, int nj);
 
-	SIGNAL clk : std_logic;
-	SIGNAL rst_n : std_logic;
-	SIGNAL cmd_reg : std_logic_vector (8 DOWNTO 0);
-	SIGNAL data_reg : std_logic_vector (31 DOWNTO 0);
-	SIGNAL CFG_D : std_logic_vector (7 DOWNTO 0);
-	SIGNAL CFG_CCLK : std_logic;
-	SIGNAL CFG_PROG_B0 : std_logic;
-	SIGNAL CFG_PROG_B1 : std_logic;
-	SIGNAL CFG_PROG_B2 : std_logic;
-	SIGNAL CFG_PROG_B3 : std_logic;
-	SIGNAL CFG_CS_B0 : std_logic;
-	SIGNAL CFG_CS_B1 : std_logic;
-	SIGNAL CFG_CS_B2 : std_logic;
-	SIGNAL CFG_CS_B3 : std_logic;
-	SIGNAL CFG_RDWR_B : std_logic;
+#include <time.h>
+#include <unistd.h>
+#include <sys/time.h>
+#include <sys/resource.h>
+double get_time(void)
+{
+  struct rusage r;
+  double sec, usec, z;
+  getrusage(RUSAGE_SELF, &r);
+  sec   = r.ru_utime.tv_sec;
+  usec  = r.ru_utime.tv_usec;
+  z = sec + usec*1.0e-6;
+  return (z);
+}
 
-BEGIN
-	UUT : pfpga_config
-	PORT MAP (
-		clk => clk,
-		rst_n => rst_n,
-		cmd_reg => cmd_reg,
-		data_reg => data_reg,
-		CFG_D => CFG_D,
-		CFG_CCLK => CFG_CCLK,
-		CFG_PROG_B0 => CFG_PROG_B0,
-		CFG_PROG_B1 => CFG_PROG_B1,
-		CFG_PROG_B2 => CFG_PROG_B2,
-		CFG_PROG_B3 => CFG_PROG_B3,
-		CFG_CS_B0 => CFG_CS_B0,
-		CFG_CS_B1 => CFG_CS_B1,
-		CFG_CS_B2 => CFG_CS_B2,
-		CFG_CS_B3 => CFG_CS_B3,
-		CFG_RDWR_B => CFG_RDWR_B
-	);
+static double r[NMAX][3];
+static double m[NMAX];
+static double eps2 = 0.0001;
+static double a[NMAX][3];
+static double v[NMAX][3];
+static double a_h[NMAX][3];
 
-	PROCESS -- clock process for clk,
-	BEGIN
-		CLOCK_LOOP : LOOP
-		clk <= transport '0';
-		WAIT FOR 5 us;
-		clk <= transport '1';
-		WAIT FOR 5 us;
-		WAIT FOR 45 us;
-		clk <= transport '0';
-		WAIT FOR 45 us;
-		END LOOP CLOCK_LOOP;
-	END PROCESS;
+void readfile(char* fname, int* nbody, double* m, double r[][3], double v[][3])
+{
+  ifstream f;
+  f.open(fname, ios::in);
+  if(!f) {
+    cerr << "Can't open file: " <<  fname << endl;
+    exit(-1);
+  }
+  char* buf= new char [2048];
+  f.getline(buf, 511); // *ignore*
+  int n;
+  f >> n;
+  (*nbody) = n;
+  f.getline(buf, 511); // *ignore*
 
-	PROCESS   -- Process for clk
-		VARIABLE TX_OUT : LINE;
-		VARIABLE TX_ERROR : INTEGER := 0;
+  f.scientific;
+  for(int i=0; i<n; i++){
+    f.getline(buf, 1024);
+    char ii[256];
+    double mj, x, y, z, vx, vy, vz;
+    f >> ii >> mj >> x >> y >> z >> vx >> vy >> vz;
+    //    printf("%s   %.16E   % .16E % .16E % .16E   % .16E % .16E % .16E \n", ii, m, x, y, z, vx, vy, vz);
+    m[i]    = mj;
+    r[i][0] = x;
+    r[i][1] = y;
+    r[i][2] = z;
+    v[i][0] = vx;
+    v[i][1] = vy;
+    v[i][2] = vz;
+  }
+  f.close();
 
-		PROCEDURE CHECK_CFG_D(
-			next_CFG_D : std_logic_vector (7 DOWNTO 0);
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			-- If compiler error ("/=" is ambiguous) occurs in the next line of code
-			-- change compiler settings to use explicit declarations only
-			IF (CFG_D /= next_CFG_D) THEN 
-				STD.TEXTIO.write(TX_LOC,string'("Error at time="));
-				STD.TEXTIO.write(TX_LOC, TX_TIME);
-				STD.TEXTIO.write(TX_LOC,string'("us CFG_D="));
-				IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, CFG_D);
-				STD.TEXTIO.write(TX_LOC, string'(", Expected = "));
-				IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, next_CFG_D);
-				STD.TEXTIO.write(TX_LOC, string'(" "));
-				TX_STR(TX_LOC.all'range) := TX_LOC.all;
-				STD.TEXTIO.writeline(results, TX_LOC);
-				STD.TEXTIO.Deallocate(TX_LOC);
-				ASSERT (FALSE) REPORT TX_STR SEVERITY ERROR;
-				TX_ERROR := TX_ERROR + 1;
-			END IF;
-		END;
+  delete[] buf;
+}
 
-		PROCEDURE CHECK_CFG_CCLK(
-			next_CFG_CCLK : std_logic;
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			-- If compiler error ("/=" is ambiguous) occurs in the next line of code
-			-- change compiler settings to use explicit declarations only
-			IF (CFG_CCLK /= next_CFG_CCLK) THEN 
-				STD.TEXTIO.write(TX_LOC,string'("Error at time="));
-				STD.TEXTIO.write(TX_LOC, TX_TIME);
-				STD.TEXTIO.write(TX_LOC,string'("us CFG_CCLK="));
-				IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, CFG_CCLK);
-				STD.TEXTIO.write(TX_LOC, string'(", Expected = "));
-				IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, next_CFG_CCLK);
-				STD.TEXTIO.write(TX_LOC, string'(" "));
-				TX_STR(TX_LOC.all'range) := TX_LOC.all;
-				STD.TEXTIO.writeline(results, TX_LOC);
-				STD.TEXTIO.Deallocate(TX_LOC);
-				ASSERT (FALSE) REPORT TX_STR SEVERITY ERROR;
-				TX_ERROR := TX_ERROR + 1;
-			END IF;
-		END;
+void force_host(double xj[][3],
+								double m[],
+								double xi[][3],
+								double eps2,
+								double a[][3],
+								int ni,
+								int nj)
+{
+  int i,j,d;
+  double dx[3];
+  for(i=0;i<ni;i++) for(d=0;d<3;d++) a[i][d] = 0.0;
 
-		PROCEDURE CHECK_CFG_PROG_B0(
-			next_CFG_PROG_B0 : std_logic;
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			-- If compiler error ("/=" is ambiguous) occurs in the next line of code
-			-- change compiler settings to use explicit declarations only
-			IF (CFG_PROG_B0 /= next_CFG_PROG_B0) THEN 
-				STD.TEXTIO.write(TX_LOC,string'("Error at time="));
-				STD.TEXTIO.write(TX_LOC, TX_TIME);
-				STD.TEXTIO.write(TX_LOC,string'("us CFG_PROG_B0="));
-				IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, CFG_PROG_B0);
-				STD.TEXTIO.write(TX_LOC, string'(", Expected = "));
-				IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, next_CFG_PROG_B0);
-				STD.TEXTIO.write(TX_LOC, string'(" "));
-				TX_STR(TX_LOC.all'range) := TX_LOC.all;
-				STD.TEXTIO.writeline(results, TX_LOC);
-				STD.TEXTIO.Deallocate(TX_LOC);
-				ASSERT (FALSE) REPORT TX_STR SEVERITY ERROR;
-				TX_ERROR := TX_ERROR + 1;
-			END IF;
-		END;
+  for(i=0;i<ni;i++){
+    for(j=0;j<nj;j++){
+      double r2,r3;
+      r2 = eps2;
+      for(d=0;d<3;d++){
+				dx[d] = xj[j][d] - xi[i][d];
+				r2 += dx[d] * dx[d];
+      }
+      r3 = sqrt(r2)*r2;
+      for(d=0;d<3;d++){
+				a[i][d] +=  m[j]*dx[d]/r3;
+      }
+    }
+  }
+}
 
-		PROCEDURE CHECK_CFG_PROG_B1(
-			next_CFG_PROG_B1 : std_logic;
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			-- If compiler error ("/=" is ambiguous) occurs in the next line of code
-			-- change compiler settings to use explicit declarations only
-			IF (CFG_PROG_B1 /= next_CFG_PROG_B1) THEN 
-				STD.TEXTIO.write(TX_LOC,string'("Error at time="));
-				STD.TEXTIO.write(TX_LOC, TX_TIME);
-				STD.TEXTIO.write(TX_LOC,string'("us CFG_PROG_B1="));
-				IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, CFG_PROG_B1);
-				STD.TEXTIO.write(TX_LOC, string'(", Expected = "));
-				IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, next_CFG_PROG_B1);
-				STD.TEXTIO.write(TX_LOC, string'(" "));
-				TX_STR(TX_LOC.all'range) := TX_LOC.all;
-				STD.TEXTIO.writeline(results, TX_LOC);
-				STD.TEXTIO.Deallocate(TX_LOC);
-				ASSERT (FALSE) REPORT TX_STR SEVERITY ERROR;
-				TX_ERROR := TX_ERROR + 1;
-			END IF;
-		END;
+int main(int argc,char** argv)
+{
+  int n=0;
+  int nstep = 1;
 
-		PROCEDURE CHECK_CFG_PROG_B2(
-			next_CFG_PROG_B2 : std_logic;
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			-- If compiler error ("/=" is ambiguous) occurs in the next line of code
-			-- change compiler settings to use explicit declarations only
-			IF (CFG_PROG_B2 /= next_CFG_PROG_B2) THEN 
-				STD.TEXTIO.write(TX_LOC,string'("Error at time="));
-				STD.TEXTIO.write(TX_LOC, TX_TIME);
-				STD.TEXTIO.write(TX_LOC,string'("us CFG_PROG_B2="));
-				IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, CFG_PROG_B2);
-				STD.TEXTIO.write(TX_LOC, string'(", Expected = "));
-				IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, next_CFG_PROG_B2);
-				STD.TEXTIO.write(TX_LOC, string'(" "));
-				TX_STR(TX_LOC.all'range) := TX_LOC.all;
-				STD.TEXTIO.writeline(results, TX_LOC);
-				STD.TEXTIO.Deallocate(TX_LOC);
-				ASSERT (FALSE) REPORT TX_STR SEVERITY ERROR;
-				TX_ERROR := TX_ERROR + 1;
-			END IF;
-		END;
+  if((argc == 2)||(argc == 3)){
+    char ifile[256];
+    strcpy(ifile,argv[1]);
+    readfile(ifile, &n, m, r, v);
+    if(argc == 3)  nstep = atoi(argv[2]);
+  }else{
+    fprintf(stderr, "argc = %d\n",argc);
+    fprintf(stderr, "cmd <init file> <nstep>\n");
+    exit(-1);
+  }
 
-		PROCEDURE CHECK_CFG_PROG_B3(
-			next_CFG_PROG_B3 : std_logic;
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			-- If compiler error ("/=" is ambiguous) occurs in the next line of code
-			-- change compiler settings to use explicit declarations only
-			IF (CFG_PROG_B3 /= next_CFG_PROG_B3) THEN 
-				STD.TEXTIO.write(TX_LOC,string'("Error at time="));
-				STD.TEXTIO.write(TX_LOC, TX_TIME);
-				STD.TEXTIO.write(TX_LOC,string'("us CFG_PROG_B3="));
-				IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, CFG_PROG_B3);
-				STD.TEXTIO.write(TX_LOC, string'(", Expected = "));
-				IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, next_CFG_PROG_B3);
-				STD.TEXTIO.write(TX_LOC, string'(" "));
-				TX_STR(TX_LOC.all'range) := TX_LOC.all;
-				STD.TEXTIO.writeline(results, TX_LOC);
-				STD.TEXTIO.Deallocate(TX_LOC);
-				ASSERT (FALSE) REPORT TX_STR SEVERITY ERROR;
-				TX_ERROR := TX_ERROR + 1;
-			END IF;
-		END;
+  int ni=n;
+  int nj=n;
 
-		PROCEDURE CHECK_CFG_CS_B0(
-			next_CFG_CS_B0 : std_logic;
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			-- If compiler error ("/=" is ambiguous) occurs in the next line of code
-			-- change compiler settings to use explicit declarations only
-			IF (CFG_CS_B0 /= next_CFG_CS_B0) THEN 
-				STD.TEXTIO.write(TX_LOC,string'("Error at time="));
-				STD.TEXTIO.write(TX_LOC, TX_TIME);
-				STD.TEXTIO.write(TX_LOC,string'("us CFG_CS_B0="));
-				IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, CFG_CS_B0);
-				STD.TEXTIO.write(TX_LOC, string'(", Expected = "));
-				IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, next_CFG_CS_B0);
-				STD.TEXTIO.write(TX_LOC, string'(" "));
-				TX_STR(TX_LOC.all'range) := TX_LOC.all;
-				STD.TEXTIO.writeline(results, TX_LOC);
-				STD.TEXTIO.Deallocate(TX_LOC);
-				ASSERT (FALSE) REPORT TX_STR SEVERITY ERROR;
-				TX_ERROR := TX_ERROR + 1;
-			END IF;
-		END;
+  force(r, m, r, eps2, a, ni, nj);
 
-		PROCEDURE CHECK_CFG_CS_B1(
-			next_CFG_CS_B1 : std_logic;
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			-- If compiler error ("/=" is ambiguous) occurs in the next line of code
-			-- change compiler settings to use explicit declarations only
-			IF (CFG_CS_B1 /= next_CFG_CS_B1) THEN 
-				STD.TEXTIO.write(TX_LOC,string'("Error at time="));
-				STD.TEXTIO.write(TX_LOC, TX_TIME);
-				STD.TEXTIO.write(TX_LOC,string'("us CFG_CS_B1="));
-				IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, CFG_CS_B1);
-				STD.TEXTIO.write(TX_LOC, string'(", Expected = "));
-				IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, next_CFG_CS_B1);
-				STD.TEXTIO.write(TX_LOC, string'(" "));
-				TX_STR(TX_LOC.all'range) := TX_LOC.all;
-				STD.TEXTIO.writeline(results, TX_LOC);
-				STD.TEXTIO.Deallocate(TX_LOC);
-				ASSERT (FALSE) REPORT TX_STR SEVERITY ERROR;
-				TX_ERROR := TX_ERROR + 1;
-			END IF;
-		END;
+  double eps2 = (1./256.);
+  double tt = get_time();
+  for(int step = 0; step < nstep; step++) force(r, m, r, eps2, a, ni, nj);
+  tt = get_time() - tt;
 
-		PROCEDURE CHECK_CFG_CS_B2(
-			next_CFG_CS_B2 : std_logic;
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			-- If compiler error ("/=" is ambiguous) occurs in the next line of code
-			-- change compiler settings to use explicit declarations only
-			IF (CFG_CS_B2 /= next_CFG_CS_B2) THEN 
-				STD.TEXTIO.write(TX_LOC,string'("Error at time="));
-				STD.TEXTIO.write(TX_LOC, TX_TIME);
-				STD.TEXTIO.write(TX_LOC,string'("us CFG_CS_B2="));
-				IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, CFG_CS_B2);
-				STD.TEXTIO.write(TX_LOC, string'(", Expected = "));
-				IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, next_CFG_CS_B2);
-				STD.TEXTIO.write(TX_LOC, string'(" "));
-				TX_STR(TX_LOC.all'range) := TX_LOC.all;
-				STD.TEXTIO.writeline(results, TX_LOC);
-				STD.TEXTIO.Deallocate(TX_LOC);
-				ASSERT (FALSE) REPORT TX_STR SEVERITY ERROR;
-				TX_ERROR := TX_ERROR + 1;
-			END IF;
-		END;
+  double nfloat = 38.0 * ((double)ni)*((double)nj) * ((double)nstep);
+  double gflops = nfloat * (1.e-9) / tt;
+  //  fprintf(stdout, "n=%d\t%g sec/gpucall\t%g Gflops\n", n, tt/(double)nstep, gflops );
+  fprintf(stdout, "n=%d\n", n);
+  fprintf(stdout, "%g sec/gpucall\n", tt/(double)nstep);
+  fprintf(stdout, "%g Gflops\n",  gflops );
 
-		PROCEDURE CHECK_CFG_CS_B3(
-			next_CFG_CS_B3 : std_logic;
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			-- If compiler error ("/=" is ambiguous) occurs in the next line of code
-			-- change compiler settings to use explicit declarations only
-			IF (CFG_CS_B3 /= next_CFG_CS_B3) THEN 
-				STD.TEXTIO.write(TX_LOC,string'("Error at time="));
-				STD.TEXTIO.write(TX_LOC, TX_TIME);
-				STD.TEXTIO.write(TX_LOC,string'("us CFG_CS_B3="));
-				IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, CFG_CS_B3);
-				STD.TEXTIO.write(TX_LOC, string'(", Expected = "));
-				IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, next_CFG_CS_B3);
-				STD.TEXTIO.write(TX_LOC, string'(" "));
-				TX_STR(TX_LOC.all'range) := TX_LOC.all;
-				STD.TEXTIO.writeline(results, TX_LOC);
-				STD.TEXTIO.Deallocate(TX_LOC);
-				ASSERT (FALSE) REPORT TX_STR SEVERITY ERROR;
-				TX_ERROR := TX_ERROR + 1;
-			END IF;
-		END;
 
-		PROCEDURE CHECK_CFG_RDWR_B(
-			next_CFG_RDWR_B : std_logic;
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			-- If compiler error ("/=" is ambiguous) occurs in the next line of code
-			-- change compiler settings to use explicit declarations only
-			IF (CFG_RDWR_B /= next_CFG_RDWR_B) THEN 
-				STD.TEXTIO.write(TX_LOC,string'("Error at time="));
-				STD.TEXTIO.write(TX_LOC, TX_TIME);
-				STD.TEXTIO.write(TX_LOC,string'("us CFG_RDWR_B="));
-				IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, CFG_RDWR_B);
-				STD.TEXTIO.write(TX_LOC, string'(", Expected = "));
-				IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, next_CFG_RDWR_B);
-				STD.TEXTIO.write(TX_LOC, string'(" "));
-				TX_STR(TX_LOC.all'range) := TX_LOC.all;
-				STD.TEXTIO.writeline(results, TX_LOC);
-				STD.TEXTIO.Deallocate(TX_LOC);
-				ASSERT (FALSE) REPORT TX_STR SEVERITY ERROR;
-				TX_ERROR := TX_ERROR + 1;
-			END IF;
-		END;
+  if(0){
+    cout << "Start Error check: " << n <<endl;
+    force_host(r, m, r, eps2, a_h, ni, nj);
+    double err_max = 0.0;
+    for(int i=0;i<ni;i++){
+      double err=0.0;
+      for(int d=0;d<3;d++){
+				double diff = fabs(a[i][d] - a_h[i][d]);
+				err += (diff*diff);
+      }
+      err = sqrt(err);
+      err = err/sqrt(a_h[i][0]*a_h[i][0]+a_h[i][1]*a_h[i][1]+a_h[i][2]*a_h[i][2]);
+      if (err > err_max){
+				err_max = err;
+				printf("[%d]:\t", i);
+				printf("%.7e:\t", err);
+				printf("%e,%e,%e:\t%e,%e,%e\n",a_h[i][0], a_h[i][1], a_h[i][2],a[i][0], a[i][1], a[i][2]);
+      }
+    }
+    printf("Max Err %.7e\n", err_max);
+  }
 
-		BEGIN
-		-- --------------------
-		rst_n <= transport '0';
-		cmd_reg <= transport std_logic_vector'("000000000"); --0
-		data_reg <= transport std_logic_vector'("00000000000000000000000000000000"); --0
-		-- --------------------
-		WAIT FOR 300 us; -- Time=300 us
-		rst_n <= transport '1';
-		-- --------------------
-		WAIT FOR 500 us; -- Time=800 us
-		cmd_reg <= transport std_logic_vector'("011110001"); --F1
-		-- --------------------
-		WAIT FOR 400 us; -- Time=1200 us
-		cmd_reg <= transport std_logic_vector'("011100001"); --E1
-		-- --------------------
-		WAIT FOR 400 us; -- Time=1600 us
-		cmd_reg <= transport std_logic_vector'("011110001"); --F1
-		-- --------------------
-		WAIT FOR 800 us; -- Time=2400 us
-		data_reg <= transport std_logic_vector'("10000000100000001000000011111111"); --808080FF
-		-- --------------------
-		WAIT FOR 700 us; -- Time=3100 us
-		cmd_reg <= transport std_logic_vector'("111110001"); --1F1
-		-- --------------------
-		WAIT FOR 3355 us; -- Time=6455 us
-		-- --------------------
-
-		IF (TX_ERROR = 0) THEN 
-			STD.TEXTIO.write(TX_OUT,string'("No errors or warnings"));
-			STD.TEXTIO.writeline(results, TX_OUT);
-			ASSERT (FALSE) REPORT
-				"Simulation successful (not a failure).  No problems detected. "
-				SEVERITY FAILURE;
-		ELSE
-			STD.TEXTIO.write(TX_OUT, TX_ERROR);
-			STD.TEXTIO.write(TX_OUT, string'(
-				" errors found in simulation"));
-			STD.TEXTIO.writeline(results, TX_OUT);
-			ASSERT (FALSE) REPORT
-				"Errors found during simulation"
-				SEVERITY FAILURE;
-		END IF;
-	END PROCESS;
-END testbench_arch;
-
-CONFIGURATION pfpga_config_cfg OF sim IS
-	FOR testbench_arch
-	END FOR;
-END pfpga_config_cfg;
+  return (0);
+}

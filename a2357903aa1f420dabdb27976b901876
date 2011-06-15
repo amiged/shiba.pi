@@ -1,20 +1,28 @@
-Thu May 12 19:26:54 JST 2011
+Wed Jun 15 19:37:26 JST 2011
+#!/usr/bin/env python3
+import numpy as np
+import cv2
+from datetime import datetime
 
 
-all:
-	cp top.ucf.ISE6.3i top.ucf
-	rm -rf proj
-	tar xvf proj.ise6.3i.tar
-	cd proj;xst -intstyle ise -ifn __projnav/top.xst -ofn top.syr
-	cd proj;ngdbuild -intstyle ise -dd ./_ngo -uc ../top.ucf  -p xc2vp70-ff1517-5 top.ngc top.ngd
-	cd proj;map -intstyle ise -p xc2vp70-ff1517-5 -cm area -pr b -k 4 -c 100 -tx off -o top_map.ncd top.ngd top.pcf
-	cd proj;par -w -intstyle ise -ol std -t 1 top_map.ncd top.ncd top.pcf
-	cd proj;trce -intstyle ise -e 3 -l 3 -xml top top.ncd -o top.twr top.pcf
-	cd proj;bitgen -intstyle ise -f top.ut top.ncd
+def put_text(image, text):
+    font_size = 1.0
+    font_type = cv2.FONT_HERSHEY_PLAIN
+    font_color = (0xff, 0xf, 0xff)
+    cv2.putText(image, text, (460, 15), font_type, font_size, font_color)
+    
+
+image = cv2.imread("/tmp/tmp.jpg")
+
+tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S') # ('%Y%m%d_%H_%M_%S_%f')
+put_text(image, tnow)
+cv2.imshow('test', image)
 
 
+while(True):
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
 
-clean:
-	rm -rf proj top.ucf *~ .*~
+cv2.destroyAllWindows()
 
-
+print("Done.")

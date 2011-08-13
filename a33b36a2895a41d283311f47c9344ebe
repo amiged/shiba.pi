@@ -1,16 +1,15 @@
-Thu Aug 11 19:47:45 JST 2011
-/** 
-# xを1ステップ進める
-# x(k+1) = x(k) + v(k+1/2)*dt
-*/
+Sat Aug 13 19:39:25 JST 2011
+#!/usr/bin/perl
 
-#include <stdio.h>
-#include "nbodysim.h"
+my $nloop = 16;
+my $logbase = "log.GTX";
 
-void leapflog(double dt,double x[][DIM],double v[][DIM],int n)
-{
-    int i,d;
-    for(i=0;i<n;i++)
-        for(d=0;d<3;d++)
-            x[i][d] = x[i][d]+v[i][d]*dt;
+for(my $ni=2; $ni<131073; $ni = $ni*2){
+    my $bin = "\$\(BIN\)";
+    my $ifile = "gen-plum/data.inp.".sprintf("%06d",$ni);
+    my $log = "\$LOG";
+    my $cmd = "$bin $ifile $nloop >> $log";
+    print "\t".$cmd ."\n";
 }
+
+1;

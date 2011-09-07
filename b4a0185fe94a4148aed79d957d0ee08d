@@ -1,69 +1,68 @@
-Sat Aug 13 19:33:41 JST 2011
--- Copyright (c) by PGR project
--- All rights reserved.
--- Auther Tsuyoshi Hamada
--- for JDIM=4 (JDATA_WIDTH =< 128)
--- but DEPTH=16384
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.std_logic_arith.all;
-use ieee.std_logic_unsigned.all;
+Wed Sep  7 19:47:47 JST 2011
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "flops.h"
+//#include "pg_util.h" // double e_time(void)
 
-entity jmem is
-  port (
-    rst        : in  std_logic; -- not used
-    we         : in  std_logic;
-    wclk       : in  std_logic;
-    wadr       : in  std_logic_vector(15 downto 0);
-    rclk       : in  std_logic;
-    radr       : in  std_logic_vector(15 downto 0);
-    idata      : in  std_logic_vector(63 downto 0);
-    odata      : out  std_logic_vector(127 downto 0)  -- for G5
---  odata      : out  std_logic_vector(255 downto 0)  -- for SPH FirstStage
---  odata      : out  std_logic_vector(511 downto 0)  -- for SPH SecondStage
-  );
-end jmem;
+extern double e_time(void);
 
-architecture rtl of jmem is
+void flops_initialize(struct flops_member* fm, int n, int nskip)
+{
+  (*fm).nbody = n;
+  (*fm).nskip = nskip;
+  (*fm).times = 0;
+  (*fm).nstep = 0;
+  (*fm).force_time = 0.0;
+  (*fm).start_time = e_time();
+}
 
-component dpram
-	port (
-	wadr: IN std_logic_VECTOR(13 downto 0);
-	radr: IN std_logic_VECTOR(13 downto 0);
-	wclk: IN std_logic;
-	rclk: IN std_logic;
-	din: IN std_logic_VECTOR(63 downto 0);
-	dout: OUT std_logic_VECTOR(63 downto 0);
-	we: IN std_logic);
-end component;
+void flops_check(struct flops_member* fm)
+{
+  int n = (*fm).nbody;
+  int nskip = (*fm).nskip;
+  int nstep = (*fm).nstep;
+  int times = (*fm).times;
+  double t_start = (*fm).start_time;
+  double tmisc,tall;
+  double nope,Gflops;
+  double t_end;
+  nstep++;
 
-signal we0,we1,we2,we3 : std_logic;
-signal adr0,adr1,nadr0,nadr1 : std_logic;
+  if((times % nskip) != (nskip-1)){
+    times++;
+  } else {
+    double tforce = (*fm).force_time;
+    t_end = e_time();
+    tall = t_end - t_start;
+    tmisc = tall - tforce;
+    nope  = (38.0*n*n + 8.0*n  )*(double)times; // Gravity
+    //       GRAVITY,  LEAPFLOG
+    (*fm).Gflops = Gflops = nope * 1.0e-9 / tall;
+    fprintf(stderr,"[%d steps]\t",nstep);
+    fprintf(stderr,"LapTime %2.2f sec\t",tall);
+    fprintf(stderr,"\t \t == %g Gflops ==\n",Gflops);
 
-begin
+    fprintf(stderr,"\t + Force (calc + communi. ) (%g sec) \t %02.3f %%\n", tforce,  100.0*tforce/tall);
+    fprintf(stderr,"\t + Misc  (time integ, etc.) (%g sec) \t %02.3f %%\n", tmisc,   100.0*tmisc/tall);
 
-adr0  <= wadr(0);
-nadr0 <= NOT wadr(0);
+    times = 0;
+    t_start = e_time();
+  }
+  (*fm).times = times;
+  (*fm).nstep = nstep;
+  (*fm).start_time = t_start;
+}
 
-we0  <= we and nadr0;  -- we & wadr(0)="0"
-we1  <= we and  adr0;  -- we & wadr(0)="1"
 
-u0 : dpram port map(
-      wadr=> wadr(14 downto 1),
-      wclk=> wclk,
-      radr=> radr(14 downto 1),
-      rclk=> rclk,
-      din => idata,
-      dout=> odata(63 downto 0),
-      we  => we0);
 
-u1 : dpram port map(
-      wadr=> wadr(14 downto 1),
-      wclk=> wclk,
-      radr=> radr(14 downto 1),
-      rclk=> rclk,
-      din => idata, 
-      dout=> odata(127 downto 64),
-      we  => we1);
+void flops_ftime_init(struct flops_member *fm){
+  (*fm).force_time = e_time();
+}
 
-end rtl;
+void flops_ftime_save(struct flops_member *fm){
+  double dum = (*fm).force_time;
+  (*fm).force_time = e_time() - dum;
+}
+
+

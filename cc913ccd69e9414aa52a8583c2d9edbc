@@ -1,23 +1,75 @@
-Mon Aug 29 19:28:21 JST 2011
-#include <stdio.h>
-#include "nbodysim.h"
+Wed Oct 19 19:46:39 JST 2011
+#!/usr/bin/perl
+#
+# mtrr : MTRR register resetting script for PROGRAPE-4
+#
+# Copyright (C) 2006-2007 Tsuyoshi Hamada. All rights reserved.
+# 
+# No warranty is attached; 
+#
 
-void debug_func_force(double x[][DIM],double m[], double eps2,double a[][DIM],int n)
-{
-    int i,j;
+my $devid   = 0;
+my $bar;
+my $cmd;
+my $exe;
 
-    printf("-------------------------------\n");
-    printf("The debuging routine is called.\n");
-    printf("-------------------------------\n");
-    printf("n = %d\n",n);
-    printf("eps2 = %e\n",eps2);
-
-    for(i=0;i<n;i++){
-        printf("---\n");
-        printf("particle %d\n",i);
-        printf("m[%d] = %e\n",i,m[i]);
-        for(j=0;j<3;j++) printf("x[%d][%d] = %e\n",i,j,x[i][j]);
-        for(j=0;j<3;j++) printf("a[%d][%d] = %e\n",i,j,a[i][j]);
-    }
+if(@ARGV){
+    sprintf($devid, "%d", $ARGV[0]);
 }
 
+$bar = 1;
+
+my $adr=0, $size;
+
+$cmd = "ifpga_get_barinfo $devid $bar";
+$exe = `$cmd`;
+chomp($exe);
+$adr = $exe;
+
+$cmd = "ifpga_get_barinfo $devid $bar 1";
+$exe = `$cmd`;
+chomp($exe);
+$size = $exe;
+
+print "BAR1 start at $adr, size $size bytes\n";
+
+if( ($adr eq '') || ($adr eq '0x0') || ($adr eq "0xffffffff")){
+    print "discontinued\n";
+    exit(-1);
+}
+
+
+open(RD,"/proc/mtrr");
+my $hit_line = '';
+while(<RD>){
+    my $s = $_;
+    chomp($s);
+    if($s =~ /$adr/){
+	$hit_line = $s;
+    }
+}
+close(RD);
+
+if($hit_line ne ''){
+    print "Hit: ". $hit_line ."\n";
+}else{
+    $cmd = "cat /proc/mtrr";
+    print `$cmd` ."\n";
+    print "Can't find the mtrr register for bar1($adr)\n";
+    print "discontinued\n";
+    exit(-1);
+}
+
+my ($reg_nr, ) = split(/\:/,$hit_line);
+$reg_nr =~ s/reg//;
+$reg_nr = sprintf("%d",$reg_nr);
+
+$cmd = "echo \"disable=$reg_nr\" >| /proc/mtrr";
+print  $cmd. "\n";
+print  `$cmd`. "\n";
+
+$cmd = "cat /proc/mtrr";
+print `$cmd`;
+
+
+1;

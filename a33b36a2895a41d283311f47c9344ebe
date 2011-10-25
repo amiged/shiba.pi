@@ -1,15 +1,13 @@
-Sat Aug 13 19:39:25 JST 2011
-#!/usr/bin/perl
+Tue Oct 25 19:27:01 JST 2011
+#!/usr/bin/env python3
+# ./mov.py <fps> <start_number>
+import sys
 
-my $nloop = 16;
-my $logbase = "log.GTX";
 
-for(my $ni=2; $ni<131073; $ni = $ni*2){
-    my $bin = "\$\(BIN\)";
-    my $ifile = "gen-plum/data.inp.".sprintf("%06d",$ni);
-    my $log = "\$LOG";
-    my $cmd = "$bin $ifile $nloop >> $log";
-    print "\t".$cmd ."\n";
-}
-
-1;
+if __name__ == '__main__':
+	 args = sys.argv
+	 assert len(args) == 3
+	 fps          = int(args[1])
+	 start_number = int(args[2])
+	 cmd = "ffmpeg -r %d -start_number %d -i ../conv/%%08d.jpg -vcodec libx264 -pix_fmt yuv420p -r %d tmp.mp4"% (fps, start_number, fps)
+	 print (cmd)

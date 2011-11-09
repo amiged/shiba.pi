@@ -1,19 +1,50 @@
-Fri Oct 21 19:38:33 JST 2011
-#!Time-stamp: <2007-01-22 04:30:32 hamada>
+Wed Nov  9 19:29:20 JST 2011
+#!/usr/bin/env python3
+import numpy as np
+import cv2
+from datetime import datetime
+import mkdir
+import sys
 
-Linux device driver for the PROGRAPE-4 board,
-
-including runtime libraries and HDL source for interface FPGA.
-
-- Linux kernel release 2.6.x
-
-- Xilinx XC3S5000-5-FG900 FPGAs
-
-- Xilinx ISE 8.1i
--- Release 8.1.03i xst I.27
--- Release 8.1.03i par I.27
--- Release 8.1.03i Trace I.27
--- Release 8.1.03i Bitgen I.27
+def put_text(image, text):
+    font_size = 1.0
+    font_type = cv2.FONT_HERSHEY_PLAIN
+    font_color = (0xf, 0xf, 0xff)
+    cv2.putText(image, text, (460, 15), font_type, font_size, font_color)
+    
 
 
-![PROGRAPE-4](http://www.ipa.go.jp/jinzai/esp/2005mito1/mdata/images/clip_image002_006.jpg)
+if (__name__ == '__main__'):
+    argv = sys.argv
+    devid = int(argv[1])
+    log_base = '../log/'
+    cap = cv2.VideoCapture(devid)
+
+    cap_width  = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+    cap_height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+    cap_fps    = cap.get(cv2.CAP_PROP_FPS)
+
+    print(cap_width, "x", cap_height, ":", cap_fps)
+
+    tnow0 = datetime.now().strftime('%Y%m%d_%H_%M_%S') # ('%Y%m%d_%H_%M_%S_%f')
+
+    while(cap.isOpened()):
+        ret, frame = cap.read()
+        cv2.imshow('frame', frame)
+
+        tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S')
+        if(tnow != tnow0):
+            put_text(frame, tnow)
+            ofname = mkdir.get_filename_frame('../log/', tnow)
+#            cv2.imwrite(ofname, frame)
+            print(ofname, ": TEST on devid=%d"%devid)
+            tnow0 = tnow
+ 
+
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    cap.release()
+    cv2.destroyAllWindows()
+
+    print("Done.")

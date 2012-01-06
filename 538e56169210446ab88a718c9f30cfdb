@@ -1,52 +1,51 @@
-Mon Dec 12 19:27:48 JST 2011
-#include "cutil.h"
+Fri Jan  6 19:30:29 JST 2012
+#!/bin/sh
+#
+# An example hook script to verify what is about to be committed.
+# Called by "git commit" with no arguments.  The hook should
+# exit with non-zero status after issuing an appropriate message if
+# it wants to stop the commit.
+#
+# To enable this hook, rename this file to "pre-commit".
 
-__device__ float4 
-inter(float4 xj, float4 xi, float4 apot)
-{
-  /* ここは図5.と同じ */ 
-  float mj    = xj.w;        // Mass Mj
-  float ieps2 = xi.w;        // epsilon^2
-  float dx = xj.x - xi.x;    // Coordinates Xj - Xi
-  float dy = xj.y - xi.y;    // Coordinates Yj - Yi
-  float dz = xj.z - xi.z;    // Coordinates Zj - Zi
-  float r2 = dx*dx+dy*dy+dz*dz+ieps2;
-  float r1i = 1/sqrt(r2);
-  float r2i = r1i * r1i;
-  float mr3i = mj * r2i * r1i;
-  apot.x += dx * mr3i;       // Accel AXi
-  apot.y += dy * mr3i;       // Accel AYi
-  apot.z += dz * mr3i;       // Accel AZi
-  return (apot);
-}
-#define NTHRE (128) // blockDim.xと同値
-__global__ void
-kernel(float4* g_xj,
-       float* g_xi,
-       float* g_fi,
-       int ni,
-       int nj)
-{
-  int tid      = threadIdx.x;
-  int i = blockIdx.x*NTHRE+tid;
-  float4 ai = make_float4(0.0, 0.0, 0.0, 0.0);
-  float4 xi;
-  xi.x = g_xi[i];
-  xi.y = g_xi[i+ni];
-  xi.z = g_xi[i+ni*2];
-  xi.w = g_xi[i+ni*3];
-  __shared__ float4 s_xj[NTHRE];
-  for(int j = 0; j<nj; j+=NTHRE){
-    __syncthreads();
-    s_xj[tid] = g_xj[j+tid];
-    __syncthreads();
-    for(int js = 0; js<NTHRE; js++) ai = inter(s_xj[js], xi, ai);
-  }
-  if(i<ni){
-    g_fi[i]      = ai.x;
-    g_fi[i+ni]   = ai.y;
-    g_fi[i+ni*2] = ai.z;
-  }
-}
+if git rev-parse --verify HEAD >/dev/null 2>&1
+then
+	against=HEAD
+else
+	# Initial commit: diff against an empty tree object
+	against=4b825dc642cb6eb9a060e54bf8d69288fbee4904
+fi
 
-#include "api.h"
+# If you want to allow non-ascii filenames set this variable to true.
+allownonascii=$(git config hooks.allownonascii)
+
+# Redirect output to stderr.
+exec 1>&2
+
+# Cross platform projects tend to avoid non-ascii filenames; prevent
+# them from being added to the repository. We exploit the fact that the
+# printable range starts at the space character and ends with tilde.
+if [ "$allownonascii" != "true" ] &&
+	# Note that the use of brackets around a tr range is ok here, (it's
+	# even required, for portability to Solaris 10's /usr/bin/tr), since
+	# the square bracket bytes happen to fall in the designated range.
+	test $(git diff --cached --name-only --diff-filter=A -z $against |
+	  LC_ALL=C tr -d '[ -~]\0' | wc -c) != 0
+then
+	echo "Error: Attempt to add a non-ascii file name."
+	echo
+	echo "This can cause problems if you want to work"
+	echo "with people on other platforms."
+	echo
+	echo "To be portable it is advisable to rename the file ..."
+	echo
+	echo "If you know what you are doing you can disable this"
+	echo "check using:"
+	echo
+	echo "  git config hooks.allownonascii true"
+	echo
+	exit 1
+fi
+
+# If there are whitespace errors, print the offending file names and fail.
+exec git diff-index --check --cached $against --

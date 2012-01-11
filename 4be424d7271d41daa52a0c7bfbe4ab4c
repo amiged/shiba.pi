@@ -1,36 +1,91 @@
-Sat Dec 31 19:52:21 JST 2011
-#!/usr/bin/env python3
-import os
-from datetime import datetime
-import time
+Wed Jan 11 19:28:05 JST 2012
+//-----------------------------------------------------------------------------
+// Output Pair-Wise Error
+// Modify: Tsuyoshi Hamada, Nov, 2006
+//-----------------------------------------------------------------------------
+#include  <iostream>
+#include  <cmath>
+#include  <cstdlib>
+#include  <iomanip> // cout << setw() << setprecision() 
+using namespace std;
 
-# YYYYMMDD_HH_MM_SS
-def get_filename_frame(basedir, str_datetime):
-    cell = list(str_datetime)
-    str_YYYYMMDD = ''.join(cell[0:8])
-    str_HH = ''.join(cell[9:11])
-    str_MM = ''.join(cell[12:14])
-    str_SS = ''.join(cell[15:17])
-    dirname = basedir + str_YYYYMMDD + "/" + str_HH
-    if os.path.exists(dirname) != True:
-        os.makedirs(dirname)
-    ret = dirname + "/" + str_datetime+".jpg"
-    ret = ret.replace(' ','')
-    return ret
+extern "C" void  force(double x[][3], double v[][3], double m[], double p[], double a[][3], double j[][3], int n);
+extern "C" void _force(double x[][3], double v[][3], double m[], double p[], double a[][3], double j[][3], int n);
+
+extern "C" void debug_position_snap(double x[][3], double Gflops, int n, int nstep);
+
+#define NMAX 1024
+
+double rsv[65536][3];
+
+int main(int argc, char *argv[]) {
+  int index;
+  int n = 2;
+
+  double m[NMAX];
+  double r[NMAX][3];
+  double v[NMAX][3];
+
+  double p[NMAX];
+  double a[NMAX][3];
+  double jk[NMAX][3];
+
+  double _p[NMAX];
+  double _a[NMAX][3];
+  double _jk[NMAX][3];
+
+  m[0] = m[1] = 1.0;
+
+  for (int i = 0; i < 3 ; i++) r[i][0] = 0.0;
+  for (int i = 0; i < 3 ; i++) v[i][0] = 0.0;
+  for (int i = 0; i < 3 ; i++) v[i][1] = 0.0;
+
+  index=0;
+  srand(0x12345);
+
+  for (int t = 0; t < 1000 ; t++){
+    
+
+    //    for (int i = 0; i < 3 ; i++) r[1][i] = pow(10.0, 2.0*rand()/(RAND_MAX+1.0));
 
 
-def get_filename_frame_simple(basedir, fname):
-    dirname = basedir
-    if os.path.exists(dirname) != True:
-        os.makedirs(dirname)
-    ret = dirname + fname
-    ret = ret.replace(' ','')
-    return ret
+
+    for (int i = 0; i < 3 ; i++) r[1][i] = 1.0*rand()/(RAND_MAX+1.0);
+
+    for (int i = 0; i < 3 ; i++)  rsv[index][i] = r[1][i];
+    index++;
 
 
-if __name__ == '__main__':
-    while(True):
-        tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S')
-        fname = get_filename_frame('../work/', tnow)
-        print (fname)
-        time.sleep(0.5)
+    _force(r, v, m, _p, _a, _jk, n);
+     force(r, v, m,  p,  a,  jk, n);
+
+     double err_p, err_a[3], err_jk[3];
+     double rad;
+     rad = sqrt(r[1][0]*r[1][0]+r[1][1]*r[1][1]+r[1][2]*r[1][2]);
+     err_p = fabs(p[0]-_p[0])/_p[0];
+
+    
+     for (int k = 0; k < 3; k++){
+       double host  = _a[0][k];
+       double pipe  =  a[0][k];
+       double err = sqrt((host - pipe)*(host - pipe))/host;
+
+       cout << setw(8);
+       cout.precision(6);
+       cout << rad  << "\t";
+       cout.precision(6);
+       cout << err  << "\t";
+       cout.precision(6);
+       cout << host << "\t";
+       cout.precision(6);
+       cout << pipe << endl;
+
+     }
+
+  }
+  
+
+  debug_position_snap(rsv, 123.456, index, 10);
+
+  return 0;
+}

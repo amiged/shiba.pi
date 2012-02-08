@@ -1,75 +1,48 @@
-Wed Oct 19 19:46:39 JST 2011
-#!/usr/bin/perl
-#
-# mtrr : MTRR register resetting script for PROGRAPE-4
-#
-# Copyright (C) 2006-2007 Tsuyoshi Hamada. All rights reserved.
-# 
-# No warranty is attached; 
-#
+Wed Feb  8 19:28:23 JST 2012
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+import numpy as np
+import cv2
 
-my $devid   = 0;
-my $bar;
-my $cmd;
-my $exe;
+drawing = False
+mode = True
+ix,iy = -1,-1
 
-if(@ARGV){
-    sprintf($devid, "%d", $ARGV[0]);
-}
+def draw_circle(event,x,y,flags,param):
+    global ix,iy,drawing,mode
+    if event == cv2.EVENT_LBUTTONDOWN:
+        print ('Push')
+        drawing = True
+        ix,iy = x,y
 
-$bar = 1;
+    elif event == cv2.EVENT_MOUSEMOVE:
+        if drawing == True:
+            print ('Drawing...')
+            if mode == True:
+                pass
+            else:
+                cv2.circle(img,(x,y),5,(0,0,255),-1)
+        else:
+            pass
+    elif event == cv2.EVENT_LBUTTONUP:
+        print ('Up')
+        drawing = False
+        if mode == True:
+            cv2.rectangle(img,(ix,iy),(x,y),(0,255,0),2)
+        else:
+            cv2.circle(img,(x,y),5,(0,0,255),-1)
 
-my $adr=0, $size;
+if '__main__' == __name__ :
+    img = np.zeros((512,512,3), np.uint8)
+    cv2.namedWindow('image')
+    cv2.setMouseCallback('image',draw_circle)
+    
+    while(1):
+        cv2.imshow('image',img)
+        k = cv2.waitKey(1) & 0xFF
+        if k == ord('m'):
+            mode = not mode
+        elif k == 27:
+            break
 
-$cmd = "ifpga_get_barinfo $devid $bar";
-$exe = `$cmd`;
-chomp($exe);
-$adr = $exe;
-
-$cmd = "ifpga_get_barinfo $devid $bar 1";
-$exe = `$cmd`;
-chomp($exe);
-$size = $exe;
-
-print "BAR1 start at $adr, size $size bytes\n";
-
-if( ($adr eq '') || ($adr eq '0x0') || ($adr eq "0xffffffff")){
-    print "discontinued\n";
-    exit(-1);
-}
-
-
-open(RD,"/proc/mtrr");
-my $hit_line = '';
-while(<RD>){
-    my $s = $_;
-    chomp($s);
-    if($s =~ /$adr/){
-	$hit_line = $s;
-    }
-}
-close(RD);
-
-if($hit_line ne ''){
-    print "Hit: ". $hit_line ."\n";
-}else{
-    $cmd = "cat /proc/mtrr";
-    print `$cmd` ."\n";
-    print "Can't find the mtrr register for bar1($adr)\n";
-    print "discontinued\n";
-    exit(-1);
-}
-
-my ($reg_nr, ) = split(/\:/,$hit_line);
-$reg_nr =~ s/reg//;
-$reg_nr = sprintf("%d",$reg_nr);
-
-$cmd = "echo \"disable=$reg_nr\" >| /proc/mtrr";
-print  $cmd. "\n";
-print  `$cmd`. "\n";
-
-$cmd = "cat /proc/mtrr";
-print `$cmd`;
-
-
-1;
+    cv2.destroyAllWindows()

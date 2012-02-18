@@ -1,2 +1,5 @@
-Mon Nov 21 19:27:39 JST 2011
-No errors or warnings
+Sat Feb 18 19:29:11 JST 2012
+INFO:DesignRules:547 - Blockcheck: To achieve optimal frequency synthesis
+   performance with the CLKFX and CLKFX180 outputs of the DCM comp dcm0_dcm0,
+   consult the Virtex-II Interactive Data Sheet.
+DRC detected 0 errors and 0 warnings.

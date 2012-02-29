@@ -1,41 +1,53 @@
-Sun Feb 26 19:45:18 JST 2012
-// Time-stamp: <2006-09-04 13:41:34 hamada>
-// by T.Hamada
-//
-// <2006-09-04 13:33:47 hamada>
+Wed Feb 29 19:46:01 JST 2012
+/*
+ * ifpga_bram_clear.c
+ *
+ * Copyright (C) 2006-2007 Tsuyoshi Hamada
+ *                                All rights reserved.
+ * 
+ * No warranty is attached; 
+ * I cannot take responsibility for errors or fitness for use.
+ *
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-
 #include "pg4.h"
 
-void rst(int devid, int d, int msec)
-{
-  d = 0xff & d;
-  WriteBase0(devid, 0x4, d);
-  usleep(msec*1000);
-}
+//#define NMAX (0x1<<10) // 4KB
+//#define NMAX (0x1<<11) // 8KB
+//#define NMAX (0x1<<12) // 16KB
+//#define NMAX (0x1<<13) // 32KB
+#define NMAX (0x1<<14) // 64KB
 
-int main(int argc, char* argv[])
+unsigned int* ptr;
+unsigned int* bar1;
+
+int main(int argc,char *argv[])
 {
-  int devid=0;
+  int devid = 0;
+  int n = NMAX;
+  int val = 0x1234567;
   int i;
 
-  pg4_open(devid);
-  
-  for(i=0;i<16;i++){
-    int x;
-    x = 0xff&(1<<(i%8));
-    rst(devid, x, 100);
-    rst(devid, 0, 1);
+  if(argc > 1){
+    n = atoi(argv[1]);
+  }
+  if(argc > 2){
+    val = atoi(argv[2]);
   }
 
-  rst(devid, 0xff, 1000);
-  rst(devid, 0x0, 0);
+  printf("n = %d\n",n);
+  printf("filled by %x\n",val);
 
-  pg4_close(devid);
+  pg4_open(devid);
+  bar1 = pg4_get_bar1ptr(devid);
+  printf("BAR0: %lx\n",pg4_getbaseaddr(devid,0));
+  printf("BAR1: %lx\n",pg4_getbaseaddr(devid,1));
+
+  for(i = 0; i < n; i++) {
+    pg4_writebase1(devid, i, val);
+  }
 
   return 0;
 }

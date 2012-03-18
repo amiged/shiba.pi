@@ -1,134 +1,229 @@
-Tue Mar  6 19:49:57 JST 2012
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#include <math.h>
-#include "pg_util.h"
+Sun Mar 18 19:31:01 JST 2012
+-- Copyright 2004 Tsuyoshi Hamada
+--
+--
+--[WRITE]
+--clk         __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __
+-- CBUS(0)    _______/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
+--[ DBUS ]           X   >< n ><d0 ><d1 ><d2 ><d3 ><d4 ><d5 ><d6 ><d7 >
+--MEM_ADR                        0 >< n ><n+1><n+2><n+3><n+4><n+5><n+6><n+7>< 0
+--MEM_DATA                          <d0 ><d1 ><d2 ><d3 ><d4 ><d5 ><d6 ><d7 >
+--MEM_WE                        ____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______
 
-#include "pgrapi.h"
+--[READ] 
+--clk         __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __
+-- CBUS(1)    _______/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
+--DBUS               X   >< n ><HHH>----------<d0 ><d1 ><d2 ><d3 ><d4 ><d5 ><d6 ><d7 >
+--DBUS_Port_ff                                <d0 ><d1 ><d2 ><d3 ><d4 ><d5 ><d6 ><d7 >
+--DBUS_Port                              <d0 ><d1 ><d2 ><d3 ><d4 ><d5 ><d6 ><d7 >
+--DBUS_HiZ           ~~~~~~~~~~~~~~~\_________________________________________________/~~~~
+--MEM_RE                        ____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______
+--MEM_ADR                        0 >< n ><n+1><n+2><n+3><n+4><n+5><n+6><n+7>< 0
+--MEM_DATA                               <d0 ><d1 ><d2 ><d3 ><d4 ><d5 ><d6 ><d7 >
 
-// #define DEBUG
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
-#define   MAX(x,y)     (((x) > (y)) ?  (x) : (y))
-#define   MIN(x,y)     (((x) < (y)) ?  (x) : (y))
+entity top is
+  port (
+    RST       : in std_logic;
+    CK66      : in std_logic;
+    CK133     : in std_logic; -- not used
+    CBUS      : inout std_logic_vector(7 downto 0);
+    DBUS      : inout std_logic_vector(63 downto 0);
+    LED       : out std_logic_vector(7 downto 0);
+    TPIN      : out std_logic_vector(15 downto 0); -- TEST PIN
+    DSW       : in std_logic_vector(7 downto 0);   -- DIP SWITCH
+    FPGA_NO   : in std_logic_vector(1 downto 0)
+  );
+end top;
 
-#define NJMAX 16384
+architecture rtl of top is
 
-#define NPIPE_PER_CHIP  1
-#define NCHIP_PER_BOARD 4
+component dmaw
+  port (
+    RST       : in std_logic;
+    CLK       : in std_logic;
+    ENABLE    : in std_logic;
+    DBUS      : in std_logic_vector(63 downto 0);
+    MEM_WE    : out std_logic;
+    MEM_ADR   : out std_logic_vector(18 downto 0);
+    MEM_DATA  : out std_logic_vector(63 downto 0)   );
+end component;
 
-#define NFLO 26
-#define NMAN 16
-#define RMODE 6
+component dmar
+  port (
+    RST       : in std_logic;
+    CLK       : in std_logic;
+    ENABLE    : in std_logic;
+    DBUS      : in std_logic_vector(63 downto 0);
+    DBUS_Port : out std_logic_vector(63 downto 0);
+    DBUS_HiZ  : out std_logic;
+    MEM_RE    : out std_logic;
+    MEM_ADR   : out std_logic_vector(18 downto 0);
+    MEM_DATA  : in std_logic_vector(63 downto 0)  ); 
+end component;
 
-static int      devid = 0;
-static int      __first = 0;
+component user
+  port (
+    FPGA_NO : in std_logic_vector(1 downto 0);
+    RST : in std_logic;
+    CLK  : in std_logic;
+    PCLK : in std_logic;
+    WE  : in std_logic;
+    RE  : in std_logic;
+    WAD : in std_logic_vector(18 downto 0);
+    WDT : in std_logic_vector(63 downto 0);
+    RAD : in std_logic_vector(18 downto 0);
+    RDT : out std_logic_vector(63 downto 0);
+    STS : out std_logic);
+end component;
 
-static unsigned long long int fdata[NJMAX][FDIM];
+component CLK_MULDIV
+  generic (CLKFX_MULTIPLY : integer :=3;
+           CLKFX_DIVIDE : integer := 2);
+  port (ICLK : in std_logic;
+        OCLK : out std_logic;
+        OCLK_FX : out std_logic;
+        LOCKED : out std_logic);
+end component;
 
-void
-force(double x[][3], double m[], double eps2, double a[][3], int n)
-{
-    double          log2(double);
-    int             i, j;
-    unsigned int    npipe, npipe_per_chip;
-    unsigned int    nchip;
-    unsigned int    jdata[JDIM];
-    if (__first == 0) {
-	b3open(devid);
-	pgr_reset(devid);
-	pgr_set_npipe_per_chip(devid, NPIPE_PER_CHIP);
-	pgr_set_jwidth(devid, 16);	// change manually 4 if grape
-	pgr_set_nchip(NCHIP_PER_BOARD);
-	__first = 1;
-    }
+--COMPONENT CLK_MULDIV_BY_XCORE
+--PORT(
+--	CLKIN_IN : IN std_logic;
+--	RST_IN : IN std_logic;          
+--	CLKFX_OUT : OUT std_logic;
+--	CLK0_OUT : OUT std_logic;
+--	LOCKED_OUT : OUT std_logic
+--	);
+--END COMPONENT;
 
-    npipe_per_chip = NPIPE_PER_CHIP;
-    nchip = NCHIP_PER_BOARD;
-    npipe = nchip * npipe_per_chip;
 
-    for (j = 0; j < n; j++) {
-	unsigned int    xj[4];
-	xj[0] = (unsigned int) (double2pgpgfloat_r(x[j][0], 26, 16, 6));
-	xj[1] = (unsigned int) (double2pgpgfloat_r(x[j][1], 26, 16, 6));
-	xj[2] = (unsigned int) (double2pgpgfloat_r(x[j][2], 26, 16, 6));
-	xj[3] = (unsigned int) (double2pgpgfloat_r(m[j], 26, 16, 6));
-	for (i = 0; i < JDIM; i++)   jdata[i] = 0x0;
-	jdata[0] |= (0x3ffffff & xj[0]) << 0;	// mask(26)
-	jdata[0] |= (0x3f & xj[1]) << 26;	// mask(6)
-	jdata[1] |= (0xfffff & (xj[1] >> 6));	// mask(20)
-	jdata[1] |= (0xfff & xj[2]) << 20;	// mask(12)
-	jdata[2] |= (0x3fff & (xj[2] >> 12));	// mask(14)
-	jdata[2] |= (0x3ffff & xj[3]) << 14;	// mask(18)
-	jdata[3] |= (0xff & (xj[3] >> 18));	// mask(8)
-	pgr_setjpset_one(devid, j, jdata);
-    }
+signal DBUS_HiZ    : std_logic;
+signal DBUS_idata  : std_logic_vector(63 downto 0);
+signal DBUS_Port   : std_logic_vector(63 downto 0);
+signal DBUS_Port_ff: std_logic_vector(63 downto 0);
+signal dmaw_enable : std_logic;
+signal dmar_enable : std_logic;
+signal dmaw_mem_adr : std_logic_vector(18 downto 0);
+signal dmar_mem_adr : std_logic_vector(18 downto 0);
+signal dmaw_mem_we  : std_logic;
+signal dmar_mem_re  : std_logic;
+signal dmaw_mem_data : std_logic_vector(63 downto 0);
+signal dmar_mem_data : std_logic_vector(63 downto 0);
+---
+signal LED_ff : std_logic_vector(7 downto 0) := (others=>'1');
 
-    for (i = 0; i < n; i += npipe) {
-	int             nn, ii, ichip;
-	nn = MIN(npipe, n - i);
+signal user_status : std_logic :='0';
+signal CLK0,CLK1 : std_logic;
+signal DCM_LOCKED : std_logic;
+signal FPGA_NO_ff : std_logic_vector(1 downto 0);
+signal tmp0 : std_logic_vector(5 downto 0);
+begin
 
-#ifdef DEBUG
-	dum = e_time();
-#endif
+dcm0: CLK_MULDIV
+  generic map (CLKFX_MULTIPLY => 2,
+               CLKFX_DIVIDE   => 2)
+  port map (ICLK => CK66,
+            OCLK => CLK0,
+            OCLK_FX => CLK1,
+            LOCKED => DCM_LOCKED);
 
-	for (ii = 0; ii < nn; ii += npipe_per_chip) {
-	    int             nnn, iii;
-	    ichip = ii / npipe_per_chip;
+-- CLK0 <= CK66;
+-- CLK1 <= CK66;
+-- DCM_LOCKED <= '0';
 
-	    nnn = MIN(npipe_per_chip, nn - ii);
-	    for (iii = 0; iii < nnn; iii++) {
-		unsigned int    idata[4];
-		idata[0] =
-		    (unsigned
-		     int) (double2pgpgfloat_r(x[i + ii + iii][0], 26, 16,
-					      6));
-		idata[1] =
-		    (unsigned
-		     int) (double2pgpgfloat_r(x[i + ii + iii][1], 26, 16,
-					      6));
-		idata[2] =
-		    (unsigned
-		     int) (double2pgpgfloat_r(x[i + ii + iii][2], 26, 16,
-					      6));
-		idata[3] =
-		    (unsigned int) (double2pgpgfloat_r(eps2, 26, 16, 6));
-		pgr_setipset_one(devid, ichip, iii, idata, 4);
-	    }
-	}
-#ifdef DEBUG
-	_t[2] += e_time() - dum;
-	dum = e_time();
-#endif
 
-	pgr_start_calc(devid, n);
-#ifdef DEBUG
-	_t[3] += e_time() - dum;
-	dum = e_time();
-#endif
 
-	pgr_getfoset(devid, fdata);
-	for (ii = 0; ii < nn; ii++) {
-	    a[i + ii][0] =
-		((double) ((long long int) fdata[ii][0] << 0)) *
-		((-1.0 / pow(2.0, (double) 31))) / pow(2.0, 0.0);
-	    a[i + ii][1] =
-		((double) ((long long int) fdata[ii][1] << 0)) *
-		((-1.0 / pow(2.0, (double) 31))) / pow(2.0, 0.0);
-	    a[i + ii][2] =
-		((double) ((long long int) fdata[ii][2] << 0)) *
-		((-1.0 / pow(2.0, (double) 31))) / pow(2.0, 0.0);
-	}
-#ifdef DEBUG
-	_t[4] += e_time() - dum;
-#endif
+  CBUS(7) <= user_status;
 
-    }
-#ifdef DEBUG
-    _t[0] = e_time() - _t[0];
-    fprintf(stderr, "total %g sec (jp %g, ip %g, c %g, fo %g %%)\n", _t[0],
-	    100.0 * _t[1] / _t[0], 100.0 * _t[2] / _t[0],
-	    100.0 * _t[3] / _t[0], 100.0 * _t[4] / _t[0]);
-#endif
-}
+  DBUS <= (others=>'Z') when DBUS_HiZ = '1' else DBUS_Port_ff;
+  DBUS_idata <= DBUS;
+  dmaw_enable <= CBUS(0);
+  dmar_enable <= CBUS(1);
+  process (CLK0) begin
+    if(CLK0'event and CLK0='1') then
+      DBUS_Port_ff <= DBUS_Port;
+    end if;
+  end process;
+
+  u0 : dmaw port map(
+    RST       => RST,
+    CLK       => CLK0,
+    ENABLE    => dmaw_enable,
+    DBUS      => DBUS_idata,
+    MEM_WE    => dmaw_mem_we,
+    MEM_ADR   => dmaw_mem_adr,
+    MEM_DATA  => dmaw_mem_data);
+
+  u1: dmar port map(
+    RST       => RST,
+    CLK       => CLK0,
+    ENABLE    => dmar_enable,
+    DBUS      => DBUS_idata,
+    DBUS_Port => DBUS_Port,
+    DBUS_HiZ  => DBUS_HiZ,
+    MEM_RE    => dmar_mem_re,
+    MEM_ADR   => dmar_mem_adr,
+    MEM_DATA  => dmar_mem_data);
+
+  u2: user port map(
+      FPGA_NO => FPGA_NO_ff,
+      RST => RST,
+      CLK  => CLK0,
+      PCLK => CLK1,
+      WE  => dmaw_mem_we,
+      RE  => dmar_mem_re,
+      WAD => dmaw_mem_adr,
+      WDT => dmaw_mem_data,
+      RAD => dmar_mem_adr,
+      RDT => dmar_mem_data,
+      STS => user_status);
+
+-----------------------------
+  process (CLK0) begin
+    if(CLK0'event and CLK0='1') then
+      FPGA_NO_ff <= FPGA_NO;
+    end if;
+  end process;
+
+-------------------------------------------------------------------------------
+  -- LED --
+  LED <= LED_ff;
+
+  process (RST,CLK0) begin
+    if(RST='1') then
+      LED_ff <= (others=>'0');
+    elsif(CLK0'event and CLK0='1') then
+--      if(dmaw_enable = '1' AND dmar_enable = '0') then
+--        LED_ff(7 downto 4) <= (others=>'0');
+--        LED_ff(3 downto 0) <= (others=>'1');
+--      elsif(dmaw_enable = '0' AND dmar_enable = '1') then
+--        LED_ff(7 downto 4) <= (others=>'1');
+--        LED_ff(3 downto 0) <= (others=>'0');
+--      else
+--        LED_ff <= "1111111" & DCM_LOCKED;
+--      end if;
+      LED_ff <= "1110011" & DCM_LOCKED;
+    end if;
+  end process;
+
+  -- TEST PIN --
+  process (CLK0) begin
+    if(CLK0'event and CLK0='1') then
+      tmp0(5 downto 0) <= CK133 & CBUS(6 downto 2);
+    end if;
+  end process;
+
+  process (CLK0) begin
+    if(CLK0'event and CLK0='1') then
+      TPIN(15 downto 10) <= tmp0(5 downto 0);
+      TPIN(9) <= 'Z';
+      TPIN(8) <= 'Z';
+      TPIN(7 downto 0) <= DSW;
+    end if;
+  end process;
+  TPIN(14 downto 11) <= (others=>'Z');
+
+end rtl;

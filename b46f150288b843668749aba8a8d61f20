@@ -1,6 +1,13 @@
-Fri Feb 17 19:30:42 JST 2012
-3
-0
-1 0.9700436 -0.24308753 0 0.466203685 0.43236573 0
-1 -0.9700436 0.24308753 -0 0.466203685 0.43236573 0
-1 0 0 0 -0.93240737 -0.86473146 -0
+Fri Apr 13 19:49:16 JST 2012
+#include <stdio.h>
+#include "nbodysim.h"
+
+void debug_position(double x[][DIM], double time,int n)
+{
+    int i;
+    for(i=0;i<n;i++){
+      //        printf("%d,%e,%1.8e,%1.8e,%1.8e\n",i,t,x[i][0],x[i][1],x[i][2]);
+        printf("%1.8e\t%1.8e\t%1.8e\t%1.1e\n",x[i][0],x[i][1],x[i][2],time);
+    }
+}
+

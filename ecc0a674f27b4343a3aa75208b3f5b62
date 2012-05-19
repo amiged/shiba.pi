@@ -1,28 +1,19 @@
-Tue Apr 17 19:28:43 JST 2012
-#!/usr/bin/env python3
-import numpy as np
-import cv2
-from datetime import datetime
+Sat May 19 19:42:55 JST 2012
+//============================================================================
+struct flops_member {
+  double Gflops;
+  double start_time;
+  double force_time;
+  int nbody;
+  int times;
+  int nstep;
+  int nskip;
+};
+
+void flops_initialize(struct flops_member *fm, int n, int nskip);
+void flops_check(struct flops_member *fm);
+
+void flops_ftime_init(struct flops_member *fm);
+void flops_ftime_save(struct flops_member *fm);
 
 
-def put_text(image, text):
-    font_size = 1.0
-    font_type = cv2.FONT_HERSHEY_PLAIN
-    font_color = (0xff, 0xf, 0xff)
-    cv2.putText(image, text, (460, 15), font_type, font_size, font_color)
-    
-
-image = cv2.imread("/tmp/tmp.jpg")
-
-tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S') # ('%Y%m%d_%H_%M_%S_%f')
-put_text(image, tnow)
-cv2.imshow('test', image)
-
-
-while(True):
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
-
-cv2.destroyAllWindows()
-
-print("Done.")

@@ -1,2 +1,16 @@
-Sun May 27 19:47:33 JST 2012
-EN pfpga_config NULL c:/cygwin/home/administrator/fkit/pci64/tmp2/pfpga_config.vhd sub00/vhpl00
+Tue Jul 24 19:43:31 JST 2012
+/** 
+# xを1ステップ進める
+# x(k+1) = x(k) + v(k+1/2)*dt
+*/
+
+#include <stdio.h>
+#include "nbodysim.h"
+
+void leapflog(double dt,double x[][DIM],double v[][DIM],int n)
+{
+    int i,d;
+    for(i=0;i<n;i++)
+        for(d=0;d<3;d++)
+            x[i][d] = x[i][d]+v[i][d]*dt;
+}

@@ -1,10 +1,24 @@
-Wed Aug 29 19:44:33 JST 2012
-# ProjNav -> New Source -> TBW
-c:\cygwin\home\administrator\fkit\pci64\tmp2\__projnav\hb_cmds
-# ProjNav -> New Source -> TBW
-C:\cygwin\home\Administrator\Fkit\pci64\tmp2\__projnav\hb_cmds
-# Bencher Waveform : PDCL (jhdparse)
-# ModelSim : Simulate Behavioral VHDL Model
-sim.fdo
-# ModelSim : Simulate Behavioral VHDL Model
-vsim.wlf
+Tue Oct  2 19:45:43 JST 2012
+vhdl work ../clk_muldiv.vhd
+vhdl work ../dmaw.vhd
+vhdl work ../dmaw_state.vhd
+vhdl work ../dmar_state.vhd
+vhdl work ../dmaw_start_adr.vhd
+vhdl work ../dmar_start_adr.vhd
+vhdl work ../dmaw_mem_adr.vhd
+vhdl work ../dmar_mem_adr.vhd
+vhdl work ../dmaw_mem_we.vhd
+vhdl work ../dmar_mem_re.vhd
+vhdl work ../dmar_dbus_hiz.vhd
+vhdl work ../dmar.vhd
+vhdl work ../pgpg_mem/adr_dec.vhd
+vhdl work ../pgpg_mem/pg_module.vhd
+vhdl work ../pgpg_mem/pg_pipe.vhd
+vhdl work ../pgpg_mem/calc.vhd
+vhdl work ../pgpg_mem/pipe_sts.vhd
+vhdl work ../pgpg_mem/setn.vhd
+vhdl work ../pgpg_mem/dpram.vhd
+vhdl work ../pgpg_mem/jmem.vhd
+vhdl work ../pgpg_mem/pgpg_mem.vhd
+vhdl work ../user.vhd
+vhdl work ../top.vhd

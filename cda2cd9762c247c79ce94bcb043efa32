@@ -1,18 +1,16 @@
-Tue Oct 16 19:50:57 JST 2012
-FILES
+Sat Nov 10 19:42:35 JST 2012
+/** 
+# vを1/2ステップ進める
+# v(k+1/2) = v(k) + a(k)*dt/2
+*/
+
+#include <stdio.h>
+#include "nbodysim.h"
+
+void leapflog_half(double dt, double v[][DIM], double a[][DIM], int n)
 {
-	VHDL_FILE = pgfpga.vhd;
-}
-COMPILER_SETTINGS_LIST
-{
-	COMPILER_SETTINGS = pgfpga;
-}
-SIMULATOR_SETTINGS_LIST
-{
-	SIMULATOR_SETTINGS = pgfpga;
-}
-SOFTWARE_SETTINGS_LIST
-{
-	SOFTWARE_SETTINGS = Debug;
-	SOFTWARE_SETTINGS = Release;
+    int i,d;
+    for(i=0;i<n;i++)
+      for(d=0;d<3;d++)
+	v[i][d] = v[i][d] + (a[i][d]*dt)/2.0;
 }

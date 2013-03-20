@@ -1,387 +1,324 @@
-Sat Feb 16 19:52:49 JST 2013
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL;
-use IEEE.STD_LOGIC_ARITH.ALL;
+Wed Mar 20 19:47:23 JST 2013
+# ---------------------------------------
+# pfpga ucf < for ISE6.3i >
+# 2004/11/16 by T.Hamada
+# ---------------------------------------
 
 
-entity PFPGA_DMA is
-  port (
-    -- PGPG REG input 
-    PGPG_REG3 : in std_logic_vector(31 downto 0);  -- PFPGA Read  { CHIPSEL(4b), NQWORD(9b),  STARTADR(19b) }
-    GPREG0    : out std_logic_vector(31 downto 0); -- PFPGA Read Status(BUSY or DONE)
-    Hit_PGPG_REG3 : in std_logic;
-
-    -- pcicnt input
-    MEM_ADA  : in std_logic_vector(16 downto 0);     -- DPRAM Port B R/W Address
-    MEM_WEHA : in std_logic;
-    MEM_WELA : in std_logic;
-    MEM_DTIA : in std_logic_vector(63 downto 0);
+################################################################################
+# Timing specification
+################################################################################
+NET "CK133"							TNM_NET = "CLK133";
+NET "CK66"							TNM_NET = "CLK66";
 
 
-    -- CBUS/DBUS
-    DMAW_ENABLE : out std_logic_vector(3 downto 0); -- for 4 pfpga chip
-    DMAR_ENABLE : out std_logic_vector(3 downto 0); -- for 4 pfpga chip
-    DBUS_Port : out std_logic_vector(63 downto 0);
-    DBUS_idata: in std_logic_vector(63 downto 0);
-    DBUS_HiZ  : out std_logic;
+################################################################################
+# I/O property
+################################################################################
+NET	"CBUS<0>"				LOC = "AU10";
+NET	"CBUS<1>"				LOC = "AT10";
+NET	"CBUS<2>"				LOC = "AJ12";
+NET	"CBUS<3>"				LOC = "AJ13";
+NET	"CBUS<4>"				LOC = "AL10";
+NET	"CBUS<5>"				LOC = "AL11";
+NET	"CBUS<6>"				LOC = "AN11";
+NET	"CBUS<7>"				LOC = "AM11";
 
-    -- DPRAM R/W ports
-    MEM_ADB     : out std_logic_vector(12 downto 0);     -- DPRAM Port B R/W Address
-    MEM_WEHB    : out std_logic;                         -- DPRAM Port B Write Enable (High Word)
-    MEM_WELB    : out std_logic;                         -- DPRAM Port B Write Enable (Low  Word)
-    MEM_DTIB    : out std_logic_vector(63 downto 0);     -- DPRAM Port B Write Data
-    MEM_DTOB    : in  std_logic_vector(63 downto 0);     -- DPRAM Port B Read Data
+NET	"CBUS<0>"				IOSTANDARD	=	LVCMOS25;
+NET	"CBUS<1>"				IOSTANDARD	=	LVCMOS25;
+NET	"CBUS<2>"				IOSTANDARD	=	LVCMOS25;
+NET	"CBUS<3>"				IOSTANDARD	=	LVCMOS25;
+NET	"CBUS<4>"				IOSTANDARD	=	LVCMOS25;
+NET	"CBUS<5>"				IOSTANDARD	=	LVCMOS25;
+NET	"CBUS<6>"				IOSTANDARD	=	LVCMOS25;
+NET	"CBUS<7>"				IOSTANDARD	=	LVCMOS25;
+NET	"CK66"					IOSTANDARD	=	LVCMOS25;
+NET	"CK133"					IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<0>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<1>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<2>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<3>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<4>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<5>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<6>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<7>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<8>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<9>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<10>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<11>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<12>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<13>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<14>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<15>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<16>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<17>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<18>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<19>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<20>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<21>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<22>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<23>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<24>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<25>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<26>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<27>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<28>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<29>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<30>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<31>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<32>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<33>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<34>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<35>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<36>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<37>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<38>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<39>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<40>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<41>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<42>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<43>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<44>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<45>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<46>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<47>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<48>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<49>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<50>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<51>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<52>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<53>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<54>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<55>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<56>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<57>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<58>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<59>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<60>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<61>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<62>"				IOSTANDARD	=	LVCMOS25;
+NET	"DBUS<63>"				IOSTANDARD	=	LVCMOS25;
+NET	"RST"					IOSTANDARD	=	LVCMOS25;
+NET	"FPGA_NO<0>"			IOSTANDARD	=	LVCMOS25;
+NET	"FPGA_NO<1>"			IOSTANDARD	=	LVCMOS25;
+NET	"LED<0>"				IOSTANDARD	=	LVCMOS25;
+NET	"LED<1>"				IOSTANDARD	=	LVCMOS25;
+NET	"LED<2>"				IOSTANDARD	=	LVCMOS25;
+NET	"LED<3>"				IOSTANDARD	=	LVCMOS25;
+NET	"LED<4>"				IOSTANDARD	=	LVCMOS25;
+NET	"LED<5>"				IOSTANDARD	=	LVCMOS25;
+NET	"LED<6>"				IOSTANDARD	=	LVCMOS25;
+NET	"LED<7>"				IOSTANDARD	=	LVCMOS25;
+NET	"DSW<0>"			IOSTANDARD	=	LVCMOS25;
+NET	"DSW<1>"			IOSTANDARD	=	LVCMOS25;
+NET	"DSW<2>"			IOSTANDARD	=	LVCMOS25;
+NET	"DSW<3>"			IOSTANDARD	=	LVCMOS25;
+NET	"DSW<4>"			IOSTANDARD	=	LVCMOS25;
+NET	"DSW<5>"			IOSTANDARD	=	LVCMOS25;
+NET	"DSW<6>"			IOSTANDARD	=	LVCMOS25;
+NET	"DSW<7>"			IOSTANDARD	=	LVCMOS25;
 
-    RST : in  std_logic;
-    CLK : in  std_logic
-    );
-end PFPGA_DMA;
+NET	"CBUS<0>"				FAST;
+NET	"CBUS<1>"				FAST;
+NET	"CBUS<2>"				FAST;
+NET	"CBUS<3>"				FAST;
+NET	"CBUS<4>"				FAST;
+NET	"CBUS<5>"				FAST;
+NET	"CBUS<6>"				FAST;
+NET	"CBUS<7>"				FAST;
+NET	"DBUS<0>"				FAST;
+NET	"DBUS<1>"				FAST;
+NET	"DBUS<2>"				FAST;
+NET	"DBUS<3>"				FAST;
+NET	"DBUS<4>"				FAST;
+NET	"DBUS<5>"				FAST;
+NET	"DBUS<6>"				FAST;
+NET	"DBUS<7>"				FAST;
+NET	"DBUS<8>"				FAST;
+NET	"DBUS<9>"				FAST;
+NET	"DBUS<10>"				FAST;
+NET	"DBUS<11>"				FAST;
+NET	"DBUS<12>"				FAST;
+NET	"DBUS<13>"				FAST;
+NET	"DBUS<14>"				FAST;
+NET	"DBUS<15>"				FAST;
+NET	"DBUS<16>"				FAST;
+NET	"DBUS<17>"				FAST;
+NET	"DBUS<18>"				FAST;
+NET	"DBUS<19>"				FAST;
+NET	"DBUS<20>"				FAST;
+NET	"DBUS<21>"				FAST;
+NET	"DBUS<22>"				FAST;
+NET	"DBUS<23>"				FAST;
+NET	"DBUS<24>"				FAST;
+NET	"DBUS<25>"				FAST;
+NET	"DBUS<26>"				FAST;
+NET	"DBUS<27>"				FAST;
+NET	"DBUS<28>"				FAST;
+NET	"DBUS<29>"				FAST;
+NET	"DBUS<30>"				FAST;
+NET	"DBUS<31>"				FAST;
+NET	"DBUS<32>"				FAST;
+NET	"DBUS<33>"				FAST;
+NET	"DBUS<34>"				FAST;
+NET	"DBUS<35>"				FAST;
+NET	"DBUS<36>"				FAST;
+NET	"DBUS<37>"				FAST;
+NET	"DBUS<38>"				FAST;
+NET	"DBUS<39>"				FAST;
+NET	"DBUS<40>"				FAST;
+NET	"DBUS<41>"				FAST;
+NET	"DBUS<42>"				FAST;
+NET	"DBUS<43>"				FAST;
+NET	"DBUS<44>"				FAST;
+NET	"DBUS<45>"				FAST;
+NET	"DBUS<46>"				FAST;
+NET	"DBUS<47>"				FAST;
+NET	"DBUS<48>"				FAST;
+NET	"DBUS<49>"				FAST;
+NET	"DBUS<50>"				FAST;
+NET	"DBUS<51>"				FAST;
+NET	"DBUS<52>"				FAST;
+NET	"DBUS<53>"				FAST;
+NET	"DBUS<54>"				FAST;
+NET	"DBUS<55>"				FAST;
+NET	"DBUS<56>"				FAST;
+NET	"DBUS<57>"				FAST;
+NET	"DBUS<58>"				FAST;
+NET	"DBUS<59>"				FAST;
+NET	"DBUS<60>"				FAST;
+NET	"DBUS<61>"				FAST;
+NET	"DBUS<62>"				FAST;
+NET	"DBUS<63>"				FAST;
 
-architecture rtl of PFPGA_DMA is
+NET	"TPIN<0>"				FAST;
+NET	"TPIN<1>"				FAST;
+NET	"TPIN<2>"				FAST;
+NET	"TPIN<3>"				FAST;
+NET	"TPIN<4>"				FAST;
+NET	"TPIN<5>"				FAST;
+NET	"TPIN<6>"				FAST;
+NET	"TPIN<7>"				FAST;
+NET	"TPIN<8>"				FAST;
+NET	"TPIN<9>"				FAST;
+NET	"TPIN<10>"				FAST;
+NET	"TPIN<11>"				FAST;
+NET	"TPIN<12>"				FAST;
+NET	"TPIN<13>"				FAST;
+NET	"TPIN<14>"				FAST;
+NET	"TPIN<15>"				FAST;
+NET	"LED<0>"				FAST;
+NET	"LED<1>"				FAST;
+NET	"LED<2>"				FAST;
+NET	"LED<3>"				FAST;
+NET	"LED<4>"				FAST;
+NET	"LED<5>"				FAST;
+NET	"LED<6>"				FAST;
+NET	"LED<7>"				FAST;
 
------------------------------------------------------------------
--- DMAW/R
-  signal Hit_DMAW,Hit_DMAWr,Hit_DMAR,Hit_DMARr : std_logic;
-  signal ChipSel    : std_logic_vector(3 downto 0);
-  signal START_ADR : std_logic_vector(18 downto 0);
-
--- DMAW
-  signal mem_wea   : std_logic := '0';
-  signal dmaw_we0  : std_logic := '0';
-  signal dmaw_we1  : std_logic := '0';
-  signal dmaw_adr          : std_logic_vector(63 downto 0) := (others=>'0');
-  signal dmaw_dt0,dmaw_dt1 : std_logic_vector(63 downto 0) := (others=>'0');
-  signal dmaw_dbus_o       : std_logic_vector(63 downto 0) := (others=>'0');
---
-
--- DMAR
-  signal dmar_enable_cnt0   : std_logic_vector(12 downto 0) :=(others=>'0');
-  signal dmar_enable_cnt0_r : std_logic_vector(12 downto 0) :=(others=>'0');
-  signal dmar_enable0 : std_logic :='0';
-  signal dmar_enable1 : std_logic :='0';
-  signal dmar_enable2 : std_logic :='0';
-  signal dmar_enable3 : std_logic :='0';
-  signal dmar_enable4 : std_logic :='0';
-  signal dmar_enable5 : std_logic :='0';
-  signal dmar_enable6 : std_logic :='0';
-  signal dmar_enable7 : std_logic :='0';
-  signal lo_mem_wad, lo_mem_wad_z : std_logic_vector(12 downto 0);
-  signal dmar_dbus_o   : std_logic_vector(63 downto 0) := (others=>'0');
----
-  signal busy_dmar : std_logic;
-  signal busy_dmaw : std_logic;
-  signal dbus_port0 : std_logic_vector(63 downto 0) := (others=>'0'); 
-begin
-
-  GPREG0(0)   <= '0'; -- not used
-  Hit_DMAW    <= '0'; -- not used
-  busy_dmaw   <= '0'; -- not used
-
-  -- DMA BUSY or IDLE
-  GPREG0(1)   <= busy_dmar;
-  busy_dmar   <= Hit_DMAR or Hit_DMARr or dmar_enable0 or  dmar_enable1 or  dmar_enable2 or  dmar_enable3
-                                       or dmar_enable4 or  dmar_enable5 or  dmar_enable6 or  dmar_enable7;
-  GPREG0(31 downto 2) <= (others=>'0');
-
-
-  Hit_DMAR <= Hit_PGPG_REG3;
-  process (CLK) begin
-    if (CLK'event and CLK='1') then
-      Hit_DMAWr <= Hit_DMAW;
-      Hit_DMARr <= Hit_DMAR;
-    end if;
-  end process;
-
-
--- WRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWR
---    WR SHARE
--- WRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWR
-
-  ----------------------------
-  --- DMAR/W START ADR     ---
-  ----------------------------
-  process (CLK,Hit_DMAW,Hit_DMAWr,Hit_DMAR,Hit_DMARr) begin
-    if(RST='1') then
-      START_ADR <= (others=>'0');
-    elsif(CLK'event and CLK='1') then
-      if   ((Hit_DMAW = '0') AND (Hit_DMAWr = '1')) then
-        START_ADR <= (others=>'0');
-      elsif((Hit_DMAR = '0') AND (Hit_DMARr = '1')) then
-        START_ADR <= PGPG_REG3(18 downto 0);
-      end if;
-    end if;
-  end process;
-
-  ----------------------------
-  --- ChipSel              ---
-  ----------------------------
-  process (CLK,Hit_DMAW,Hit_DMAWr,Hit_DMAR,Hit_DMARr) begin
-    if(RST='1') then
-      ChipSel <= (others=>'0');
-    elsif(CLK'event and CLK='1') then
-      if   ((Hit_DMAW = '0') AND (Hit_DMAWr = '1')) then
-        ChipSel <= (others=>'0');
-      elsif((Hit_DMAR = '0') AND (Hit_DMARr = '1')) then
-        if    (PGPG_REG3(28) = '1') then
-          ChipSel <= "0001";
-        elsif (PGPG_REG3(29) = '1') then
-          ChipSel <= "0010";
-        elsif (PGPG_REG3(30) = '1') then
-          ChipSel <= "0100";
-        else
-          ChipSel <= "1000";
-        end if;
-      end if;
-    end if;
-  end process;
-
-  ------------------------------
-  --- DBUS_Port              ---
-  ------------------------------
-  process (CLK) begin
-    if(CLK'event and CLK='1') then
-      DBUS_Port <= dbus_port0;
-    end if;
-  end process;
-
-  with busy_dmar select
-    dbus_port0 <= dmar_dbus_o when '1',
-                  dmaw_dbus_o when others;
-
-  ------------------------------
-  --- MEM_ADB                ---
-  ------------------------------
-  process (CLK) begin
-    if(CLK'event and CLK='1') then
-      MEM_ADB <= lo_mem_wad;
-    end if;
-  end process;
-
--- WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
--- DMA WRITE ( ifpga -> pfpga )
--- WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
-  ------------------------------
-  --- mem_wea                ---
-  ------------------------------
-  mem_wea <= MEM_WEHA AND MEM_WELA;
-
-  ------------------------------
-  --- dmaw_we0,1             ---
-  ------------------------------
-  process (RST,CLK) begin
-    if(RST='1') then
-      dmaw_we0 <= '0';
-    elsif(CLK'event and CLK='1') then
-      dmaw_we0 <= mem_wea;
-    end if;
-  end process;
-
-  process (CLK) begin
-    if(CLK'event and CLK='1') then
-      dmaw_we1 <= dmaw_we0;
-    end if;
-  end process;
-  
-  ------------------------------
-  --- dmaw_adr               ---
-  ------------------------------
-  process (RST,CLK,mem_wea,dmaw_we0) begin
-    if(RST='1') then
-      dmaw_adr <= (others=>'0');
-    elsif(CLK'event and CLK='1') then
-      if((mem_wea = '1') and (dmaw_we0 = '0')) then
-        dmaw_adr(15 downto 0) <= MEM_ADA(16 downto 1);
-      end if;
-      dmaw_adr(63 downto 16) <= (others=>'0');
-    end if;
-  end process;
-
-  ------------------------------
-  --- dmaw_dt delay          ---
-  ------------------------------
-  process (RST,CLK) begin
-    if(RST='1') then
-      dmaw_dt1 <= (others=>'0');
-      dmaw_dt0 <= (others=>'0');
-    elsif(CLK'event and CLK='1') then
-      dmaw_dt1 <= dmaw_dt0;
-      dmaw_dt0 <= MEM_DTIA;
-    end if;
-  end process;
-
-  ------------------------------
-  --- dmaw_dbus_o            ---
-  ------------------------------
-  process (RST,CLK,dmaw_we0,dmaw_we1) begin
-    if(RST='1') then
-      dmaw_dbus_o <= (others=>'0');
-    elsif(CLK'event and CLK='1') then
-      if(dmaw_we0 = '1' and dmaw_we1 = '0') then
-        dmaw_dbus_o <= dmaw_adr;
-      else
-        dmaw_dbus_o <= dmaw_dt1;
-      end if;
-    end if;
-  end process;
-
-  --- DMAW_ENABLE
-  process (RST,CLK) begin
-    if(RST='1') then
-      DMAW_ENABLE    <= (others=>'0');
-    elsif(CLK'event and CLK='1') then
-      DMAW_ENABLE(0) <= dmaw_we1;
-      DMAW_ENABLE(1) <= dmaw_we1;
-      DMAW_ENABLE(2) <= dmaw_we1;
-      DMAW_ENABLE(3) <= dmaw_we1;
-    end if;
-  end process;
-
--- RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
--- DMA READ (ifpga <- pfpga)
--- RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
-
-  ----------------------------
-  -- DMAR ENABLE COUNT     ---
-  ----------------------------
-  dmar_enable_cnt0_r <= dmar_enable_cnt0;
-  process (RST,CLK,Hit_DMAR,Hit_DMARr,dmar_enable_cnt0_r) begin
-    if(RST='1') then
-      dmar_enable_cnt0 <= (others=>'0');
-    elsif(CLK'event and CLK='1') then
-      if((Hit_DMAR = '0') AND (Hit_DMARr = '1'))then
-        dmar_enable_cnt0 <= "0000" & PGPG_REG3(27 downto 19);   -- SET NQWORD
-      elsif(dmar_enable_cnt0_r /= "000000000000") then
-        dmar_enable_cnt0 <= dmar_enable_cnt0_r - "000000000001";
-      end if;
-    end if;
-  end process;
-
-  ----------------------------
-  -- DMAR ENABLE 0         ---
-  ----------------------------
-  process (RST,CLK,Hit_DMAR,Hit_DMARr,dmar_enable_cnt0) begin
-    if(RST='1') then
-      dmar_enable0 <= '0';
-    elsif(CLK'event and CLK='1') then
-      if((Hit_DMAR = '0') AND (Hit_DMARr = '1'))then
-        dmar_enable0 <= '1';
-      elsif(dmar_enable_cnt0 = "000000000000") then
-        dmar_enable0 <= '0';
-      end if;
-    end if;
-  end process;
-
-  process (CLK) begin
-    if(CLK'event and CLK='1') then
-      dmar_enable7 <= dmar_enable6;
-      dmar_enable6 <= dmar_enable5;
-      dmar_enable5 <= dmar_enable4;
-      dmar_enable4 <= dmar_enable3;
-      dmar_enable3 <= dmar_enable2;
-      dmar_enable2 <= dmar_enable1;
-      dmar_enable1 <= dmar_enable0;
-    end if;
-  end process;
-
-
-  ------------------------------
-  --- DMAR ENABLE            ---
-  ------------------------------
-  process (CLK,dmar_enable1,dmar_enable2)  begin
-    if(CLK'event and CLK='1') then
-      if((dmar_enable0 = '1') OR (dmar_enable1 = '1')) then
-        DMAR_ENABLE(0) <= '1' AND ChipSel(0);
-        DMAR_ENABLE(1) <= '1' AND ChipSel(1);
-        DMAR_ENABLE(2) <= '1' AND ChipSel(2);
-        DMAR_ENABLE(3) <= '1' AND ChipSel(3);
-      else
-        DMAR_ENABLE <= (others=>'0');
-      end if;
-    end if;
-  end process;
-
-  ------------------------------
-  --- DMAR_DBUS_O            ---
-  ------------------------------
-  process (RST,CLK,dmar_enable0,dmar_enable1,dmar_enable2,dmar_enable3)  begin
-    if(RST='1') then
-      dmar_dbus_o <= (others=>'0');
-    elsif(CLK'event and CLK='1') then
-      if(    (dmar_enable0 = '1') AND (dmar_enable1 = '0') ) then
-        dmar_dbus_o <= ("000000000000000000000000000000000000000000000" & START_ADR);
-      elsif( (dmar_enable1 = '1') AND (dmar_enable2 = '0') ) then
---        dmar_dbus_o <= X"FFFFFFFFFFFFFFFF";
-        NULL;
-      elsif( (dmar_enable2 = '1') AND (dmar_enable3 = '0') ) then
-        dmar_dbus_o <= (others=>'0');
-      end if;
-    end if;
-  end process;
-
-  ------------------------------
-  --- DBUS_HiZ               ---
-  ------------------------------
-  process (RST,CLK,dmar_enable2,dmar_enable3,dmar_enable4,dmar_enable5)  begin
-    if(RST='1') then
-      DBUS_HiZ <= '0';
-    elsif(CLK'event and CLK='1') then
-      if((dmar_enable2 = '1') OR (dmar_enable3 = '1') OR (dmar_enable4 = '1') OR (dmar_enable5 = '1') ) then
-        DBUS_HiZ <= '1';
-      else
-        DBUS_HiZ <= '0';
-      end if;
-    end if;
-  end process;
-
-  ------------------------------
-  --- MEM_DTIB               ---
-  ------------------------------
-  process (CLK)  begin
-    if(CLK'event and CLK='1') then
-      MEM_DTIB <= DBUS_idata;
-    end if;
-  end process;
-
-  ------------------------------
-  --- MEM_WEHB, MEM_WELB     ---
-  ------------------------------
-  process (CLK)  begin
-    if(CLK'event and CLK='1') then
-      MEM_WEHB <= dmar_enable6;
-      MEM_WELB <= dmar_enable6;
-    end if;
-  end process;
-
-  ------------------------------
-  --- lo_mem_wad             ---
-  ------------------------------
-  lo_mem_wad_z <= lo_mem_wad;
---  process (RST,CLK,dmar_enable5,dmar_enable6)  begin
---    if(RST='1') then
---      lo_mem_wad <= "1000000000000";
---    elsif(CLK'event and CLK='1') then
---      if((dmar_enable5 = '1') AND (dmar_enable6 = '0')) then
---        lo_mem_wad <= "1000000000000";
---      elsif((dmar_enable5 = '1') AND (dmar_enable6 = '1')) then
---        lo_mem_wad <= lo_mem_wad_z + "0000000000001";
---      elsif((dmar_enable5 = '0') AND (dmar_enable6 = '1')) then
---        lo_mem_wad <= "1000000000000";
---      end if;
---    end if;
---  end process;
-  process (RST,CLK,dmar_enable5,dmar_enable6)  begin
-    if(RST='1') then
-      lo_mem_wad <= "0000000000000";
-    elsif(CLK'event and CLK='1') then
-      if((dmar_enable5 = '1') AND (dmar_enable6 = '0')) then
-        lo_mem_wad <= "0000000000000";
-      elsif((dmar_enable5 = '1') AND (dmar_enable6 = '1')) then
-        lo_mem_wad <= lo_mem_wad_z + "0000000000001";
-      elsif((dmar_enable5 = '0') AND (dmar_enable6 = '1')) then
-        lo_mem_wad <= "0000000000000";
-      end if;
-    end if;
-  end process;
-
-end rtl;
+################################################################################
+# I/O Assignment
+################################################################################
+NET	"CK66"					LOC = "AG20";
+NET	"CK133"					LOC = "AK20";
+NET	"DBUS<0>"				LOC = "AH13";
+NET	"DBUS<1>"				LOC = "AH14";
+NET	"DBUS<2>"				LOC = "AR11";
+NET	"DBUS<3>"				LOC = "AP11";
+NET	"DBUS<4>"				LOC = "AU11";
+NET	"DBUS<5>"				LOC = "AT11";
+NET	"DBUS<6>"				LOC = "AL14";
+NET	"DBUS<7>"				LOC = "AK14";
+NET	"DBUS<8>"				LOC = "AM12";
+NET	"DBUS<9>"				LOC = "AL12";
+NET	"DBUS<10>"				LOC = "AT12";
+NET	"DBUS<11>"				LOC = "AR12";
+NET	"DBUS<12>"				LOC = "AJ14";
+NET	"DBUS<13>"				LOC = "AJ15";
+NET	"DBUS<14>"				LOC = "AM13";
+NET	"DBUS<15>"				LOC = "AL13";
+NET	"DBUS<16>"				LOC = "AP12";
+NET	"DBUS<17>"				LOC = "AN13";
+NET	"DBUS<18>"				LOC = "AL15";
+NET	"DBUS<19>"				LOC = "AK15";
+NET	"DBUS<20>"				LOC = "AT13";
+NET	"DBUS<21>"				LOC = "AR13";
+NET	"DBUS<22>"				LOC = "AN14";
+NET	"DBUS<23>"				LOC = "AM14";
+NET	"DBUS<24>"				LOC = "AH15";
+NET	"DBUS<25>"				LOC = "AH16";
+NET	"DBUS<26>"				LOC = "AR14";
+NET	"DBUS<27>"				LOC = "AP14";
+NET	"DBUS<28>"				LOC = "AU14";
+NET	"DBUS<29>"				LOC = "AT14";
+NET	"DBUS<30>"				LOC = "AH17";
+NET	"DBUS<31>"				LOC = "AG17";
+NET	"DBUS<32>"				LOC = "AN15";
+NET	"DBUS<33>"				LOC = "AM15";
+NET	"DBUS<34>"				LOC = "AR15";
+NET	"DBUS<35>"				LOC = "AP15";
+NET	"DBUS<36>"				LOC = "AK16";
+NET	"DBUS<37>"				LOC = "AJ17";
+NET	"DBUS<38>"				LOC = "AU15";
+NET	"DBUS<39>"				LOC = "AT15";
+NET	"DBUS<40>"				LOC = "AM16";
+NET	"DBUS<41>"				LOC = "AL16";
+NET	"DBUS<42>"				LOC = "AM17";
+NET	"DBUS<43>"				LOC = "AL17";
+NET	"DBUS<44>"				LOC = "AR16";
+NET	"DBUS<45>"				LOC = "AR17";
+NET	"DBUS<46>"				LOC = "AH18";
+NET	"DBUS<47>"				LOC = "AG18";
+NET	"DBUS<48>"				LOC = "AU17";
+NET	"DBUS<49>"				LOC = "AT17";
+NET	"DBUS<50>"				LOC = "AM18";
+NET	"DBUS<51>"				LOC = "AL18";
+NET	"DBUS<52>"				LOC = "AK18";
+NET	"DBUS<53>"				LOC = "AJ18";
+NET	"DBUS<54>"				LOC = "AP18";
+NET	"DBUS<55>"				LOC = "AN18";
+NET	"DBUS<56>"				LOC = "AT18";
+NET	"DBUS<57>"				LOC = "AR18";
+NET	"DBUS<58>"				LOC = "AH19";
+NET	"DBUS<59>"				LOC = "AG19";
+NET	"DBUS<60>"				LOC = "AU18";
+NET	"DBUS<61>"				LOC = "AU19";
+NET	"DBUS<62>"				LOC = "AM19";
+NET	"DBUS<63>"				LOC = "AL19";
+NET	"RST"					LOC = "AR19";
+NET	"TPIN<0>"				LOC = "Y36";
+NET	"TPIN<2>"				LOC = "Y37";
+NET	"TPIN<4>"				LOC = "Y31";
+NET	"TPIN<6>"				LOC = "W31";
+NET	"TPIN<8>"				LOC = "Y32";
+NET	"TPIN<10>"				LOC = "Y33";
+NET	"TPIN<12>"				LOC = "W36";
+NET	"TPIN<14>"				LOC = "W37";
+NET	"TPIN<1>"				LOC = "W27";
+NET	"TPIN<3>"				LOC = "W28";
+NET	"TPIN<5>"				LOC = "W34";
+NET	"TPIN<7>"				LOC = "W35";
+NET	"TPIN<9>"				LOC = "G38";
+NET	"TPIN<11>"				LOC = "G39";
+NET	"TPIN<13>"				LOC = "G36";
+NET	"TPIN<15>"				LOC = "G37";
+NET	"FPGA_NO<0>"			LOC = "AP19";
+NET	"FPGA_NO<1>"			LOC = "AN19";
+NET	"LED<0>"				LOC = "P34";
+NET	"LED<1>"				LOC = "P33";
+NET	"LED<2>"				LOC = "R27";
+NET	"LED<3>"				LOC = "T27";
+NET	"LED<4>"				LOC = "P36";
+NET	"LED<5>"				LOC = "P35";
+NET	"LED<6>"				LOC = "P37";
+NET	"LED<7>"				LOC = "N37";
+NET	"DSW<0>"			LOC = "T30";
+NET	"DSW<1>"			LOC = "T29";
+NET	"DSW<2>"			LOC = "P39";
+NET	"DSW<3>"			LOC = "P38";
+NET	"DSW<4>"			LOC = "R33";
+NET	"DSW<5>"			LOC = "R32";
+NET	"DSW<6>"			LOC = "T28";
+NET	"DSW<7>"			LOC = "U28";
+NET "CK66" TNM_NET = "CK66";
+TIMESPEC "TS_CK66" = PERIOD "CK66" 20 ns HIGH 50 %;

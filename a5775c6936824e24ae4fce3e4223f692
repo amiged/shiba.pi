@@ -1,53 +1,91 @@
-Tue Apr 30 19:53:47 JST 2013
-/***************************************************
- * The lowest level library for PROGRAPE-4
- *
- * Copyright(c) by Tsuyoshi Hamada.
- * All rights reserved.
- *
- * PLEASE DO NOT BRANCH !!
- *
- * 20060916.rev1 : Development start
- *
- ***************************************************/
+Wed May  1 19:52:13 JST 2013
+//-----------------------------------------------------------------------------
+// Output Pair-Wise Error
+// Modify: Tsuyoshi Hamada, Nov, 2006
+//-----------------------------------------------------------------------------
+#include  <iostream>
+#include  <cmath>
+#include  <cstdlib>
+#include  <iomanip> // cout << setw() << setprecision() 
+using namespace std;
 
-inline unsigned int    ReadBase0 (int devid, unsigned int addr);
-inline unsigned int    ReadBase1 (int devid, unsigned int addr);
-inline void            WriteBase0 (int devid, unsigned int addr, unsigned int val);
-inline void            WriteBase1 (int devid, unsigned int addr, unsigned int val);
+extern "C" void  force(double x[][3], double v[][3], double m[], double p[], double a[][3], double j[][3], int n);
+extern "C" void _force(double x[][3], double v[][3], double m[], double p[], double a[][3], double j[][3], int n);
 
-void                   pg4_close (int id);
+extern "C" void debug_position_snap(double x[][3], double Gflops, int n, int nstep);
 
-int                    pg4_DMAput (int devid, unsigned int size);
-int                    pg4_DMAget (int devid, unsigned int size);
-void                   pg4_DMAcheck (int devid);
-int                    pg4_DMAretry (int devid);
+#define NMAX 1024
 
-unsigned long          pg4_getbaseaddr (int devid, int j);
-unsigned long          pg4_getbaseaddr_size (int devid, int bar);
-unsigned int*          pg4_get_bar0ptr(int devid);
-unsigned int*          pg4_get_bar1ptr(int devid);
-unsigned int*          pg4_get_dmawptr (int devid);
-unsigned int*          pg4_get_dmarptr (int devid);
-unsigned int           pg4_get_dma_size (int devid);
-void                   pg4_get_pfpga_info (int devid, char *info);
+double rsv[65536][3];
 
-int                    pg4_open (int id);
+int main(int argc, char *argv[]) {
+  int index;
+  int n = 2;
 
-inline unsigned int    pg4_readbase0 (int devid, unsigned int index);
-inline unsigned int    pg4_readbase1 (int devid, unsigned int index);
-unsigned long          pg4_read_pciconfig_dword (int devid, int adr);
+  double m[NMAX];
+  double r[NMAX][3];
+  double v[NMAX][3];
 
-void                   pg4_set_pfpga_info (int devid, char *info);
+  double p[NMAX];
+  double a[NMAX][3];
+  double jk[NMAX][3];
 
-inline void            pg4_writebase0 (int devid, unsigned int index, unsigned int val);
-inline void            pg4_writebase1 (int devid, unsigned int index, unsigned int val);
+  double _p[NMAX];
+  double _a[NMAX][3];
+  double _jk[NMAX][3];
 
+  m[0] = m[1] = 1.0;
 
+  for (int i = 0; i < 3 ; i++) r[i][0] = 0.0;
+  for (int i = 0; i < 3 ; i++) v[i][0] = 0.0;
+  for (int i = 0; i < 3 ; i++) v[i][1] = 0.0;
 
-// --- following are removed. ---
-int                    pg4_DMAput_offset (int devid, unsigned int size, unsigned offset);
-int                    pg4_DMAget_offset (int devid, unsigned int size, unsigned offset);
-void                   pg4_wait (int devid, int n);
+  index=0;
+  srand(0x12345);
+
+  for (int t = 0; t < 1000 ; t++){
+    
+
+    //    for (int i = 0; i < 3 ; i++) r[1][i] = pow(10.0, 2.0*rand()/(RAND_MAX+1.0));
 
 
+
+    for (int i = 0; i < 3 ; i++) r[1][i] = 1.0*rand()/(RAND_MAX+1.0);
+
+    for (int i = 0; i < 3 ; i++)  rsv[index][i] = r[1][i];
+    index++;
+
+
+    _force(r, v, m, _p, _a, _jk, n);
+     force(r, v, m,  p,  a,  jk, n);
+
+     double err_p, err_a[3], err_jk[3];
+     double rad;
+     rad = sqrt(r[1][0]*r[1][0]+r[1][1]*r[1][1]+r[1][2]*r[1][2]);
+     err_p = fabs(p[0]-_p[0])/_p[0];
+
+    
+     for (int k = 0; k < 3; k++){
+       double host  = _a[0][k];
+       double pipe  =  a[0][k];
+       double err = sqrt((host - pipe)*(host - pipe))/host;
+
+       cout << setw(8);
+       cout.precision(6);
+       cout << rad  << "\t";
+       cout.precision(6);
+       cout << err  << "\t";
+       cout.precision(6);
+       cout << host << "\t";
+       cout.precision(6);
+       cout << pipe << endl;
+
+     }
+
+  }
+  
+
+  debug_position_snap(rsv, 123.456, index, 10);
+
+  return 0;
+}

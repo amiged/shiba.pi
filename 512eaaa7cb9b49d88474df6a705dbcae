@@ -1,3 +1,17 @@
-Fri May 17 19:43:11 JST 2013
-MODULE local_write
-SUBMODULE local_write
+Sat Jun 22 19:26:51 JST 2013
+#!/usr/bin/perl
+
+my $N = 300;
+my $XSCALE = 1.0;
+my $YSCALE = 1.0;
+
+srand(12345);
+
+print $N ."\n";
+
+for(my $i=0;$i<$N;$i++){
+    my $x = (rand(1.0)*$XSCALE - $XSCALE/2.0);
+    my $y = (rand(1.0)*$YSCALE - $XSCALE/2.0);
+    my $s = sprintf("%e\t%e\n",$x,$y);
+    print $s;
+}

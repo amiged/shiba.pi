@@ -1,41 +1,13 @@
-Mon Jun  3 19:37:18 JST 2013
-// Time-stamp: <2006-09-04 13:41:34 hamada>
-// by T.Hamada
-//
-// <2006-09-04 13:33:47 hamada>
+Sun Jun 23 19:54:42 JST 2013
+#!/usr/bin/env python3
+# ./mov.py <fps> <start_number>
+import sys
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
 
-#include "pg4.h"
-
-void rst(int devid, int d, int msec)
-{
-  d = 0xff & d;
-  WriteBase0(devid, 0x4, d);
-  usleep(msec*1000);
-}
-
-int main(int argc, char* argv[])
-{
-  int devid=0;
-  int i;
-
-  pg4_open(devid);
-  
-  for(i=0;i<16;i++){
-    int x;
-    x = 0xff&(1<<(i%8));
-    rst(devid, x, 100);
-    rst(devid, 0, 1);
-  }
-
-  rst(devid, 0xff, 1000);
-  rst(devid, 0x0, 0);
-
-  pg4_close(devid);
-
-  return 0;
-}
+if __name__ == '__main__':
+	 args = sys.argv
+	 assert len(args) == 3
+	 fps          = int(args[1])
+	 start_number = int(args[2])
+	 cmd = "ffmpeg -r %d -start_number %d -i ../conv/%%08d.jpg -vcodec libx264 -pix_fmt yuv420p -r %d tmp.mp4"% (fps, start_number, fps)
+	 print (cmd)

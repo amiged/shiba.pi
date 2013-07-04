@@ -1,147 +1,48 @@
-Sun Jun 30 19:42:34 JST 2013
-Release 6.2.03i - Bitgen G.31a
-Copyright (c) 1995-2004 Xilinx, Inc.  All rights reserved.
+Thu Jul  4 19:29:04 JST 2013
+#include <stdio.h>
+#include <math.h>
+#include "nbodysim.h"
 
-Loading device database for application Bitgen from file "top.ncd".
-   "top" is an NCD, version 2.38, device xc2vp70, package ff1517, speed -5
-Loading device for application Bitgen from file '2vp70.nph' in environment
-/export/home/opt/xilinx.
-Opened constraints file top.pcf.
+double energy(double m[], double x[][DIM], double v[][DIM], double eps2 , int n)
+{
+    int i,j,d;
+    double v2,r2;
+    double dx[3];
+    double Ep;  /* 系の位置エネルギー */
+    double Em;  /* 系の運動エネルギー */
+    double Ea;  /* 系の全力学的エネルギー */
 
-Mon Jun 13 23:42:26 2005
 
-bitgen -intstyle ise -w -g DebugBitstream:No -g Binary:no -g CRC:Enable -g ConfigRate:4 -g CclkPin:PullUp -g M0Pin:PullUp -g M1Pin:PullUp -g M2Pin:PullUp -g ProgPin:PullUp -g DonePin:PullUp -g PowerdownPin:PullUp -g TckPin:PullUp -g TdiPin:PullUp -g TdoPin:PullUp -g TmsPin:PullUp -g UnusedPin:PullDown -g UserID:0xFFFFFFFF -g DCMShutDown:Disable -g DisableBandgap:No -g DCIUpdateMode:AsRequired -g StartUpClk:CClk -g DONE_cycle:4 -g GTS_cycle:5 -g GWE_cycle:6 -g LCK_cycle:NoWait -g Match_cycle:Auto -g Security:None -g DonePipe:No -g DriveDone:No -g Encrypt:No top.ncd 
+    /* 系の位置エネルギー Ep を計算する。 */ 
+    Ep=0.0;
+    for(i=0;i<n-1;i++){
+        for(j=i+1;j<n;j++){
+            r2 = eps2;           /* 相対距離初期化 */
+            for(d=0;d<3;d++){
+                dx[d] = x[j][d] - x[i][d];
+                r2 += dx[d] * dx[d];
+            }
+            Ep -= m[i] * m[j] * ( 1/sqrt(r2)  );
+        }
+    }
 
-Summary of Bitgen Options:
-+----------------------+----------------------+
-| Option Name          | Current Setting      |
-+----------------------+----------------------+
-| Compress             | (Not Specified)*     |
-+----------------------+----------------------+
-| Readback             | (Not Specified)*     |
-+----------------------+----------------------+
-| CRC                  | Enable**             |
-+----------------------+----------------------+
-| DebugBitstream       | No**                 |
-+----------------------+----------------------+
-| ConfigRate           | 4**                  |
-+----------------------+----------------------+
-| StartupClk           | Cclk**               |
-+----------------------+----------------------+
-| DCMShutdown          | Disable**            |
-+----------------------+----------------------+
-| DisableBandgap       | No**                 |
-+----------------------+----------------------+
-| CclkPin              | Pullup**             |
-+----------------------+----------------------+
-| DonePin              | Pullup**             |
-+----------------------+----------------------+
-| HswapenPin           | Pullup*              |
-+----------------------+----------------------+
-| M0Pin                | Pullup**             |
-+----------------------+----------------------+
-| M1Pin                | Pullup**             |
-+----------------------+----------------------+
-| M2Pin                | Pullup**             |
-+----------------------+----------------------+
-| PowerdownPin         | Pullup**             |
-+----------------------+----------------------+
-| ProgPin              | Pullup**             |
-+----------------------+----------------------+
-| TckPin               | Pullup**             |
-+----------------------+----------------------+
-| TdiPin               | Pullup**             |
-+----------------------+----------------------+
-| TdoPin               | Pullup**             |
-+----------------------+----------------------+
-| TmsPin               | Pullup**             |
-+----------------------+----------------------+
-| UnusedPin            | Pulldown**           |
-+----------------------+----------------------+
-| GWE_cycle            | 6**                  |
-+----------------------+----------------------+
-| GTS_cycle            | 5**                  |
-+----------------------+----------------------+
-| LCK_cycle            | NoWait**             |
-+----------------------+----------------------+
-| Match_cycle          | Auto**               |
-+----------------------+----------------------+
-| DONE_cycle           | 4**                  |
-+----------------------+----------------------+
-| Persist              | No*                  |
-+----------------------+----------------------+
-| DriveDone            | No**                 |
-+----------------------+----------------------+
-| DonePipe             | No**                 |
-+----------------------+----------------------+
-| Security             | None**               |
-+----------------------+----------------------+
-| UserID               | 0xFFFFFFFF**         |
-+----------------------+----------------------+
-| ActivateGclk         | No*                  |
-+----------------------+----------------------+
-| ActiveReconfig       | No*                  |
-+----------------------+----------------------+
-| PartialMask0         | (Not Specified)*     |
-+----------------------+----------------------+
-| PartialMask1         | (Not Specified)*     |
-+----------------------+----------------------+
-| PartialMask2         | (Not Specified)*     |
-+----------------------+----------------------+
-| PartialGclk          | (Not Specified)*     |
-+----------------------+----------------------+
-| PartialLeft          | (Not Specified)*     |
-+----------------------+----------------------+
-| PartialRight         | (Not Specified)*     |
-+----------------------+----------------------+
-| Encrypt              | No**                 |
-+----------------------+----------------------+
-| Key0                 | pick*                |
-+----------------------+----------------------+
-| Key1                 | pick*                |
-+----------------------+----------------------+
-| Key2                 | pick*                |
-+----------------------+----------------------+
-| Key3                 | pick*                |
-+----------------------+----------------------+
-| Key4                 | pick*                |
-+----------------------+----------------------+
-| Key5                 | pick*                |
-+----------------------+----------------------+
-| Keyseq0              | M*                   |
-+----------------------+----------------------+
-| Keyseq1              | M*                   |
-+----------------------+----------------------+
-| Keyseq2              | M*                   |
-+----------------------+----------------------+
-| Keyseq3              | M*                   |
-+----------------------+----------------------+
-| Keyseq4              | M*                   |
-+----------------------+----------------------+
-| Keyseq5              | M*                   |
-+----------------------+----------------------+
-| KeyFile              | (Not Specified)*     |
-+----------------------+----------------------+
-| StartKey             | 0*                   |
-+----------------------+----------------------+
-| StartCBC             | pick*                |
-+----------------------+----------------------+
-| FreezeDCI            | No*                  |
-+----------------------+----------------------+
-| DCIUpdateMode        | AsRequired**         |
-+----------------------+----------------------+
-| IEEE1532             | No*                  |
-+----------------------+----------------------+
-| Binary               | No**                 |
-+----------------------+----------------------+
- *  Default setting.
- ** The specified setting matches the default setting.
 
-Running DRC.
-INFO:DesignRules:547 - Blockcheck: To achieve optimal frequency synthesis
-   performance with the CLKFX and CLKFX180 outputs of the DCM comp dcm0_dcm0,
-   consult the Virtex-II Interactive Data Sheet.
-DRC detected 0 errors and 0 warnings.
-Creating bit map...
-Saving bit stream in "top.bit".
-Bitstream generation is complete.
+    /* 系の運動エネルギー Em を計算する。 */ 
+    Em=0.0;
+    for(i=0;i<n;i++){
+        v2=0.0;    /* 絶対速度2乗値初期化 */
+        for(d=0;d<3;d++){
+            v2 += v[i][d]*v[i][d];
+        }
+        Em += 0.5 * m[i] * v2;
+    }
+
+    /* 系の全力学的エネルギー Ea を計算する。 */ 
+    Ea=0.0;
+    Ea = Em + Ep;
+
+/*    printf("Emove=%1.6e,   Epot=%1.3e,   Eall=%1.25e\n",Em,Ep,Ea);*/
+/*    printf("%e\n",Ea);*/
+
+    return Ea;
+}

@@ -1,100 +1,163 @@
-Sun Apr 28 19:41:59 JST 2013
-#include "cutil.h"
+Fri Jul 12 19:29:41 JST 2013
+-- Copyright 2004,2005,2006 by Tsuyoshi Hamada
+-- 2006/06/22 : add some comments (T.H)
+-- 2006/02/08 : Fixed (T.H)
 
-__device__ float4 
-inter(float4 xj, float4 xi, float4 apot)
-{
-  float mj    = xj.w;        // Mass Mj
-  float ieps2 = xi.w;        // epsilon^2
-  float dx = xj.x - xi.x;    // Coordinates Xj - Xi
-  float dy = xj.y - xi.y;    // Coordinates Yj - Yi
-  float dz = xj.z - xi.z;    // Coordinates Zj - Zi
-  float r2 = dx*dx+dy*dy+dz*dz+ieps2;
-  float r1i = 1/sqrt(r2);
-  float r2i = r1i * r1i;
-  float mr3i = mj * r2i * r1i;
-  apot.x += dx * mr3i;       // Accel AXi
-  apot.y += dy * mr3i;       // Accel AYi
-  apot.z += dz * mr3i;       // Accel AZi
-  return (apot);
-}
-#define NTHRE (128) // blockDim.x､ﾈﾆｱﾃﾍ
-__global__ void
-kernel(float4* g_xj,
-       float* g_xi,
-       float* g_fi,
-       int ni,
-       int nj)
-{
-  int tid      = threadIdx.x;
-  int i = blockIdx.x*NTHRE+tid;
-  float4 ai = make_float4(0.0, 0.0, 0.0, 0.0);
-  float4 xi;
-  xi.x = g_xi[i];
-  xi.y = g_xi[i+ni];
-  xi.z = g_xi[i+ni*2];
-  xi.w = g_xi[i+ni*3];
-  __shared__ float4 s_xj[NTHRE];
-  for(int j = 0; j<nj; j+=NTHRE){
-    __syncthreads();
-    s_xj[tid] = g_xj[j+tid];
-    __syncthreads();
-    ai = inter(s_xj[0], xi, ai); ai = inter(s_xj[1], xi, ai); ai = inter(s_xj[2], xi, ai); ai = inter(s_xj[3], xi, ai);
-    ai = inter(s_xj[4], xi, ai); ai = inter(s_xj[5], xi, ai); ai = inter(s_xj[6], xi, ai); ai = inter(s_xj[7], xi, ai);
-    ai = inter(s_xj[8], xi, ai); ai = inter(s_xj[9], xi, ai);
+-- LOCAL READ ( ifpga <- pfpga )
+-- by Tsuyoshi Hamada
+-- (※) l_adroのビット幅(NBIT_L_ADRO)を変えた場合はpromを焼きなおす必要があることに注意.(直すのは上のモジュール)
+-- (※) そもそもの前提：LOCAL_READはPFPGA0からのPIPE_STS信号(CBUS0(7))をトランザクション開始信号としています。
 
-    ai = inter(s_xj[10], xi, ai); ai = inter(s_xj[11], xi, ai); ai = inter(s_xj[12], xi, ai); ai = inter(s_xj[13], xi, ai);
-    ai = inter(s_xj[14], xi, ai); ai = inter(s_xj[15], xi, ai); ai = inter(s_xj[16], xi, ai); ai = inter(s_xj[17], xi, ai);
-    ai = inter(s_xj[18], xi, ai); ai = inter(s_xj[19], xi, ai);
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
 
-    ai = inter(s_xj[20], xi, ai); ai = inter(s_xj[21], xi, ai); ai = inter(s_xj[22], xi, ai); ai = inter(s_xj[23], xi, ai);
-    ai = inter(s_xj[24], xi, ai); ai = inter(s_xj[25], xi, ai); ai = inter(s_xj[26], xi, ai); ai = inter(s_xj[27], xi, ai);
-    ai = inter(s_xj[28], xi, ai); ai = inter(s_xj[29], xi, ai);
+entity LOCAL_READ is
+  generic ( NBIT_L_ADRO : integer := 3);
+  port (
+    NPIPE : in std_logic_vector(7 downto 0); -- from PGPG_REG3
+    CALC_STS : in std_logic;    -- from PFPGA
+    BUSY : out std_logic :='1'; -- to GPREG0 (default '1'!! => Waiting until pipe calc end)
 
-    ai = inter(s_xj[30], xi, ai); ai = inter(s_xj[31], xi, ai); ai = inter(s_xj[32], xi, ai); ai = inter(s_xj[33], xi, ai);
-    ai = inter(s_xj[34], xi, ai); ai = inter(s_xj[35], xi, ai); ai = inter(s_xj[36], xi, ai); ai = inter(s_xj[37], xi, ai);
-    ai = inter(s_xj[38], xi, ai); ai = inter(s_xj[39], xi, ai);
+    -- CBUS/DBUS
+    DMAR_ENABLE : out std_logic_vector(3 downto 0); -- for 4 pfpga chip
+    DBUS_Port : out std_logic_vector(63 downto 0);
+    DBUS_idata: in std_logic_vector(63 downto 0);
+    DBUS_HiZ  : out std_logic;
 
-    ai = inter(s_xj[40], xi, ai); ai = inter(s_xj[41], xi, ai); ai = inter(s_xj[42], xi, ai); ai = inter(s_xj[43], xi, ai);
-    ai = inter(s_xj[44], xi, ai); ai = inter(s_xj[45], xi, ai); ai = inter(s_xj[46], xi, ai); ai = inter(s_xj[47], xi, ai);
-    ai = inter(s_xj[48], xi, ai); ai = inter(s_xj[49], xi, ai);
+    -- DPRAM R/W ports
+    MEM_ADB     : out std_logic_vector(12 downto 0);     -- DPRAM Port B R/W Address
+    MEM_WEHB    : out std_logic;                         -- DPRAM Port B Write Enable (High Word)
+    MEM_WELB    : out std_logic;                         -- DPRAM Port B Write Enable (Low  Word)
+    MEM_DTIB    : out std_logic_vector(63 downto 0);     -- DPRAM Port B Write Data
 
-    ai = inter(s_xj[50], xi, ai); ai = inter(s_xj[51], xi, ai); ai = inter(s_xj[52], xi, ai); ai = inter(s_xj[53], xi, ai);
-    ai = inter(s_xj[54], xi, ai); ai = inter(s_xj[55], xi, ai); ai = inter(s_xj[56], xi, ai); ai = inter(s_xj[57], xi, ai);
-    ai = inter(s_xj[58], xi, ai); ai = inter(s_xj[59], xi, ai);
+    RST : in  std_logic;
+    CLK : in  std_logic
+    );
+end LOCAL_READ;
 
-    ai = inter(s_xj[60], xi, ai); ai = inter(s_xj[61], xi, ai); ai = inter(s_xj[62], xi, ai); ai = inter(s_xj[63], xi, ai);
-    ai = inter(s_xj[64], xi, ai); ai = inter(s_xj[65], xi, ai); ai = inter(s_xj[66], xi, ai); ai = inter(s_xj[67], xi, ai);
-    ai = inter(s_xj[68], xi, ai); ai = inter(s_xj[69], xi, ai);
+architecture rtl of LOCAL_READ is
 
-    ai = inter(s_xj[70], xi, ai); ai = inter(s_xj[71], xi, ai); ai = inter(s_xj[72], xi, ai); ai = inter(s_xj[73], xi, ai);
-    ai = inter(s_xj[74], xi, ai); ai = inter(s_xj[75], xi, ai); ai = inter(s_xj[76], xi, ai); ai = inter(s_xj[77], xi, ai);
-    ai = inter(s_xj[78], xi, ai); ai = inter(s_xj[79], xi, ai);
+component LOCAL_READ_CNT
+  generic (CNT_WIDTH     : integer := 16;      -- program counter bit-width
+           FO_BASE       : integer := 24576;   -- = 0x6000
+           NBIT_L_ADRO   : integer := 3;       -- Bit-Length of l_ado(pgpg_mem.vhd)
+           INTF_LAT      : integer := 8);      -- LOCAL_READ_IF latency (clock)
+  port (
+    NPIPE : in std_logic_vector(7 downto 0);   -- number of pipelines per chip
+    CALC_DONE  : in std_logic;                 -- pulse
+    FETCH_DONE : out std_logic;
+    EXEC     : out std_logic;                     -- pulse
+    START_AD : out std_logic_vector(18 downto 0); -- 19 bit
+    NQWORD   : out std_logic_vector( 8 downto 0); --  9 bit
+    CHIPSEL  : out std_logic_vector( 3 downto 0); --  4 bit
+    MEM_AD_BASE : out std_logic_vector(12 downto 0);
+    RST : in  std_logic;
+    CLK : in  std_logic
+    );
+end component;
 
-    ai = inter(s_xj[80], xi, ai); ai = inter(s_xj[81], xi, ai); ai = inter(s_xj[82], xi, ai); ai = inter(s_xj[83], xi, ai);
-    ai = inter(s_xj[84], xi, ai); ai = inter(s_xj[85], xi, ai); ai = inter(s_xj[86], xi, ai); ai = inter(s_xj[87], xi, ai);
-    ai = inter(s_xj[88], xi, ai); ai = inter(s_xj[89], xi, ai);
+component LOCAL_READ_IF
+  port (
+    EXEC : in std_logic;
+    START_AD : in std_logic_vector(18 downto 0);
+    NQWORD   : in std_logic_vector( 8 downto 0);
+    CHIPSEL  : in std_logic_vector( 3 downto 0);
+    MEM_AD_BASE : in std_logic_vector(12 downto 0);
+    BUSY : out std_logic;  -- to GPREG0
+    DMAR_ENABLE : out std_logic_vector(3 downto 0);
+    DBUS_Port : out std_logic_vector(63 downto 0);
+    DBUS_idata: in std_logic_vector(63 downto 0);
+    DBUS_HiZ  : out std_logic;
+    MEM_ADB     : out std_logic_vector(12 downto 0);
+    MEM_WEHB    : out std_logic;
+    MEM_WELB    : out std_logic;
+    MEM_DTIB    : out std_logic_vector(63 downto 0);
+    RST : in  std_logic;
+    CLK : in  std_logic
+    );
+end component;
 
-    ai = inter(s_xj[90], xi, ai); ai = inter(s_xj[91], xi, ai); ai = inter(s_xj[92], xi, ai); ai = inter(s_xj[93], xi, ai);
-    ai = inter(s_xj[94], xi, ai); ai = inter(s_xj[95], xi, ai); ai = inter(s_xj[96], xi, ai); ai = inter(s_xj[97], xi, ai);
-    ai = inter(s_xj[98], xi, ai); ai = inter(s_xj[99], xi, ai);
+signal calc_done : std_logic :='0';   -- to cnt
+signal csts0,csts1 : std_logic :='0'; -- from pfpga
 
-    ai = inter(s_xj[100], xi, ai); ai = inter(s_xj[101], xi, ai); ai = inter(s_xj[102], xi, ai); ai = inter(s_xj[103], xi, ai);
-    ai = inter(s_xj[104], xi, ai); ai = inter(s_xj[105], xi, ai); ai = inter(s_xj[106], xi, ai); ai = inter(s_xj[107], xi, ai);
-    ai = inter(s_xj[108], xi, ai); ai = inter(s_xj[109], xi, ai);
+-- CNT
+signal fetch_done : std_logic :='0';
+signal exec : std_logic;                          -- cnt -> if
+signal start_ad : std_logic_vector(18 downto 0);  -- cnt -> if
+signal nqword   : std_logic_vector( 8 downto 0);  -- cnt -> if
+signal chipsel  : std_logic_vector( 3 downto 0);  -- cnt -> if
+signal mem_base : std_logic_vector(12 downto 0);  -- cnt -> if
+-- IF
+signal ignore_busy : std_logic; 
 
-    ai = inter(s_xj[110], xi, ai); ai = inter(s_xj[111], xi, ai); ai = inter(s_xj[112], xi, ai); ai = inter(s_xj[113], xi, ai);
-    ai = inter(s_xj[114], xi, ai); ai = inter(s_xj[115], xi, ai); ai = inter(s_xj[116], xi, ai); ai = inter(s_xj[117], xi, ai);
-    ai = inter(s_xj[118], xi, ai); ai = inter(s_xj[119], xi, ai);
+begin
 
-    ai = inter(s_xj[120], xi, ai); ai = inter(s_xj[121], xi, ai); ai = inter(s_xj[122], xi, ai); ai = inter(s_xj[123], xi, ai);
-    ai = inter(s_xj[124], xi, ai); ai = inter(s_xj[125], xi, ai); ai = inter(s_xj[126], xi, ai); ai = inter(s_xj[127], xi, ai);
-  }
-  if(i<ni){
-    g_fi[i]      = ai.x;
-    g_fi[i+ni]   = ai.y;
-    g_fi[i+ni*2] = ai.z;
-  }
-}
+  -- CALC STATUS
+  csts0 <= CALC_STS;
+  process (CLK) begin
+    if (CLK'event and CLK='1') then
+      csts1 <= csts0;
+    end if;
+  end process;
 
-#include "api.h"
+  -- CALC DONE
+  process (RST,CLK,csts0,csts1) begin
+    if(RST='1') then
+      calc_done <= '0';
+    elsif (CLK'event and CLK='1') then
+      if((csts0='1') AND (csts1='0')) then
+        calc_done <= '1';
+      else
+        calc_done <= '0';
+      end if;
+    end if;
+  end process;
+
+  -- BUSY
+  process (RST,CLK,csts0,csts1,fetch_done) begin
+    if (RST='1') then
+      BUSY <='1';
+    elsif (CLK'event and CLK='1') then
+      if((csts0='1') AND (csts1='0')) then
+        BUSY <= '1';
+      elsif(fetch_done='1') then
+        BUSY <= '0';
+      end if;
+    end if;
+  end process;
+
+  -- =================================================== SUBMODULE INSTANCES
+  u0: LOCAL_READ_CNT 
+    generic map(NBIT_L_ADRO => NBIT_L_ADRO)
+    port map(NPIPE => NPIPE,
+             CALC_DONE => calc_done,
+             FETCH_DONE => fetch_done,
+             EXEC       => exec,
+             START_AD   => start_ad,
+             NQWORD     => nqword,
+             CHIPSEL    => chipsel,
+             MEM_AD_BASE => mem_base,
+             RST => RST, CLK=>CLK);
+
+
+  u1: LOCAL_READ_IF
+    port map(EXEC        => exec,     -- from cnt
+             START_AD    => start_ad, -- from cnt
+             NQWORD      => nqword,   -- from cnt
+             CHIPSEL     => chipsel,  -- from cnt
+             MEM_AD_BASE => mem_base, -- from cnt
+             BUSY => ignore_busy,
+             DMAR_ENABLE => DMAR_ENABLE, -- output directly
+             DBUS_Port   => DBUS_Port,   -- output directly
+             DBUS_idata  => DBUS_idata,  -- output directly
+             DBUS_HiZ    => DBUS_HiZ,    -- output directly
+             MEM_ADB  => MEM_ADB,        -- output directly
+             MEM_WEHB => MEM_WEHB,       -- output directly
+             MEM_WELB => MEM_WELB,       -- output directly
+             MEM_DTIB => MEM_DTIB,       -- output directly
+             RST=>RST,CLK=>CLK);
+
+
+end rtl;

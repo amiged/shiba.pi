@@ -1,160 +1,93 @@
-Sun Jun 30 19:27:47 JST 2013
-#!/usr/bin/env python3
-#Time-stamp: <2017-06-11 19:19:34 hamada>
-import cv2
-import urllib.request
-import numpy as np
-import argparse
-from datetime import datetime
-import mkdir
-
-class DroidCam(object):
-    def __init__(self):
-        self.droidapp = 'IP Webcam'
-        self.ipadr  = '192.168.43.1'
-#        self.ipadr  = '192.168.42.129'
-#        self.ipadr  = '133.45.9.162'
-        self.port  = '3389'
-        self.stream = -1
-        self.URL = -1
-        self.image = -1
-    def get_stream(self):
-        stub = ''
-        if (self.droidapp == 'DroidCam'):
-            stub = '/mjpegfeed?960x720'
-        elif (self.droidapp == 'IP Webcam'):
-            stub = '/video?dummy=param.mjpg'
-        else:
-            stub = '/mjpegfeed?640x480'
-
-        url = 'http://'+self.ipadr+':'+self.port + stub
-
-        print ('URL: ', url)
-        self.URL = url
-        self.stream = urllib.request.urlopen(self.URL)
-        return (self.stream)
-
-    def get_stream_jpg(self):
-        stub = '/shot.jpg'
-        url = 'http://'+self.ipadr+':'+self.port + stub
-        print ('URL: ', url)
-        self.URL = url
-        self.stream = urllib.request.urlopen(self.URL)
-        return (self.stream)
-
-    def get_jpg(self):
-        stub = '/shot.jpg'
-        url = 'http://'+self.ipadr+':'+self.port + stub
-        urlObj = urllib.request.urlopen(url)
-        print ('URL: ', url, urlObj.getcode())
-        ofname = '/dev/shm/now.jpg'
-        with open(ofname, "wb") as file:
-            file.write(urlObj.read())
-        self.image = cv2.imread(ofname)
-        return (self.image)
-        
-    def set_focus(self):
-        stub = '/focus'
-        url = 'http://'+self.ipadr+':'+self.port + stub
-        print ('focus: ', url)
-        urlObj = urllib.request.urlopen(url)
-        
-
-class State(object):
-    def __init__(self):
-        self.is_record = False
-        self.drawing = False
-        self.posi0 = [-1,-1]
-        self.posi1 = [-1,-1]
-        self.image = -1
-        self.image_size = [-1, -1] # [height, width]
-        self.image_orig = -1
-        self.class_num = 777
-        self.image_num = 1
-
-    def draw_rect(self):
-        # print ("posi0, posi1: ", self.posi0, self.posi1)
-        cv2.rectangle(self.image, (self.posi0[0], self.posi0[1]), (self.posi1[0], self.posi1[1]), (0, 255, 0), 1)
-
-    def draw_text(self):
-        if(self.is_record):
-            font = cv2.FONT_HERSHEY_TRIPLEX # cv2.FONT_HERSHEY_PLAIN
-            font_size = 0.8
-            text = "<<%d>>"% (self.image_num)
-            color = (0x0, 0x0, 0xBF)
-            px = int(self.image_size[1]/2)
-            py = 30
-            cv2.putText(self.image, text,(px, py), font, font_size, color)
-
-state = State()
-
-def mouse_event(event,x,y,flags,param):
-    global state
-
-    if x < 0: x = 0
-    if y < 0: y = 0
-    if x >= state.image_size[1]: x = state.image_size[1] - 1
-    if y >= state.image_size[0]: y = state.image_size[0] - 1
-
-
-    if event == (cv2.EVENT_LBUTTONDOWN):
-        state.posi0[0] = x0 = state.posi1[0]
-        state.posi0[1] = y0 = state.posi1[1]
-        state.posi1[0] = x
-        state.posi1[1] = y
-        print ("Rect: (%d, %d) - (%d, %d)"%(x0, y0, x, y) )
-
-
-def put_text(image, text):
-    font_size = 1.0
-    font_type = cv2.FONT_HERSHEY_PLAIN
-    font_color = (0xf, 0xf, 0xff)
-    cv2.putText(image, text, (5, 15), font_type, font_size, font_color)
-
-
-if (__name__ == '__main__'):
-
-    droidcam = DroidCam()
-#    stream = droidcam.get_stream()
-
-    parser = argparse.ArgumentParser(description = "description goes here")
-    parser.add_argument("--devid", type=int, help = "set device id", required=False)
-    args = parser.parse_args()
-    devid = 0
-    if args.devid:
-        devid = int(args.devid)
-        print ("set devid = ", devid)
-
-    while True:
-        frame = droidcam.get_jpg()
-        state.image_orig = frame.copy()
-        state.image      = frame.copy()
-        state.image_size[0], state.image_size[1] = frame.shape[:2]
-        state.draw_rect()
-        state.draw_text()
-        cv2.imshow('droidcam',state.image)
-        tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S_%f')
-        if True:
-            basedir = '../log.ipcam.%d/'% (devid)
-            ofname = mkdir.get_filename_frame(basedir, tnow)
-            put_text(state.image, tnow)
-            cv2.imwrite(ofname, state.image)
-            print(ofname)
-            tnow0 = tnow
-            state.image_num += 1
-
-        key = cv2.waitKey(1) & 0xFF
-        if key == ord('q'): break
-        if ( (key == ord(' ')) or 
-             (key == 34) or # Muhenkan
-             (key == 35) or # Henkan
-             (key == 39) or # katakana
-             (key == 10)    # Enter
-        ):
-            state.is_record = not (state.is_record)
-        if key == ord('f'): droidcam.set_focus()
-
-
-    cv2.destroyAllWindows()
-    print("Done.")
-
+Sun Aug  4 19:45:10 JST 2013
+/EQNINJ
+/IPSET xi_0,x[][0],float,26,16
+/IPSET xi_1,x[][1],float,26,16
+/IPSET xi_2,x[][2],float,26,16
+/IPSET vi_0,v[][0],float,26,16
+/IPSET vi_1,v[][1],float,26,16
+/IPSET vi_2,v[][2],float,26,16
+/JPSET xj_0,0,0,25,x[][0],float,26,16
+/JPSET xj_1,0,26,51,x[][1],float,26,16
+/JPSET xj_2,0,52,77,x[][2],float,26,16
+/JPSET vj_0,0,78,103,v[][0],float,26,16
+/JPSET vj_1,0,104,129,v[][1],float,26,16
+/JPSET vj_2,0,130,155,v[][2],float,26,16
+/JPSET mj,0,156,181,m[],float,26,16
+/FOSET rx,p[],fix,64,(1.0/pow(2.0,(double)31))
+/FOSET sx_0,a[][0],fix,64,(1.0/pow(2.0,(double)31))
+/FOSET sx_1,a[][1],fix,64,(1.0/pow(2.0,(double)31))
+/FOSET sx_2,a[][2],fix,64,(1.0/pow(2.0,(double)31))
+/FOSET tx_0,jk[][0],fix,64,(1.0/pow(2.0,(double)31))
+/FOSET tx_1,jk[][1],fix,64,(1.0/pow(2.0,(double)31))
+/FOSET tx_2,jk[][2],fix,64,(1.0/pow(2.0,(double)31))
+/NPIPE 1
+/NVMP 1
+void force(double x[][3], double v[][3], double m[], double p[], double a[][3], double jk[][3], int n){
+  pg_float_sub(xj_0,xi_0,dx_0,26,16,4,6)
+  pg_float_sub(xj_1,xi_1,dx_1,26,16,4,6)
+  pg_float_sub(xj_2,xi_2,dx_2,26,16,4,6)
+  pg_float_mult(dx_0,dx_0,dx2_0,26,16,2,6)
+  pg_float_mult(dx_1,dx_1,dx2_1,26,16,2,6)
+  pg_float_mult(dx_2,dx_2,dx2_2,26,16,2,6)
+  pg_float_unsigned_add(dx2_0,dx2_1,x2y2,26,16,4,6)
+  pg_float_unsigned_add(dx2_2r,x2y2,r2,26,16,4,6)
+  pg_float_sqrt(r2,r1,26,16,3,6)
+  pg_float_mult(r2r,r1,r3,26,16,2,6)
+  pg_float_mult(r3,r2r1,r5,26,16,2,6)
+  pg_float_recipro(r5,r5i,26,16,2,6)
+  pg_float_mult(r5i,mjr,mr5i,26,16,2,6)
+  pg_float_mult(mr5i,r2r2,mf,26,16,2,6)
+  pg_float_mult(mf,r2r3,mp,26,16,2,6)
+  pg_float_expadd(mp,ps,31,26,16,1)
+  pg_float_fixaccum(ps,rx,26,16,57,64,2,30,6)
+  pg_float_expadd(mf,fs,31,26,16,1)
+  pg_float_mult(fs,dx_0r,fx_0,26,16,2,6)
+  pg_float_mult(fs,dx_1r,fx_1,26,16,2,6)
+  pg_float_mult(fs,dx_2r,fx_2,26,16,2,6)
+  pg_float_fixaccum(fx_0,sx_0,26,16,57,64,2,30,6)
+  pg_float_fixaccum(fx_1,sx_1,26,16,57,64,2,30,6)
+  pg_float_fixaccum(fx_2,sx_2,26,16,57,64,2,30,6)
+  pg_float_sub(vj_0,vi_0,dv_0,26,16,4,6)
+  pg_float_sub(vj_1,vi_1,dv_1,26,16,4,6)
+  pg_float_sub(vj_2,vi_2,dv_2,26,16,4,6)
+  pg_float_mult(fs,dv_0r,jk1_0,26,16,2,6)
+  pg_float_mult(fs,dv_1r,jk1_1,26,16,2,6)
+  pg_float_mult(fs,dv_2r,jk1_2,26,16,2,6)
+  pg_float_mult(dx_0,dv_0,xv_0,26,16,2,6)
+  pg_float_mult(dx_1,dv_1,xv_1,26,16,2,6)
+  pg_float_mult(dx_2,dv_2,xv_2,26,16,2,6)
+  pg_float_unsigned_add(xv_0,xv_1,xv1,26,16,4,6)
+  pg_float_unsigned_add(xv_2r,xv1,xv2,26,16,4,6)
+  pg_float_expadd(xv2,xv2x2,1,26,16,1)
+  pg_float_unsigned_add(xv2x2,xv2r,xv2x3,26,16,4,6)
+  pg_float_mult(mr5i,xv2x3r,jk2a,26,16,2,6)
+  pg_float_expadd(jk2a,jk2s,31,26,16,1)
+  pg_float_mult(jk2s,dx_0r1,jk2_0,26,16,2,6)
+  pg_float_mult(jk2s,dx_1r1,jk2_1,26,16,2,6)
+  pg_float_mult(jk2s,dx_2r1,jk2_2,26,16,2,6)
+  pg_float_sub(jk1_0,jk2_0,jk0_0,26,16,4,6)
+  pg_float_sub(jk1_1,jk2_1,jk0_1,26,16,4,6)
+  pg_float_sub(jk1_2,jk2_2,jk0_2,26,16,4,6)
+  pg_float_fixaccum(jk0_0,tx_0,26,16,57,64,2,34,6)
+  pg_float_fixaccum(jk0_1,tx_1,26,16,57,64,2,34,6)
+  pg_float_fixaccum(jk0_2,tx_2,26,16,57,64,2,34,6)
+  pg_pdelay(dx2_2,dx2_2r,26,4)
+  pg_pdelay(r2,r2r,26,3)
+  pg_pdelay(r2,r2r1,26,5)
+  pg_pdelay(mj,mjr,26,23)
+  pg_pdelay(r2,r2r2,26,11)
+  pg_pdelay(dv_1,dv_1r,26,24)
+  pg_pdelay(r2,r2r3,26,13)
+  pg_pdelay(dv_0,dv_0r,26,24)
+  pg_pdelay(xv_2,xv_2r,26,4)
+  pg_pdelay(dv_2,dv_2r,26,24)
+  pg_pdelay(dx_0,dx_0r,26,24)
+  pg_pdelay(dx_1,dx_1r,26,24)
+  pg_pdelay(dx_2,dx_2r,26,24)
+  pg_pdelay(xv2,xv2r,26,1)
+  pg_pdelay(xv2x3,xv2x3r,26,6)
+  pg_pdelay(dx_1,dx_1r1,26,24)
+  pg_pdelay(dx_2,dx_2r1,26,24)
+  pg_pdelay(dx_0,dx_0r1,26,24)
+  pg_rundelay(36)
+}

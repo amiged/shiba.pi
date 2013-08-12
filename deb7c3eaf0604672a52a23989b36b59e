@@ -1,231 +1,45 @@
-Mon Jun 10 19:29:53 JST 2013
--- C:\CYGWIN\HOME\ADMINISTRATOR\FKIT\PCI64\PROJ
--- VHDL Annotation Test Bench created by
--- HDL Bencher 6.1i
--- Tue Jan 04 15:15:30 2005
+Mon Aug 12 19:47:18 JST 2013
+all:
+	./pycam.py |tee log.txt
 
-LIBRARY IEEE;
-USE IEEE.STD_LOGIC_1164.ALL;
-USE IEEE.STD_LOGIC_UNSIGNED.ALL;
-USE IEEE.STD_LOGIC_ARITH.ALL;
-USE IEEE.STD_LOGIC_TEXTIO.ALL;
-USE STD.TEXTIO.ALL;
 
-ENTITY sim_local_read_cnt IS
-END sim_local_read_cnt;
+clean:
+	rm -rf ../conv
+	mkdir ../conv
+	rm -f *~ .*~
+	rm -rf __pycache__
 
-ARCHITECTURE testbench_arch OF sim_local_read_cnt IS
--- If you get a compiler error on the following line,
--- from the menu do Options->Configuration select VHDL 87
-FILE RESULTS: TEXT OPEN WRITE_MODE IS "c:\cygwin\home\administrator\fkit\pci64\proj\sim_local_read_cnt.ano";
-	COMPONENT local_read_cnt
-		GENERIC (
-			CNT_WIDTH : INTEGER;
-			FO_BASE : INTEGER;
-			NBIT_FO_UAD : INTEGER;
-			INTF_LAT : INTEGER
-		);
-		PORT (
-			NPIPE : In  std_logic_vector (7 DOWNTO 0);
-			CALC_DONE : In  std_logic;
-			BUSY : Out  std_logic;
-			EXEC : Out  std_logic;
-			START_AD : Out  std_logic_vector (18 DOWNTO 0);
-			NQWORD : Out  std_logic_vector (8 DOWNTO 0);
-			CHIPSEL : Out  std_logic_vector (3 DOWNTO 0);
-			MEM_AD_BASE : Out  std_logic_vector (12 DOWNTO 0);
-			BUSY_IF : In  std_logic;
-			RST : In  std_logic;
-			CLK : In  std_logic
-		);
-	END COMPONENT;
+c: clean
 
-	SIGNAL NPIPE : std_logic_vector (7 DOWNTO 0);
-	SIGNAL CALC_DONE : std_logic;
-	SIGNAL BUSY : std_logic;
-	SIGNAL EXEC : std_logic;
-	SIGNAL START_AD : std_logic_vector (18 DOWNTO 0);
-	SIGNAL NQWORD : std_logic_vector (8 DOWNTO 0);
-	SIGNAL CHIPSEL : std_logic_vector (3 DOWNTO 0);
-	SIGNAL MEM_AD_BASE : std_logic_vector (12 DOWNTO 0);
-	SIGNAL BUSY_IF : std_logic;
-	SIGNAL RST : std_logic;
-	SIGNAL CLK : std_logic;
+conv:
+	rm -rf ../conv
+	mkdir ../conv
+	./gen_cmd.py > xxx
+	bash ./xxx
 
-BEGIN
-	UUT : local_read_cnt
-	GENERIC MAP (
-		CNT_WIDTH => 16,
-		FO_BASE => 24576,
-		NBIT_FO_UAD => 3,
-		INTF_LAT => 8
-	)
-	PORT MAP (
-		NPIPE => NPIPE,
-		CALC_DONE => CALC_DONE,
-		BUSY => BUSY,
-		EXEC => EXEC,
-		START_AD => START_AD,
-		NQWORD => NQWORD,
-		CHIPSEL => CHIPSEL,
-		MEM_AD_BASE => MEM_AD_BASE,
-		BUSY_IF => BUSY_IF,
-		RST => RST,
-		CLK => CLK
-	);
 
-	PROCESS -- clock process for CLK,
-		VARIABLE TX_TIME : INTEGER :=0;
+mov:
+	./mov.py 1 0
 
-		PROCEDURE ANNOTATE_BUSY(
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
-			STD.TEXTIO.write(TX_LOC, TX_TIME);
-			STD.TEXTIO.write(TX_LOC,string'(",BUSY,"));
-			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, BUSY);
-			STD.TEXTIO.write(TX_LOC, string'("]"));
-			TX_STR(TX_LOC.all'range) := TX_LOC.all;
-			STD.TEXTIO.writeline(results, TX_LOC);
-			STD.TEXTIO.Deallocate(TX_LOC);
-		END;
 
-		PROCEDURE ANNOTATE_EXEC(
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
-			STD.TEXTIO.write(TX_LOC, TX_TIME);
-			STD.TEXTIO.write(TX_LOC,string'(",EXEC,"));
-			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, EXEC);
-			STD.TEXTIO.write(TX_LOC, string'("]"));
-			TX_STR(TX_LOC.all'range) := TX_LOC.all;
-			STD.TEXTIO.writeline(results, TX_LOC);
-			STD.TEXTIO.Deallocate(TX_LOC);
-		END;
+0.mov: 
+	rm -f out.mp4
+	ffmpeg -r 1 -start_number 0 -i ../conv/%08d.jpg -vcodec libx264 -pix_fmt yuv420p -r 1 out.mp4
 
-		PROCEDURE ANNOTATE_START_AD(
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
-			STD.TEXTIO.write(TX_LOC, TX_TIME);
-			STD.TEXTIO.write(TX_LOC,string'(",START_AD,"));
-			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, START_AD);
-			STD.TEXTIO.write(TX_LOC, string'("]"));
-			TX_STR(TX_LOC.all'range) := TX_LOC.all;
-			STD.TEXTIO.writeline(results, TX_LOC);
-			STD.TEXTIO.Deallocate(TX_LOC);
-		END;
+r: run
 
-		PROCEDURE ANNOTATE_NQWORD(
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
-			STD.TEXTIO.write(TX_LOC, TX_TIME);
-			STD.TEXTIO.write(TX_LOC,string'(",NQWORD,"));
-			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, NQWORD);
-			STD.TEXTIO.write(TX_LOC, string'("]"));
-			TX_STR(TX_LOC.all'range) := TX_LOC.all;
-			STD.TEXTIO.writeline(results, TX_LOC);
-			STD.TEXTIO.Deallocate(TX_LOC);
-		END;
+run:
+	./mpycam.py
 
-		PROCEDURE ANNOTATE_CHIPSEL(
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
-			STD.TEXTIO.write(TX_LOC, TX_TIME);
-			STD.TEXTIO.write(TX_LOC,string'(",CHIPSEL,"));
-			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, CHIPSEL);
-			STD.TEXTIO.write(TX_LOC, string'("]"));
-			TX_STR(TX_LOC.all'range) := TX_LOC.all;
-			STD.TEXTIO.writeline(results, TX_LOC);
-			STD.TEXTIO.Deallocate(TX_LOC);
-		END;
+run3:
+	./pycam.py --devid=0 &
+	./pycam.py --devid=1 &
+	./pycam.py --devid=2 &
 
-		PROCEDURE ANNOTATE_MEM_AD_BASE(
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
-			STD.TEXTIO.write(TX_LOC, TX_TIME);
-			STD.TEXTIO.write(TX_LOC,string'(",MEM_AD_BASE,"));
-			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, MEM_AD_BASE);
-			STD.TEXTIO.write(TX_LOC, string'("]"));
-			TX_STR(TX_LOC.all'range) := TX_LOC.all;
-			STD.TEXTIO.writeline(results, TX_LOC);
-			STD.TEXTIO.Deallocate(TX_LOC);
-		END;
+kill:
+	killall python3
+	killall pycam.py
 
-	BEGIN
-		CLOCK_LOOP : LOOP
-		CLK <= transport '0';
-		WAIT FOR 25 ns;
-		TX_TIME := TX_TIME + 25;
-		CLK <= transport '1';
-		WAIT FOR 25 ns;
-		TX_TIME := TX_TIME + 25;
-		ANNOTATE_BUSY(TX_TIME);
-		ANNOTATE_EXEC(TX_TIME);
-		ANNOTATE_START_AD(TX_TIME);
-		ANNOTATE_NQWORD(TX_TIME);
-		ANNOTATE_CHIPSEL(TX_TIME);
-		ANNOTATE_MEM_AD_BASE(TX_TIME);
-		WAIT FOR 25 ns;
-		TX_TIME := TX_TIME + 25;
-		CLK <= transport '0';
-		WAIT FOR 25 ns;
-		TX_TIME := TX_TIME + 25;
-		END LOOP CLOCK_LOOP;
-	END PROCESS;
-
-	PROCESS   -- Process for CLK
-		VARIABLE TX_OUT : LINE;
-
-		BEGIN
-		-- --------------------
-		CALC_DONE <= transport '0';
-		BUSY_IF <= transport '0';
-		RST <= transport '0';
-		NPIPE <= transport std_logic_vector'("00000000"); --0
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=100 ns
-		NPIPE <= transport std_logic_vector'("00000010"); --2
-		-- --------------------
-		WAIT FOR 500 ns; -- Time=600 ns
-		CALC_DONE <= transport '1';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=700 ns
-		CALC_DONE <= transport '0';
-		-- --------------------
-		WAIT FOR 32225 ns; -- Time=32925 ns
-		-- --------------------
-
-		STD.TEXTIO.write(TX_OUT, string'("Total[]"));
-		STD.TEXTIO.writeline(results, TX_OUT);
-		ASSERT (FALSE) REPORT
-			"Success! Simulation for annotation completed"
-			SEVERITY FAILURE;
-	END PROCESS;
-END testbench_arch;
-
-CONFIGURATION local_read_cnt_cfg OF sim_local_read_cnt IS
-	FOR testbench_arch
-	END FOR;
-END local_read_cnt_cfg;
+clog: clean
+	rm -rf ../log* ../data4bbox ../data4darknet ../conv
+	rm -rf ./tmp.mp4

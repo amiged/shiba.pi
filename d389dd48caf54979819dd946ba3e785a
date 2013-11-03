@@ -1,52 +1,32 @@
-Sun Oct 27 19:29:18 JST 2013
-set -tmpdir __projnav
-set -xsthdpdir ./xst
-run
--ifn top.prj
--ifmt mixed
--ofn top
--ofmt NGC
--p xc2vp70-5-ff1517
--top top
--opt_mode Speed
--opt_level 1
--iuc NO
--lso top.lso
--keep_hierarchy NO
--glob_opt AllClockNets
--rtlview Yes
--read_cores YES
--write_timing_constraints NO
--cross_clock_analysis NO
--hierarchy_separator _
--bus_delimiter <>
--case maintain
--slice_utilization_ratio 100
--verilog2001 YES
--vlgincdir 
--fsm_extract YES -fsm_encoding Auto
--fsm_style lut
--ram_extract Yes
--ram_style Auto
--rom_extract Yes
--rom_style Auto
--mux_extract YES
--mux_style Auto
--decoder_extract YES
--priority_extract YES
--shreg_extract YES
--shift_extract YES
--xor_collapse YES
--resource_sharing YES
--mult_style auto
--iobuf YES
--max_fanout 500
--bufg 16
--register_duplication YES
--equivalent_register_removal YES
--register_balancing No
--slice_packing YES
--optimize_primitives NO
--tristate2logic No
--iob auto
--slice_utilization_ratio_maxmargin 5
+Sun Nov  3 19:52:08 JST 2013
+/*
+ * pfpga_info.c
+ *
+ * Copyright (C) 2006-2007 Tsuyoshi Hamada
+ *                                All rights reserved.
+ * 
+ * No warranty is attached; 
+ * I cannot take responsibility for errors or fitness for use.
+ *
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAXBD 8
+#include "pg4.h"
+
+int main(int argc, char* argv[])
+{
+  int devid=0;
+  char info[1024];
+
+  pg4_open(devid);
+  pg4_get_pfpga_info(devid, info);
+  pg4_close(devid);
+
+  printf("%s\n", info);
+
+  return 1;
+}

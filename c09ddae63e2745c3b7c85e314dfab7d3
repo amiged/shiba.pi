@@ -1,68 +1,56 @@
-Tue Sep 17 19:47:15 JST 2013
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include "flops.h"
-//#include "pg_util.h" // double e_time(void)
+Sat Nov  9 19:28:53 JST 2013
+#!/usr/bin/env python3
+#Time-stamp: <2017-06-04 15:57:17 hamada>
+import argparse
+import numpy as np
+import cv2
+from datetime import datetime
+import mkdir
 
-extern double e_time(void);
+class State(object):
+    def __init__(self):
+        self.is_record = False
 
-void flops_initialize(struct flops_member* fm, int n, int nskip)
-{
-  (*fm).nbody = n;
-  (*fm).nskip = nskip;
-  (*fm).times = 0;
-  (*fm).nstep = 0;
-  (*fm).force_time = 0.0;
-  (*fm).start_time = e_time();
-}
+if (__name__ == '__main__'):
+    state = State()
 
-void flops_check(struct flops_member* fm)
-{
-  int n = (*fm).nbody;
-  int nskip = (*fm).nskip;
-  int nstep = (*fm).nstep;
-  int times = (*fm).times;
-  double t_start = (*fm).start_time;
-  double tmisc,tall;
-  double nope,Gflops;
-  double t_end;
-  nstep++;
-
-  if((times % nskip) != (nskip-1)){
-    times++;
-  } else {
-    double tforce = (*fm).force_time;
-    t_end = e_time();
-    tall = t_end - t_start;
-    tmisc = tall - tforce;
-    nope  = (38.0*n*n + 8.0*n  )*(double)times; // Gravity
-    //       GRAVITY,  LEAPFLOG
-    (*fm).Gflops = Gflops = nope * 1.0e-9 / tall;
-    fprintf(stderr,"[%d steps]\t",nstep);
-    fprintf(stderr,"LapTime %2.2f sec\t",tall);
-    fprintf(stderr,"\t \t == %g Gflops ==\n",Gflops);
-
-    fprintf(stderr,"\t + Force (calc + communi. ) (%g sec) \t %02.3f %%\n", tforce,  100.0*tforce/tall);
-    fprintf(stderr,"\t + Misc  (time integ, etc.) (%g sec) \t %02.3f %%\n", tmisc,   100.0*tmisc/tall);
-
-    times = 0;
-    t_start = e_time();
-  }
-  (*fm).times = times;
-  (*fm).nstep = nstep;
-  (*fm).start_time = t_start;
-}
+    parser = argparse.ArgumentParser(description = "description goes here")
+    parser.add_argument("--devid", type=int, help = "set device id", required=False)
+    args = parser.parse_args()
+    devid = 0
+    if args.devid:
+        devid = int(args.devid)
+        print ("set devid = ", devid)
 
 
+    log_base = '../log/'
+    cap = cv2.VideoCapture(devid)
 
-void flops_ftime_init(struct flops_member *fm){
-  (*fm).force_time = e_time();
-}
+    cap_width  = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+    cap_height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+    cap_fps    = cap.get(cv2.CAP_PROP_FPS)
 
-void flops_ftime_save(struct flops_member *fm){
-  double dum = (*fm).force_time;
-  (*fm).force_time = e_time() - dum;
-}
+    print(cap_width, "x", cap_height, ":", cap_fps)
 
 
+    while(cap.isOpened()):
+        ret, frame = cap.read()
+        cv2.imshow('camera: %d'%(devid), frame)
+
+        tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S_%f')
+        if(state.is_record):
+            basedir = '../log.%d/'% (devid)
+            ofname = mkdir.get_filename_frame(basedir, tnow)
+            cv2.imwrite(ofname, frame)
+            print(ofname, "devid = %d"%devid)
+            tnow0 = tnow
+
+        key = cv2.waitKey(1) & 0xFF
+        if key == ord('q'): break
+        if key == ord(' '): state.is_record = not (state.is_record)
+
+
+    cap.release()
+    cv2.destroyAllWindows()
+
+    print("Done.")

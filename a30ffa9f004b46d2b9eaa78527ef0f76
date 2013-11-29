@@ -1,48 +1,41 @@
-Sat Nov  9 19:51:57 JST 2013
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-import numpy as np
-import cv2
+Fri Nov 29 19:41:28 JST 2013
+Release 6.2.03i - ngdbuild G.31a
+Copyright (c) 1995-2004 Xilinx, Inc.  All rights reserved.
 
-drawing = False
-mode = True
-ix,iy = -1,-1
+Command Line: ngdbuild -intstyle ise -dd ./_ngo -uc ../top.ucf -p
+xc2vp70-ff1517-5 top.ngc top.ngd 
 
-def draw_circle(event,x,y,flags,param):
-    global ix,iy,drawing,mode
-    if event == cv2.EVENT_LBUTTONDOWN:
-        print ('Push')
-        drawing = True
-        ix,iy = x,y
+Reading NGO file
+"/home/hamada/pgr/Demos/PairWiseErr/pgr/ISE_PROJECT/proj/top.ngc" ...
+Reading component libraries for design expansion...
 
-    elif event == cv2.EVENT_MOUSEMOVE:
-        if drawing == True:
-            print ('Drawing...')
-            if mode == True:
-                pass
-            else:
-                cv2.circle(img,(x,y),5,(0,0,255),-1)
-        else:
-            pass
-    elif event == cv2.EVENT_LBUTTONUP:
-        print ('Up')
-        drawing = False
-        if mode == True:
-            cv2.rectangle(img,(ix,iy),(x,y),(0,255,0),2)
-        else:
-            cv2.circle(img,(x,y),5,(0,0,255),-1)
+Annotating constraints to design from file "../top.ucf" ...
 
-if '__main__' == __name__ :
-    img = np.zeros((512,512,3), np.uint8)
-    cv2.namedWindow('image')
-    cv2.setMouseCallback('image',draw_circle)
-    
-    while(1):
-        cv2.imshow('image',img)
-        k = cv2.waitKey(1) & 0xFF
-        if k == ord('m'):
-            mode = not mode
-        elif k == 27:
-            break
+Checking timing specifications ...
+WARNING:XdmHelpers:793 - The TNM "CLK66" drives the CLKIN pin of DCM
+   "dcm0_dcm0". This TNM cannot be traced through the DCM because it is not used
+   in exactly one PERIOD specification. This TNM is used in the following user
+   groups and/or specifications:
+   <none>
+WARNING:XdmHelpers:625 - No instances driven from signal "CK66" are valid for
+   inclusion in TNM group "CLK66". A TNM property on a pin or signal marks only
+   the flip-flops, latches and/or RAMs which are directly or indirectly driven
+   by that pin or signal.
+INFO:XdmHelpers:851 - TNM "CK66", used in period specification "TS_CK66", was
+   traced into DCM instance "dcm0_dcm0". The following new TNM groups and period
+   specifications were generated at the DCM output(s):
+   CLK0: TS_dcm0_dcm_out=PERIOD dcm0_dcm_out TS_CK66*1.000000 HIGH 50.000000%
+   CLKFX: TS_dcm0_dcm_fx=PERIOD dcm0_dcm_fx TS_CK66*1.000000 HIGH 50.000000%
+WARNING:XdmHelpers:644 - No appropriate elements were found for the TNM group
+   "CLK66". This group has been removed from the design.
+Checking expanded design ...
 
-    cv2.destroyAllWindows()
+NGDBUILD Design Results Summary:
+  Number of errors:     0
+  Number of warnings:   3
+
+Total memory usage is 67920 kilobytes
+
+Writing NGD file "top.ngd" ...
+
+Writing NGDBUILD log file "top.bld"...

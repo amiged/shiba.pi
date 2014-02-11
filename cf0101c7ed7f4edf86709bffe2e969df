@@ -1,318 +1,163 @@
-Wed Jan 29 19:32:35 JST 2014
-# -----------------------
-# pfpga ucf
-# 2004/11/16 by T.Hamada
-# -----------------------
-################################################################################
-# Timing specification
-################################################################################
-#NET "CK133"							TNM_NET = "CLK133"
-#NET "CK66"							TNM_NET = "CLK66"
-NET "CLK0"							TNM_NET = "CLK0";
-NET "CLK1"							TNM_NET = "CLK1";
-################################################################################
-# I/O property
-################################################################################
-NET "CBUS(0)" LOC = "AU10";
-NET "CBUS(1)" LOC = "AT10";
-NET "CBUS(2)" LOC = "AJ12";
-NET "CBUS(3)" LOC = "AJ13";
-NET "CBUS(4)" LOC = "AL10";
-NET "CBUS(5)" LOC = "AL11";
-NET "CBUS(6)" LOC = "AN11";
-NET "CBUS(7)" LOC = "AM11";
-NET "CBUS(0)" IOSTANDARD = LVCMOS25;
-NET "CBUS(1)" IOSTANDARD = LVCMOS25;
-NET "CBUS(2)" IOSTANDARD = LVCMOS25;
-NET "CBUS(3)" IOSTANDARD = LVCMOS25;
-NET "CBUS(4)" IOSTANDARD = LVCMOS25;
-NET "CBUS(5)" IOSTANDARD = LVCMOS25;
-NET "CBUS(6)" IOSTANDARD = LVCMOS25;
-NET "CBUS(7)" IOSTANDARD = LVCMOS25;
-NET "CK66" IOSTANDARD = LVCMOS25;
-NET "CK133" IOSTANDARD = LVCMOS25;
-NET "DBUS(0)" IOSTANDARD = LVCMOS25;
-NET "DBUS(1)" IOSTANDARD = LVCMOS25;
-NET "DBUS(2)" IOSTANDARD = LVCMOS25;
-NET "DBUS(3)" IOSTANDARD = LVCMOS25;
-NET "DBUS(4)" IOSTANDARD = LVCMOS25;
-NET "DBUS(5)" IOSTANDARD = LVCMOS25;
-NET "DBUS(6)" IOSTANDARD = LVCMOS25;
-NET "DBUS(7)" IOSTANDARD = LVCMOS25;
-NET "DBUS(8)" IOSTANDARD = LVCMOS25;
-NET "DBUS(9)" IOSTANDARD = LVCMOS25;
-NET "DBUS(10)" IOSTANDARD = LVCMOS25;
-NET "DBUS(11)" IOSTANDARD = LVCMOS25;
-NET "DBUS(12)" IOSTANDARD = LVCMOS25;
-NET "DBUS(13)" IOSTANDARD = LVCMOS25;
-NET "DBUS(14)" IOSTANDARD = LVCMOS25;
-NET "DBUS(15)" IOSTANDARD = LVCMOS25;
-NET "DBUS(16)" IOSTANDARD = LVCMOS25;
-NET "DBUS(17)" IOSTANDARD = LVCMOS25;
-NET "DBUS(18)" IOSTANDARD = LVCMOS25;
-NET "DBUS(19)" IOSTANDARD = LVCMOS25;
-NET "DBUS(20)" IOSTANDARD = LVCMOS25;
-NET "DBUS(21)" IOSTANDARD = LVCMOS25;
-NET "DBUS(22)" IOSTANDARD = LVCMOS25;
-NET "DBUS(23)" IOSTANDARD = LVCMOS25;
-NET "DBUS(24)" IOSTANDARD = LVCMOS25;
-NET "DBUS(25)" IOSTANDARD = LVCMOS25;
-NET "DBUS(26)" IOSTANDARD = LVCMOS25;
-NET "DBUS(27)" IOSTANDARD = LVCMOS25;
-NET "DBUS(28)" IOSTANDARD = LVCMOS25;
-NET "DBUS(29)" IOSTANDARD = LVCMOS25;
-NET "DBUS(30)" IOSTANDARD = LVCMOS25;
-NET "DBUS(31)" IOSTANDARD = LVCMOS25;
-NET "DBUS(32)" IOSTANDARD = LVCMOS25;
-NET "DBUS(33)" IOSTANDARD = LVCMOS25;
-NET "DBUS(34)" IOSTANDARD = LVCMOS25;
-NET "DBUS(35)" IOSTANDARD = LVCMOS25;
-NET "DBUS(36)" IOSTANDARD = LVCMOS25;
-NET "DBUS(37)" IOSTANDARD = LVCMOS25;
-NET "DBUS(38)" IOSTANDARD = LVCMOS25;
-NET "DBUS(39)" IOSTANDARD = LVCMOS25;
-NET "DBUS(40)" IOSTANDARD = LVCMOS25;
-NET "DBUS(41)" IOSTANDARD = LVCMOS25;
-NET "DBUS(42)" IOSTANDARD = LVCMOS25;
-NET "DBUS(43)" IOSTANDARD = LVCMOS25;
-NET "DBUS(44)" IOSTANDARD = LVCMOS25;
-NET "DBUS(45)" IOSTANDARD = LVCMOS25;
-NET "DBUS(46)" IOSTANDARD = LVCMOS25;
-NET "DBUS(47)" IOSTANDARD = LVCMOS25;
-NET "DBUS(48)" IOSTANDARD = LVCMOS25;
-NET "DBUS(49)" IOSTANDARD = LVCMOS25;
-NET "DBUS(50)" IOSTANDARD = LVCMOS25;
-NET "DBUS(51)" IOSTANDARD = LVCMOS25;
-NET "DBUS(52)" IOSTANDARD = LVCMOS25;
-NET "DBUS(53)" IOSTANDARD = LVCMOS25;
-NET "DBUS(54)" IOSTANDARD = LVCMOS25;
-NET "DBUS(55)" IOSTANDARD = LVCMOS25;
-NET "DBUS(56)" IOSTANDARD = LVCMOS25;
-NET "DBUS(57)" IOSTANDARD = LVCMOS25;
-NET "DBUS(58)" IOSTANDARD = LVCMOS25;
-NET "DBUS(59)" IOSTANDARD = LVCMOS25;
-NET "DBUS(60)" IOSTANDARD = LVCMOS25;
-NET "DBUS(61)" IOSTANDARD = LVCMOS25;
-NET "DBUS(62)" IOSTANDARD = LVCMOS25;
-NET "DBUS(63)" IOSTANDARD = LVCMOS25;
-NET "RST" IOSTANDARD = LVCMOS25;
-NET "FPGA_NO(0)" IOSTANDARD = LVCMOS25;
-NET "FPGA_NO(1)" IOSTANDARD = LVCMOS25;
-NET "LED(0)" IOSTANDARD = LVCMOS25;
-NET "LED(1)" IOSTANDARD = LVCMOS25;
-NET "LED(2)" IOSTANDARD = LVCMOS25;
-NET "LED(3)" IOSTANDARD = LVCMOS25;
-NET "LED(4)" IOSTANDARD = LVCMOS25;
-NET "LED(5)" IOSTANDARD = LVCMOS25;
-NET "LED(6)" IOSTANDARD = LVCMOS25;
-NET "LED(7)" IOSTANDARD = LVCMOS25;
-NET "DSW(0)" IOSTANDARD = LVCMOS25;
-NET "DSW(1)" IOSTANDARD = LVCMOS25;
-NET "DSW(2)" IOSTANDARD = LVCMOS25;
-NET "DSW(3)" IOSTANDARD = LVCMOS25;
-NET "DSW(4)" IOSTANDARD = LVCMOS25;
-NET "DSW(5)" IOSTANDARD = LVCMOS25;
-NET "DSW(6)" IOSTANDARD = LVCMOS25;
-NET "DSW(7)" IOSTANDARD = LVCMOS25;
-NET "CBUS(0)" SLEW = FAST;
-NET "CBUS(1)" SLEW = FAST;
-NET "CBUS(2)" SLEW = FAST;
-NET "CBUS(3)" SLEW = FAST;
-NET "CBUS(4)" SLEW = FAST;
-NET "CBUS(5)" SLEW = FAST;
-NET "CBUS(6)" SLEW = FAST;
-NET "CBUS(7)" SLEW = FAST;
-NET "DBUS(0)" SLEW = FAST;
-NET "DBUS(1)" SLEW = FAST;
-NET "DBUS(2)" SLEW = FAST;
-NET "DBUS(3)" SLEW = FAST;
-NET "DBUS(4)" SLEW = FAST;
-NET "DBUS(5)" SLEW = FAST;
-NET "DBUS(6)" SLEW = FAST;
-NET "DBUS(7)" SLEW = FAST;
-NET "DBUS(8)" SLEW = FAST;
-NET "DBUS(9)" SLEW = FAST;
-NET "DBUS(10)" SLEW = FAST;
-NET "DBUS(11)" SLEW = FAST;
-NET "DBUS(12)" SLEW = FAST;
-NET "DBUS(13)" SLEW = FAST;
-NET "DBUS(14)" SLEW = FAST;
-NET "DBUS(15)" SLEW = FAST;
-NET "DBUS(16)" SLEW = FAST;
-NET "DBUS(17)" SLEW = FAST;
-NET "DBUS(18)" SLEW = FAST;
-NET "DBUS(19)" SLEW = FAST;
-NET "DBUS(20)" SLEW = FAST;
-NET "DBUS(21)" SLEW = FAST;
-NET "DBUS(22)" SLEW = FAST;
-NET "DBUS(23)" SLEW = FAST;
-NET "DBUS(24)" SLEW = FAST;
-NET "DBUS(25)" SLEW = FAST;
-NET "DBUS(26)" SLEW = FAST;
-NET "DBUS(27)" SLEW = FAST;
-NET "DBUS(28)" SLEW = FAST;
-NET "DBUS(29)" SLEW = FAST;
-NET "DBUS(30)" SLEW = FAST;
-NET "DBUS(31)" SLEW = FAST;
-NET "DBUS(32)" SLEW = FAST;
-NET "DBUS(33)" SLEW = FAST;
-NET "DBUS(34)" SLEW = FAST;
-NET "DBUS(35)" SLEW = FAST;
-NET "DBUS(36)" SLEW = FAST;
-NET "DBUS(37)" SLEW = FAST;
-NET "DBUS(38)" SLEW = FAST;
-NET "DBUS(39)" SLEW = FAST;
-NET "DBUS(40)" SLEW = FAST;
-NET "DBUS(41)" SLEW = FAST;
-NET "DBUS(42)" SLEW = FAST;
-NET "DBUS(43)" SLEW = FAST;
-NET "DBUS(44)" SLEW = FAST;
-NET "DBUS(45)" SLEW = FAST;
-NET "DBUS(46)" SLEW = FAST;
-NET "DBUS(47)" SLEW = FAST;
-NET "DBUS(48)" SLEW = FAST;
-NET "DBUS(49)" SLEW = FAST;
-NET "DBUS(50)" SLEW = FAST;
-NET "DBUS(51)" SLEW = FAST;
-NET "DBUS(52)" SLEW = FAST;
-NET "DBUS(53)" SLEW = FAST;
-NET "DBUS(54)" SLEW = FAST;
-NET "DBUS(55)" SLEW = FAST;
-NET "DBUS(56)" SLEW = FAST;
-NET "DBUS(57)" SLEW = FAST;
-NET "DBUS(58)" SLEW = FAST;
-NET "DBUS(59)" SLEW = FAST;
-NET "DBUS(60)" SLEW = FAST;
-NET "DBUS(61)" SLEW = FAST;
-NET "DBUS(62)" SLEW = FAST;
-NET "DBUS(63)" SLEW = FAST;
-NET "TPIN(0)" SLEW = FAST;
-NET "TPIN(1)" SLEW = FAST;
-NET "TPIN(2)" SLEW = FAST;
-NET "TPIN(3)" SLEW = FAST;
-NET "TPIN(4)" SLEW = FAST;
-NET "TPIN(5)" SLEW = FAST;
-NET "TPIN(6)" SLEW = FAST;
-NET "TPIN(7)" SLEW = FAST;
-NET "TPIN(8)" SLEW = FAST;
-NET "TPIN(9)" SLEW = FAST;
-NET "TPIN(10)" SLEW = FAST;
-NET "TPIN(11)" SLEW = FAST;
-NET "TPIN(12)" SLEW = FAST;
-NET "TPIN(13)" SLEW = FAST;
-NET "TPIN(14)" SLEW = FAST;
-NET "TPIN(15)" SLEW = FAST;
-NET "LED(0)" SLEW = FAST;
-NET "LED(1)" SLEW = FAST;
-NET "LED(2)" SLEW = FAST;
-NET "LED(3)" SLEW = FAST;
-NET "LED(4)" SLEW = FAST;
-NET "LED(5)" SLEW = FAST;
-NET "LED(6)" SLEW = FAST;
-NET "LED(7)" SLEW = FAST;
-################################################################################
-# I/O Assignment
-################################################################################
-NET "CK66" LOC = "AG20";
-NET "CK133" LOC = "AK20";
-NET "DBUS(0)" LOC = "AH13";
-NET "DBUS(1)" LOC = "AH14";
-NET "DBUS(2)" LOC = "AR11";
-NET "DBUS(3)" LOC = "AP11";
-NET "DBUS(4)" LOC = "AU11";
-NET "DBUS(5)" LOC = "AT11";
-NET "DBUS(6)" LOC = "AL14";
-NET "DBUS(7)" LOC = "AK14";
-NET "DBUS(8)" LOC = "AM12";
-NET "DBUS(9)" LOC = "AL12";
-NET "DBUS(10)" LOC = "AT12";
-NET "DBUS(11)" LOC = "AR12";
-NET "DBUS(12)" LOC = "AJ14";
-NET "DBUS(13)" LOC = "AJ15";
-NET "DBUS(14)" LOC = "AM13";
-NET "DBUS(15)" LOC = "AL13";
-NET "DBUS(16)" LOC = "AP12";
-NET "DBUS(17)" LOC = "AN13";
-NET "DBUS(18)" LOC = "AL15";
-NET "DBUS(19)" LOC = "AK15";
-NET "DBUS(20)" LOC = "AT13";
-NET "DBUS(21)" LOC = "AR13";
-NET "DBUS(22)" LOC = "AN14";
-NET "DBUS(23)" LOC = "AM14";
-NET "DBUS(24)" LOC = "AH15";
-NET "DBUS(25)" LOC = "AH16";
-NET "DBUS(26)" LOC = "AR14";
-NET "DBUS(27)" LOC = "AP14";
-NET "DBUS(28)" LOC = "AU14";
-NET "DBUS(29)" LOC = "AT14";
-NET "DBUS(30)" LOC = "AH17";
-NET "DBUS(31)" LOC = "AG17";
-NET "DBUS(32)" LOC = "AN15";
-NET "DBUS(33)" LOC = "AM15";
-NET "DBUS(34)" LOC = "AR15";
-NET "DBUS(35)" LOC = "AP15";
-NET "DBUS(36)" LOC = "AK16";
-NET "DBUS(37)" LOC = "AJ17";
-NET "DBUS(38)" LOC = "AU15";
-NET "DBUS(39)" LOC = "AT15";
-NET "DBUS(40)" LOC = "AM16";
-NET "DBUS(41)" LOC = "AL16";
-NET "DBUS(42)" LOC = "AM17";
-NET "DBUS(43)" LOC = "AL17";
-NET "DBUS(44)" LOC = "AR16";
-NET "DBUS(45)" LOC = "AR17";
-NET "DBUS(46)" LOC = "AH18";
-NET "DBUS(47)" LOC = "AG18";
-NET "DBUS(48)" LOC = "AU17";
-NET "DBUS(49)" LOC = "AT17";
-NET "DBUS(50)" LOC = "AM18";
-NET "DBUS(51)" LOC = "AL18";
-NET "DBUS(52)" LOC = "AK18";
-NET "DBUS(53)" LOC = "AJ18";
-NET "DBUS(54)" LOC = "AP18";
-NET "DBUS(55)" LOC = "AN18";
-NET "DBUS(56)" LOC = "AT18";
-NET "DBUS(57)" LOC = "AR18";
-NET "DBUS(58)" LOC = "AH19";
-NET "DBUS(59)" LOC = "AG19";
-NET "DBUS(60)" LOC = "AU18";
-NET "DBUS(61)" LOC = "AU19";
-NET "DBUS(62)" LOC = "AM19";
-NET "DBUS(63)" LOC = "AL19";
-NET "RST" LOC = "AR19";
-NET "TPIN(0)" LOC = "Y36";
-NET "TPIN(2)" LOC = "Y37";
-NET "TPIN(4)" LOC = "Y31";
-NET "TPIN(6)" LOC = "W31";
-NET "TPIN(8)" LOC = "Y32";
-NET "TPIN(10)" LOC = "Y33";
-NET "TPIN(12)" LOC = "W36";
-NET "TPIN(14)" LOC = "W37";
-NET "TPIN(1)" LOC = "W27";
-NET "TPIN(3)" LOC = "W28";
-NET "TPIN(5)" LOC = "W34";
-NET "TPIN(7)" LOC = "W35";
-NET "TPIN(9)" LOC = "G38";
-NET "TPIN(11)" LOC = "G39";
-NET "TPIN(13)" LOC = "G36";
-NET "TPIN(15)" LOC = "G37";
-NET "FPGA_NO(0)" LOC = "AP19";
-NET "FPGA_NO(1)" LOC = "AN19";
-NET "LED(0)" LOC = "P34";
-NET "LED(1)" LOC = "P33";
-NET "LED(2)" LOC = "R27";
-NET "LED(3)" LOC = "T27";
-NET "LED(4)" LOC = "P36";
-NET "LED(5)" LOC = "P35";
-NET "LED(6)" LOC = "P37";
-NET "LED(7)" LOC = "N37";
-NET "DSW(0)" LOC = "T30";
-NET "DSW(1)" LOC = "T29";
-NET "DSW(2)" LOC = "P39";
-NET "DSW(3)" LOC = "P38";
-NET "DSW(4)" LOC = "R33";
-NET "DSW(5)" LOC = "R32";
-NET "DSW(6)" LOC = "T28";
-NET "DSW(7)" LOC = "U28";
-NET "CK66" TNM_NET = "CK66";
-TIMESPEC "TS_CK66" = PERIOD "CK66" 20 ns HIGH 50 %;
+Tue Feb 11 19:27:57 JST 2014
+-- Copyright 2004,2005,2006 by Tsuyoshi Hamada
+-- 2006/06/22 : add some comments (T.H)
+-- 2006/02/08 : Fixed (T.H)
+
+-- LOCAL READ ( ifpga <- pfpga )
+-- by Tsuyoshi Hamada
+-- (※) l_adroのビット幅(NBIT_L_ADRO)を変えた場合はpromを焼きなおす必要があることに注意.(直すのは上のモジュール)
+-- (※) そもそもの前提：LOCAL_READはPFPGA0からのPIPE_STS信号(CBUS0(7))をトランザクション開始信号としています。
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
+
+entity LOCAL_READ is
+  generic ( NBIT_L_ADRO : integer := 3);
+  port (
+    NPIPE : in std_logic_vector(7 downto 0); -- from PGPG_REG3
+    CALC_STS : in std_logic;    -- from PFPGA
+    BUSY : out std_logic :='1'; -- to GPREG0 (default '1'!! => Waiting until pipe calc end)
+
+    -- CBUS/DBUS
+    DMAR_ENABLE : out std_logic_vector(3 downto 0); -- for 4 pfpga chip
+    DBUS_Port : out std_logic_vector(63 downto 0);
+    DBUS_idata: in std_logic_vector(63 downto 0);
+    DBUS_HiZ  : out std_logic;
+
+    -- DPRAM R/W ports
+    MEM_ADB     : out std_logic_vector(12 downto 0);     -- DPRAM Port B R/W Address
+    MEM_WEHB    : out std_logic;                         -- DPRAM Port B Write Enable (High Word)
+    MEM_WELB    : out std_logic;                         -- DPRAM Port B Write Enable (Low  Word)
+    MEM_DTIB    : out std_logic_vector(63 downto 0);     -- DPRAM Port B Write Data
+
+    RST : in  std_logic;
+    CLK : in  std_logic
+    );
+end LOCAL_READ;
+
+architecture rtl of LOCAL_READ is
+
+component LOCAL_READ_CNT
+  generic (CNT_WIDTH     : integer := 16;      -- program counter bit-width
+           FO_BASE       : integer := 24576;   -- = 0x6000
+           NBIT_L_ADRO   : integer := 3;       -- Bit-Length of l_ado(pgpg_mem.vhd)
+           INTF_LAT      : integer := 8);      -- LOCAL_READ_IF latency (clock)
+  port (
+    NPIPE : in std_logic_vector(7 downto 0);   -- number of pipelines per chip
+    CALC_DONE  : in std_logic;                 -- pulse
+    FETCH_DONE : out std_logic;
+    EXEC     : out std_logic;                     -- pulse
+    START_AD : out std_logic_vector(18 downto 0); -- 19 bit
+    NQWORD   : out std_logic_vector( 8 downto 0); --  9 bit
+    CHIPSEL  : out std_logic_vector( 3 downto 0); --  4 bit
+    MEM_AD_BASE : out std_logic_vector(12 downto 0);
+    RST : in  std_logic;
+    CLK : in  std_logic
+    );
+end component;
+
+component LOCAL_READ_IF
+  port (
+    EXEC : in std_logic;
+    START_AD : in std_logic_vector(18 downto 0);
+    NQWORD   : in std_logic_vector( 8 downto 0);
+    CHIPSEL  : in std_logic_vector( 3 downto 0);
+    MEM_AD_BASE : in std_logic_vector(12 downto 0);
+    BUSY : out std_logic;  -- to GPREG0
+    DMAR_ENABLE : out std_logic_vector(3 downto 0);
+    DBUS_Port : out std_logic_vector(63 downto 0);
+    DBUS_idata: in std_logic_vector(63 downto 0);
+    DBUS_HiZ  : out std_logic;
+    MEM_ADB     : out std_logic_vector(12 downto 0);
+    MEM_WEHB    : out std_logic;
+    MEM_WELB    : out std_logic;
+    MEM_DTIB    : out std_logic_vector(63 downto 0);
+    RST : in  std_logic;
+    CLK : in  std_logic
+    );
+end component;
+
+signal calc_done : std_logic :='0';   -- to cnt
+signal csts0,csts1 : std_logic :='0'; -- from pfpga
+
+-- CNT
+signal fetch_done : std_logic :='0';
+signal exec : std_logic;                          -- cnt -> if
+signal start_ad : std_logic_vector(18 downto 0);  -- cnt -> if
+signal nqword   : std_logic_vector( 8 downto 0);  -- cnt -> if
+signal chipsel  : std_logic_vector( 3 downto 0);  -- cnt -> if
+signal mem_base : std_logic_vector(12 downto 0);  -- cnt -> if
+-- IF
+signal ignore_busy : std_logic; 
+
+begin
+
+  -- CALC STATUS
+  csts0 <= CALC_STS;
+  process (CLK) begin
+    if (CLK'event and CLK='1') then
+      csts1 <= csts0;
+    end if;
+  end process;
+
+  -- CALC DONE
+  process (RST,CLK,csts0,csts1) begin
+    if(RST='1') then
+      calc_done <= '0';
+    elsif (CLK'event and CLK='1') then
+      if((csts0='1') AND (csts1='0')) then
+        calc_done <= '1';
+      else
+        calc_done <= '0';
+      end if;
+    end if;
+  end process;
+
+  -- BUSY
+  process (RST,CLK,csts0,csts1,fetch_done) begin
+    if (RST='1') then
+      BUSY <='1';
+    elsif (CLK'event and CLK='1') then
+      if((csts0='1') AND (csts1='0')) then
+        BUSY <= '1';
+      elsif(fetch_done='1') then
+        BUSY <= '0';
+      end if;
+    end if;
+  end process;
+
+  -- =================================================== SUBMODULE INSTANCES
+  u0: LOCAL_READ_CNT 
+    generic map(NBIT_L_ADRO => NBIT_L_ADRO)
+    port map(NPIPE => NPIPE,
+             CALC_DONE => calc_done,
+             FETCH_DONE => fetch_done,
+             EXEC       => exec,
+             START_AD   => start_ad,
+             NQWORD     => nqword,
+             CHIPSEL    => chipsel,
+             MEM_AD_BASE => mem_base,
+             RST => RST, CLK=>CLK);
+
+
+  u1: LOCAL_READ_IF
+    port map(EXEC        => exec,     -- from cnt
+             START_AD    => start_ad, -- from cnt
+             NQWORD      => nqword,   -- from cnt
+             CHIPSEL     => chipsel,  -- from cnt
+             MEM_AD_BASE => mem_base, -- from cnt
+             BUSY => ignore_busy,
+             DMAR_ENABLE => DMAR_ENABLE, -- output directly
+             DBUS_Port   => DBUS_Port,   -- output directly
+             DBUS_idata  => DBUS_idata,  -- output directly
+             DBUS_HiZ    => DBUS_HiZ,    -- output directly
+             MEM_ADB  => MEM_ADB,        -- output directly
+             MEM_WEHB => MEM_WEHB,       -- output directly
+             MEM_WELB => MEM_WELB,       -- output directly
+             MEM_DTIB => MEM_DTIB,       -- output directly
+             RST=>RST,CLK=>CLK);
+
+
+end rtl;

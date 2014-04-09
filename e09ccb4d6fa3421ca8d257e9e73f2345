@@ -1,44 +1,29 @@
-Mon Mar 10 19:34:09 JST 2014
-// Time-stamp: " "
-#include <stdio.h> 
-#include <string.h>
-#include <stdlib.h>
+Wed Apr  9 19:39:53 JST 2014
+//Time-stamp: "2006-11-21 00:17:47 hamada"
 
-void read_data(char* fname, int* nbody, double posi[][2])
-{
-  int idx,n;
-  char line[2560];
-  FILE *fp;
-  fp = fopen(fname,"r");
-  idx=0;
+#define FDIM 8       // depend on NBIT_L_UADR     (@ ifpga.vhd)
+#define JDIM 4       // depend on dpram adr width (@ pgpg_mem.vhd)
+#define XI_AWIDTH 4  // depend on l_adri width    (@ pgpg_mem.vhd)
 
-  { // get N (number of particles)
-    char* p;
-    fgets(line,100,fp);
-    p = (char* )strtok(line,"\n");
-    sscanf(p,"%d",&n);
-    *nbody = n;
-  }
+int pgr_open(int);
+void pgr_close(int);
 
-  // get all data
-  for(idx=0;idx<n;idx++){
-    char* p;
-    char col[10][400];
-    int i=0;
-    if(fgets(line,300,fp)==NULL){printf("Error at loading logfiles\n");exit(0);}
-    p = (char* )strtok(line,"\t");
-    strcpy(col[i],p);
-    i++;
-    while((p = (char* )strtok(NULL, "\t"))!=NULL){
-      strcpy(col[i],p);
-      i++;
-    }
-    //--- for debug ---
-    //    for(i=0;i<7;i++) printf("[%s]",col[i]);
-    //    printf("\n");
+void pgr_reset(int devid);
+int  pgr_get_writecomb_err(int devid);
 
-    posi[idx][0]=atof(col[0]);
-    posi[idx][1]=atof(col[1]);
-  }
-  fclose(fp);
-}
+void pgr_setjpset(int devid, unsigned int jdata[][JDIM], int nj);
+void pgr_setjpset_one(int devid, int j, unsigned int jdata[JDIM]);
+
+void pgr_setipset(int devid, unsigned int *idata, int num);
+void pgr_setipset_ichip(int devid, unsigned int ichip, unsigned int *idata, int number_of_pipelines);
+void pgr_setipset_one(int devid, unsigned int ichip, int ipipe, unsigned int *idata, int idim);
+
+void pgr_start_calc(int devid, unsigned int n);
+void pgr_calc_start(int devid, unsigned int n);
+void pgr_calc_finish(int devid);
+
+void pgr_getfoset(int devid, unsigned long long int fodata[][FDIM]);
+
+void pgr_set_npipe_per_chip(int devid, int n);
+void pgr_set_jwidth(int devid, int n);
+void pgr_set_nchip(int nchip);

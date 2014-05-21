@@ -1,51 +1,91 @@
-Mon Mar 31 19:31:07 JST 2014
+Wed May 21 19:27:17 JST 2014
 -- Copyright 2004 Tsuyoshi Hamada
 --
 --
 --clk         __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __
---[dma_we]    _______/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
---state_dmaw          0  >< 1 >< 2                                    >< 3 >< 0 
+--[ENABLE]    _______/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
+--[ DBUS ]          >< n ><d0 ><d1 ><d2 ><d3 ><d4 ><d5 ><d6 ><d7 >
 
--- 0->1 : if((state==0)&&(dma_we==1))
--- 1->2 : if (state==1)
--- 2->3 : if((state==2) &&(dma_we==0))
--- 3->0 : if (state==3)
+--  ena0      _______/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
+--  ena1           _______/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
+--[ DBUS ]          >< n ><d0 ><d1 ><d2 ><d3 ><d4 ><d5 ><d6 ><d7 >
+-- acnt                0 >< n ><n+1><n+2><n+3><n+4><n+5><n+6><n+7>< 0
+--MEM_ADR                   0 >< n ><n+1><n+2><n+3><n+4><n+5><n+6><n+7>< 0
+--MEM_DATA                     <d0 ><d1 ><d2 ><d3 ><d4 ><d5 ><d6 ><d7 >
+--MEM_WE                   ____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
-entity dmaw_state is
+entity dmaw is
   port (
-    RST      : in std_logic;
-    CLK      : in std_logic;
-    ENABLE   : in std_logic;
-    STATE    : out std_logic_vector(1 downto 0) );
-end dmaw_state;
+    RST       : in std_logic;
+    CLK       : in std_logic;
+    ENABLE    : in std_logic;
+    DBUS      : in std_logic_vector(63 downto 0);
+    MEM_WE    : out std_logic;
+    MEM_ADR   : out std_logic_vector(18 downto 0);
+    MEM_DATA  : out std_logic_vector(63 downto 0)   );
+end dmaw;
 
-architecture rtl of dmaw_state is
+architecture rtl of dmaw is
 
-signal state_ff : std_logic_vector(1 downto 0);
+signal ena0,ena1,ena2,ena3,ena4 : std_logic :='0';
+signal acnt,acntr : std_logic_vector(18 downto 0) :=(others=>'0');
+signal we : std_logic :='0';
+
 begin
 
-  STATE <= state_ff;
+  -- MEM_DATA --
+  process (CLK) begin
+    if(CLK'event and CLK = '1') then
+      MEM_DATA <= DBUS;
+    end if;
+  end process;
 
-  process (RST,CLK,ENABLE,state_ff) begin
-    if(RST='1') then
-      state_ff <= (others=>'0');
+  -- MEM_WE --
+  process (CLK) begin
+    if(CLK'event and CLK = '1') then
+      MEM_WE <= ena1;
+    end if;
+  end process;
+
+  -- MEM_ADR --
+  process (CLK) begin
+    if(CLK'event and CLK = '1') then
+      MEM_ADR <= acnt;
+    end if;
+  end process;
+
+  -- acnt
+  acntr <= acnt;
+  process (RST,CLK,ena0,ena1) begin
+    if(RST = '1') then
+      acnt  <= (others=>'0');
     elsif(CLK'event and CLK = '1') then
-      if((state_ff="00") AND (ENABLE='1')) then
-        state_ff <= "01";
-      elsif(state_ff = "01") then
-        state_ff <= "10";
-      elsif((state_ff = "10") AND (ENABLE='0')) then
-        state_ff <= "11";
-      elsif((state_ff = "10") AND (ENABLE='1')) then
-        state_ff <= "10";
-      else -- if(state_ff = "11") then
-        state_ff <= "00";
+      if((ena0='1') AND (ena1='0')) then
+        acnt <= DBUS(18 downto 0);
+      elsif((ena0='1') AND (ena1='1')) then
+        acnt <= acntr + "0000000000000000001";
+      else
+        acnt <= (others=>'0');
       end if;
     end if;
   end process;
+
+
+
+  -- ENABLE delays
+  ena0 <= ENABLE;
+  process (CLK) begin
+    if(CLK'event and CLK = '1') then
+      ena4 <= ena3;
+      ena3 <= ena2;
+      ena2 <= ena1;
+      ena1 <= ena0;
+    end if;
+  end process;
+
 
 end rtl;

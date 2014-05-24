@@ -1,28 +1,41 @@
-Fri May  2 19:31:12 JST 2014
-#!/usr/bin/env python3
-import numpy as np
-import cv2
-from datetime import datetime
+Sat May 24 19:49:28 JST 2014
+// Time-stamp: <2006-09-04 13:41:34 hamada>
+// by T.Hamada
+//
+// <2006-09-04 13:33:47 hamada>
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
-def put_text(image, text):
-    font_size = 1.0
-    font_type = cv2.FONT_HERSHEY_PLAIN
-    font_color = (0xff, 0xf, 0xff)
-    cv2.putText(image, text, (460, 15), font_type, font_size, font_color)
-    
+#include "pg4.h"
 
-image = cv2.imread("/tmp/tmp.jpg")
+void rst(int devid, int d, int msec)
+{
+  d = 0xff & d;
+  WriteBase0(devid, 0x4, d);
+  usleep(msec*1000);
+}
 
-tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S') # ('%Y%m%d_%H_%M_%S_%f')
-put_text(image, tnow)
-cv2.imshow('test', image)
+int main(int argc, char* argv[])
+{
+  int devid=0;
+  int i;
 
+  pg4_open(devid);
+  
+  for(i=0;i<16;i++){
+    int x;
+    x = 0xff&(1<<(i%8));
+    rst(devid, x, 100);
+    rst(devid, 0, 1);
+  }
 
-while(True):
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
+  rst(devid, 0xff, 1000);
+  rst(devid, 0x0, 0);
 
-cv2.destroyAllWindows()
+  pg4_close(devid);
 
-print("Done.")
+  return 0;
+}

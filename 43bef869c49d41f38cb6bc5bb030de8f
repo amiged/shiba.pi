@@ -1,53 +1,80 @@
-Wed Jun  4 19:39:03 JST 2014
--- 2005/06/13
-#define NPOS 32
-#define NLOG 17
-#define NMAN 8
-#define NCUT 6
-#define NFOR 57
-#define NACC 64
-#define D_FSU  1
-#define D_FTL  2
-#define D_LAD  4
-#define D_LMU  1
-#define D_LTF  2
-#define D_FAC  1
+Sun Jun 22 19:38:00 JST 2014
+-- Last Modifiled at 2004/12/27
 
-// -1 < xbox < 1.0,
-// mmin > 1.0 (1e-2 < m < 1.0 ==> underflow around large R)
-#define xsize (2.0)
-#define mmin  (1.0e-2)
-#define xscale (pow(2.0,(double)NPOS)/xsize)
-//mmin 0xdf61
-#define mscale (pow(2.0,95.38)/mmin)
-#define escale (xscale*xscale)
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.std_logic_arith.all;
+use ieee.std_logic_unsigned.all;
 
-#define NEXAD -31
-#define fshift pow(2.0,-1.0*(double)NEXAD)
-#define fscale (-xscale*xscale*fshift/mscale)
+entity adr_dec is
+  port (
+    clk        : in std_logic;
+    adr        : in std_logic_vector(18 downto 0);
+    is_jpw     : out std_logic;
+    is_ipw     : out std_logic;
+    is_fo      : out std_logic;
+    is_setn    : out std_logic;
+    is_run     : out std_logic;
+    FPGA_NO    : in std_logic_vector(1 downto 0));
+end adr_dec;
 
-/NPIPE 5;
-/NVMP 1;
+architecture rtl of adr_dec is
+signal cmd_h : std_logic_vector(6 downto 0);
+signal cmd_l : std_logic_vector(11 downto 0);
 
-/JPSET xj[3], x[][], fix,      NPOS,xscale;
-/JPSET mj,    m[],   log,      NLOG,NMAN,mscale;
-/IPSET xi[3], x[][], fix,      NPOS,xscale;
-/IPSET ieps2, eps2,  log,      NLOG,NMAN,escale;
-/FOSET sx[3], a[][], fix,      NACC,fscale;
+begin
 
-pg_fix_addsub(SUB,xi,xj,xij,           NPOS,           D_FSU);
-pg_conv_ftol(xij,dx,                   NPOS,NLOG,NMAN, D_FTL);
-pg_log_shift(1,dx,x2,                  NLOG);
+cmd_h <= adr(18 downto 12);
+cmd_l <= adr(11 downto 0);
 
-pg_log_unsigned_add_itp(x2[0],x2[1], x2y2,   NLOG,NMAN,D_LAD,NCUT);
-pg_log_unsigned_add_itp(x2[2],ieps2, z2e2,   NLOG,NMAN,D_LAD,NCUT);
-pg_log_unsigned_add_itp(x2y2,z2e2,   r2,     NLOG,NMAN,D_LAD,NCUT);
+-- is_jpw ----------------------
+process(cmd_h,cmd_l) begin -- BroadCast Only
+--if (cmd_h(3) = '1') then -- 4096w * 512bit = 256KByte
+--if (cmd_h(4) = '1') then -- 8192w * 512bit = 512KByte
+--if (cmd_h(5) = '1') then --16384w * 512bit =   1MByte
+  if (cmd_h(6) = '1') then --32768w * 512bit =   2MByte
+     is_jpw <= '1';
+  else
+     is_jpw <= '0';
+  end if;
+end process;
 
-pg_log_shift(-1,r2,       r1,          NLOG);
-pg_log_muldiv(MUL,r2,r1,  r3,          NLOG,           D_LMU);
-pg_log_muldiv(SDIV,mj,r3,  mf,         NLOG,           D_LMU);
-pg_log_muldiv(MUL,mf,dx,  fx,          NLOG,           D_LMU);
-pg_log_expadd(fx,fxs,                  NEXAD,NLOG,NMAN, D_LMU);
+-- is_ipw ----------------------
+process(cmd_h,cmd_l) begin
+  if((cmd_h = "0000101") AND (cmd_l(11 downto 10)=FPGA_NO)) then
+     is_ipw <= '1';
+  else
+     is_ipw <= '0';
+  end if;
+end process;
 
-pg_conv_ltof(fxs,  ffx,                NLOG,NMAN,NFOR, D_LTF);
-pg_fix_accum(ffx,  sx,                 NFOR,NACC,      D_FAC);
+-- is_fo -----------------------
+process(cmd_h,cmd_l) begin
+--  if((cmd_h = "0000110") AND (cmd_l(9 downto 8) = FPGA_NO)) then
+  if((cmd_h = "0000110") AND (cmd_l(10 downto 9) = FPGA_NO)) then
+     is_fo <= '1';
+  else
+     is_fo <= '0';
+  end if;
+end process;
+
+-- is_setn ---------------------
+process(cmd_h,cmd_l) begin
+  if((cmd_h = "0111") AND (cmd_l(11 downto 0) = "000000000000")) then
+     is_setn <= '1';
+  else
+     is_setn <= '0';
+  end if;
+end process;
+
+-- is_run ----------------------
+process(cmd_h,cmd_l) begin
+  if((cmd_h = "0000111") AND (cmd_l(11 downto 0) = "000000000011")) then
+     is_run <= '1';
+  else
+     is_run <= '0';
+  end if;
+end process;
+
+
+end rtl;

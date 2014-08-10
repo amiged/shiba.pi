@@ -1,47 +1,50 @@
-Sun Jun 22 19:29:14 JST 2014
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+Sun Aug 10 19:42:19 JST 2014
+#!/usr/bin/env python3
+import numpy as np
+import cv2
+from datetime import datetime
+import mkdir
+import sys
 
-void b3_init(int devid);
-void b3_init_config(int devid, char* fpga_conf_file);
-
-
-
-void b3_set_idata(unsigned int devid,      // device id
-		  unsigned int chip_sel,   // chip select
-                  unsigned int npipe,      // pipeline number
-                  unsigned int ireg_index, // iregister index
-                  unsigned int data);      // data
-
-void b3_reset_jmem_adr();
-void b3_reset_jmem_adr_n(int nchip);
-
-void b3_set_jdata(unsigned int devid,      // device id
-                  unsigned int nword,      // number of jdata
-                  unsigned int jdata[] );  // 
-
-void b3_set_jdata_n_chip(unsigned int devid,    // device id
-			 unsigned int nchip,    // 0, 1, 2, 3
-			 unsigned int nword,    // number of jdata
-			 unsigned int jdata[]);
+def put_text(image, text):
+    font_size = 1.0
+    font_type = cv2.FONT_HERSHEY_PLAIN
+    font_color = (0xf, 0xf, 0xff)
+    cv2.putText(image, text, (460, 15), font_type, font_size, font_color)
+    
 
 
-void b3_get_jdata(unsigned int devid,      // device id
-                  unsigned int chip_sel,   // chip_sel
-		  unsigned int jmem_adr,   // mem adr
-                  unsigned int* data );    // data 
+if (__name__ == '__main__'):
+    argv = sys.argv
+    devid = int(argv[1])
+    log_base = '../log/'
+    cap = cv2.VideoCapture(devid)
 
-void b3_start_calc(unsigned int n,
-		   unsigned int chip_sel);
+    cap_width  = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+    cap_height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+    cap_fps    = cap.get(cv2.CAP_PROP_FPS)
 
-void b3_start_calc_sepa4jM(unsigned int nrun[]);
+    print(cap_width, "x", cap_height, ":", cap_fps)
 
-unsigned int b3_get_calcsts(unsigned int chip_sel);
+    tnow0 = datetime.now().strftime('%Y%m%d_%H_%M_%S') # ('%Y%m%d_%H_%M_%S_%f')
 
+    while(cap.isOpened()):
+        ret, frame = cap.read()
+        cv2.imshow('frame', frame)
 
-void b3_get_fodata(unsigned int devid,     // device id
-		  unsigned int chip_sel,   // chip select
-                  unsigned int npipe,      // pipeline number
-                  unsigned int fo_index,   // iregister index
-                  unsigned int* data);     // data
+        tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S')
+        if(tnow != tnow0):
+            put_text(frame, tnow)
+            ofname = mkdir.get_filename_frame('../log/', tnow)
+#            cv2.imwrite(ofname, frame)
+            print(ofname, ": TEST on devid=%d"%devid)
+            tnow0 = tnow
+ 
+
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    cap.release()
+    cv2.destroyAllWindows()
+
+    print("Done.")

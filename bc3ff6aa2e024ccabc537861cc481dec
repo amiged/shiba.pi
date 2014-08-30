@@ -1,16 +1,5 @@
-Tue Aug 12 19:49:16 JST 2014
-/** 
-# xを1ステップ進める
-# x(k+1) = x(k) + v(k+1/2)*dt
-*/
-
-#include <stdio.h>
-#include "nbodysim.h"
-
-void leapflog(double dt,double x[][DIM],double v[][DIM],int n)
-{
-    int i,d;
-    for(i=0;i<n;i++)
-        for(d=0;d<3;d++)
-            x[i][d] = x[i][d]+v[i][d]*dt;
-}
+Sat Aug 30 19:38:54 JST 2014
+-- ProjNav VHDL simulation template: sim_local_write.udo
+-- You may edit this file after the line that starts with
+-- '-- START' to customize your simulation
+-- START user-defined simulation commands

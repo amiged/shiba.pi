@@ -1,26 +1,23 @@
-Sun Jun 29 19:28:07 JST 2014
--- Copyright 2004 Tsuyoshi Hamada
---
---
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
+Mon Sep  8 19:27:18 JST 2014
+#include <stdio.h>
+#include "nbodysim.h"
 
-entity dmar_start_adr is
-  port (
-    CLK       : in std_logic;
-    DBUS      : in std_logic_vector(63 downto 0);
-    STATE     : in std_logic_vector(1 downto 0);
-    START_ADR : out std_logic_vector(18 downto 0) );
-end dmar_start_adr;
+void debug_func_force(double x[][DIM],double m[], double eps2,double a[][DIM],int n)
+{
+    int i,j;
 
-architecture rtl of dmar_start_adr is
-component dmaw_start_adr
-  port (
-    CLK       : in std_logic;
-    DBUS      : in std_logic_vector(63 downto 0);
-    STATE     : in std_logic_vector(1 downto 0);
-    START_ADR : out std_logic_vector(18 downto 0) );
-end component;
-begin
-  u0 : dmaw_start_adr port map(CLK=>CLK, DBUS=>DBUS, STATE=>STATE, START_ADR=>START_ADR);
-end rtl;
+    printf("-------------------------------\n");
+    printf("The debuging routine is called.\n");
+    printf("-------------------------------\n");
+    printf("n = %d\n",n);
+    printf("eps2 = %e\n",eps2);
+
+    for(i=0;i<n;i++){
+        printf("---\n");
+        printf("particle %d\n",i);
+        printf("m[%d] = %e\n",i,m[i]);
+        for(j=0;j<3;j++) printf("x[%d][%d] = %e\n",i,j,x[i][j]);
+        for(j=0;j<3;j++) printf("a[%d][%d] = %e\n",i,j,a[i][j]);
+    }
+}
+

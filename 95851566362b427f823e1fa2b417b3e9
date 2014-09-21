@@ -1,91 +1,233 @@
-Sun Aug 24 19:44:14 JST 2014
--- Copyright 2004 Tsuyoshi Hamada
---
---
---clk         __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __
---[ENABLE]    _______/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
---DBUS               X   >< n ><HHH>----------<d0 ><d1 ><d2 ><d3 ><d4 ><d5 ><d6 ><d7 >
---DBUS_Port                              <d0 ><d1 ><d2 ><d3 ><d4 ><d5 ><d6 ><d7 >
---DBUS_HiZ           ~~~~~~~~~~~~~~~\_________________________________________________/~~~~
---MEM_RE                        ____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______
---MEM_ADR                        0 >< n ><n+1><n+2><n+3><n+4><n+5><n+6><n+7>< 0
---MEM_DATA                               <d0 ><d1 ><d2 ><d3 ><d4 ><d5 ><d6 ><d7 >
+Sun Sep 21 19:34:43 JST 2014
+/*
+ * pfpga_conf_a.c
+ *
+ * Copyright (C) 2006-2007 Tsuyoshi Hamada
+ *                                All rights reserved.
+ * 
+ * No warranty is attached; 
+ * I cannot take responsibility for errors or fitness for use.
+ *
+ */
 
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL;
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <unistd.h>     // usleep
+#include "pg4.h"
 
-entity dmar is
-  port (
-    RST       : in std_logic;
-    CLK       : in std_logic;
-    ENABLE    : in std_logic;
-    DBUS      : in std_logic_vector(63 downto 0);
-    DBUS_Port : out std_logic_vector(63 downto 0);
-    DBUS_HiZ  : out std_logic;
-    MEM_RE    : out std_logic;
-    MEM_ADR   : out std_logic_vector(18 downto 0);
-    MEM_DATA  : in std_logic_vector(63 downto 0)  ); 
-end dmar;
+static char pfpga_info[256];
+#define CNF_CMD_ADR 0x80
+#define CNF_DAT_ADR 0x84
 
-architecture rtl of dmar is
+static unsigned int *data;
 
-component dmar_dbus_hiz
-  port (
-    RST       : in std_logic;
-    CLK       : in std_logic;
-    ENABLE    : in std_logic;
-    DBUS_HiZ  : out std_logic);
-end component;
+void get_header(char* bitfile, char* header)
+{
+  int index=0, x;
+  char buf[128];
+  
+  index += 2 + (((0xff&bitfile[index])<<8) | (0xff&bitfile[index+1]));
+  index += 2 + (((0xff&bitfile[index])<<8)|(0xff&bitfile[index+1]));
 
-component dmar_state
-  port (
-    RST      : in std_logic;
-    CLK      : in std_logic;
-    ENABLE   : in std_logic;
-    STATE    : out std_logic_vector(1 downto 0) );
-end component;
+  // --- NCD file name ---
+  x = ((0xff&bitfile[index])<<8)|(0xff&bitfile[index+1]);
+  //  memcpy(buf, &bitfile[index+2], x);
+  //  sprintf(header, "%s, %s", header, buf);
 
-component dmar_start_adr
-  port (
-    CLK       : in std_logic;
-    DBUS      : in std_logic_vector(63 downto 0);
-    STATE     : in std_logic_vector(1 downto 0);
-    START_ADR : out std_logic_vector(18 downto 0) );
-end component;
+  // --- device ---
+  index += (x+3);
+  x = ((0xff&bitfile[index])<<8)|(0xff&bitfile[index+1]);
+  memcpy(buf, &bitfile[index+2], x);
+  sprintf(header, "%s, %s", header, buf);
 
-component dmar_mem_adr
-  port (
-    CLK       : in  std_logic;
-    STATE     : in std_logic_vector(1 downto 0);  -- STATE of DMAW
-    START_ADR : in std_logic_vector(18 downto 0);
-    MEM_ADR   : out  std_logic_vector(18 downto 0)
-    );
-end component;
+  // --- data ---
+  index += (x+3);
+  x = ((0xff&bitfile[index])<<8)|(0xff&bitfile[index+1]);
+  memcpy(buf, &bitfile[index+2], x);
+  sprintf(header, "%s, %s", header, buf);
+
+  // --- time ---
+  index += (x+3);
+  x = ((0xff&bitfile[index])<<8)|(0xff&bitfile[index+1]);
+  memcpy(buf, &bitfile[index+2], x);
+  sprintf(header, "%s, %s", header, buf);
+
+  // --- key ---
+  index += (x+3);
+  x = ((0xff&bitfile[index])<<8)|(0xff&bitfile[index+1]);
+  //  memcpy(buf, &bitfile[index+2], x);
+  //  sprintf(header, "%s, %s", header, buf);
 
 
-component dmar_mem_re
-  port (
-    CLK       : in std_logic;
-    STATE     : in std_logic_vector(1 downto 0);
-    MEM_RE    : out std_logic );
-end component;
-
-signal state : std_logic_vector(1 downto 0);
-signal start_adr : std_logic_vector(18 downto 0);
-
-begin
-
--- DBUSのトライステート処理は上位で行う
--- DBUS <= (others=>'Z') when DBUS_HiZ = '1' else DBUS_Port;
-
- u0 : dmar_state     port map(RST=>RST, CLK=>CLK,     ENABLE=>ENABLE,       STATE=>state);
- u1 : dmar_start_adr port map(CLK=>CLK, STATE=>state, DBUS=>DBUS,           START_ADR=>start_adr);
- u2 : dmar_mem_adr   port map(CLK=>CLK, STATE=>state, START_ADR=>start_adr, MEM_ADR  => MEM_ADR);
- u3 : dmar_mem_re    port map(CLK=>CLK, STATE=>state,                       MEM_RE   => MEM_RE);
-
- u4 : dmar_dbus_hiz  port map(RST=>RST, CLK=>CLK,     ENABLE=>ENABLE,       DBUS_HiZ=>DBUS_HiZ);
- DBUS_Port <= MEM_DATA;
+}
 
 
-end rtl;
+
+int fread_config_data(char* fname, unsigned int *size)
+{
+  // -- Read Config File to 'config_bit_data'---
+  FILE* fin;
+  int ndata;
+  int i;
+
+  struct stat buf;
+  int fsize;
+
+  // read file status
+  if (stat(fname, &buf) == -1) {
+    fprintf(stderr, "fread_config_data: can't open bit file!!! %s\n", fname);
+    exit(-1);
+  }
+
+  fsize = buf.st_size;
+  if (data != NULL) {
+    free(data);
+  }
+  data = (unsigned int*)malloc(fsize);
+  if (data == NULL) {
+    fprintf(stderr, "fread_config_data: memory allocation error!\n");
+    exit(-1);
+  }
+  
+  fin = fopen(fname, "r");
+  if (fin == NULL) {
+    fprintf(stderr, "fread_config_data: cannot open %s!\n", fname);
+    exit(-1);
+  }
+  fread(data,fsize,1,fin);
+  fclose(fin);
+  fprintf(stderr, "fread_config_data: read %i bytes.\n", fsize);
+
+  get_header((char*)data, pfpga_info);
+
+  
+  ndata = fsize/sizeof(unsigned int);
+
+  // CHANGE ENDIAN (LittleEndian -> BigEndian)
+  for(i = 0;i < ndata; i++){
+    unsigned int byte[8];
+    byte[0] = 0xFF&(data[i]>>24);
+    byte[1] = 0xFF&(data[i]>>16);
+    byte[2] = 0xFF&(data[i]>>8);
+    byte[3] = 0xFF&(data[i]);
+    data[i]=0x0;
+    data[i]= (byte[3]<<24)|(byte[2]<<16)|(byte[1]<<8)|byte[0];
+  }
+
+  *size = (unsigned int)ndata;
+
+  return fsize;
+}
+
+void config_onechip(int devid, unsigned int nfp, unsigned int ncfgdata)
+{
+  unsigned int i, d;
+  unsigned int *p;
+
+  if (data == NULL) return;
+  if (nfp > 0x8) {
+    fprintf(stderr, "nfp err\n");
+    exit(-1);
+  } 
+
+  // ---------------------------------------- SETUP CONFIGURATION
+  d = (unsigned int)(0xf0|nfp);
+  WriteBase0(devid, CNF_CMD_ADR, d);
+  d = (unsigned int)(  ((0xF^nfp)<<4)   |nfp);
+  WriteBase0(devid, CNF_CMD_ADR, d);
+  d = (unsigned int)(0xf0|nfp);
+  WriteBase0(devid, CNF_CMD_ADR, d);
+  usleep(15000);
+
+  // ---------------------------------------- SEND CONFIGURATION DATA
+  p = data;
+  for(i = 0; i < ncfgdata; i++){
+    WriteBase0(devid, CNF_DAT_ADR, *(p++));
+    d = (unsigned int)(0x1f0|nfp);
+    WriteBase0(devid, CNF_CMD_ADR,      d);
+    WriteBase0(devid, CNF_CMD_ADR, 0xff&d);
+  }
+
+  // ---------------------------------------- STOP CFG_CCLK
+  d = (unsigned int)(0xf0);
+  WriteBase0(devid, CNF_CMD_ADR,d);
+}
+
+void config_pfpga_a(int devid, char* fname, int chipid)
+{
+  unsigned int i, nfp, ncfgdata;
+
+  data = NULL;
+  fread_config_data(fname, &ncfgdata);
+
+  {
+    i = chipid;
+    nfp = 0xf&(0x1<<i);
+    fprintf(stderr, "configuring chip%i ...\n", i);
+    config_onechip(devid, nfp, ncfgdata);
+  }
+
+  free(data);
+}
+
+int main(int argc, char* argv[])
+{
+  int devid, chipid;
+
+  if (argc < 2) {
+    fprintf(stderr, "%s <bitfile> <chipid> <devid>\n", argv[0]);
+    exit(-1);
+  }
+
+  if (argv[2] == NULL) {
+    chipid = 0;
+  } else {
+    chipid = atoi(argv[2]);
+    if (chipid > 3) {
+      fprintf(stderr, "%s : invalid argument <chipid> %s:%d\n", argv[0], __FILE__, __LINE__);
+      exit(-1);
+    }
+  }
+
+  if (argv[3] == NULL) {
+    devid = 0;
+  } else {
+    devid = atoi(argv[3]);
+    if (devid > 3) {
+      fprintf(stderr, "%s : invalid argument <devid>%s:%d\n", argv[0], __FILE__, __LINE__);
+      exit(-1);
+    }
+  }
+
+  fprintf(stderr, "%s configures a PFPGA%i on progrape%i ...\n", argv[0], chipid, devid);
+
+  pg4_open(devid);
+
+  {
+    pg4_get_pfpga_info(devid, pfpga_info);
+    printf("----------------------\n");
+    printf("Previous config info: \n");
+    printf("%s\n",pfpga_info);
+    printf("----------------------\n");
+  }
+
+  {
+    sprintf(pfpga_info, "%s on <PFPGA%d>", argv[1], chipid);
+    config_pfpga_a(devid, argv[1], chipid);
+    pg4_set_pfpga_info(devid, pfpga_info);
+  }
+
+  {
+    pg4_get_pfpga_info(devid, pfpga_info);
+    printf("----------------------\n");
+    printf("Current config info: \n");
+    printf("%s\n",pfpga_info);
+    printf("----------------------\n");
+  }
+
+  pg4_close(devid);
+
+  return 0;
+}

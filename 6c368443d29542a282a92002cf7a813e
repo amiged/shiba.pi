@@ -1,59 +1,53 @@
-Tue Jul 29 19:27:49 JST 2014
-//-----------------------------------------------------------------------------
-// mk_eight.C:  prints initial conditions for the figure eight
-//              of the three-body problem
-//-----------------------------------------------------------------------------
-#include  <iostream>
-using namespace std;
+Tue Sep 23 19:27:06 JST 2014
+/***************************************************
+ * The lowest level library for PROGRAPE-4
+ *
+ * Copyright(c) by Tsuyoshi Hamada.
+ * All rights reserved.
+ *
+ * PLEASE DO NOT BRANCH !!
+ *
+ * 20060916.rev1 : Development start
+ *
+ ***************************************************/
 
-typedef double  real;                      // "real" as a general name for the
-                                           // standard floating-point data type
-#define  NDIM     3                        // number of spatial dimensions
+inline unsigned int    ReadBase0 (int devid, unsigned int addr);
+inline unsigned int    ReadBase1 (int devid, unsigned int addr);
+inline void            WriteBase0 (int devid, unsigned int addr, unsigned int val);
+inline void            WriteBase1 (int devid, unsigned int addr, unsigned int val);
 
-int main()
-{
-    const int n = 3;           // number of particles
-    const real t = 0;          // time
-    real r[n][NDIM];           // r[i][k] : position component k for particle i
-    real v[n][NDIM];           // v[i][k] : velocity component k for particle i
-    real m[n];                 // m[i] : mass for particle i
+void                   pg4_close (int id);
 
-    m[0] = 1;
-    m[1] = 1;
-    m[2] = 1;
+int                    pg4_DMAput (int devid, unsigned int size);
+int                    pg4_DMAget (int devid, unsigned int size);
+void                   pg4_DMAcheck (int devid);
+int                    pg4_DMAretry (int devid);
 
-    r[0][0] = 0.9700436;
-    r[0][1] = -0.24308753;
-    r[0][2] = 0;
-    v[0][0] = 0.466203685;
-    v[0][1] = 0.43236573;
-    v[0][2] = 0;
+unsigned long          pg4_getbaseaddr (int devid, int j);
+unsigned long          pg4_getbaseaddr_size (int devid, int bar);
+unsigned int*          pg4_get_bar0ptr(int devid);
+unsigned int*          pg4_get_bar1ptr(int devid);
+unsigned int*          pg4_get_dmawptr (int devid);
+unsigned int*          pg4_get_dmarptr (int devid);
+unsigned int           pg4_get_dma_size (int devid);
+void                   pg4_get_pfpga_info (int devid, char *info);
 
-    r[1][0] = -r[0][0];
-    r[1][1] = -r[0][1];
-    r[1][2] = -r[0][2];
-    v[1][0] = v[0][0];
-    v[1][1] = v[0][1];
-    v[1][2] = v[0][2];
+int                    pg4_open (int id);
 
-    r[2][0] = 0;
-    r[2][1] = 0;
-    r[2][2] = 0;
-    v[2][0] = -2 * v[0][0];
-    v[2][1] = -2 * v[0][1];
-    v[2][2] = -2 * v[0][2];
+inline unsigned int    pg4_readbase0 (int devid, unsigned int index);
+inline unsigned int    pg4_readbase1 (int devid, unsigned int index);
+unsigned long          pg4_read_pciconfig_dword (int devid, int adr);
 
-    cout.precision(16);
+void                   pg4_set_pfpga_info (int devid, char *info);
 
-    cout << n << endl;                      // first output line:  N
-    cout << t << endl;                      // second output line:  time
-    for (int i = 0; i < n; i++){
-        cout << m[i];                       // each next output line:
-        for (int k = 0; k < NDIM; k++)      //   m r_x r_y r_z v_x v_y v_z
-            cout << ' ' << r[i][k];
-        for (int k = 0; k < NDIM; k++)
-            cout << ' ' << v[i][k];
-        cout << endl;
-    }
-}
-//-----------------------------------------------------------------------------
+inline void            pg4_writebase0 (int devid, unsigned int index, unsigned int val);
+inline void            pg4_writebase1 (int devid, unsigned int index, unsigned int val);
+
+
+
+// --- following are removed. ---
+int                    pg4_DMAput_offset (int devid, unsigned int size, unsigned offset);
+int                    pg4_DMAget_offset (int devid, unsigned int size, unsigned offset);
+void                   pg4_wait (int devid, int n);
+
+

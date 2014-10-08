@@ -1,19 +1,26 @@
-Tue Aug 26 19:30:47 JST 2014
-#!Time-stamp: <2007-01-22 04:30:32 hamada>
+Wed Oct  8 19:28:45 JST 2014
+#include <stdio.h>
+#include "nbodysim.h"
 
-Linux device driver for the PROGRAPE-4 board,
+void debug(double x[][DIM],double a[][DIM], int n, int nstep)
+{
+  int i;
+  static int flag=0;
+  static FILE* fp;
 
-including runtime libraries and HDL source for interface FPGA.
+  if(flag==0){
+    fp = fopen("aaa.log","w");
+    flag = 1;
+  }else{
+    rewind(fp);
+  }
 
-- Linux kernel release 2.6.x
+  for(i=0;i<n;i++){
+    fprintf(fp,"%d\t",nstep);
+    fprintf(fp,"%1.8e\t%1.8e\t%1.8e\t",x[i][0],x[i][1],x[i][2]);
+    fprintf(fp,"%1.8e\t%1.8e\t%1.8e\n",a[i][0],a[i][1],a[i][2]);
+  }
 
-- Xilinx XC3S5000-5-FG900 FPGAs
+  fflush(fp);
+}
 
-- Xilinx ISE 8.1i
--- Release 8.1.03i xst I.27
--- Release 8.1.03i par I.27
--- Release 8.1.03i Trace I.27
--- Release 8.1.03i Bitgen I.27
-
-
-![PROGRAPE-4](http://www.ipa.go.jp/jinzai/esp/2005mito1/mdata/images/clip_image002_006.jpg)

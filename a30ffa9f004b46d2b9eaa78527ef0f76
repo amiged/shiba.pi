@@ -1,86 +1,80 @@
-Mon Oct  6 19:27:40 JST 2014
-# CUDA
-###  Modify this part as your environment   ##################
-export CUDA_INSTALL_PATH=/export/opt/cuda.2.3
-export SDK_INSTALL_PATH=/export/opt/cuda.2.3/NVIDIA_GPU_Computing_SDK/C
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CUDA_INSTALL_PATH/lib64
-export PATH=$PATH:$CUDA_INSTALL_PATH/bin
+Thu Nov 13 19:38:56 JST 2014
+-- Last Modifiled at 2004/12/27
 
-# for profiling
-export CUDA_PROFILE=0
-export CUDA_PROFILE_LOG=./cuda_profile.log
-export CUDA_PROFILE_CSV=1
-alias cudaprofon='export CUDA_PROFILE=1'
-alias cudaprofoff='export CUDA_PROFILE=0'
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.std_logic_arith.all;
+use ieee.std_logic_unsigned.all;
 
-# OpenCL
-#export PATH=$PATH:/export/opt/gcc-4.4.1/bin
-#export LD_LIBRARY_PATH=/export/opt/gcc-4.4.1/lib64:$LD_LIBRARY_PATH
-#export NV_COMPUTE_SDK_PATH=/export/opt/cuda/NVIDIA_GPU_Computing_SDK
+entity adr_dec is
+  port (
+    clk        : in std_logic;
+    adr        : in std_logic_vector(18 downto 0);
+    is_jpw     : out std_logic;
+    is_ipw     : out std_logic;
+    is_fo      : out std_logic;
+    is_setn    : out std_logic;
+    is_run     : out std_logic;
+    FPGA_NO    : in std_logic_vector(1 downto 0));
+end adr_dec;
 
-#export LD_LIBRARY_PATH=/export/opt/gcc-4.3.4/lib64:$LD_LIBRARY_PATH
-#export LD_LIBRARY_PATH=/export/opt/OpenCL/NVIDIA_GPU_Computing_SDK/OpenCL/common/lib/Linux64:$LD_LIBRARY_PATH
+architecture rtl of adr_dec is
+signal cmd_h : std_logic_vector(6 downto 0);
+signal cmd_l : std_logic_vector(11 downto 0);
+
+begin
+
+cmd_h <= adr(18 downto 12);
+cmd_l <= adr(11 downto 0);
+
+-- is_jpw ----------------------
+process(cmd_h,cmd_l) begin -- BroadCast Only
+--if (cmd_h(3) = '1') then -- 4096w * 512bit = 256KByte
+--if (cmd_h(4) = '1') then -- 8192w * 512bit = 512KByte
+--if (cmd_h(5) = '1') then --16384w * 512bit =   1MByte
+  if (cmd_h(6) = '1') then --32768w * 512bit =   2MByte
+     is_jpw <= '1';
+  else
+     is_jpw <= '0';
+  end if;
+end process;
+
+-- is_ipw ----------------------
+process(cmd_h,cmd_l) begin
+  if((cmd_h = "0000101") AND (cmd_l(11 downto 10)=FPGA_NO)) then
+     is_ipw <= '1';
+  else
+     is_ipw <= '0';
+  end if;
+end process;
+
+-- is_fo -----------------------
+process(cmd_h,cmd_l) begin
+--  if((cmd_h = "0000110") AND (cmd_l(9 downto 8) = FPGA_NO)) then
+  if((cmd_h = "0000110") AND (cmd_l(10 downto 9) = FPGA_NO)) then
+     is_fo <= '1';
+  else
+     is_fo <= '0';
+  end if;
+end process;
+
+-- is_setn ---------------------
+process(cmd_h,cmd_l) begin
+  if((cmd_h = "0111") AND (cmd_l(11 downto 0) = "000000000000")) then
+     is_setn <= '1';
+  else
+     is_setn <= '0';
+  end if;
+end process;
+
+-- is_run ----------------------
+process(cmd_h,cmd_l) begin
+  if((cmd_h = "0000111") AND (cmd_l(11 downto 0) = "000000000011")) then
+     is_run <= '1';
+  else
+     is_run <= '0';
+  end if;
+end process;
 
 
-#export NV_COMPUTE_SDK_PATH=/export/opt/cuda/NVIDIA_GPU_Computing_SDK
-export LD_LIBRARY_PATH=/export/opt/gcc-4.3.4/lib64:$LD_LIBRARY_PATH
-#export LD_LIBRARY_PATH=/export/opt/cuda/NVIDIA_GPU_Computing_SDK/OpenCL/common/lib/Linux64:$LD_LIBRARY_PATH
-
-# for MPICH
-#export PATH=/export/opt/mpi/local/bin:$PATH
-#export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/export/opt/mpi/local/lib
-
-#------------ GbEd --------------------
-#export PATH=/export/opt/openmpi-1.3.1/bin:$PATH
-#export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/export/opt/openmpi-1.3.1/lib
-
-#------------ InfiniBand (OFED 1.4) --------------------
-export PATH=/usr/mpi/gcc/openmpi-1.2.8/bin:$PATH
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/mpi/gcc/openmpi-1.2.8/lib64
-
-#------------ InfiniBand (OFED 1.5.1) --------------------
-#export PATH=/usr/mpi/gcc/openmpi-1.4.1/bin:$PATH
-#export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/mpi/gcc/openmpi-1.4.1/lib64
-
-
-export LANG=C
-export OPENCV_INSTALL_PATH=/export/opt/opencv-1.1.0
-
-# for ICC
-# source /export/opt/icc/11.0/081/bin/ifortvars.sh intel64
-
-# for Mplayer
-export PATH=/export/opt/mplayer/bin:$PATH
-
-#echo 'OMP_NUM_THREADS =' $OMP_NUM_THREADS
-
-#for Cray-XT5
-alias ssc='ssh hawk.cray.com -l p01130'
-
-#for AMD/ATI GPU
-#export CALROOT=/export/opt/amdstream/atical
-#export PATH=$CALROOT/bin/lnx64:$PATH
-#export LD_LIBRARY_PATH=/usr/lib64:/usr/lib:$LD_LIBRARY_PATH
-#export LD_LIBRARY_PATH=/export/opt/amdstream/atibrook/sdk/lib:$LD_LIBRARY_PATH
-#export PATH=/export/opt/amdstream/atibrook/sdk/bin:$PATH
-#export LD_LIBRARY_PATH=/export/opt/amdstream/acmlg1.0/gfortran64/lib:$LD_LIBRARY_PATH
-#alias aon='export DISPLAY=:0.0'
-export ATISTREAMSDKROOT=/export/opt/amdstream.opencl/ati-stream-sdk-v2.01-lnx64
-export ATISTREAMSDKSAMPLESROOT=/export/opt/amdstream.opencl/ati-stream-sdk-v2.01-lnx64
-export LD_LIBRARY_PATH=$ATISTREAMSDKROOT/lib/x86_64:$LD_LIBRARY_PATH
-#xmodmap ~/.Xmodmap 2> /dev/null
-#nodeid=`uname -n`
-#echo "node $nodeid"
-
-
-
-export OMP_NUM_THREADS=1
-#export OMP_NUM_THREADS=2
-#export OMP_NUM_THREADS=4
-#export OMP_NUM_THREADS=8
-
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/export/opt/DevIL/lib
-
-export FFTW_INSTALL_PATH=/export/opt/fftw2-mpi
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$FFTW_INSTALL_PATH/lib
-
+end rtl;

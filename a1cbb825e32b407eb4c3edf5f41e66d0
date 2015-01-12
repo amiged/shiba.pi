@@ -1,29 +1,24 @@
-Mon Jul 28 19:37:25 JST 2014
-//Time-stamp: "2006-11-21 00:17:47 hamada"
+Mon Jan 12 19:28:09 JST 2015
+// Time-stamp: "2006-12-07 19:19:22 hamada"
+// Copyright (c) 2006 by Tsuyoshi Hamada, All rights reserved.
 
-#define FDIM 8       // depend on NBIT_L_UADR     (@ ifpga.vhd)
-#define JDIM 4       // depend on dpram adr width (@ pgpg_mem.vhd)
-#define XI_AWIDTH 4  // depend on l_adri width    (@ pgpg_mem.vhd)
+#include <stdio.h>
+#include <stdlib.h>
+#include "pg4.h"
 
-int pgr_open(int);
-void pgr_close(int);
+unsigned int* ptr;
+unsigned int* bar1;
 
-void pgr_reset(int devid);
-int  pgr_get_writecomb_err(int devid);
+int main(int argc,char *argv[])
+{
+  int devid = 0;
 
-void pgr_setjpset(int devid, unsigned int jdata[][JDIM], int nj);
-void pgr_setjpset_one(int devid, int j, unsigned int jdata[JDIM]);
+  pg4_open(devid);
+  bar1 = pg4_get_bar1ptr(devid);
+  printf("BAR0: %lx\n",pg4_getbaseaddr(devid,0));
+  printf("BAR1: %lx\n",pg4_getbaseaddr(devid,1));
 
-void pgr_setipset(int devid, unsigned int *idata, int num);
-void pgr_setipset_ichip(int devid, unsigned int ichip, unsigned int *idata, int number_of_pipelines);
-void pgr_setipset_one(int devid, unsigned int ichip, int ipipe, unsigned int *idata, int idim);
+  pg4_DMAcheck(devid);
 
-void pgr_start_calc(int devid, unsigned int n);
-void pgr_calc_start(int devid, unsigned int n);
-void pgr_calc_finish(int devid);
-
-void pgr_getfoset(int devid, unsigned long long int fodata[][FDIM]);
-
-void pgr_set_npipe_per_chip(int devid, int n);
-void pgr_set_jwidth(int devid, int n);
-void pgr_set_nchip(int nchip);
+  return 0;
+}

@@ -1,9 +1,24 @@
-Sun Dec 14 19:31:12 JST 2014
-V1 3
-FL c:/cygwin/home/administrator/fkit/pci64/tmp2/pfpga_config.vhd 2004/11/10.11:36:20
-EN work/PFPGA_CONFIG \
-      FL c:/cygwin/home/administrator/fkit/pci64/tmp2/pfpga_config.vhd \
-      PB ieee/STD_LOGIC_1164 PB ieee/STD_LOGIC_ARITH PB ieee/STD_LOGIC_UNSIGNED
-AR work/PFPGA_CONFIG/RTL \
-      FL c:/cygwin/home/administrator/fkit/pci64/tmp2/pfpga_config.vhd \
-      EN work/PFPGA_CONFIG
+Wed Jan 21 19:29:45 JST 2015
+// Time-stamp: "2006-12-07 19:19:22 hamada"
+// Copyright (c) 2006 by Tsuyoshi Hamada, All rights reserved.
+
+#include <stdio.h>
+#include <stdlib.h>
+#include "pg4.h"
+
+unsigned int* ptr;
+unsigned int* bar1;
+
+int main(int argc,char *argv[])
+{
+  int devid = 0;
+
+  pg4_open(devid);
+  bar1 = pg4_get_bar1ptr(devid);
+  printf("BAR0: %lx\n",pg4_getbaseaddr(devid,0));
+  printf("BAR1: %lx\n",pg4_getbaseaddr(devid,1));
+
+  pg4_DMAcheck(devid);
+
+  return 0;
+}

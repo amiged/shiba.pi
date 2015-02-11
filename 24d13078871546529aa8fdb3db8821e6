@@ -1,12 +1,32 @@
-Thu Jan 22 19:40:03 JST 2015
-10
-2.253285e-01	9.191831e-01
-2.068413e-01	7.247797e-01
-7.321991e-01	9.064824e-01
-3.479571e-01	8.578809e-01
-4.151849e-01	1.941677e-01
-6.856104e-01	5.243755e-01
-1.596357e-01	9.547575e-01
-1.269843e-01	4.339532e-03
-3.826915e-01	2.507929e-01
-6.552879e-01	5.344908e-01
+Wed Feb 11 19:28:22 JST 2015
+/*
+ * pfpga_info.c
+ *
+ * Copyright (C) 2006-2007 Tsuyoshi Hamada
+ *                                All rights reserved.
+ * 
+ * No warranty is attached; 
+ * I cannot take responsibility for errors or fitness for use.
+ *
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAXBD 8
+#include "pg4.h"
+
+int main(int argc, char* argv[])
+{
+  int devid=0;
+  char info[1024];
+
+  pg4_open(devid);
+  pg4_get_pfpga_info(devid, info);
+  pg4_close(devid);
+
+  printf("%s\n", info);
+
+  return 1;
+}

@@ -1,74 +1,48 @@
-Wed Jan  7 19:30:13 JST 2015
---------------------------------------------------------------------------------
-Release 6.2.03i Trace G.28
-Copyright (c) 1995-2004 Xilinx, Inc.  All rights reserved.
+Tue Feb 24 19:45:11 JST 2015
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+import numpy as np
+import cv2
 
-trce -intstyle ise -e 3 -l 3 -xml top top.ncd -o top.twr top.pcf
+drawing = False
+mode = True
+ix,iy = -1,-1
 
+def draw_circle(event,x,y,flags,param):
+    global ix,iy,drawing,mode
+    if event == cv2.EVENT_LBUTTONDOWN:
+        print ('Push')
+        drawing = True
+        ix,iy = x,y
 
-Design file:              top.ncd
-Physical constraint file: top.pcf
-Device,speed:             xc2vp70,-5 (PRODUCTION 1.86 2004-05-01)
-Report level:             error report
+    elif event == cv2.EVENT_MOUSEMOVE:
+        if drawing == True:
+            print ('Drawing...')
+            if mode == True:
+                pass
+            else:
+                cv2.circle(img,(x,y),5,(0,0,255),-1)
+        else:
+            pass
+    elif event == cv2.EVENT_LBUTTONUP:
+        print ('Up')
+        drawing = False
+        if mode == True:
+            cv2.rectangle(img,(ix,iy),(x,y),(0,255,0),2)
+        else:
+            cv2.circle(img,(x,y),5,(0,0,255),-1)
 
-Environment Variable      Effect 
---------------------      ------ 
-NONE                      No environment variables were set
---------------------------------------------------------------------------------
+if '__main__' == __name__ :
+    img = np.zeros((512,512,3), np.uint8)
+    cv2.namedWindow('image')
+    cv2.setMouseCallback('image',draw_circle)
+    
+    while(1):
+        cv2.imshow('image',img)
+        k = cv2.waitKey(1) & 0xFF
+        if k == ord('m'):
+            mode = not mode
+        elif k == 27:
+            break
 
-INFO:Timing:2752 - To get complete path coverage, use the unconstrained paths
-   option. All paths that are not constrained will be reported in the
-   unconstrained paths section(s) of the report.
-
-================================================================================
-Timing constraint: TS_CK66 = PERIOD TIMEGRP "CK66"  20 nS   HIGH 50.000000 % ;
-
- 0 items analyzed, 0 timing errors detected.
---------------------------------------------------------------------------------
-
-================================================================================
-Timing constraint: TS_dcm0_dcm_out = PERIOD TIMEGRP "dcm0_dcm_out" TS_CK66 * 1.000000  HIGH 50.000 % ;
-
- 43997 items analyzed, 0 timing errors detected. (0 setup errors, 0 hold errors)
- Minimum period is  19.569ns.
---------------------------------------------------------------------------------
-
-================================================================================
-Timing constraint: TS_dcm0_dcm_fx = PERIOD TIMEGRP "dcm0_dcm_fx" TS_CK66 * 1.000000  HIGH 50.000 % ;
-
- 1665654 items analyzed, 0 timing errors detected. (0 setup errors, 0 hold errors)
- Minimum period is  14.739ns.
---------------------------------------------------------------------------------
-
-
-All constraints were met.
-
-
-Data Sheet report:
------------------
-All values displayed in nanoseconds (ns)
-
-Clock to Setup on destination clock CK66
----------------+---------+---------+---------+---------+
-               | Src:Rise| Src:Fall| Src:Rise| Src:Fall|
-Source Clock   |Dest:Rise|Dest:Rise|Dest:Fall|Dest:Fall|
----------------+---------+---------+---------+---------+
-CK66           |   19.959|         |         |         |
----------------+---------+---------+---------+---------+
-
-
-Timing summary:
----------------
-
-Timing errors: 0  Score: 0
-
-Constraints cover 1709651 paths, 0 nets, and 63904 connections
-
-Design statistics:
-   Minimum period:  19.569ns (Maximum frequency:  51.101MHz)
-
-
-Analysis completed Mon Jun 13 23:42:18 2005
---------------------------------------------------------------------------------
-
-Peak Memory Usage: 279 MB
+    cv2.destroyAllWindows()

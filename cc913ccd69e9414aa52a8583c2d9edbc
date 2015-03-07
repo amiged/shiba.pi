@@ -1,150 +1,189 @@
-Mon Feb 23 19:41:24 JST 2015
---###############################
---# by T.Hamada for B3 Board    #
---###############################
+Sat Mar  7 19:28:21 JST 2015
+-- C:\CYGWIN\HOME\ADMINISTRATOR\FKIT\PCI64\PROJ
+-- VHDL Test Bench created by
+-- HDL Bencher 6.1i
+-- Wed Dec 29 19:47:04 2004
+-- 
+-- Notes:
+-- 1) This testbench has been automatically generated from
+--   your Test Bench Waveform
+-- 2) To use this as a user modifiable testbench do the following:
+--   - Save it as a file with a .vhd extension (i.e. File->Save As...)
+--   - Add it to your project as a testbench source (i.e. Project->Add Source...)
+-- 
 
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
+LIBRARY IEEE;
+USE IEEE.STD_LOGIC_1164.ALL;
+USE IEEE.STD_LOGIC_UNSIGNED.ALL;
+USE IEEE.STD_LOGIC_ARITH.ALL;
+USE IEEE.STD_LOGIC_TEXTIO.ALL;
+USE STD.TEXTIO.ALL;
 
-entity DPRAM is
-  port (
-    RST         : in  std_logic;                        -- PCI Bus Reset
-    CLK         : in  std_logic;                        -- PCI bus Clock
-    CLKB        : in   std_logic;                       -- Port B Clock
-    -- PCI R/W ports
-    MEM_ADA     : in  std_logic_vector(13 downto 0);    -- DPRAM Port A R/W Address
-    MEM_WEHA    : in  std_logic;                        -- DPRAM Port A Write Enable (High Word)
-    MEM_WELA    : in  std_logic;                        -- DPRAM Port A Write Enable (Low  Word)
-    MEM_REA     : in  std_logic;                        -- DPRAM Port A Read Enable
-    MEM_DTIA    : in  std_logic_vector(63 downto 0);    -- DPRAM Port A Write Data
-    MEM_DTOA    : out std_logic_vector(63 downto 0);    -- DPRAM Port A Read Data
-    MEM_DTOEN   : out std_logic;                        -- DPRAM Port A Read Data Enable
-    -- USER Application R/W ports
-    MEM_ADB     : in  std_logic_vector(12 downto 0);    -- DPRAM Port B R/W Address
-    MEM_WEHB    : in  std_logic;                        -- DPRAM Port B Write Enable (High Word)
-    MEM_WELB    : in  std_logic;                        -- DPRAM Port B Write Enable (Low  Word)
-    MEM_DTIB    : in  std_logic_vector(63 downto 0);    -- DPRAM Port B Write Data
-    MEM_DTOB    : out  std_logic_vector(63 downto 0)    -- DPRAM Port B Read Data
-    );
-end DPRAM;
+ENTITY sim_writecomb_check IS
+END sim_writecomb_check;
 
+ARCHITECTURE testbench_arch OF sim_writecomb_check IS
+-- If you get a compiler error on the following line,
+-- from the menu do Options->Configuration select VHDL 87
+FILE RESULTS: TEXT OPEN WRITE_MODE IS "results.txt";
+	COMPONENT writecomb_check
+		PORT (
+			MEM_WEHA : In  std_logic;
+			MEM_WELA : In  std_logic;
+			IS_ERR : Out  std_logic_vector (1 DOWNTO 0);
+			RST : In  std_logic;
+			CLK : In  std_logic
+		);
+	END COMPONENT;
 
-architecture DPRAM_rtl of DPRAM is
+	SIGNAL MEM_WEHA : std_logic;
+	SIGNAL MEM_WELA : std_logic;
+	SIGNAL IS_ERR : std_logic_vector (1 DOWNTO 0);
+	SIGNAL RST : std_logic;
+	SIGNAL CLK : std_logic;
 
---------------------------------------------------
--- Components
---------------------------------------------------
---component dp32b512w
---  port (
---    addra      : in  std_logic_vector( 8 downto 0);    -- Port A Address
---    addrb      : in  std_logic_vector( 8 downto 0);    -- Port B Address
---    clka       : in  std_logic;                        -- Port A Clock
---    clkb       : in  std_logic;                        -- Port A Clock
---    dina       : in  std_logic_vector(31 downto 0);    -- Port A Write Data
---    dinb       : in  std_logic_vector(31 downto 0);    -- Port B Write Data
---    douta      : out  std_logic_vector(31 downto 0);   -- Port A Read Data
---    doutb      : out  std_logic_vector(31 downto 0);   -- Port B Read  Data
---    wea        : in  std_logic;                        -- Port A Write Enable
---    web        : in  std_logic                         -- Port A Write Enable
---    );
---end component;
+BEGIN
+	UUT : writecomb_check
+	PORT MAP (
+		MEM_WEHA => MEM_WEHA,
+		MEM_WELA => MEM_WELA,
+		IS_ERR => IS_ERR,
+		RST => RST,
+		CLK => CLK
+	);
 
-component dp32b8192w
-  port (
-    clka  : in std_logic;
-    wea   : in std_logic;
-    addra : in std_logic_vector(12 downto 0);
-    dina  : in std_logic_vector(31 downto 0);
-    douta : out std_logic_vector(31 downto 0);
+	PROCESS -- clock process for CLK,
+	BEGIN
+		CLOCK_LOOP : LOOP
+		CLK <= transport '0';
+		WAIT FOR 5 ns;
+		CLK <= transport '1';
+		WAIT FOR 50 ns;
+		CLK <= transport '0';
+		WAIT FOR 35 ns;
+		WAIT FOR 10 ns;
+		END LOOP CLOCK_LOOP;
+	END PROCESS;
 
-    clkb  : in std_logic;
-    web   : in std_logic;
-    addrb : in std_logic_vector(12 downto 0);
-    dinb  : in std_logic_vector(31 downto 0);
-    doutb : out std_logic_vector(31 downto 0)
-  );
-end component;
+	PROCESS   -- Process for CLK
+		VARIABLE TX_OUT : LINE;
+		VARIABLE TX_ERROR : INTEGER := 0;
 
-  signal MEM_RDTFLG  : std_logic;                       -- Port A Read Data Select Flag
-  signal MEM_RDDT    : std_logic_vector( 63 downto 0);  -- Port A Memory Read Data
-begin
+		PROCEDURE CHECK_IS_ERR(
+			next_IS_ERR : std_logic_vector (1 DOWNTO 0);
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			-- If compiler error ("/=" is ambiguous) occurs in the next line of code
+			-- change compiler settings to use explicit declarations only
+			IF (IS_ERR /= next_IS_ERR) THEN 
+				STD.TEXTIO.write(TX_LOC,string'("Error at time="));
+				STD.TEXTIO.write(TX_LOC, TX_TIME);
+				STD.TEXTIO.write(TX_LOC,string'("ns IS_ERR="));
+				IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, IS_ERR);
+				STD.TEXTIO.write(TX_LOC, string'(", Expected = "));
+				IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, next_IS_ERR);
+				STD.TEXTIO.write(TX_LOC, string'(" "));
+				TX_STR(TX_LOC.all'range) := TX_LOC.all;
+				STD.TEXTIO.writeline(results, TX_LOC);
+				STD.TEXTIO.Deallocate(TX_LOC);
+				ASSERT (FALSE) REPORT TX_STR SEVERITY ERROR;
+				TX_ERROR := TX_ERROR + 1;
+			END IF;
+		END;
 
+		BEGIN
+		-- --------------------
+		RST <= transport '0';
+		MEM_WEHA <= transport '0';
+		MEM_WELA <= transport '0';
+		-- --------------------
+		WAIT FOR 200 ns; -- Time=200 ns
+		RST <= transport '0';
+		-- --------------------
+		WAIT FOR 500 ns; -- Time=700 ns
+		MEM_WEHA <= transport '0';
+		MEM_WELA <= transport '0';
+		-- --------------------
+		WAIT FOR 200 ns; -- Time=900 ns
+		RST <= transport '1';
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=1000 ns
+		RST <= transport '0';
+		-- --------------------
+		WAIT FOR 1900 ns; -- Time=2900 ns
+		MEM_WEHA <= transport '1';
+		MEM_WELA <= transport '1';
+		-- --------------------
+		WAIT FOR 500 ns; -- Time=3400 ns
+		MEM_WEHA <= transport '0';
+		MEM_WELA <= transport '0';
+		-- --------------------
+		WAIT FOR 1100 ns; -- Time=4500 ns
+		MEM_WEHA <= transport '1';
+		MEM_WELA <= transport '1';
+		-- --------------------
+		WAIT FOR 200 ns; -- Time=4700 ns
+		MEM_WEHA <= transport '0';
+		MEM_WELA <= transport '0';
+		-- --------------------
+		WAIT FOR 1300 ns; -- Time=6000 ns
+		MEM_WELA <= transport '1';
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=6100 ns
+		MEM_WELA <= transport '0';
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=6200 ns
+		MEM_WEHA <= transport '0';
+		-- --------------------
+		WAIT FOR 300 ns; -- Time=6500 ns
+		MEM_WEHA <= transport '1';
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=6600 ns
+		MEM_WEHA <= transport '0';
+		-- --------------------
+		WAIT FOR 1300 ns; -- Time=7900 ns
+		MEM_WELA <= transport '1';
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=8000 ns
+		MEM_WEHA <= transport '1';
+		MEM_WELA <= transport '0';
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=8100 ns
+		MEM_WEHA <= transport '0';
+		MEM_WELA <= transport '1';
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=8200 ns
+		MEM_WEHA <= transport '1';
+		MEM_WELA <= transport '0';
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=8300 ns
+		MEM_WEHA <= transport '0';
+		-- --------------------
+		WAIT FOR 2005 ns; -- Time=10305 ns
+		-- --------------------
 
---***************************************************************
---* instantiate sub-blocks
---***************************************************************
+		IF (TX_ERROR = 0) THEN 
+			STD.TEXTIO.write(TX_OUT,string'("No errors or warnings"));
+			STD.TEXTIO.writeline(results, TX_OUT);
+			ASSERT (FALSE) REPORT
+				"Simulation successful (not a failure).  No problems detected. "
+				SEVERITY FAILURE;
+		ELSE
+			STD.TEXTIO.write(TX_OUT, TX_ERROR);
+			STD.TEXTIO.write(TX_OUT, string'(
+				" errors found in simulation"));
+			STD.TEXTIO.writeline(results, TX_OUT);
+			ASSERT (FALSE) REPORT
+				"Errors found during simulation"
+				SEVERITY FAILURE;
+		END IF;
+	END PROCESS;
+END testbench_arch;
 
--- Low Word (32 bit)
-
-  dp0 : dp32b8192w port map (
-    addra      => MEM_ADA(13 downto  1),          -- Port A Address
-    addrb      => MEM_ADB(12 downto  0),          -- Port B Address
-    clka       => CLK,                            -- Port A Clock
-    clkb       => CLKB,                           -- Port B Clock
-    dina       => MEM_DTIA(31 downto  0),         -- Port A Write Data
-    dinb       => MEM_DTIB(31 downto  0),         -- Port B Write Data
-    douta      => MEM_RDDT(31 downto  0),         -- Port A Read Data
-    doutb      => MEM_DTOB(31 downto  0),         -- Port B Read  Data
-    wea        => MEM_WELA,                       -- Port A Write Enable
-    web        => MEM_WELB                        -- Port A Write Enable
-  );
-
--- High Word (32 bit)
-
-  dp1 : dp32b8192w port map (
-    addra      => MEM_ADA(13 downto  1),          -- Port A Address
-    addrb      => MEM_ADB(12 downto  0),          -- Port B Address
-    clka       => CLK,                            -- Port A Clock
-    clkb       => CLKB,                           -- Port A Clock
-    dina       => MEM_DTIA(63 downto 32),         -- Port A Write Data
-    dinb       => MEM_DTIB(63 downto 32),         -- Port B Write Data
-    douta      => MEM_RDDT(63 downto 32),         -- Port A Read Data
-    doutb      => MEM_DTOB(63 downto 32),         -- Port B Read  Data
-    wea        => MEM_WEHA,                       -- Port A Write Enable
-    web        => MEM_WEHB                        -- Port A Write Enable
-  );
-
-
---***************************************************************
---*
---*  PORT A Control Block
---*
---***************************************************************
-
---------------------------------------------------------------------------------
--- Port A Read Data Select Flag Control Process
---------------------------------------------------------------------------------
-
-  process (RST,CLK) begin
-    if (RST='1') then
-      MEM_RDTFLG <= '0';
-    elsif (CLK'event and CLK='1') then
-      MEM_RDTFLG <= MEM_ADA(0);                  ------ Port A Read Address LSB Set
-    end if;
-  end process;
-
---------------------------------------------------------------------------------
--- Port A Read Data Output Control Process
---------------------------------------------------------------------------------
-
-  process (MEM_RDTFLG,MEM_RDDT) begin
-    if (MEM_RDTFLG='1') then                     ------ 32 bit Odd Address Access ?
-      MEM_DTOA <= MEM_RDDT(63 downto 32) & MEM_RDDT(63 downto 32);  ------ 32 bit High Data Set to Low Word
-    else
-      MEM_DTOA <= MEM_RDDT;                      ------ Set to 64 bit Data
-    end if;
-  end process;
-
---------------------------------------------------------------------------------
--- Port A Read Data Enable Signal Control Process
---------------------------------------------------------------------------------
-
-  process (RST,CLK) begin
-    if (RST='1') then
-      MEM_DTOEN <= '0';
-    elsif (CLK'event and CLK='1') then
-      MEM_DTOEN <= MEM_REA;                      ------ Read Enable Signal Shift
-    end if;
-  end process;
-
-end DPRAM_rtl;
+CONFIGURATION writecomb_check_cfg OF sim_writecomb_check IS
+	FOR testbench_arch
+	END FOR;
+END writecomb_check_cfg;

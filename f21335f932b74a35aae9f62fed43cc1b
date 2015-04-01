@@ -1,36 +1,36 @@
-Fri Jan 23 19:40:31 JST 2015
+Wed Apr  1 19:34:16 JST 2015
 -- Copyright 2004 Tsuyoshi Hamada
 --
 --
---clk         __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __
---[ DBUS ]           X   >< n ><d0 ><d1 ><d2 ><d3 ><d4 ><d5 ><d6 ><d7 >
---dmaw_state          0  >< 1 >< 2                                    >< 3 >< 0 
---dmaw_start_adr               < n                                         >< 0
+--
+-- DMAR_STATE is used only 
+--                dmar_mem_adr.vhd  
+--                dmar_mem_re.vhd
+--                dmar_start_adr.vhd
+-- dmar_dbus_hiz and dma_mem_data do not used DMAR_STATE.
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
-entity dmaw_start_adr is
+entity dmar_state is
   port (
-    CLK       : in std_logic;
-    DBUS      : in std_logic_vector(63 downto 0);
-    STATE     : in std_logic_vector(1 downto 0);
-    START_ADR : out std_logic_vector(18 downto 0) );
-end dmaw_start_adr;
+    RST      : in std_logic;
+    CLK      : in std_logic;
+    ENABLE   : in std_logic;
+    STATE    : out std_logic_vector(1 downto 0) );
+end dmar_state;
 
-architecture rtl of dmaw_start_adr is
-constant zero : std_logic_vector(18 downto 0) := (others=>'0');
+architecture rtl of dmar_state is
+
+component dmaw_state
+  port (
+    RST      : in std_logic;
+    CLK      : in std_logic;
+    ENABLE   : in std_logic;
+    STATE    : out std_logic_vector(1 downto 0) );
+end component;
+
 begin
-
-  process (CLK,STATE) begin
-    if(CLK'event and CLK = '1') then
-      if(STATE="01") then
-        START_ADR <= DBUS(18 downto 0);
-      elsif((STATE="00") OR (STATE="11")) then
-        START_ADR <= zero;
-      end if;
-    end if;
-  end process;
-
+  u0 : dmaw_state port map(RST=>RST, CLK=>CLK, ENABLE=>ENABLE, STATE=>STATE);
 end rtl;

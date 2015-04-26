@@ -1,12 +1,16 @@
-Sat Apr 25 19:35:16 JST 2015
+Sun Apr 26 19:43:18 JST 2015
+#!/bin/sh
+#
+# An example hook script to check the commit log message taken by
+# applypatch from an e-mail message.
+#
+# The hook should exit with non-zero status after issuing an
+# appropriate message if it wants to stop the commit.  The hook is
+# allowed to edit the commit message file.
+#
+# To enable this hook, rename this file to "applypatch-msg".
 
-all:
-	cp top.ucf.ISE6.3i_Synplify top.ucf
-	rm -rf proj
-	tar xvf proj.synplify.tar
-	cd proj;ngdbuild -intstyle ise -dd /home/hamada/VHDL/proj/_ngo -uc ../top.ucf  -p xc2vp70-ff1517-5 top.edn top.ngd
-	cd proj;map -intstyle ise -p xc2vp70-ff1517-5 -cm area -pr b -k 4 -c 100 -tx off -o top_map.ncd top.ngd top.pcf
-	cd proj;par -w -intstyle ise -ol std -t 1 top_map.ncd top.ncd top.pcf
-	cd proj;trce -intstyle ise -e 3 -l 3 -xml top top.ncd -o top.twr top.pcf
-	cd proj;bitgen -intstyle ise -f top.ut top.ncd
-
+. git-sh-setup
+test -x "$GIT_DIR/hooks/commit-msg" &&
+	exec "$GIT_DIR/hooks/commit-msg" ${1+"$@"}
+:

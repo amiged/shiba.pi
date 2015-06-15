@@ -1,104 +1,102 @@
-Sat Jun  6 19:35:12 JST 2015
+Mon Jun 15 19:28:48 JST 2015
 #!/usr/bin/env python3
-#Time-stamp: <2017-06-01 03:19:59 hamada>
+#Time-stamp: <2017-06-03 03:06:20 hamada>
 import argparse
 import numpy as np
 import cv2
 from datetime import datetime
 import mkdir
+import aieye_find
+import time
+import sys
 
-def get_ndev():
-    ndev = 0
-    devid = []
-    for i in range(0, 10):
-        c = cv2.VideoCapture(i)
-        if c.isOpened():
-            ndev = ndev + 1
-            devid.append(i)
-        c.release()
-
-    print ("devid = ", devid)
-    return ndev
-
-def isOpened(cap):
-    ret = True
-    for c in cap:
-        ret = ret and c.isOpened()
-    return ret
-
-
-def put_text(image, text):
-    font_size = 1.0
-    font_type = cv2.FONT_HERSHEY_PLAIN
-    font_color = (0xaf, 0xff, 0xaf)
-    #    cv2.putText(image, text, (460, 15), font_type, font_size, font_color)
-    cv2.putText(image, text, (10, 15), font_type, font_size, font_color)
 
 if (__name__ == '__main__'):
-    ndev = get_ndev()
-    log_base = '../log/'
-    cap = []
-    for i in range(ndev):
-        cap.append(cv2.VideoCapture(i))
+    basedir = '../log/'
+    if (len(sys.argv) > 1 ):
+        basedir = sys.argv[1]
+    
+    iflist = [] 
+    for fname in aieye_find.find(basedir, '*.jpg'):
+        iflist.append(fname)
 
-    # -- swap cap --
-    if False:
-        cap_tmp = cap[0]
-        cap[0] = cap[2]
-        cap[2] = cap_tmp
+    iflist.sort()
+    ni = len(iflist)
+    i = 0
+    i_fp = 0.0
+    i_delta = 1
+    i_scale = 60.0
+    speed_state = 0
+
+    #    for i, fname in enumerate(iflist):
+    while( i < ni) :
+        fname = iflist[i]
+
+        #print (fname, i, ni, i/ni)
+        image = cv2.imread(fname)
+        cv2.imshow("play.py", image)
+
+        key = cv2.waitKey(1) & 0xFF
+        if key != 255:  print (key, "%d/%d"% (i, ni))
+
+        if key  == 114:           i_fp = 0.  # r
+
+        if key  == ord('q'): break
+        if key  == 97:            i_fp -= 1.  # d
+        if key  == 100:           i_fp += 1.  # a
+        if key  == 81:            i_fp -= 5.  # <-
+        if key  == 83:            i_fp += 5.  # ->
+        if key  == 86:            i_fp += 30. # Up
+        if key  == 85:            i_fp -= 30. # Down
+        if key  == 82:            i_fp += 300. # PgDn
+        if key  == 84:            i_fp -= 300. # PgUp
+
+        if key  == ord(' '): 
+            if 0 != speed_state: 
+                i_delta = 0
+                speed_state = 0
+            else:
+                i_delta = 1
+                speed_state = 1
+            print ("i_delta:", i_delta)
+            print ("speed_state:", speed_state)
 
 
-    cap_width  = cap[0].get(cv2.CAP_PROP_FRAME_WIDTH)
-    cap_height = cap[0].get(cv2.CAP_PROP_FRAME_HEIGHT)
-    cap_fps    = cap[0].get(cv2.CAP_PROP_FPS)
+        if key  == 226: # R_SHIFT
+            if 0 == speed_state:
+                i_delta = int(i_scale/10.)
+                speed_state = 1
+            elif 1 == speed_state:
+                i_delta = int(i_scale)
+                speed_state = 2
+            elif 2 == speed_state:
+                i_delta = int(i_scale*10.)
+                speed_state = 3
+            elif 3 == speed_state:
+                i_delta = int(i_scale*100.)
+                speed_state = 4
+            elif 4 == speed_state:
+                i_delta = 1
+                speed_state = 0
+            else:
+                i_delta = 1
+                speed_state = 0
+            print ("i_delta:", i_delta)
+            print ("speed_state:", speed_state)
 
-    print(cap_width, "x", cap_height, ":", cap_fps)
-    size = (int(cap_width/2), int(cap_height/2))
+        if key  == ord('+'): 
+            i_delta *= 2
+            print ("i_delta:", i_delta)
 
-    tnow0 = datetime.now().strftime('%Y%m%d_%H_%M_%S') # ('%Y%m%d_%H_%M_%S_%f')
+        if key  == ord('-'): 
+            i_delta = int(i_delta / 2)
+            if i_delta < 1: i_delta = 1 
+            print ("i_delta:", i_delta)
 
-    while(isOpened(cap)):
-        frame = [0] * ndev
-        for (i, fm) in enumerate(frame):
-            ret, fm = cap[i].read()
-            smallimg = cv2.resize(fm, size)
-            if False: cv2.imshow('camera: %d'%(i), smallimg)
-            frame[i] = smallimg
-
-        # ----------------------------------------------------------------
-        frame_height, frame_width = frame[0].shape[:2]
-
-        nwx = 3
-        nwy = int(1.0+(ndev-1)/3.0)
-
-        image = np.zeros((frame_height * nwy, frame_width*nwx, 3), dtype=np.uint8)
-        # image = np.zeros((frame_height, frame_width*ndev, 3), dtype=np.uint8)
-
-        # --- ROI ---
-        for (i, fm) in enumerate(frame):
-            sx = frame_width * (i%nwx)
-            sy = frame_height * int(i/nwx)
-            ex = frame_width * (i%nwx+1)
-            ey = frame_height * int(1+i/nwx)
-            image[sy:ey,sx:ex] = fm
-
-        cv2.imshow(__file__, image)
-
-        tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S_%f')
-        if(tnow != tnow0):
-            put_text(image, tnow)
-            basedir = '../log/'
-            ofname = mkdir.get_filename_frame(basedir, tnow)
-            cv2.imwrite(ofname, image)
-            print(ofname)
-            tnow0 = tnow
-
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-
-    for (i, fm) in enumerate(frame):
-        cap[i].release()
+        #----------------------------------
+        i_fp += i_delta/i_scale
+        if i_fp < 0.0 :  i_fp = 0.0
+        if i_fp >= float(ni): i_fp = float(ni) -1.0
+        i = int(i_fp)
 
     cv2.destroyAllWindows()
-
-    print("Done.")

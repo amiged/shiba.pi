@@ -1,37 +1,30 @@
-Sun Jul  5 19:46:00 JST 2015
--- Copyright 2004 Tsuyoshi Hamada
---
---
---clk         __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __
---[dma_we]    _______/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
---[ DBUS ]           X   >< n ><d0 ><d1 ><d2 ><d3 ><d4 ><d5 ><d6 ><d7 >
---state_dmaw          0  >< 1 >< 2                                    >< 3 >< 0 
---mem_data                          <d0 ><d1 ><d2 ><d3 ><d4 ><d5 ><d6 ><d7 >
+Fri Jul 17 19:36:24 JST 2015
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.std_logic_arith.all;                                        
+use ieee.std_logic_unsigned.all;                                    
 
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL;
-
-entity dmaw_mem_data is
+entity setn is
   port (
-    CLK      : in std_logic;
-    DBUS     : in std_logic_vector(63 downto 0);
-    STATE    : in std_logic_vector(1 downto 0);
-    MEM_DATA : out std_logic_vector(63 downto 0) );
-end dmaw_mem_data;
+    clk       : in std_logic;
+    we        : in std_logic;
+    idata     : in std_logic_vector(31 downto 0);
+    odata     : out std_logic_vector(31 downto 0));
+end setn;
 
-architecture rtl of dmaw_mem_data is
-constant zero : std_logic_vector(63 downto 0) := (others=>'0');
+architecture rtl of setn is
+signal nreg :  std_logic_vector(31 downto 0) := "00000000000000000000000000000011"; -- default 3
 begin
 
-  process (CLK,STATE) begin
-    if(CLK'event and CLK = '1') then
-      if(STATE="10") then
-        MEM_DATA <= DBUS;
-      else
-        MEM_DATA <= zero;
-      end if;
+odata <= nreg;
+--odata <= "00000000000000000000000000000011";
+
+process (clk) begin
+  if(clk'event and clk='1') then
+    if(we = '1') then
+      nreg <= idata;
     end if;
-  end process;
+  end if;
+end process;
 
 end rtl;

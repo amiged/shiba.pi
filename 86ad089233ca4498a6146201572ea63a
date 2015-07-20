@@ -1,37 +1,26 @@
-Sat Jun 27 19:31:16 JST 2015
--- Copyright 2004 Tsuyoshi Hamada
---
---
---clk         __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __
---[dma_we]    _______/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
---[ DBUS ]           X   >< n ><d0 ><d1 ><d2 ><d3 ><d4 ><d5 ><d6 ><d7 >
---state_dmaw          0  >< 1 >< 2                                    >< 3 >< 0 
---mem_data                          <d0 ><d1 ><d2 ><d3 ><d4 ><d5 ><d6 ><d7 >
+Mon Jul 20 19:29:32 JST 2015
+#include <stdio.h>
+#include "nbodysim.h"
 
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL;
+void debug(double x[][DIM],double a[][DIM], int n, int nstep)
+{
+  int i;
+  static int flag=0;
+  static FILE* fp;
 
-entity dmaw_mem_data is
-  port (
-    CLK      : in std_logic;
-    DBUS     : in std_logic_vector(63 downto 0);
-    STATE    : in std_logic_vector(1 downto 0);
-    MEM_DATA : out std_logic_vector(63 downto 0) );
-end dmaw_mem_data;
+  if(flag==0){
+    fp = fopen("aaa.log","w");
+    flag = 1;
+  }else{
+    rewind(fp);
+  }
 
-architecture rtl of dmaw_mem_data is
-constant zero : std_logic_vector(63 downto 0) := (others=>'0');
-begin
+  for(i=0;i<n;i++){
+    fprintf(fp,"%d\t",nstep);
+    fprintf(fp,"%1.8e\t%1.8e\t%1.8e\t",x[i][0],x[i][1],x[i][2]);
+    fprintf(fp,"%1.8e\t%1.8e\t%1.8e\n",a[i][0],a[i][1],a[i][2]);
+  }
 
-  process (CLK,STATE) begin
-    if(CLK'event and CLK = '1') then
-      if(STATE="10") then
-        MEM_DATA <= DBUS;
-      else
-        MEM_DATA <= zero;
-      end if;
-    end if;
-  end process;
+  fflush(fp);
+}
 
-end rtl;

@@ -1,29 +1,28 @@
-Mon May 18 19:38:08 JST 2015
-#! /bin/sh
-# Time-stamp: <2006-11-22 17:38:27 hamada>
-# Copyright (c) 2006 by Tsuyoshi Hamada, All rights reserved.
-#
-# init script for PGR & PROGRAPE-4 (for developers)
-#
-
-rm -rf /tmp/*
-ln -s /usr/local/src/Xilinx.8_1_03i_lin /tmp/Xilinx
-ln -s /usr/local/src/intel_cc_80 /tmp/intel_cc_80
-ln -s /usr/local/src/package.20060613 /tmp/pgr
-ln -s /usr/local/src/progrape /tmp/progrape
-cd /pciDriver/src/driver/; ./insmod.sh
-
-cd /tmp/progrape/driver;  make load
+Tue Jul 28 19:38:03 JST 2015
+#!/usr/bin/env python3
+import numpy as np
+import cv2
+from datetime import datetime
 
 
-umount /mnt/ram
-rm -rf /mnt/ram
-mkdir /mnt/ram
-mke2fs /dev/ram0
-mount -t ext2 /dev/ram0 /mnt/ram
-chmod -R 777 /mnt/ram
+def put_text(image, text):
+    font_size = 1.0
+    font_type = cv2.FONT_HERSHEY_PLAIN
+    font_color = (0xff, 0xf, 0xff)
+    cv2.putText(image, text, (460, 15), font_type, font_size, font_color)
+    
 
-cp /usr/local/bin/xxx.log /mnt/ram
-chmod -R 777 /mnt/ram
+image = cv2.imread("/tmp/tmp.jpg")
+
+tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S') # ('%Y%m%d_%H_%M_%S_%f')
+put_text(image, tnow)
+cv2.imshow('test', image)
 
 
+while(True):
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+cv2.destroyAllWindows()
+
+print("Done.")

@@ -1,26 +1,17 @@
-Mon Jul 20 19:29:32 JST 2015
-#include <stdio.h>
-#include "nbodysim.h"
+Sun Aug  2 19:35:25 JST 2015
+#!/usr/bin/perl
 
-void debug(double x[][DIM],double a[][DIM], int n, int nstep)
-{
-  int i;
-  static int flag=0;
-  static FILE* fp;
 
-  if(flag==0){
-    fp = fopen("aaa.log","w");
-    flag = 1;
-  }else{
-    rewind(fp);
-  }
+my $is_stop = 0;
+my $nboard = 0;
 
-  for(i=0;i<n;i++){
-    fprintf(fp,"%d\t",nstep);
-    fprintf(fp,"%1.8e\t%1.8e\t%1.8e\t",x[i][0],x[i][1],x[i][2]);
-    fprintf(fp,"%1.8e\t%1.8e\t%1.8e\n",a[i][0],a[i][1],a[i][2]);
-  }
-
-  fflush(fp);
+if($ARGV[0]){
+    $nboard = $ARGV[0];
 }
 
+my $cmd ="cat /sys/class/fpga/fpga". sprintf("%d",$nboard). "/kbuffers";
+
+my $exe = `$cmd`;
+print $exe;
+
+1;

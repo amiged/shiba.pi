@@ -1,17 +1,9 @@
-Wed Jul  1 19:27:28 JST 2015
-#!/usr/bin/perl
+Sat Aug  8 19:50:46 JST 2015
+#!/bin/sh
+#
+# An example hook script to prepare a packed repository for use over
+# dumb transports.
+#
+# To enable this hook, rename this file to "post-update".
 
-
-my $is_stop = 0;
-my $nboard = 0;
-
-if($ARGV[0]){
-    $nboard = $ARGV[0];
-}
-
-my $cmd ="cat /sys/class/fpga/fpga". sprintf("%d",$nboard). "/kbuffers";
-
-my $exe = `$cmd`;
-print $exe;
-
-1;
+exec git update-server-info

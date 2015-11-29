@@ -1,206 +1,96 @@
-Tue Oct 27 19:35:22 JST 2015
-#include <stdio.h>
-#include <GL/glut.h>
-#include <string.h> // strtok(),strcpy()
-#include <stdlib.h> // atof()
-#include <math.h>
-#define NMAX 210000
-#define XSCALE 2.0
-#define YSCALE 2.0
-//#define IS_PRESET 0
-#define IS_PRESET 1
-#define PRESET_NBODY 4096
-//#define PRESET_NBODY 16384
-//#define PRESET_NBODY 3
+Sun Nov 29 19:31:34 JST 2015
+//-----------------------------------------------------------------------------
+// hermite.C
+// Code: Standard 4th order Hermite integrator with constant time step
+// Ref.: J. Makino, S. J. Aarseth, PASJ 44, 141 (1992)
+// Author: Andreas Ernst Jan, 2006
+// Modify: Tsuyoshi Hamada, Nov, 2006
+//-----------------------------------------------------------------------------
+#include  <iostream>
+#include  <cmath>
+#include  <cstdlib>
+#include  <iomanip> // cout << setw() << setprecision() 
+using namespace std;
 
-#define PRESET_NWRITE 1
-#define PRESET_NSKIP 1
+extern "C" void  force(double x[][3], double v[][3], double m[], double p[], double a[][3], double j[][3], int n);
+extern "C" void _force(double x[][3], double v[][3], double m[], double p[], double a[][3], double j[][3], int n);
 
-static char ifile[256];
-static int istep;
-static FILE *fp;
+extern "C" void debug_position_snap(double x[][3], double Gflops, int n, int nstep);
 
-int imax;
-double x[NMAX];
-double y[NMAX];
-int NBODY;
-int SKIP_STEP;
 
-void reset_fp()
-{
-    printf("restart\n");
-    fclose(fp);
-    fp = fopen(ifile,"r");
-    istep=0;
-}
+// Calculate energy
 
-void skip_step()
-{
-  int i;
-  char line[101];
-  for(i=0;i<NBODY;i++) if(fgets(line,100,fp)==NULL){reset_fp();}
-}
-
-void myidle()
-{
-  istep++;
-  if((istep%SKIP_STEP) != 0){
-    skip_step();
-  }else{
-    glutPostRedisplay();
+double energy(double m[], double r[][3], double v[][3], double p[], int n) {
+  double ekin = 0, epot = 0;
+  for (int i = 0; i < n; i++) {
+    epot -= 0.5 * m[i] * p[i];
+    for (int k = 0; k < 3; k++) ekin += 0.5 * m[i] * v[i][k] * v[i][k];
   }
-  //  printf("%d step\n",(istep*SKIP_STEP));
+  return ekin + epot;
 }
 
-void display();
+int main(int argc, char *argv[]) {
 
-void init()
-{
-  glClearColor(0.0, 0.0, 0.0, 0.0);
-  glColor3f(1.0,1.0,1.0);
-}
+// Read initial conditions from stdin, declaration of variables
 
-
-int main(int argc, char** argv)
-{
-
-  if(IS_PRESET){
-    NBODY = PRESET_NBODY*PRESET_NWRITE;
-    SKIP_STEP=PRESET_NSKIP;
-  }else{
-    int nb,nw;
-    printf("enter NBODY:");  scanf("%d",&nb);  //粒子数を指定
-    printf("enter Nwrite:");  scanf("%d",&nw);  //連続書込みコマ数
-    //    printf("enter SKIP_STEP:");  scanf("%d",&SKIP_STEP); 
-    NBODY = (int)(nb * nw);
-    SKIP_STEP=1; // Fixed
+  if (argc < 3 ) {
+    cout << "Usage: hermite <dt> <t_end> <dt_opt>" << endl;
+    return 0;
   }
-  istep=0;
-  if(argc <2){printf("no inputfile.\n"); exit(0); }
-  strcpy(ifile,argv[1]);
-  fp = fopen(ifile,"r");
 
-  glutInit(&argc,argv);
-  glutInitDisplayMode(GLUT_DOUBLE |GLUT_RGB);
-  glutInitWindowSize(400,400);
-  glutInitWindowPosition(600,0);
-  glutCreateWindow("NBODYH-2003/11/08");
-  glutDisplayFunc(display);
-  glutIdleFunc(myidle);
-  init();
-  glutMainLoop();
+  double dt = atof(argv[1]); // time step
+  double dt2 = dt*dt;
+  double dt3 = dt2*dt;
+  double dt4 = dt2*dt2;
+  double dt5 = dt4*dt;
+  double t_end = atof(argv[2]);
+  double dt_opt = atof(argv[3]);
+  double t_opt = 0.0;
 
-  fclose(fp);
+  int n;
+  cin >> n;
+
+  double t;
+  cin >> t;
+
+  double * m = new double[n];
+  double (* r)[3] = new double[n][3];
+  double (* v)[3] = new double[n][3];
+
+  double * p = new double[n];
+  double (* a)[3] = new double[n][3];
+  double (* jk)[3] = new double[n][3];
+
+  double * _p = new double[n];
+  double (* _a)[3] = new double[n][3];
+  double (* _jk)[3] = new double[n][3];
+
+
+  for (int i = 0; i < n ; i++){
+    cin >> m[i];
+    for (int k = 0; k < 3; k++) cin >> r[i][k];
+    for (int k = 0; k < 3; k++) cin >> v[i][k];
+  }
+  
+  _force(r, v, m, _p, _a, _jk, n);
+   force(r, v, m,  p,  a,  jk, n);
+
+
+  for (int i = 0; i < n ; i++){
+    double err_p, err_a[3], err_jk[3];
+    double rad;
+    rad = sqrt(r[i][0]*r[i][0]+r[i][1]*r[i][1]+r[i][2]*r[i][2]);
+
+    err_p = fabs(p[i]-_p[i])/_p[i];
+
+    for (int k = 0; k < 3; k++){
+      err_a[k]  = fabs(a[i][k]  - _a[i][k])  / _a[i][k];
+      err_jk[k] = fabs(jk[i][k] - _jk[i][k]) / _jk[i][k];
+    }
+    
+    for (int k = 0; k < 3; k++) cout << rad << "\t" << err_a[k] << endl;
+
+  }
+  
   return 0;
-}
-
-
-
-
-void display()
-{
-  static int flag=0;
-  void display_set_GL_LINES();
-  void display_get_position();
-  glClear(GL_COLOR_BUFFER_BIT);
-  glPointSize(1.0);
-
-  { //--- TIME METER ---
-    char p[10];
-    int i,nketa;
-    nketa = 6;
-    sprintf(p,"%06d",istep);
-    glColor3f(0.1 ,0.2,0.3);
-    for(i=0;i<nketa;i++){
-      glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24,p[nketa-i]);
-      glRasterPos2f(-0.70-0.06*i, -0.95);
-    }
-  }
-
-  display_set_GL_LINES();
-  glBegin(GL_POINTS);
-  //  glColor3f(1.0 ,0.8,0.0);
-  if(flag != 0){
-    int n;
-    display_get_position();
-    for(n=0;n<NBODY;n++){
-      if(n==1)   glColor3f(1.0,0.5,0.0); else   glColor3f(0.0,0.7,0.0);
-      glVertex2f(x[n]/XSCALE, y[n]/YSCALE);
-    }
-  }
-  flag=1;
-  glEnd();
-  glutSwapBuffers();
-}
-
-
-/* display関数用 */
-void display_set_GL_LINES()
-{ // --- MEMORI ---
-
-  glBegin(GL_LINES);
-
-  glColor3f(0.7,0.0,0.0);
-  glVertex2f(-1.0, 0.0);    glVertex2f(1.0, 0.0);
-  glVertex2f(0.0, -1.0);    glVertex2f(0.0, 1.0);
-
-  glColor3f(0.0,0.2,0.5);
-  glVertex2f(-1.0, 1.0/3.0);    glVertex2f(1.0, 1.0/3.0);
-  glVertex2f(-1.0, 2.0/3.0);    glVertex2f(1.0, 2.0/3.0);
-  glVertex2f(-1.0, -1.0/3.0);    glVertex2f(1.0, -1.0/3.0);
-  glVertex2f(-1.0, -2.0/3.0);    glVertex2f(1.0, -2.0/3.0);
-
-  glVertex2f(1.0/3.0,-1.0);    glVertex2f(1.0/3.0,1.0);
-  glVertex2f(2.0/3.0,-1.0);    glVertex2f(2.0/3.0,1.0);
-  glVertex2f(-1.0/3.0,-1.0);    glVertex2f(-1.0/3.0,1.0);
-  glVertex2f(-2.0/3.0,-1.0);    glVertex2f(-2.0/3.0,1.0);
-
-  {
-    double tiny=0.04;
-    double small=0.04;
-    glColor3f(0.9,0.4,0.8);
-    glVertex2f(-1.0,  0.0);    glVertex2f(-(1.0-small),  0.0);
-    glVertex2f( 1.0,  0.0);    glVertex2f( (1.0-small),  0.0);
-    glVertex2f(  0.0, 1.0);    glVertex2f(  0.0,   1.0-small);
-    glVertex2f(  0.0,-1.0);    glVertex2f(  0.0,  -1.0+small);
-
-    glColor3f(0.38, 0.01, 0.8);
-    glVertex2f(-1.0, 1.0/3.0);    glVertex2f(-(1.0-tiny), 1.0/3.0);
-    glVertex2f( 1.0, 1.0/3.0);    glVertex2f( (1.0-tiny), 1.0/3.0);
-    glVertex2f(-1.0, 2.0/3.0);    glVertex2f(-(1.0-tiny), 2.0/3.0);
-    glVertex2f( 1.0, 2.0/3.0);    glVertex2f( (1.0-tiny), 2.0/3.0);
-    glVertex2f(-1.0, -1.0/3.0);    glVertex2f(-(1.0-tiny), -1.0/3.0);
-    glVertex2f( 1.0, -1.0/3.0);    glVertex2f( (1.0-tiny), -1.0/3.0);
-    glVertex2f(-1.0, -2.0/3.0);    glVertex2f(-(1.0-tiny), -2.0/3.0);
-    glVertex2f( 1.0, -2.0/3.0);    glVertex2f( (1.0-tiny), -2.0/3.0);
-
-    glVertex2f(1.0/3.0,-1.0);    glVertex2f(1.0/3.0,-(1.0-tiny));
-    glVertex2f(1.0/3.0, 1.0);    glVertex2f(1.0/3.0, (1.0-tiny));
-    glVertex2f(2.0/3.0,-1.0);    glVertex2f(2.0/3.0,-(1.0-tiny));
-    glVertex2f(2.0/3.0, 1.0);    glVertex2f(2.0/3.0, (1.0-tiny));
-    glVertex2f(-1.0/3.0,-1.0);    glVertex2f(-1.0/3.0,-(1.0-tiny));
-    glVertex2f(-1.0/3.0, 1.0);    glVertex2f(-1.0/3.0, (1.0-tiny));
-    glVertex2f(-2.0/3.0,-1.0);    glVertex2f(-2.0/3.0,-(1.0-tiny));
-    glVertex2f(-2.0/3.0, 1.0);    glVertex2f(-2.0/3.0, (1.0-tiny));
-  }
-  glEnd(); // --- End GL_LINES;
-}
-
-void display_get_position()
-{
-  int i;
-  char line[1024];
-  char* p;
-  double _x,_y,_z;
-  for(i=0;i<NBODY;i++){
-    if(fgets(line,100,fp)!=NULL){
-      p = (char* )strtok(line,"\t"); _x = atof(p);
-      p = (char* )strtok(NULL,"\t"); _y = atof(p);
-      p = (char* )strtok(NULL,"\t"); _z = atof(p);
-      x[i] = _x;
-      y[i] = _y;
-    }else{
-      reset_fp();
-    }
-  }
 }

@@ -1,16 +1,19 @@
-Mon Nov  2 19:28:07 JST 2015
-/** 
-# vを1/2ステップ進める
-# v(k+1/2) = v(k) + a(k)*dt/2
-*/
+Wed Dec  9 19:30:35 JST 2015
+#!Time-stamp: <2007-01-22 04:30:32 hamada>
 
-#include <stdio.h>
-#include "nbodysim.h"
+Linux device driver for the PROGRAPE-4 board,
 
-void leapflog_half(double dt, double v[][DIM], double a[][DIM], int n)
-{
-    int i,d;
-    for(i=0;i<n;i++)
-      for(d=0;d<3;d++)
-	v[i][d] = v[i][d] + (a[i][d]*dt)/2.0;
-}
+including runtime libraries and HDL source for interface FPGA.
+
+- Linux kernel release 2.6.x
+
+- Xilinx XC3S5000-5-FG900 FPGAs
+
+- Xilinx ISE 8.1i
+-- Release 8.1.03i xst I.27
+-- Release 8.1.03i par I.27
+-- Release 8.1.03i Trace I.27
+-- Release 8.1.03i Bitgen I.27
+
+
+![PROGRAPE-4](http://www.ipa.go.jp/jinzai/esp/2005mito1/mdata/images/clip_image002_006.jpg)

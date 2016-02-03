@@ -1,127 +1,227 @@
-Wed Jan 27 19:37:45 JST 2016
-//-------------------------
-#define NMAX (1<<17)
-#include <cstdio>
-#include <cstdlib>
-#define USE_CUDA_MALLOC_HOST (yes)
-#define IDIM (4)
-#define JDIM (4)
-#define FDIM (3)
-#define NJ_SHMEM (NTHRE)
+Wed Feb  3 19:39:27 JST 2016
+//Time-stamp: "2007-01-24 01:31:34 hamada"
+//
+// API for the PGR system for PROGRAPE-4
+//
+// by T.Hamada
+//
 
-float4* h_xj;
-float* h_xi;
-float* h_fo;
-float4* d_xj;
-float* d_xi;
-float* d_fo;
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include "pg4.h"
+#include "pg4reg.h"
+#include "pgrapi.h"
 
-extern "C" void 
-force(double xj[][3], double mj[], double xi[][3], double eps2, double a[][3], int ni, int nj)
+unsigned int *bar1[8];
+
+static unsigned int *ptr[] = {
+  NULL, NULL, NULL, NULL
+};
+
+static int npipe_per_chip[] = {1,1,1,1};
+static int jwidth[] = {JDIM, JDIM, JDIM, JDIM};
+
+static int NCHIP = 4;                               // NCHIP variable
+void pgr_set_nchip(int n){   NCHIP = n; }           // NCHIP variable
+
+void pgr_reset(int devid)
 {
-  static bool is_open = false;
-  int devid = 0;
-  int ndev;
-  int nj1 = ((nj+NJ_SHMEM-1)/NJ_SHMEM)*NJ_SHMEM;
+  // allocate DMA buffer
+  if (ptr[devid] == NULL) {
+    ptr[devid] = pg4_get_dmarptr(devid);
 
-  if( ni > NMAX ){
-    printf("ERROR %s|%d\n",__FILE__, __LINE__);
-    printf(" ni > %d : ni=%d\n",ni, NMAX);
-    exit(-1);
-  }
-
-  if( nj > NMAX ){
-    printf("ERROR %s|%d\n",__FILE__, __LINE__);
-    printf(" nj > %d : nj=%d\n",nj, NMAX);
-    exit(-1);
-  }
-
-  unsigned int ip_size = sizeof(float) * ni * IDIM;
-  unsigned int jp_size = sizeof(float4) * nj1;
-  unsigned int fo_size = sizeof(float) * ni * FDIM;
-
-  if(is_open == false){
-    char gpu_name[256];
-    CUDA_SAFE_CALL(cudaSetDevice(devid));
-    CUDA_SAFE_CALL(cudaGetDeviceCount(&ndev));
-    if(ndev == 0){
-      fprintf(stdout, "ndev = %d @ %s|%d\n", ndev, __FILE__, __LINE__);
+    if (ptr[devid] == NULL) {
+      fprintf(stderr, "mmap error!!!!!\n fatal error, now exiting....\n");
       exit(-1);
-    }else{
-      int dev = devid;
-      cudaDeviceProp deviceProp;
-      CUDA_SAFE_CALL(cudaGetDeviceProperties(&deviceProp, dev));
-      if (deviceProp.major == 9999 && deviceProp.minor == 9999){
-	printf("There is no device supporting CUDA.\n");
-      }
-      fprintf(stderr, "  GPU : %s\n", deviceProp.name);
-      sprintf(gpu_name,"%s", deviceProp.name);
-    }
-
-    unsigned int _nmax = NMAX;
-    unsigned int _ip_size = sizeof( float) * _nmax * IDIM;
-    unsigned int _jp_size = sizeof(float4) * _nmax;
-    unsigned int _fo_size = sizeof(float) * _nmax * FDIM;
-
-#if defined(USE_CUDA_MALLOC_HOST)
-    CUDA_SAFE_CALL(  cudaMallocHost( (void**)&h_xj, _jp_size)  );
-    CUDA_SAFE_CALL(  cudaMallocHost( (void**)&h_xi, _ip_size)  );
-    CUDA_SAFE_CALL(  cudaMallocHost( (void**)&h_fo, _fo_size)  );
-#else
-    h_xj = (float4*) malloc(_jp_size);
-    h_xi = (float*)  malloc(_ip_size);
-    h_fo = (float*)  malloc(_fo_size);
-#endif
-    CUDA_SAFE_CALL( cudaMalloc( (void**) &d_xj, _jp_size));
-    CUDA_SAFE_CALL( cudaMalloc( (void**) &d_xi, _ip_size));
-    CUDA_SAFE_CALL( cudaMalloc( (void**) &d_fo, _fo_size));
-    for(int i = 0; i < _nmax ; i++) h_xj[i] = make_float4(0.0, 0.0, 0.0, 0.0);
-    CUDA_SAFE_CALL( cudaMemcpy( d_xj, h_xj, _jp_size, cudaMemcpyHostToDevice) );
-    CUDA_SAFE_CALL( cudaMemcpy( d_xi, h_xj, _ip_size, cudaMemcpyHostToDevice) );
-    CUDA_SAFE_CALL( cudaMemcpy( d_fo, h_xj, _fo_size, cudaMemcpyHostToDevice) );
-    fprintf(stderr, "open %s by CUNBODY-1 library: rev.hamada20080905  (^<_^)/ %d\n", gpu_name, devid);
-    is_open = true;
-  }
-  for(int i = 0; i < nj; i++){
-    h_xj[i].x = (float) xj[i][0];
-    h_xj[i].y = (float) xj[i][1];
-    h_xj[i].z = (float) xj[i][2];
-    h_xj[i].w = (float) mj[i];
-    //    printf("h_xj:%d\t%e\t%e\t%e\t%e\n",i, h_xj[i].x, h_xj[i].y, h_xj[i].z, h_xj[i].w );
-  }
-  if(nj < nj1){
-    for(int i = nj; i < nj1; i++){
-      h_xj[i] = make_float4(0.0, 0.0, 0.0, 0.0);
-      //      printf("h_xj:%d\t%e\t%e\t%e\t%e\n",i, h_xj[i].x, h_xj[i].y, h_xj[i].z, h_xj[i].w );
     }
   }
-  CUDA_SAFE_CALL( cudaMemcpy( d_xj, h_xj, jp_size, cudaMemcpyHostToDevice) );
-  for(int i = 0; i < ni; i++){
-    h_xi[i     ] = (float) xi[i][0];
-    h_xi[i+ni  ] = (float) xi[i][1];
-    h_xi[i+ni*2] = (float) xi[i][2];
-    h_xi[i+ni*3] = (float) eps2;
-    //    printf("h_xi:%d\t%e\t%e\t%e\t%e\n",i, h_xi[i], h_xi[i+ni], h_xi[i+ni*2], h_xi[i+ni*3] );
-  }
-  CUDA_SAFE_CALL( cudaMemcpy( d_xi, h_xi, ip_size, cudaMemcpyHostToDevice) );
 
-  //  printf("Nj=%d\n",nj1);
-  /*
-  dim3 grid((ni+NTHRE)/NTHRE);
-  dim3 threads  (NTHRE);
-  */
-  //  printf("------------------------ %d, %d\n",ni, nj1);
-  dim3 grid(ni/128);
-  dim3 threads  (128);
-  kernel<<< grid, threads >>>(d_xj, d_xi, d_fo, ni, nj1);
-  CUT_CHECK_ERROR("Kernel execution failed");
+  WriteBase0(devid, PIPE_RST, 0xf);   // send RST<="1111" ( 4 chips )
+  WriteBase0(devid, PIPE_RST, 0x0);   // send RST<="0000" ( 4 chips )
+}
 
-  CUDA_SAFE_CALL( cudaMemcpy( h_fo, d_fo, fo_size, cudaMemcpyDeviceToHost) );
+int pgr_get_writecomb_err(int devid)
+{
+  int rtn;
+  rtn = pg4_readbase0(devid, 0);
+  rtn >>= 6;
+  return (rtn);
+}
 
-  for(int i=0;i<ni; i++){
-    a[i][0] = (double)h_fo[i];
-    a[i][1] = (double)h_fo[i+ni];
-    a[i][2] = (double)h_fo[i+ni*2];
-    //    printf("a:%d\t%e\t%e\t%e\n",i, h_fo[i], h_fo[i+ni], h_fo[i+ni*2] );
+void pgr_setjpset_one(int devid, int j, unsigned int jdata[JDIM])
+{
+  unsigned int offset = (ADR_JPSET<<1) + ((j*JDIM*sizeof(unsigned int))>>2);
+  memcpy(bar1[devid]+offset, jdata, jwidth[devid]*sizeof(unsigned int));
+}
+
+void pgr_setjpset(int devid, unsigned int jdata[][JDIM], int nj)
+{
+  unsigned int offset = (ADR_JPSET<<1);     // BroadCast
+  // nj <= 8192 !!
+  memcpy(bar1[devid]+offset, jdata, JDIM*sizeof(unsigned int)*nj);
+}
+
+void pgr_setipset(int devid, unsigned int *idata, int ni)
+{
+  unsigned int offset = (ADR_IPSET<<1);
+  memcpy(bar1[devid]+offset, idata, sizeof(unsigned int)*ni);
+}
+
+void pgr_setipset_ichip(int devid, unsigned int ichip, unsigned int *idata, int number_of_pipelines)
+{
+  int i;
+  int num = number_of_pipelines << XI_AWIDTH;
+  //  unsigned int offset = (ADR_IPSET<<1) |(ichip<<11);
+  //  memcpy(bar1[devid]+offset, idata, sizeof(unsigned int)*num);
+
+  for(i = 0; i < num; i++) {
+    pg4_writebase1(devid, (ADR_IPSET<<1) |(ichip<<11)| i, idata[i]);
   }
 }
+
+/*
+void pgr_setipset_ichip(int devid, unsigned int ichip, unsigned int *idata, int number_of_pipelines)
+{
+  int i;
+  int num = number_of_pipelines << XI_AWIDTH;
+  for(i = 0; i < num; i++) {
+    pg4_writebase1(devid, (ADR_IPSET<<1) |(ichip<<11)| i, idata[i]);
+  }
+}
+*/
+
+void pgr_setipset_one(int devid, unsigned int ichip, int ipipe, unsigned int *idata, int idim)
+{
+  unsigned int offset = (ADR_IPSET<<1) |(ichip<<11) | (ipipe<<XI_AWIDTH);
+  memcpy(bar1[devid]+offset, idata, sizeof(unsigned int)*idim);
+}
+
+void pgr_start_calc(int devid, unsigned int n)
+{
+  unsigned int offset = ADR_SETN<<1;
+  int i;
+  volatile int j;
+  // SETN
+  pg4_writebase1(devid, offset, n);
+  pg4_writebase1(devid, offset+1, 0xffffffff);
+  j = pg4_readbase1(devid, offset+1); // flash cache
+  
+  // RUN
+  pg4_writebase1(devid, offset+6, 0xffffffff);
+  pg4_writebase1(devid, offset+7, 0xffffffff);
+  j = pg4_readbase1(devid, offset+1); // flash cache
+
+
+  // -------------------------- change 2005/01/04 by T.H
+  //                            wait until runret return
+  //                                 and prepare all foset(for 4chips) to ifpga RAM.
+  //  i=0;
+  while( (0x1 & pg4_readbase0(devid,0)) == 1){
+    //    i++;
+    //    fprintf(stderr,"%d ",i);
+    //    if(i>3) for(i=0;i<16;i++)  pg4_writebase1(devid, offset+i, n);
+  }
+  //  fprintf(stderr,"%d\n",i);
+}
+
+void pgr_calc_start(int devid, unsigned int n)
+{
+  unsigned int offset = ADR_SETN<<1;
+  int i;
+  // -------------------------- SETN(i==0) & RUN(i==2)
+  for(i = 0; i < 16; i++){
+    pg4_writebase1(devid, offset+i, n);
+  }
+}
+
+void pgr_calc_finish(int devid)
+{
+  while( (0x1 & pg4_readbase0(devid,0)) == 1){
+    //    i++;
+    //    fprintf(stderr,"%d ",i);
+    //    if(i>3) for(i=0;i<16;i++)  pg4_writebase1(devid, offset+i, n);
+  }
+}
+
+void pgr_getfoset(int devid, unsigned long long int fodata[][FDIM])
+{
+  int ret;
+  int npc = npipe_per_chip[devid];
+  unsigned int size = NCHIP * npc * FDIM * sizeof(unsigned long long int);
+
+  AGAIN:
+  ret = pg4_DMAget(devid, size);
+  if (pg4_DMAretry(devid) > 0) {
+    //    fprintf(stderr, "possible DMA failure\n");
+    //    pg4_DMAcheck(devid);
+    goto AGAIN;
+  }
+  memcpy(fodata, &ptr[devid][0], size);
+
+  //  memcpy(fodata, bar1[devid]+(ADR_FOSET<<1), size);
+}
+
+void pgr_getfoset2(int devid, unsigned long long int fodata[][FDIM], unsigned int size, unsigned int offset)
+{
+  int ret;
+
+  AGAIN2:
+  ret = pg4_DMAget_offset(devid, size, offset);
+  if (pg4_DMAretry(devid) > 0) {
+    //    fprintf(stderr, "possible DMA failure\n");
+    //    pg4_DMAcheck(devid);
+    goto AGAIN2;
+  }
+  memcpy(fodata, &ptr[devid][0], size);
+}
+
+//PIO version
+void pgr_getfoset3(int devid, unsigned long long int fodata[][FDIM])
+{
+  int npc = npipe_per_chip[devid];
+  unsigned int size = NCHIP * npc * FDIM * sizeof(unsigned long long int);
+  memcpy(fodata, bar1[devid]+(ADR_FOSET<<1), size);
+}
+
+void pgr_set_jwidth(int devid, int n)
+{
+ if(n < 1) {
+    fprintf(stderr,"pgr api error, JWIDTH be > 0.\n");
+    exit(-1);
+  }
+  jwidth[devid] = n;
+}
+
+void pgr_set_npipe_per_chip(int devid, int n){
+  if(n>256){
+    fprintf(stderr,"pgr api error, NPIPE/chip must be < 257.\n");
+    fprintf(stderr,"[NPIPE/chip %d ?]\n",n);
+    exit(-1);
+  }else if(n<1){
+    fprintf(stderr,"pgr api error, NPIPE/chip must be > 0.\n");
+    fprintf(stderr,"[NPIPE/chip %d ?]\n",n);
+    exit(-1);
+  }
+  npipe_per_chip[devid] = n; // this is used in pgr_getfoset().
+  WriteBase0(devid, NPIPE_IFPGA, n);
+}
+
+int pgr_open(int id)
+{
+  int rtn;
+  rtn = pg4_open(id);
+  bar1[id] = pg4_get_bar1ptr(id);
+
+  return rtn;
+}
+
+void pgr_close(int devid)
+{
+  pg4_close(devid);
+}
+
+

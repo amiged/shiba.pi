@@ -1,16 +1,19 @@
-Wed Oct 21 19:56:25 JST 2015
-#include<stdio.h>
-#define LONG long long int 
-// bit level check between emulator and hardware(pg2)
-void check_pg2emu(LONG accel[][3],LONG accel_pg2[][3],int n)
-{
-  int i,j;
-  for(i=0;i<n;i++){
-    for(j=0;i<3;j++){
-      LONG a_emu,a_pg2;
-      a_emu = accel[i][j];
-      a_pg2 = accel_pg2[i][j];
-      if(a_emu != a_pg2){fprintf(stderr,"error\n");}
-    }
-  }
-}
+Sat Feb 20 19:30:29 JST 2016
+//============================================================================
+struct flops_member {
+  double Gflops;
+  double start_time;
+  double force_time;
+  int nbody;
+  int times;
+  int nstep;
+  int nskip;
+};
+
+void flops_initialize(struct flops_member *fm, int n, int nskip);
+void flops_check(struct flops_member *fm);
+
+void flops_ftime_init(struct flops_member *fm);
+void flops_ftime_save(struct flops_member *fm);
+
+

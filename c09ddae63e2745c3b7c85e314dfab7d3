@@ -1,418 +1,170 @@
-Fri Feb 12 19:36:56 JST 2016
-// Time-stamp: "2007-01-24 20:26:48 hamada"
+Wed Feb 24 19:36:29 JST 2016
+#!/bin/sh
+#
+# Copyright (c) 2006, 2008 Junio C Hamano
+#
+# The "pre-rebase" hook is run just before "git rebase" starts doing
+# its job, and can prevent the command from running by exiting with
+# non-zero status.
+#
+# The hook is called with the following parameters:
+#
+# $1 -- the upstream the series was forked from.
+# $2 -- the branch being rebased (or empty when rebasing the current branch).
+#
+# This sample shows how to prevent topic branches that are already
+# merged to 'next' branch from getting rebased, because allowing it
+# would result in rebasing already published history.
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/time.h>
-#include <sys/resource.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/mman.h>
-#include <asm/page.h>
-#include <errno.h>
-#include <memory.h>
-#include <sys/ioctl.h>
-#include <unistd.h>
-#include <time.h>
+publish=next
+basebranch="$1"
+if test "$#" = 2
+then
+	topic="refs/heads/$2"
+else
+	topic=`git symbolic-ref HEAD` ||
+	exit 0 ;# we do not interrupt rebasing detached HEAD
+fi
 
-void pg4_close_and_exit(int devid);
+case "$topic" in
+refs/heads/??/*)
+	;;
+*)
+	exit 0 ;# we do not interrupt others.
+	;;
+esac
 
-#include "pg4.h"
+# Now we are dealing with a topic branch being rebased
+# on top of master.  Is it OK to rebase it?
 
-/* Function macros not implemented in C language */
-#define   MAX(x,y)     (((x) > (y)) ?  (x) : (y))
-#define   MIN(x,y)     (((x) < (y)) ?  (x) : (y))
-
-//#define NMAX (0x1<<10) // 4KB
-#define NMAX (0x1<<14)   // 64KB
-
-unsigned int buf[NMAX], buf2[NMAX];
-int devid;
-unsigned int* ptr;
-unsigned int* bar0;
-unsigned int* bar1;
-unsigned int* dmaw_buf;
-unsigned int* dmar_buf;
-
-double Rpeak, Wpeak;
-
-double e_time(void)
-{
-  static struct timeval now;
-  static struct timezone tz;
-
-  gettimeofday(&now, &tz);
-  return (double)(now.tv_sec  + now.tv_usec/1000000.0);
+# Does the topic really exist?
+git show-ref -q "$topic" || {
+	echo >&2 "No such branch $topic"
+	exit 1
 }
 
-void PIO(void)
-{
-  int i, n, j, count, size;
-  double lap, dum;
-
-  n = NMAX;
-  for(i = 0; i < n; i++) {
-    buf[i] = rand();
-  }
-  size = n*sizeof(int);
-
-  // PIO write
-  count = 0x1000;
-  dum = e_time();
-  for(j = 0; j < count; j++) {
-
-    //    for(i = 0; i < n; i++)  pg4_writebase1(devid, i, buf[i]);
-    memcpy(bar1, buf, n*sizeof(unsigned int));
-
-  }
-  lap = e_time() - dum;
-  printf("PIO Write %f MB/sec (%f)\n", (double)size*count/lap/1.0e6, lap);
-  Wpeak = MAX(Wpeak, (double)size*count/lap/1.0e6);
-
-
-  // PIO read
-  count = 0x100;
-  dum = e_time();
-  for(j = 0; j < count; j++) {
-    for(i = 0; i < n; i++) {
-      buf[i] = pg4_readbase1(devid, i);
-    }
-  }
-  lap = e_time() - dum;
-  printf("PIO Read %f MB/sec (%f)\n", size*count/lap/1.0e6, lap);
-}
-
-
-void DMA(void)
-{
-  int i, n, j, count, size, ret;
-  double lap, dum;
-
-  n = NMAX;
-  for(i = 0; i < n; i++) {
-    buf[i] = rand();
-  }
-  size = n*sizeof(int);
-
-  // write speed
-  count = 0x800;
-  dum = e_time();
-  for(j = 0; j < count; j++) {
-    ret = pg4_DMAput(devid, size);
-  }
-  lap = e_time() - dum;
-  printf("BusMaster Write %f MB/sec (%f)\n", size*count/lap/1.0e6, lap);
-  //  pg4_DMAcheck(devid);
-
-
-  // read speed
-  count = 0x3000;
-  dum = e_time();
-  for(j = 0; j < count; j++) {
-    ret = pg4_DMAget(devid, size);
-    if (ret < 0) {
-      printf("count %i\n", j);
-      pg4_DMAcheck(devid);
-    }
-  }
-  lap = e_time() - dum;
-  printf("BusMaster Read %f MB/sec (%f)\n", (double)size*count/lap/1.0e6, lap);
-  //  pg4_DMAcheck(devid);
-
-  Rpeak = MAX(Rpeak, (double)size*count/lap/1.0e6);
-
-}
-
-void PIO_W_speed(int count)
-{
-  int i, n, j, size;
-  double lap, dum;
-
-  n = NMAX;
-  for(i = 0; i < n; i++) {
-    buf[i] = rand();
-  }
-  size = n*sizeof(int);
-
-  // PIO write
-  dum = e_time();
-  for(j = 0; j < count; j++) {
-    //    for(i = 0; i < n; i++)  pg4_writebase1(devid, i, buf[i]);
-    memcpy(bar1, buf, n*sizeof(unsigned int));
-  }
-  lap = e_time() - dum;
-  printf("PIO Write %f MB/sec (%f)\n", (double)size*count/lap/1.0e6, lap);
-  Wpeak = MAX(Wpeak, (double)size*count/lap/1.0e6);
-}
-
-void PIO_R_speed(int count)
-{
-  int i, n, j, size;
-  double lap, dum;
-
-  n = NMAX;
-  for(i = 0; i < n; i++) {
-    buf[i] = rand();
-  }
-  size = n*sizeof(int);
-
-  // PIO read
-  dum = e_time();
-  for(j = 0; j < count; j++) {
-    for(i = 0; i < n; i++) {
-      buf[i] = pg4_readbase1(devid, i);
-    }
-  }
-  lap = e_time() - dum;
-  printf("PIO Read %f MB/sec (%f)\n", size*count/lap/1.0e6, lap);
-}
-
-void DMA_W_speed(int count)
-{
-  int i, n, j, size, ret;
-  double lap, dum;
-
-  n = NMAX;
-  for(i = 0; i < n; i++) {
-    //    buf[i] = rand();
-    buf[i] = i;
-  }
-  size = n*sizeof(int);
-
-  // write speed
-  dum = e_time();
-  for(j = 0; j < count; j++) {
-    ret = pg4_DMAput(devid, size);
-  }
-  lap = e_time() - dum;
-  printf("BusMaster Write %f MB/sec (%f)\n", size*count/lap/1.0e6, lap);
-  //  pg4_DMAcheck(devid);
-
-}
-
-void DMA_R_speed(int count)
-{
-  int i, n, j, size, ret;
-  double lap, dum;
-
-  n = NMAX;
-  for(i = 0; i < n; i++) {
-    buf[i] = rand();
-  }
-  size = n*sizeof(int);
-
-  // read speed
-  dum = e_time();
-  for(j = 0; j < count; j++) {
-    ret = pg4_DMAget(devid, size);
-    if (ret < 0) {
-      printf("count %i\n", j);
-      pg4_DMAcheck(devid);
-    }
-  }
-  lap = e_time() - dum;
-  printf("BusMaster Read %f MB/sec (%f)\n", (double)size*count/lap/1.0e6, lap);
-  //  pg4_DMAcheck(devid);
-
-  Rpeak = MAX(Rpeak, (double)size*count/lap/1.0e6);
-
-}
-
-
-void DMA_R_check(void)
-{
-  int i, j, n, ret, size, is_err=0;
-  n = NMAX;
-  size = n*sizeof(int);
-
-  // read test
-  for(j = 0; j < 200; j++) {
-    for(i = 0; i < n; i++) {
-      //      buf[i] = rand();
-      buf[i] = i;
-      pg4_writebase1(devid, i, buf[i]);
-    }
-
-    ret = pg4_DMAget(devid, size);
-
-    if (ret < 0) {
-      fprintf(stderr, "DMA failed!!!!!\n");
-    }
-
-
-    is_err = 0;
-    for(i = 0; i < n; i++) {
-      if (dmar_buf[i] != buf[i]) {
-	//	if(is_err <20) printf("DMAR error(%d) buf[%i] %x %x %x\n", 
-	printf("DMAR error(%d) buf[%i] %x %x %x\n", 
-			      is_err, i, buf[i], dmar_buf[i], buf[i] - dmar_buf[i]);
-	is_err++;
-      }
-    }
-
-    if(is_err == 0){
-      //      printf("R");
-    } else {
-      puts("----------- FAILED DMA_R");
-      pg4_close_and_exit(devid);
-    }
-  }
-  printf("R");
-  fflush(NULL);
-}
-
-
-void DMA_W_check(void)
-{
-  int i, j, n, ret, size, is_err=0;
-  n = NMAX;
-
-  size = n*sizeof(int);
-
-  // write test
-  for(j = 0; j < 50; j++) {
-    for(i = 0; i < n; i++) {
-      unsigned int x = rand();
-      //      unsigned int x = 0x222<<16 | i;
-      x = i;
-      dmaw_buf[i] = x;
-      buf[i]      = x;
-      //      pg4_writebase1(devid, i, 0x777);
-    }
-
-    ret = pg4_DMAput(devid, size);
-
-    if (ret < 0) {
-      fprintf(stderr, "DMA failed!!!!!\n");
-    }
-
-    is_err=0;
-    for(i = 0; i < n; i++) {
-      unsigned int x = pg4_readbase1(devid, i);
-      if (buf[i] != x) {
-	if(is_err < 100)	printf("DMAW error %i %x %x %x\n", i, buf[i], x, buf[i]-x);
-	is_err++;
-      }
-    }
-
-    if(is_err == 0){
-      //      printf("W");
-    }else{
-      puts("----------- FAILED");
-      exit(-1);
-    }
-
-  }
-  printf("W");
-  fflush(NULL);
-}
-
-
-void ErrorCheck_PIOW(void)
-{
-  int i, j, k, n, size;
-  int is_err=0;
-  n = NMAX;
-  size = n*sizeof(int);
-
-  for(k = 0; k < 20000; k++) {
-    // write test
-    for(j = 0; j < 100; j++) {
-      for(i = 0; i < n; i++) {
-	buf[i] = rand();
-      }
-
-
-      //      for(i = 0; i < n; i++) {
-      //	pg4_writebase1(devid, i, buf[i]);
-      //      }
-      memcpy(bar1, buf, n*sizeof(unsigned int));
-
-
-      for(i = 0; i < n; i++) {
-	unsigned int x = pg4_readbase1(devid, i);
-	if (buf[i] != x) {
-	  printf("error %i %x %x %x\n", i, buf[i], x, buf[i]-x);
-	  is_err++;
-	}
-      }
-      if(is_err != 0) {printf("is_err %d\n",is_err);exit(-1);}
-    }
-    printf(".");
-    fflush(NULL);
-  }
-
-  printf("\n");
-  fflush(NULL);
-}
-
-
-
-
-int main(int argc,char *argv[])
-{
-  int i;
-  int dma_size;
-  Rpeak = Wpeak = 0.0;
-  srand(time(NULL));
-
-  devid = 0;
-
-  pg4_open(devid);
-
-  bar0 = pg4_get_bar0ptr(devid);
-  bar1 = pg4_get_bar1ptr(devid);
-
-  dmaw_buf = pg4_get_dmawptr(devid);
-  dmar_buf = pg4_get_dmarptr(devid);
-  dma_size = pg4_get_dma_size(devid);
-
-  printf("DMA SIZE=0x%x\n",dma_size);
-  printf("BAR0 (%ld Bytes)    : %lx\n"
-	 ,pg4_getbaseaddr_size(devid,0)
-	 ,pg4_getbaseaddr(devid,0));
-  printf("BAR1 (%ld Bytes)    : %lx\n"
-	 ,pg4_getbaseaddr_size(devid,1)
-	 ,pg4_getbaseaddr(devid,1));
-
-
-  //  DMA_W_speed();
-  //  DMA_R_speed();
-
-  if(0){
-    int i, n;
-    n = (dma_size >> 2);
-    for(i = 0; i < n; i++) buf[i] = i;
-    memcpy(bar1, buf, n*sizeof(unsigned int));
-
-    pg4_DMAput(devid, dma_size);
-
-    for(i = 0; i < (dma_size>>2); i++) {
-      int res  = dmar_buf[i];
-      int diff = i  - res;
-      if(diff != 0)
-	printf("dmar_buf[%i] %i %i\n",i ,res, diff);
-    }
-  }
-
-
-
-  PIO_W_speed(1000);
-  PIO_R_speed(40);
-  
-  DMA_W_speed(40);
-  DMA_R_speed(1000);
-
-  while(0) {
-    DMA_W_check();
-    DMA_R_check();
-  }
-
-
-  ErrorCheck_PIOW();
-  return 0;
-}
+# Is topic fully merged to master?
+not_in_master=`git rev-list --pretty=oneline ^master "$topic"`
+if test -z "$not_in_master"
+then
+	echo >&2 "$topic is fully merged to master; better remove it."
+	exit 1 ;# we could allow it, but there is no point.
+fi
+
+# Is topic ever merged to next?  If so you should not be rebasing it.
+only_next_1=`git rev-list ^master "^$topic" ${publish} | sort`
+only_next_2=`git rev-list ^master           ${publish} | sort`
+if test "$only_next_1" = "$only_next_2"
+then
+	not_in_topic=`git rev-list "^$topic" master`
+	if test -z "$not_in_topic"
+	then
+		echo >&2 "$topic is already up-to-date with master"
+		exit 1 ;# we could allow it, but there is no point.
+	else
+		exit 0
+	fi
+else
+	not_in_next=`git rev-list --pretty=oneline ^${publish} "$topic"`
+	/usr/bin/perl -e '
+		my $topic = $ARGV[0];
+		my $msg = "* $topic has commits already merged to public branch:\n";
+		my (%not_in_next) = map {
+			/^([0-9a-f]+) /;
+			($1 => 1);
+		} split(/\n/, $ARGV[1]);
+		for my $elem (map {
+				/^([0-9a-f]+) (.*)$/;
+				[$1 => $2];
+			} split(/\n/, $ARGV[2])) {
+			if (!exists $not_in_next{$elem->[0]}) {
+				if ($msg) {
+					print STDERR $msg;
+					undef $msg;
+				}
+				print STDERR " $elem->[1]\n";
+			}
+		}
+	' "$topic" "$not_in_next" "$not_in_master"
+	exit 1
+fi
+
+exit 0
+
+################################################################
+
+This sample hook safeguards topic branches that have been
+published from being rewound.
+
+The workflow assumed here is:
+
+ * Once a topic branch forks from "master", "master" is never
+   merged into it again (either directly or indirectly).
+
+ * Once a topic branch is fully cooked and merged into "master",
+   it is deleted.  If you need to build on top of it to correct
+   earlier mistakes, a new topic branch is created by forking at
+   the tip of the "master".  This is not strictly necessary, but
+   it makes it easier to keep your history simple.
+
+ * Whenever you need to test or publish your changes to topic
+   branches, merge them into "next" branch.
+
+The script, being an example, hardcodes the publish branch name
+to be "next", but it is trivial to make it configurable via
+$GIT_DIR/config mechanism.
+
+With this workflow, you would want to know:
+
+(1) ... if a topic branch has ever been merged to "next".  Young
+    topic branches can have stupid mistakes you would rather
+    clean up before publishing, and things that have not been
+    merged into other branches can be easily rebased without
+    affecting other people.  But once it is published, you would
+    not want to rewind it.
+
+(2) ... if a topic branch has been fully merged to "master".
+    Then you can delete it.  More importantly, you should not
+    build on top of it -- other people may already want to
+    change things related to the topic as patches against your
+    "master", so if you need further changes, it is better to
+    fork the topic (perhaps with the same name) afresh from the
+    tip of "master".
+
+Let's look at this example:
+
+		   o---o---o---o---o---o---o---o---o---o "next"
+		  /       /           /           /
+		 /   a---a---b A     /           /
+		/   /               /           /
+	       /   /   c---c---c---c B         /
+	      /   /   /             \         /
+	     /   /   /   b---b C     \       /
+	    /   /   /   /             \     /
+    ---o---o---o---o---o---o---o---o---o---o---o "master"
+
+
+A, B and C are topic branches.
 
+ * A has one fix since it was merged up to "next".
 
+ * B has finished.  It has been fully merged up to "master" and "next",
+   and is ready to be deleted.
+
+ * C has not merged to "next" at all.
+
+We would want to allow C to be rebased, refuse A, and encourage
+B to be deleted.
+
+To compute (1):
+
+	git rev-list ^master ^topic next
+	git rev-list ^master        next
+
+	if these match, topic has not merged in next at all.
+
+To compute (2):
+
+	git rev-list master..topic
+
+	if this is empty, it is fully merged to "master".

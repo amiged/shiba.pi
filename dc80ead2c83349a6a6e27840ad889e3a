@@ -1,279 +1,233 @@
-Sat Feb  6 19:31:09 JST 2016
-Release 6.2.03i Par G.31a
-Copyright (c) 1995-2004 Xilinx, Inc.  All rights reserved.
+Thu Mar 17 19:34:46 JST 2016
+/*
+ * pfpga_conf_a.c
+ *
+ * Copyright (C) 2006-2007 Tsuyoshi Hamada
+ *                                All rights reserved.
+ * 
+ * No warranty is attached; 
+ * I cannot take responsibility for errors or fitness for use.
+ *
+ */
 
-a1::  Mon Jun 13 23:37:32 2005
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <unistd.h>     // usleep
+#include "pg4.h"
 
+static char pfpga_info[256];
+#define CNF_CMD_ADR 0x80
+#define CNF_DAT_ADR 0x84
 
-par -w -intstyle ise -ol std -t 1 top_map.ncd top.ncd top.pcf 
+static unsigned int *data;
 
+void get_header(char* bitfile, char* header)
+{
+  int index=0, x;
+  char buf[128];
+  
+  index += 2 + (((0xff&bitfile[index])<<8) | (0xff&bitfile[index+1]));
+  index += 2 + (((0xff&bitfile[index])<<8)|(0xff&bitfile[index+1]));
 
-Constraints file: top.pcf
+  // --- NCD file name ---
+  x = ((0xff&bitfile[index])<<8)|(0xff&bitfile[index+1]);
+  //  memcpy(buf, &bitfile[index+2], x);
+  //  sprintf(header, "%s, %s", header, buf);
 
-Loading device database for application Par from file "top_map.ncd".
-   "top" is an NCD, version 2.38, device xc2vp70, package ff1517, speed -5
-Loading device for application Par from file '2vp70.nph' in environment
-/export/home/opt/xilinx.
-Device speed data version:  PRODUCTION 1.86 2004-05-01.
+  // --- device ---
+  index += (x+3);
+  x = ((0xff&bitfile[index])<<8)|(0xff&bitfile[index+1]);
+  memcpy(buf, &bitfile[index+2], x);
+  sprintf(header, "%s, %s", header, buf);
 
+  // --- data ---
+  index += (x+3);
+  x = ((0xff&bitfile[index])<<8)|(0xff&bitfile[index+1]);
+  memcpy(buf, &bitfile[index+2], x);
+  sprintf(header, "%s, %s", header, buf);
 
-Resolved that IOB <TPIN<0>> must be placed at site Y36.
-Resolved that IOB <TPIN<1>> must be placed at site W27.
-Resolved that IOB <TPIN<2>> must be placed at site Y37.
-Resolved that IOB <TPIN<3>> must be placed at site W28.
-Resolved that IOB <TPIN<4>> must be placed at site Y31.
-Resolved that IOB <TPIN<5>> must be placed at site W34.
-Resolved that IOB <TPIN<6>> must be placed at site W31.
-Resolved that IOB <TPIN<7>> must be placed at site W35.
-Resolved that IOB <TPIN<10>> must be placed at site Y33.
-Resolved that IOB <TPIN<11>> must be placed at site G39.
-Resolved that IOB <TPIN<12>> must be placed at site W36.
-Resolved that IOB <TPIN<13>> must be placed at site G36.
-Resolved that IOB <TPIN<14>> must be placed at site W37.
-Resolved that IOB <TPIN<15>> must be placed at site G37.
-Resolved that IOB <RST> must be placed at site AR19.
-Resolved that IOB <CK66> must be placed at site AG20.
-Resolved that IOB <CK133> must be placed at site AK20.
-Resolved that IOB <LED<0>> must be placed at site P34.
-Resolved that IOB <LED<1>> must be placed at site P33.
-Resolved that IOB <LED<2>> must be placed at site R27.
-Resolved that IOB <LED<3>> must be placed at site T27.
-Resolved that IOB <LED<4>> must be placed at site P36.
-Resolved that IOB <LED<5>> must be placed at site P35.
-Resolved that IOB <LED<6>> must be placed at site P37.
-Resolved that IOB <LED<7>> must be placed at site N37.
-Resolved that IOB <DSW<0>> must be placed at site T30.
-Resolved that IOB <DSW<1>> must be placed at site T29.
-Resolved that IOB <DSW<2>> must be placed at site P39.
-Resolved that IOB <DSW<3>> must be placed at site P38.
-Resolved that IOB <DSW<4>> must be placed at site R33.
-Resolved that IOB <DSW<5>> must be placed at site R32.
-Resolved that IOB <DSW<6>> must be placed at site T28.
-Resolved that IOB <DSW<7>> must be placed at site U28.
-Resolved that IOB <FPGA_NO<0>> must be placed at site AP19.
-Resolved that IOB <FPGA_NO<1>> must be placed at site AN19.
-Resolved that IOB <DBUS<10>> must be placed at site AT12.
-Resolved that IOB <DBUS<11>> must be placed at site AR12.
-Resolved that IOB <DBUS<20>> must be placed at site AT13.
-Resolved that IOB <DBUS<12>> must be placed at site AJ14.
-Resolved that IOB <DBUS<21>> must be placed at site AR13.
-Resolved that IOB <DBUS<13>> must be placed at site AJ15.
-Resolved that IOB <DBUS<30>> must be placed at site AH17.
-Resolved that IOB <DBUS<22>> must be placed at site AN14.
-Resolved that IOB <DBUS<14>> must be placed at site AM13.
-Resolved that IOB <DBUS<31>> must be placed at site AG17.
-Resolved that IOB <DBUS<23>> must be placed at site AM14.
-Resolved that IOB <DBUS<15>> must be placed at site AL13.
-Resolved that IOB <DBUS<40>> must be placed at site AM16.
-Resolved that IOB <DBUS<32>> must be placed at site AN15.
-Resolved that IOB <DBUS<24>> must be placed at site AH15.
-Resolved that IOB <DBUS<16>> must be placed at site AP12.
-Resolved that IOB <DBUS<41>> must be placed at site AL16.
-Resolved that IOB <DBUS<33>> must be placed at site AM15.
-Resolved that IOB <DBUS<25>> must be placed at site AH16.
-Resolved that IOB <DBUS<17>> must be placed at site AN13.
-Resolved that IOB <DBUS<50>> must be placed at site AM18.
-Resolved that IOB <DBUS<42>> must be placed at site AM17.
-Resolved that IOB <DBUS<34>> must be placed at site AR15.
-Resolved that IOB <DBUS<26>> must be placed at site AR14.
-Resolved that IOB <DBUS<18>> must be placed at site AL15.
-Resolved that IOB <DBUS<51>> must be placed at site AL18.
-Resolved that IOB <DBUS<43>> must be placed at site AL17.
-Resolved that IOB <DBUS<35>> must be placed at site AP15.
-Resolved that IOB <DBUS<27>> must be placed at site AP14.
-Resolved that IOB <DBUS<19>> must be placed at site AK15.
-Resolved that IOB <DBUS<60>> must be placed at site AU18.
-Resolved that IOB <DBUS<52>> must be placed at site AK18.
-Resolved that IOB <DBUS<44>> must be placed at site AR16.
-Resolved that IOB <DBUS<36>> must be placed at site AK16.
-Resolved that IOB <DBUS<28>> must be placed at site AU14.
-Resolved that IOB <DBUS<61>> must be placed at site AU19.
-Resolved that IOB <DBUS<53>> must be placed at site AJ18.
-Resolved that IOB <DBUS<45>> must be placed at site AR17.
-Resolved that IOB <DBUS<37>> must be placed at site AJ17.
-Resolved that IOB <DBUS<29>> must be placed at site AT14.
-Resolved that IOB <DBUS<62>> must be placed at site AM19.
-Resolved that IOB <DBUS<54>> must be placed at site AP18.
-Resolved that IOB <DBUS<46>> must be placed at site AH18.
-Resolved that IOB <DBUS<38>> must be placed at site AU15.
-Resolved that IOB <DBUS<63>> must be placed at site AL19.
-Resolved that IOB <DBUS<55>> must be placed at site AN18.
-Resolved that IOB <DBUS<47>> must be placed at site AG18.
-Resolved that IOB <DBUS<39>> must be placed at site AT15.
-Resolved that IOB <DBUS<56>> must be placed at site AT18.
-Resolved that IOB <DBUS<48>> must be placed at site AU17.
-Resolved that IOB <DBUS<57>> must be placed at site AR18.
-Resolved that IOB <DBUS<49>> must be placed at site AT17.
-Resolved that IOB <DBUS<58>> must be placed at site AH19.
-Resolved that IOB <DBUS<59>> must be placed at site AG19.
-Resolved that IOB <CBUS<0>> must be placed at site AU10.
-Resolved that IOB <CBUS<1>> must be placed at site AT10.
-Resolved that IOB <CBUS<2>> must be placed at site AJ12.
-Resolved that IOB <CBUS<3>> must be placed at site AJ13.
-Resolved that IOB <CBUS<4>> must be placed at site AL10.
-Resolved that IOB <CBUS<5>> must be placed at site AL11.
-Resolved that IOB <CBUS<6>> must be placed at site AN11.
-Resolved that IOB <CBUS<7>> must be placed at site AM11.
-Resolved that IOB <DBUS<0>> must be placed at site AH13.
-Resolved that IOB <DBUS<1>> must be placed at site AH14.
-Resolved that IOB <DBUS<2>> must be placed at site AR11.
-Resolved that IOB <DBUS<3>> must be placed at site AP11.
-Resolved that IOB <DBUS<4>> must be placed at site AU11.
-Resolved that IOB <DBUS<5>> must be placed at site AT11.
-Resolved that IOB <DBUS<6>> must be placed at site AL14.
-Resolved that IOB <DBUS<7>> must be placed at site AK14.
-Resolved that IOB <DBUS<8>> must be placed at site AM12.
-Resolved that IOB <DBUS<9>> must be placed at site AL12.
+  // --- time ---
+  index += (x+3);
+  x = ((0xff&bitfile[index])<<8)|(0xff&bitfile[index+1]);
+  memcpy(buf, &bitfile[index+2], x);
+  sprintf(header, "%s, %s", header, buf);
+
+  // --- key ---
+  index += (x+3);
+  x = ((0xff&bitfile[index])<<8)|(0xff&bitfile[index+1]);
+  //  memcpy(buf, &bitfile[index+2], x);
+  //  sprintf(header, "%s, %s", header, buf);
 
 
-Device utilization summary:
-
-   Number of External IOBs           107 out of 964    11%
-      Number of LOCed External IOBs  107 out of 107   100%
-
-   Number of MULT18X18s               15 out of 328     4%
-   Number of RAMB16s                 143 out of 328    43%
-   Number of SLICEs                 9450 out of 33088  28%
-
-   Number of BUFGMUXs                  2 out of 16     12%
-   Number of DCMs                      1 out of 8      12%
+}
 
 
 
-Overall effort level (-ol):   Standard (set by user)
-Placer effort level (-pl):    Standard (set by user)
-Placer cost table entry (-t): 1
-Router effort level (-rl):    Standard (set by user)
+int fread_config_data(char* fname, unsigned int *size)
+{
+  // -- Read Config File to 'config_bit_data'---
+  FILE* fin;
+  int ndata;
+  int i;
 
-Starting initial Timing Analysis.  REAL time: 5 secs 
-Finished initial Timing Analysis.  REAL time: 17 secs 
+  struct stat buf;
+  int fsize;
 
+  // read file status
+  if (stat(fname, &buf) == -1) {
+    fprintf(stderr, "fread_config_data: can't open bit file!!! %s\n", fname);
+    exit(-1);
+  }
 
-Phase 1.1
-WARNING:Place - Use of the left PPC405 has been detected. The left processor
-   requires specialdesign considerations when operating above 350 MHz in the -7
-   speed grade part.Please see Xilinx Application Note XAPP755 for details.
-Phase 1.1 (Checksum:9a3864) REAL time: 19 secs 
+  fsize = buf.st_size;
+  if (data != NULL) {
+    free(data);
+  }
+  data = (unsigned int*)malloc(fsize);
+  if (data == NULL) {
+    fprintf(stderr, "fread_config_data: memory allocation error!\n");
+    exit(-1);
+  }
+  
+  fin = fopen(fname, "r");
+  if (fin == NULL) {
+    fprintf(stderr, "fread_config_data: cannot open %s!\n", fname);
+    exit(-1);
+  }
+  fread(data,fsize,1,fin);
+  fclose(fin);
+  fprintf(stderr, "fread_config_data: read %i bytes.\n", fsize);
 
-Phase 2.2
-.
-Phase 2.2 (Checksum:1312cfe) REAL time: 40 secs 
+  get_header((char*)data, pfpga_info);
 
-Phase 3.3
-Phase 3.3 (Checksum:1c9c37d) REAL time: 41 secs 
+  
+  ndata = fsize/sizeof(unsigned int);
 
-Phase 4.5
-Phase 4.5 (Checksum:26259fc) REAL time: 41 secs 
+  // CHANGE ENDIAN (LittleEndian -> BigEndian)
+  for(i = 0;i < ndata; i++){
+    unsigned int byte[8];
+    byte[0] = 0xFF&(data[i]>>24);
+    byte[1] = 0xFF&(data[i]>>16);
+    byte[2] = 0xFF&(data[i]>>8);
+    byte[3] = 0xFF&(data[i]);
+    data[i]=0x0;
+    data[i]= (byte[3]<<24)|(byte[2]<<16)|(byte[1]<<8)|byte[0];
+  }
 
-Phase 5.8
-..................................................................................................................................................................
-...
-Phase 5.8 (Checksum:13ca16c) REAL time: 1 mins 35 secs 
+  *size = (unsigned int)ndata;
 
-Phase 6.5
-Phase 6.5 (Checksum:39386fa) REAL time: 1 mins 35 secs 
+  return fsize;
+}
 
-Phase 7.18
-Phase 7.18 (Checksum:42c1d79) REAL time: 2 mins 1 secs 
+void config_onechip(int devid, unsigned int nfp, unsigned int ncfgdata)
+{
+  unsigned int i, d;
+  unsigned int *p;
 
-Phase 8.24
-Phase 8.24 (Checksum:4c4b3f8) REAL time: 2 mins 1 secs 
+  if (data == NULL) return;
+  if (nfp > 0x8) {
+    fprintf(stderr, "nfp err\n");
+    exit(-1);
+  } 
 
-Phase 9.27
-Phase 9.27 (Checksum:55d4a77) REAL time: 2 mins 7 secs 
+  // ---------------------------------------- SETUP CONFIGURATION
+  d = (unsigned int)(0xf0|nfp);
+  WriteBase0(devid, CNF_CMD_ADR, d);
+  d = (unsigned int)(  ((0xF^nfp)<<4)   |nfp);
+  WriteBase0(devid, CNF_CMD_ADR, d);
+  d = (unsigned int)(0xf0|nfp);
+  WriteBase0(devid, CNF_CMD_ADR, d);
+  usleep(15000);
 
-Writing design to file top.ncd.
+  // ---------------------------------------- SEND CONFIGURATION DATA
+  p = data;
+  for(i = 0; i < ncfgdata; i++){
+    WriteBase0(devid, CNF_DAT_ADR, *(p++));
+    d = (unsigned int)(0x1f0|nfp);
+    WriteBase0(devid, CNF_CMD_ADR,      d);
+    WriteBase0(devid, CNF_CMD_ADR, 0xff&d);
+  }
 
-Total REAL time to Placer completion: 2 mins 12 secs 
-Total CPU time to Placer completion: 2 mins 12 secs 
+  // ---------------------------------------- STOP CFG_CCLK
+  d = (unsigned int)(0xf0);
+  WriteBase0(devid, CNF_CMD_ADR,d);
+}
 
+void config_pfpga_a(int devid, char* fname, int chipid)
+{
+  unsigned int i, nfp, ncfgdata;
 
-Phase 1: 67799 unrouted;       REAL time: 2 mins 16 secs 
+  data = NULL;
+  fread_config_data(fname, &ncfgdata);
 
-Phase 2: 58070 unrouted;       REAL time: 3 mins 2 secs 
+  {
+    i = chipid;
+    nfp = 0xf&(0x1<<i);
+    fprintf(stderr, "configuring chip%i ...\n", i);
+    config_onechip(devid, nfp, ncfgdata);
+  }
 
-Phase 3: 12914 unrouted;       REAL time: 3 mins 11 secs 
+  free(data);
+}
 
-Phase 4: 12914 unrouted; (15928)      REAL time: 3 mins 12 secs 
+int main(int argc, char* argv[])
+{
+  int devid, chipid;
 
-Phase 5: 12990 unrouted; (0)      REAL time: 3 mins 38 secs 
+  if (argc < 2) {
+    fprintf(stderr, "%s <bitfile> <chipid> <devid>\n", argv[0]);
+    exit(-1);
+  }
 
-Phase 6: 12990 unrouted; (0)      REAL time: 3 mins 39 secs 
+  if (argv[2] == NULL) {
+    chipid = 0;
+  } else {
+    chipid = atoi(argv[2]);
+    if (chipid > 3) {
+      fprintf(stderr, "%s : invalid argument <chipid> %s:%d\n", argv[0], __FILE__, __LINE__);
+      exit(-1);
+    }
+  }
 
-Phase 7: 0 unrouted; (0)      REAL time: 4 mins 7 secs 
+  if (argv[3] == NULL) {
+    devid = 0;
+  } else {
+    devid = atoi(argv[3]);
+    if (devid > 3) {
+      fprintf(stderr, "%s : invalid argument <devid>%s:%d\n", argv[0], __FILE__, __LINE__);
+      exit(-1);
+    }
+  }
 
-Total REAL time to Router completion: 4 mins 17 secs 
-Total CPU time to Router completion: 4 mins 16 secs 
+  fprintf(stderr, "%s configures a PFPGA%i on progrape%i ...\n", argv[0], chipid, devid);
 
-Generating "par" statistics.
+  pg4_open(devid);
 
-**************************
-Generating Clock Report
-**************************
+  {
+    pg4_get_pfpga_info(devid, pfpga_info);
+    printf("----------------------\n");
+    printf("Previous config info: \n");
+    printf("%s\n",pfpga_info);
+    printf("----------------------\n");
+  }
 
-+-------------------------+----------+------+------+------------+-------------+
-|        Clock Net        | Resource |Locked|Fanout|Net Skew(ns)|Max Delay(ns)|
-+-------------------------+----------+------+------+------------+-------------+
-|              CLK1       | BUFGMUX0P| No   | 4371 |  0.920     |  2.402      |
-+-------------------------+----------+------+------+------------+-------------+
-|              CLK0       | BUFGMUX2P| No   |  949 |  0.919     |  2.401      |
-+-------------------------+----------+------+------+------------+-------------+
+  {
+    sprintf(pfpga_info, "%s on <PFPGA%d>", argv[1], chipid);
+    config_pfpga_a(devid, argv[1], chipid);
+    pg4_set_pfpga_info(devid, pfpga_info);
+  }
 
+  {
+    pg4_get_pfpga_info(devid, pfpga_info);
+    printf("----------------------\n");
+    printf("Current config info: \n");
+    printf("%s\n",pfpga_info);
+    printf("----------------------\n");
+  }
 
-   The Delay Summary Report
+  pg4_close(devid);
 
-   The SCORE FOR THIS DESIGN is: 429
-
-
-The NUMBER OF SIGNALS NOT COMPLETELY ROUTED for this design is: 0
-
-   The AVERAGE CONNECTION DELAY for this design is:        1.575
-   The MAXIMUM PIN DELAY IS:                              14.387
-   The AVERAGE CONNECTION DELAY on the 10 WORST NETS is:  13.600
-
-   Listing Pin Delays by value: (nsec)
-
-    d < 3.00   < d < 6.00  < d < 9.00  < d < 12.00  < d < 15.00  d >= 15.00
-   ---------   ---------   ---------   ---------   ---------   ---------
-       60630        5087        1328         617         137           0
-
-Timing Score: 0
-
-Asterisk (*) preceding a constraint indicates it was not met.
-   This may be due to a setup or hold violation.
-
---------------------------------------------------------------------------------
-  Constraint                                | Requested  | Actual     | Logic 
-                                            |            |            | Levels
---------------------------------------------------------------------------------
-  TS_CK66 = PERIOD TIMEGRP "CK66"  20 nS    | N/A        | N/A        | N/A  
-  HIGH 50.000000 %                          |            |            |      
---------------------------------------------------------------------------------
-  TS_dcm0_dcm_out = PERIOD TIMEGRP "dcm0_dc | 20.000ns   | 19.569ns   | 2    
-  m_out" TS_CK66 * 1.000000  HIGH 50.000 %  |            |            |      
---------------------------------------------------------------------------------
-  TS_dcm0_dcm_fx = PERIOD TIMEGRP "dcm0_dcm | 20.000ns   | 14.739ns   | 0    
-  _fx" TS_CK66 * 1.000000  HIGH 50.000 %    |            |            |      
---------------------------------------------------------------------------------
-
-
-All constraints were met.
-INFO:Timing:2761 - N/A entries in the Constraints list may indicate that the
-   constraint does not cover any paths or that it has no requested value.
-Generating Pad Report.
-
-All signals are completely routed.
-
-Total REAL time to PAR completion: 4 mins 24 secs 
-Total CPU time to PAR completion: 4 mins 23 secs 
-
-Peak Memory Usage:  537 MB
-
-Placement: Completed - No errors found.
-Routing: Completed - No errors found.
-Timing: Completed - No errors found.
-
-Writing design to file top.ncd.
-
-
-PAR done.
+  return 0;
+}

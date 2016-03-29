@@ -1,231 +1,50 @@
-Mon Feb 22 19:35:46 JST 2016
--- C:\CYGWIN\HOME\ADMINISTRATOR\FKIT\PCI64\PROJ
--- VHDL Annotation Test Bench created by
--- HDL Bencher 6.1i
--- Tue Jan 04 15:15:30 2005
+Tue Mar 29 19:31:13 JST 2016
+-- Copyright 2004 Tsuyoshi Hamada
+--
+--
+--clk         __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __
+--[DMAR_ENABLE] _____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
+--en0                _____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
+--en1                     _____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
+--en2                          _____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
+--en3                               _____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
+--DBUS_HiZ            ~~~~~~~~~~~~~~\_________________________________________________/~~~~
 
-LIBRARY IEEE;
-USE IEEE.STD_LOGIC_1164.ALL;
-USE IEEE.STD_LOGIC_UNSIGNED.ALL;
-USE IEEE.STD_LOGIC_ARITH.ALL;
-USE IEEE.STD_LOGIC_TEXTIO.ALL;
-USE STD.TEXTIO.ALL;
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
 
-ENTITY sim_local_read_cnt IS
-END sim_local_read_cnt;
+entity dmar_dbus_hiz is
+  port (
+    RST       : in std_logic;
+    CLK       : in std_logic;
+    ENABLE    : in std_logic;
+    DBUS_HiZ  : out std_logic :='1');
+end dmar_dbus_hiz;
 
-ARCHITECTURE testbench_arch OF sim_local_read_cnt IS
--- If you get a compiler error on the following line,
--- from the menu do Options->Configuration select VHDL 87
-FILE RESULTS: TEXT OPEN WRITE_MODE IS "c:\cygwin\home\administrator\fkit\pci64\proj\sim_local_read_cnt.ano";
-	COMPONENT local_read_cnt
-		GENERIC (
-			CNT_WIDTH : INTEGER;
-			FO_BASE : INTEGER;
-			NBIT_FO_UAD : INTEGER;
-			INTF_LAT : INTEGER
-		);
-		PORT (
-			NPIPE : In  std_logic_vector (7 DOWNTO 0);
-			CALC_DONE : In  std_logic;
-			BUSY : Out  std_logic;
-			EXEC : Out  std_logic;
-			START_AD : Out  std_logic_vector (18 DOWNTO 0);
-			NQWORD : Out  std_logic_vector (8 DOWNTO 0);
-			CHIPSEL : Out  std_logic_vector (3 DOWNTO 0);
-			MEM_AD_BASE : Out  std_logic_vector (12 DOWNTO 0);
-			BUSY_IF : In  std_logic;
-			RST : In  std_logic;
-			CLK : In  std_logic
-		);
-	END COMPONENT;
+architecture rtl of dmar_dbus_hiz is
+signal en0,en1,en2,en3 : std_logic :='0';
+begin
 
-	SIGNAL NPIPE : std_logic_vector (7 DOWNTO 0);
-	SIGNAL CALC_DONE : std_logic;
-	SIGNAL BUSY : std_logic;
-	SIGNAL EXEC : std_logic;
-	SIGNAL START_AD : std_logic_vector (18 DOWNTO 0);
-	SIGNAL NQWORD : std_logic_vector (8 DOWNTO 0);
-	SIGNAL CHIPSEL : std_logic_vector (3 DOWNTO 0);
-	SIGNAL MEM_AD_BASE : std_logic_vector (12 DOWNTO 0);
-	SIGNAL BUSY_IF : std_logic;
-	SIGNAL RST : std_logic;
-	SIGNAL CLK : std_logic;
+  process(CLK) begin
+    if(CLK'event and CLK = '1') then
+      en3 <= en2;
+      en2 <= en1;
+      en1 <= en0;
+      en0 <= ENABLE;
+    end if;
+  end process;
 
-BEGIN
-	UUT : local_read_cnt
-	GENERIC MAP (
-		CNT_WIDTH => 16,
-		FO_BASE => 24576,
-		NBIT_FO_UAD => 3,
-		INTF_LAT => 8
-	)
-	PORT MAP (
-		NPIPE => NPIPE,
-		CALC_DONE => CALC_DONE,
-		BUSY => BUSY,
-		EXEC => EXEC,
-		START_AD => START_AD,
-		NQWORD => NQWORD,
-		CHIPSEL => CHIPSEL,
-		MEM_AD_BASE => MEM_AD_BASE,
-		BUSY_IF => BUSY_IF,
-		RST => RST,
-		CLK => CLK
-	);
 
-	PROCESS -- clock process for CLK,
-		VARIABLE TX_TIME : INTEGER :=0;
+  process(RST,CLK,en2,en3) begin
+    if(RST='1') then
+      DBUS_HiZ <= '1';
+    elsif(CLK'event and CLK = '1') then
+     if( (en1='1') AND (en2='0') ) then
+       DBUS_HiZ <= '0';
+     elsif( (en2='0') AND (en3='1') ) then
+       DBUS_HiZ <= '1';
+     end if;
+    end if;
+  end process;
 
-		PROCEDURE ANNOTATE_BUSY(
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
-			STD.TEXTIO.write(TX_LOC, TX_TIME);
-			STD.TEXTIO.write(TX_LOC,string'(",BUSY,"));
-			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, BUSY);
-			STD.TEXTIO.write(TX_LOC, string'("]"));
-			TX_STR(TX_LOC.all'range) := TX_LOC.all;
-			STD.TEXTIO.writeline(results, TX_LOC);
-			STD.TEXTIO.Deallocate(TX_LOC);
-		END;
-
-		PROCEDURE ANNOTATE_EXEC(
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
-			STD.TEXTIO.write(TX_LOC, TX_TIME);
-			STD.TEXTIO.write(TX_LOC,string'(",EXEC,"));
-			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, EXEC);
-			STD.TEXTIO.write(TX_LOC, string'("]"));
-			TX_STR(TX_LOC.all'range) := TX_LOC.all;
-			STD.TEXTIO.writeline(results, TX_LOC);
-			STD.TEXTIO.Deallocate(TX_LOC);
-		END;
-
-		PROCEDURE ANNOTATE_START_AD(
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
-			STD.TEXTIO.write(TX_LOC, TX_TIME);
-			STD.TEXTIO.write(TX_LOC,string'(",START_AD,"));
-			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, START_AD);
-			STD.TEXTIO.write(TX_LOC, string'("]"));
-			TX_STR(TX_LOC.all'range) := TX_LOC.all;
-			STD.TEXTIO.writeline(results, TX_LOC);
-			STD.TEXTIO.Deallocate(TX_LOC);
-		END;
-
-		PROCEDURE ANNOTATE_NQWORD(
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
-			STD.TEXTIO.write(TX_LOC, TX_TIME);
-			STD.TEXTIO.write(TX_LOC,string'(",NQWORD,"));
-			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, NQWORD);
-			STD.TEXTIO.write(TX_LOC, string'("]"));
-			TX_STR(TX_LOC.all'range) := TX_LOC.all;
-			STD.TEXTIO.writeline(results, TX_LOC);
-			STD.TEXTIO.Deallocate(TX_LOC);
-		END;
-
-		PROCEDURE ANNOTATE_CHIPSEL(
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
-			STD.TEXTIO.write(TX_LOC, TX_TIME);
-			STD.TEXTIO.write(TX_LOC,string'(",CHIPSEL,"));
-			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, CHIPSEL);
-			STD.TEXTIO.write(TX_LOC, string'("]"));
-			TX_STR(TX_LOC.all'range) := TX_LOC.all;
-			STD.TEXTIO.writeline(results, TX_LOC);
-			STD.TEXTIO.Deallocate(TX_LOC);
-		END;
-
-		PROCEDURE ANNOTATE_MEM_AD_BASE(
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
-			STD.TEXTIO.write(TX_LOC, TX_TIME);
-			STD.TEXTIO.write(TX_LOC,string'(",MEM_AD_BASE,"));
-			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, MEM_AD_BASE);
-			STD.TEXTIO.write(TX_LOC, string'("]"));
-			TX_STR(TX_LOC.all'range) := TX_LOC.all;
-			STD.TEXTIO.writeline(results, TX_LOC);
-			STD.TEXTIO.Deallocate(TX_LOC);
-		END;
-
-	BEGIN
-		CLOCK_LOOP : LOOP
-		CLK <= transport '0';
-		WAIT FOR 25 ns;
-		TX_TIME := TX_TIME + 25;
-		CLK <= transport '1';
-		WAIT FOR 25 ns;
-		TX_TIME := TX_TIME + 25;
-		ANNOTATE_BUSY(TX_TIME);
-		ANNOTATE_EXEC(TX_TIME);
-		ANNOTATE_START_AD(TX_TIME);
-		ANNOTATE_NQWORD(TX_TIME);
-		ANNOTATE_CHIPSEL(TX_TIME);
-		ANNOTATE_MEM_AD_BASE(TX_TIME);
-		WAIT FOR 25 ns;
-		TX_TIME := TX_TIME + 25;
-		CLK <= transport '0';
-		WAIT FOR 25 ns;
-		TX_TIME := TX_TIME + 25;
-		END LOOP CLOCK_LOOP;
-	END PROCESS;
-
-	PROCESS   -- Process for CLK
-		VARIABLE TX_OUT : LINE;
-
-		BEGIN
-		-- --------------------
-		CALC_DONE <= transport '0';
-		BUSY_IF <= transport '0';
-		RST <= transport '0';
-		NPIPE <= transport std_logic_vector'("00000000"); --0
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=100 ns
-		NPIPE <= transport std_logic_vector'("00000010"); --2
-		-- --------------------
-		WAIT FOR 500 ns; -- Time=600 ns
-		CALC_DONE <= transport '1';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=700 ns
-		CALC_DONE <= transport '0';
-		-- --------------------
-		WAIT FOR 32225 ns; -- Time=32925 ns
-		-- --------------------
-
-		STD.TEXTIO.write(TX_OUT, string'("Total[]"));
-		STD.TEXTIO.writeline(results, TX_OUT);
-		ASSERT (FALSE) REPORT
-			"Success! Simulation for annotation completed"
-			SEVERITY FAILURE;
-	END PROCESS;
-END testbench_arch;
-
-CONFIGURATION local_read_cnt_cfg OF sim_local_read_cnt IS
-	FOR testbench_arch
-	END FOR;
-END local_read_cnt_cfg;
+end rtl;

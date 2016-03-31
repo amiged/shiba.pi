@@ -1,90 +1,114 @@
-Tue Mar 22 19:29:39 JST 2016
-/EQNINJ
-/IPSET xi_0,x[][0],float,26,16
-/IPSET xi_1,x[][1],float,26,16
-/IPSET xi_2,x[][2],float,26,16
-/IPSET vi_0,v[][0],float,26,16
-/IPSET vi_1,v[][1],float,26,16
-/IPSET vi_2,v[][2],float,26,16
-/JPSET xj_0,0,0,25,x[][0],float,26,16
-/JPSET xj_1,0,26,51,x[][1],float,26,16
-/JPSET xj_2,0,52,77,x[][2],float,26,16
-/JPSET vj_0,0,78,103,v[][0],float,26,16
-/JPSET vj_1,0,104,129,v[][1],float,26,16
-/JPSET vj_2,0,130,155,v[][2],float,26,16
-/JPSET mj,0,156,181,m[],float,26,16
-/FOSET rx,p[],fix,64,(1.0/pow(2.0,(double)31))
-/FOSET sx_0,a[][0],fix,64,(1.0/pow(2.0,(double)31))
-/FOSET sx_1,a[][1],fix,64,(1.0/pow(2.0,(double)31))
-/FOSET sx_2,a[][2],fix,64,(1.0/pow(2.0,(double)31))
-/FOSET tx_0,jk[][0],fix,64,(1.0/pow(2.0,(double)31))
-/FOSET tx_1,jk[][1],fix,64,(1.0/pow(2.0,(double)31))
-/FOSET tx_2,jk[][2],fix,64,(1.0/pow(2.0,(double)31))
-/NPIPE 1
-/NVMP 1
-void force(double x[][3], double v[][3], double m[], double p[], double a[][3], double jk[][3], int n){
-  pg_float_sub(xj_0,xi_0,dx_0,26,16,4,6)
-  pg_float_sub(xj_1,xi_1,dx_1,26,16,4,6)
-  pg_float_sub(xj_2,xi_2,dx_2,26,16,4,6)
-  pg_float_mult(dx_0,dx_0,dx2_0,26,16,2,6)
-  pg_float_mult(dx_1,dx_1,dx2_1,26,16,2,6)
-  pg_float_mult(dx_2,dx_2,dx2_2,26,16,2,6)
-  pg_float_unsigned_add(dx2_0,dx2_1,x2y2,26,16,4,6)
-  pg_float_unsigned_add(dx2_2r,x2y2,r2,26,16,4,6)
-  pg_float_sqrt(r2,r1,26,16,3,6)
-  pg_float_mult(r2r,r1,r3,26,16,2,6)
-  pg_float_mult(r3,r2r1,r5,26,16,2,6)
-  pg_float_recipro(r5,r5i,26,16,2,6)
-  pg_float_mult(r5i,mjr,mr5i,26,16,2,6)
-  pg_float_mult(mr5i,r2r2,mf,26,16,2,6)
-  pg_bits_regifile(r2,rx,26,14)
-  pg_float_expadd(mf,fs,31,26,16,1)
-  pg_float_mult(fs,dx_0r,fx_0,26,16,2,6)
-  pg_float_mult(fs,dx_1r,fx_1,26,16,2,6)
-  pg_float_mult(fs,dx_2r,fx_2,26,16,2,6)
-  pg_float_fixaccum(fx_0,sx_0,26,16,57,64,2,30,6)
-  pg_float_fixaccum(fx_1,sx_1,26,16,57,64,2,30,6)
-  pg_float_fixaccum(fx_2,sx_2,26,16,57,64,2,30,6)
-  pg_float_sub(vj_0,vi_0,dv_0,26,16,4,6)
-  pg_float_sub(vj_1,vi_1,dv_1,26,16,4,6)
-  pg_float_sub(vj_2,vi_2,dv_2,26,16,4,6)
-  pg_float_mult(fs,dv_0r,jk1_0,26,16,2,6)
-  pg_float_mult(fs,dv_1r,jk1_1,26,16,2,6)
-  pg_float_mult(fs,dv_2r,jk1_2,26,16,2,6)
-  pg_float_mult(dx_0,dv_0,xv_0,26,16,2,6)
-  pg_float_mult(dx_1,dv_1,xv_1,26,16,2,6)
-  pg_float_mult(dx_2,dv_2,xv_2,26,16,2,6)
-  pg_float_unsigned_add(xv_0,xv_1,xv1,26,16,4,6)
-  pg_float_unsigned_add(xv_2r,xv1,xv2,26,16,4,6)
-  pg_float_expadd(xv2,xv2x2,1,26,16,1)
-  pg_float_unsigned_add(xv2x2,xv2r,xv2x3,26,16,4,6)
-  pg_float_mult(mr5i,xv2x3r,jk2a,26,16,2,6)
-  pg_float_expadd(jk2a,jk2s,31,26,16,1)
-  pg_float_mult(jk2s,dx_0r1,jk2_0,26,16,2,6)
-  pg_float_mult(jk2s,dx_1r1,jk2_1,26,16,2,6)
-  pg_float_mult(jk2s,dx_2r1,jk2_2,26,16,2,6)
-  pg_float_sub(jk1_0,jk2_0,jk0_0,26,16,4,6)
-  pg_float_sub(jk1_1,jk2_1,jk0_1,26,16,4,6)
-  pg_float_sub(jk1_2,jk2_2,jk0_2,26,16,4,6)
-  pg_float_fixaccum(jk0_0,tx_0,26,16,57,64,2,34,6)
-  pg_float_fixaccum(jk0_1,tx_1,26,16,57,64,2,34,6)
-  pg_float_fixaccum(jk0_2,tx_2,26,16,57,64,2,34,6)
-  pg_pdelay(dx2_2,dx2_2r,26,4)
-  pg_pdelay(r2,r2r,26,3)
-  pg_pdelay(r2,r2r1,26,5)
-  pg_pdelay(mj,mjr,26,23)
-  pg_pdelay(r2,r2r2,26,11)
-  pg_pdelay(dv_1,dv_1r,26,24)
-  pg_pdelay(dv_0,dv_0r,26,24)
-  pg_pdelay(xv_2,xv_2r,26,4)
-  pg_pdelay(dv_2,dv_2r,26,24)
-  pg_pdelay(dx_0,dx_0r,26,24)
-  pg_pdelay(dx_1,dx_1r,26,24)
-  pg_pdelay(dx_2,dx_2r,26,24)
-  pg_pdelay(xv2,xv2r,26,1)
-  pg_pdelay(xv2x3,xv2x3r,26,6)
-  pg_pdelay(dx_1,dx_1r1,26,24)
-  pg_pdelay(dx_2,dx_2r1,26,24)
-  pg_pdelay(dx_0,dx_0r1,26,24)
-  pg_rundelay(36)
-}
+Thu Mar 31 19:52:53 JST 2016
+-- multiple clock generator
+-- by Tsuyoshi Hamada
+-- Last Modified at 2004/01/11
+-- ===== COMPONENT SAMPLE =======================================
+--component CLK_MULDIV
+--  generic (CLKFX_MULTIPLY : integer :=3;
+--           CLKFX_DIVIDE : integer := 2);
+--  port (ICLK : in std_logic;
+--        OCLK : out std_logic;
+--        OCLK_FX : out std_logic;
+--        LOCKED : out std_logic);
+--end component;
+--
+-- ===== INSTANCIATION SAMPLE ====================================
+--dcm0 : CLK_MULDIV
+----  generic map (CLKFX_MULTIPLY =>11,CLKFX_DIVIDE=>2) -- 183MHz
+----  generic map (CLKFX_MULTIPLY =>16,CLKFX_DIVIDE=>3) -- 178MHz
+----  generic map (CLKFX_MULTIPLY =>5,CLKFX_DIVIDE=>1)  -- 167MHz
+----  generic map (CLKFX_MULTIPLY =>9,CLKFX_DIVIDE=>2)  -- 150MHz
+----  generic map (CLKFX_MULTIPLY =>4,CLKFX_DIVIDE=>1)  -- 133MHz
+----  generic map (CLKFX_MULTIPLY =>7,CLKFX_DIVIDE=>2)  -- 117MHz
+----  generic map (CLKFX_MULTIPLY =>3,CLKFX_DIVIDE=>1)  -- 100MHz
+----  generic map (CLKFX_MULTIPLY =>2,CLKFX_DIVIDE=>1)  -- 67MHz
+--  generic map (CLKFX_MULTIPLY =>1,CLKFX_DIVIDE=>1)    -- 33MHz if SYS_CLK is 33MHz
+--  port map (
+--	ICLK=>SYS_CLK,
+--	OCLK=>clk,
+--	OCLK_FX=>pclk,
+--	LOCKED=>dcm_locked);
+
+
+library ieee;
+LIBRARY UNISIM;
+use ieee.std_logic_1164.all;
+use ieee.std_logic_arith.all;                                        
+use ieee.std_logic_unsigned.all;                                    
+USE UNISIM.Vcomponents.ALL;
+
+entity CLK_MULDIV is
+  generic (CLKFX_MULTIPLY : integer :=3;
+           CLKFX_DIVIDE : integer := 2);
+  port (ICLK : in std_logic;
+        OCLK : out std_logic;
+        OCLK_FX : out std_logic;
+        LOCKED : out std_logic);
+end CLK_MULDIV;
+
+architecture rtl of CLK_MULDIV is
+component BUFG port (I: in  std_logic;  O: out  std_logic); 
+end component;
+component IBUFG port(I: in std_logic; O: out std_logic);
+end component;
+component DCM
+  generic ( 
+       CLKFX_MULTIPLY : integer := 3;
+       CLKFX_DIVIDE : integer := 2;
+       CLKIN_PERIOD : real := 15.000000;
+       DLL_FREQUENCY_MODE : string := "LOW";
+       DUTY_CYCLE_CORRECTION : boolean := TRUE;
+       CLKOUT_PHASE_SHIFT : string := "FIXED";
+       PHASE_SHIFT  : integer := 0;
+       STARTUP_WAIT : boolean := FALSE
+      );  
+  port ( CLKIN   : in  std_logic;
+       CLKFB   : in  std_logic;
+       DSSEN   : in  std_logic;
+       PSINCDEC   : in  std_logic;
+       PSEN     : in  std_logic;
+       PSCLK   : in  std_logic;
+       RST     : in  std_logic;
+       CLK0     : out std_logic;
+       CLK90   : out std_logic;
+       CLK180   : out std_logic;
+       CLK270   : out std_logic;
+       CLK2X   : out std_logic;
+       CLK2X180   : out std_logic;
+       CLKDV   : out std_logic;
+       CLKFX   : out std_logic;
+       CLKFX180   : out std_logic;
+       LOCKED   : out std_logic;
+       PSDONE   : out std_logic;
+       STATUS   : out std_logic_vector(7 downto 0)
+      );
+end component;
+
+signal dcm_in,dcm_out,dcm_fx,dcm_fb : std_logic;
+
+begin
+
+dcm0 : DCM
+  generic map (CLKFX_MULTIPLY=>CLKFX_MULTIPLY,
+	CLKFX_DIVIDE=>CLKFX_DIVIDE,
+        CLKIN_PERIOD => 15.000000,
+	DUTY_CYCLE_CORRECTION=>TRUE)
+  port map(
+    RST          => '0',         -- リセット
+    CLKIN        => dcm_in,      -- PHASE SHIFT入力クロック
+    CLKFB        => dcm_fb,         -- FB入力
+    DSSEN        => '0',
+    PSINCDEC     => '0',
+    PSEN         => '0',         -- 位相シフトイネーブル
+    PSCLK        => '0',         -- 位相シフトクロック
+    LOCKED       => LOCKED,
+    CLKFX        => dcm_fx,      -- ICLK x N
+    CLK0         => dcm_out      -- PHASE SHIFT出力クロック
+  );
+
+U_BUFG0 : IBUFG port map(I=>ICLK, O=>dcm_in);
+U_BUFG1 : BUFG port map(I=>dcm_out,   O=>dcm_fb);
+U_BUFG2 : BUFG port map(I=>dcm_fx, O=>OCLK_FX);  -- 66,100,133MHz
+OCLK <= dcm_fb;
+end rtl;
+

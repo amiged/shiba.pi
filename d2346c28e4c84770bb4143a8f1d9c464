@@ -1,75 +1,18 @@
-Sun Dec 13 19:45:12 JST 2015
-#!/usr/bin/perl
-#
-# mtrr : MTRR register resetting script for PROGRAPE-4
-#
-# Copyright (C) 2006-2007 Tsuyoshi Hamada. All rights reserved.
-# 
-# No warranty is attached; 
-#
-
-my $devid   = 0;
-my $bar;
-my $cmd;
-my $exe;
-
-if(@ARGV){
-    sprintf($devid, "%d", $ARGV[0]);
+Fri Apr  1 19:28:38 JST 2016
+FILES
+{
+	VHDL_FILE = pgfpga.vhd;
 }
-
-$bar = 1;
-
-my $adr=0, $size;
-
-$cmd = "ifpga_get_barinfo $devid $bar";
-$exe = `$cmd`;
-chomp($exe);
-$adr = $exe;
-
-$cmd = "ifpga_get_barinfo $devid $bar 1";
-$exe = `$cmd`;
-chomp($exe);
-$size = $exe;
-
-print "BAR1 start at $adr, size $size bytes\n";
-
-if( ($adr eq '') || ($adr eq '0x0') || ($adr eq "0xffffffff")){
-    print "discontinued\n";
-    exit(-1);
+COMPILER_SETTINGS_LIST
+{
+	COMPILER_SETTINGS = pgfpga;
 }
-
-
-open(RD,"/proc/mtrr");
-my $hit_line = '';
-while(<RD>){
-    my $s = $_;
-    chomp($s);
-    if($s =~ /$adr/){
-	$hit_line = $s;
-    }
+SIMULATOR_SETTINGS_LIST
+{
+	SIMULATOR_SETTINGS = pgfpga;
 }
-close(RD);
-
-if($hit_line ne ''){
-    print "Hit: ". $hit_line ."\n";
-}else{
-    $cmd = "cat /proc/mtrr";
-    print `$cmd` ."\n";
-    print "Can't find the mtrr register for bar1($adr)\n";
-    print "discontinued\n";
-    exit(-1);
+SOFTWARE_SETTINGS_LIST
+{
+	SOFTWARE_SETTINGS = Debug;
+	SOFTWARE_SETTINGS = Release;
 }
-
-my ($reg_nr, ) = split(/\:/,$hit_line);
-$reg_nr =~ s/reg//;
-$reg_nr = sprintf("%d",$reg_nr);
-
-$cmd = "echo \"disable=$reg_nr\" >| /proc/mtrr";
-print  $cmd. "\n";
-print  `$cmd`. "\n";
-
-$cmd = "cat /proc/mtrr";
-print `$cmd`;
-
-
-1;

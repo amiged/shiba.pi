@@ -1,27 +1,47 @@
-Thu Apr 21 19:51:49 JST 2016
-vlib work
-vcom -93 -explicit  ../rtl/local_write.vhd
-vcom -93 -explicit  ../rtl/local_read_cnt.vhd
-vcom -93 -explicit  ../rtl/local_read_if.vhd
-vcom -93 -explicit  ../rtl/local_read.vhd
-vcom -93 -explicit  ../rtl/local_io.vhd
-vcom -93 -explicit  sim_local_io.vhw
-vsim -t 1ps   -lib work sim_local_io
-do sim_local_io.udo
-view wave
-add wave -hex /uut/busy_dmar
-add wave -hex *
+Wed May 18 19:51:31 JST 2016
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 
+/*
+ * ifpga_get_barinfo.c -- to get infomation of pci bar regsters
+ *
+ * Copyright (C) 2006-2007 Tsuyoshi Hamada
+ *                                All rights reserved.
+ * 
+ * No warranty is attached; 
+ * I cannot take responsibility for errors or fitness for use.
+ *
+ */
 
-add wave -hex /uut/u1/u0/clk
-add wave -hex /uut/u1/u0/CALC_DONE
-add wave -dec /uut/u1/u0/cnt
-add wave -hex /uut/u1/u0/cnt_en
-add wave -hex /uut/u1/u0/is_finish
-add wave -hex /uut/u1/u0/EXEC
-add wave -hex /uut/u1/u0/CHIPSEL
-add wave -hex /uut/u1/u0/START_AD
-add wave -hex /uut/u1/u0/NQWORD
-add wave -hex /uut/u1/u0/MEM_AD_BASE
+#include "pg4.h"
 
-run -all
+int main(int argc, char* argv[])
+{
+  int devid  = 0;
+  int bar    = 0;
+  int is_size = 0;
+  unsigned long z = 0;
+
+  if (argc < 3) {
+    fprintf(stderr, "%s <devid> <bar_num> <adr=0/size=1>\n", argv[0]);
+    exit(-1);
+  }
+  
+  if(argc == 3) is_size = 0; else is_size = atoi(argv[3]);
+
+  devid = atoi(argv[1]);
+  bar   = atoi(argv[2]);
+  
+  pg4_open(devid);
+
+  if(is_size)
+    z = 0xffffffff & pg4_getbaseaddr_size(devid, bar);
+  else
+    z = 0xffffffff & pg4_getbaseaddr(devid, bar);
+
+  printf("0x%08lx\n",z);
+  pg4_close(devid);
+
+  return 1;
+}

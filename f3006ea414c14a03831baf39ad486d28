@@ -1,63 +1,96 @@
-Fri Apr  1 19:53:37 JST 2016
-info x 55 510 0 0 0 0 0 0 0 0 0 0 0 0 0 0 VHDL
-col x 772 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-radix x 16 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-entity name 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 writecomb_check
-term mark 409 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-vlib save 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL;
-use IEEE.STD_LOGIC_ARITH.ALL;
-
-var add 4 0 0 162 12 0 772 100 50 50 5 85 0 0 0 0 RSTInstd_logicRISING_EDGECLK
-var add 5 0 0 226 13 0 772 100 50 50 5 85 0 0 0 0 CLKInstd_logicRISING_EDGECLK
-var add 1 0 0 162 9 0 772 100 50 50 5 85 0 0 0 0 MEM_WEHAInstd_logicRISING_EDGECLK
-var add 2 0 0 162 10 0 772 100 50 50 5 85 0 0 0 0 MEM_WELAInstd_logicRISING_EDGECLK
-var add 3 1 0 164 11 0 772 100 50 50 5 85 0 0 0 0 IS_ERROutstd_logic_vectorRISING_EDGECLK
-vdone xxx 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-npos xxx 125 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-cell fill 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-cell fill 1 8 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-cell fill 1 36 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
-cell fill 1 40 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-cell fill 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-cell fill 3 28 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-cell fill 3 116 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
-cell fill 3 136 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-cell fill 3 180 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
-cell fill 3 188 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-cell fill 3 248 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-cell fill 3 260 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
-cell fill 3 264 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-cell fill 3 320 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
-cell fill 3 324 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-cell fill 3 328 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
-cell fill 3 332 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-cell fill 4 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-cell fill 4 28 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-cell fill 4 116 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
-cell fill 4 136 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-cell fill 4 180 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
-cell fill 4 188 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-cell fill 4 240 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
-cell fill 4 244 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-cell fill 4 316 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
-cell fill 4 320 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-cell fill 4 324 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
-cell fill 4 328 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-time info 50 50 5 85 50 50 1 1 0 0 0 0 0 0 0 0 nsCLK
-font save -14 0 400 49 0 0 0 0 0 0 0 0 0 0 0 0 Times New Roman
-src mod 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 c:\cygwin\home\administrator\fkit\pci64\rtl\writecomb_check.vhd
-utd true 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-cellenab on 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-grid on 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-com add 1 1 0 442 7 0 -67 0 0 0 0 0 0 0 0 0 Waveform created by
-HDL Bencher 6.1i
-Source = c:\cygwin\home\administrator\fkit\pci64\rtl\writecomb_check.vhd
-Wed Dec 29 19:45:47 2004
-type info 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 std_logicBITDOWNTO
-type info 31 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 std_logic_vectorVECTORDOWNTO
-opt vhdl87 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-NumClocks x 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-clock_1 name 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 CLK
-Zoom_level x 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1.00000000000000
+Sat May 28 19:29:38 JST 2016
+//-----------------------------------------------------------------------------
+// hermite.C
+// Code: Standard 4th order Hermite integrator with constant time step
+// Ref.: J. Makino, S. J. Aarseth, PASJ 44, 141 (1992)
+// Author: Andreas Ernst Jan, 2006
+// Modify: Tsuyoshi Hamada, Nov, 2006
+//-----------------------------------------------------------------------------
+#include  <iostream>
+#include  <cmath>
+#include  <cstdlib>
+#include  <iomanip> // cout << setw() << setprecision() 
+using namespace std;
+
+extern "C" void  force(double x[][3], double v[][3], double m[], double p[], double a[][3], double j[][3], int n);
+extern "C" void _force(double x[][3], double v[][3], double m[], double p[], double a[][3], double j[][3], int n);
+
+extern "C" void debug_position_snap(double x[][3], double Gflops, int n, int nstep);
+
+
+// Calculate energy
+
+double energy(double m[], double r[][3], double v[][3], double p[], int n) {
+  double ekin = 0, epot = 0;
+  for (int i = 0; i < n; i++) {
+    epot -= 0.5 * m[i] * p[i];
+    for (int k = 0; k < 3; k++) ekin += 0.5 * m[i] * v[i][k] * v[i][k];
+  }
+  return ekin + epot;
+}
+
+int main(int argc, char *argv[]) {
+
+// Read initial conditions from stdin, declaration of variables
+
+  if (argc < 3 ) {
+    cout << "Usage: hermite <dt> <t_end> <dt_opt>" << endl;
+    return 0;
+  }
+
+  double dt = atof(argv[1]); // time step
+  double dt2 = dt*dt;
+  double dt3 = dt2*dt;
+  double dt4 = dt2*dt2;
+  double dt5 = dt4*dt;
+  double t_end = atof(argv[2]);
+  double dt_opt = atof(argv[3]);
+  double t_opt = 0.0;
+
+  int n;
+  cin >> n;
+
+  double t;
+  cin >> t;
+
+  double * m = new double[n];
+  double (* r)[3] = new double[n][3];
+  double (* v)[3] = new double[n][3];
+
+  double * p = new double[n];
+  double (* a)[3] = new double[n][3];
+  double (* jk)[3] = new double[n][3];
+
+  double * _p = new double[n];
+  double (* _a)[3] = new double[n][3];
+  double (* _jk)[3] = new double[n][3];
+
+
+  for (int i = 0; i < n ; i++){
+    cin >> m[i];
+    for (int k = 0; k < 3; k++) cin >> r[i][k];
+    for (int k = 0; k < 3; k++) cin >> v[i][k];
+  }
+  
+  _force(r, v, m, _p, _a, _jk, n);
+   force(r, v, m,  p,  a,  jk, n);
+
+
+  for (int i = 0; i < n ; i++){
+    double err_p, err_a[3], err_jk[3];
+    double rad;
+    rad = sqrt(r[i][0]*r[i][0]+r[i][1]*r[i][1]+r[i][2]*r[i][2]);
+
+    err_p = fabs(p[i]-_p[i])/_p[i];
+
+    for (int k = 0; k < 3; k++){
+      err_a[k]  = fabs(a[i][k]  - _a[i][k])  / _a[i][k];
+      err_jk[k] = fabs(jk[i][k] - _jk[i][k]) / _jk[i][k];
+    }
+    
+    for (int k = 0; k < 3; k++) cout << rad << "\t" << err_a[k] << endl;
+
+  }
+  
+  return 0;
+}

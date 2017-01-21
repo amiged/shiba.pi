@@ -1,36 +1,42 @@
-Mon Jan  9 19:27:06 JST 2017
-#!/usr/bin/env python3
-import os
-from datetime import datetime
-import time
+Sat Jan 21 19:30:57 JST 2017
+/**
+   # ハードウェア化する部分 
+   #     1.加速度a[][]の初期化
+   #     2.加速度a[][]の計算
+*/
 
-# YYYYMMDD_HH_MM_SS
-def get_filename_frame(basedir, str_datetime):
-    cell = list(str_datetime)
-    str_YYYYMMDD = ''.join(cell[0:8])
-    str_HH = ''.join(cell[9:11])
-    str_MM = ''.join(cell[12:14])
-    str_SS = ''.join(cell[15:17])
-    dirname = basedir + str_YYYYMMDD + "/" + str_HH
-    if os.path.exists(dirname) != True:
-        os.makedirs(dirname)
-    ret = dirname + "/" + str_datetime+".jpg"
-    ret = ret.replace(' ','')
-    return ret
+#include <stdio.h>
+#include <math.h>
+#include "nbodysim.h"
+
+void force_on_host(double x[][DIM],
+	   double m[],
+	   double eps2,
+	   double a[][DIM],
+	   int n)
+{
+  int i,j,d;
+  double dx[3];
+
+  /* a[][]の初期化 */
+  for(i=0;i<n;i++) for(d=0;d<3;d++) a[i][d] = 0.0;
+
+  /* 相互作用の計算  */
+  for(i=0;i<n-1;i++){
+    for(j=i+1;j<n;j++){
+      double r2,r3;
+      r2 = eps2;
+      for(d=0;d<3;d++){
+	dx[d] = x[j][d] - x[i][d];
+	r2 += dx[d] * dx[d];
+      }
+      r3 = sqrt(r2)*r2;
+      for(d=0;d<3;d++){
+	a[i][d] +=  m[j]*dx[d]/r3;
+	a[j][d] += -m[i]*dx[d]/r3;
+      }
+    }
+  }
 
 
-def get_filename_frame_simple(basedir, fname):
-    dirname = basedir
-    if os.path.exists(dirname) != True:
-        os.makedirs(dirname)
-    ret = dirname + fname
-    ret = ret.replace(' ','')
-    return ret
-
-
-if __name__ == '__main__':
-    while(True):
-        tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S')
-        fname = get_filename_frame('../work/', tnow)
-        print (fname)
-        time.sleep(0.5)
+}

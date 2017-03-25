@@ -1,59 +1,28 @@
-Sat Mar  4 19:40:31 JST 2017
-//-----------------------------------------------------------------------------
-// mk_eight.C:  prints initial conditions for the figure eight
-//              of the three-body problem
-//-----------------------------------------------------------------------------
-#include  <iostream>
-using namespace std;
+Sat Mar 25 19:53:12 JST 2017
+#define NFLO 26
+#define NMAN 16
+#define NFIX 57
+#define NACC 64
+#define NEXAD 31
+#define FSHIFT pow(2.0,(double)NEXAD)
 
-typedef double  real;                      // "real" as a general name for the
-                                           // standard floating-point data type
-#define  NDIM     3                        // number of spatial dimensions
+/JPSET xj[3],  x[][],  float, NFLO, NMAN;
+/JPSET mj,     m[],    float, NFLO, NMAN;
+/IPSET xi[3],  x[][],  float, NFLO, NMAN;
+/IPSET ieps2,  eps2,   float, NFLO, NMAN;
+/FOSET sx[3],  a[][],  fix,   NACC, (-1.0/FSHIFT);
+/NVMP 1;
+/NPIPE 1;
 
-int main()
-{
-    const int n = 3;           // number of particles
-    const real t = 0;          // time
-    real r[n][NDIM];           // r[i][k] : position component k for particle i
-    real v[n][NDIM];           // v[i][k] : velocity component k for particle i
-    real m[n];                 // m[i] : mass for particle i
-
-    m[0] = 1;
-    m[1] = 1;
-    m[2] = 1;
-
-    r[0][0] = 0.9700436;
-    r[0][1] = -0.24308753;
-    r[0][2] = 0;
-    v[0][0] = 0.466203685;
-    v[0][1] = 0.43236573;
-    v[0][2] = 0;
-
-    r[1][0] = -r[0][0];
-    r[1][1] = -r[0][1];
-    r[1][2] = -r[0][2];
-    v[1][0] = v[0][0];
-    v[1][1] = v[0][1];
-    v[1][2] = v[0][2];
-
-    r[2][0] = 0;
-    r[2][1] = 0;
-    r[2][2] = 0;
-    v[2][0] = -2 * v[0][0];
-    v[2][1] = -2 * v[0][1];
-    v[2][2] = -2 * v[0][2];
-
-    cout.precision(16);
-
-    cout << n << endl;                      // first output line:  N
-    cout << t << endl;                      // second output line:  time
-    for (int i = 0; i < n; i++){
-        cout << m[i];                       // each next output line:
-        for (int k = 0; k < NDIM; k++)      //   m r_x r_y r_z v_x v_y v_z
-            cout << ' ' << r[i][k];
-        for (int k = 0; k < NDIM; k++)
-            cout << ' ' << v[i][k];
-        cout << endl;
-    }
-}
-//-----------------------------------------------------------------------------
+pg_float_sub      (xi,xj, dx,              NFLO,NMAN, 4);
+pg_float_mult     (dx,dx, dx2,             NFLO,NMAN, 2);
+pg_float_unsigned_add(dx2[0],dx2[1], x2y2, NFLO,NMAN, 4);
+pg_float_unsigned_add(dx2[2],ieps2,  z2e2, NFLO,NMAN, 4);
+pg_float_unsigned_add(x2y2,z2e2,r2,        NFLO,NMAN, 4);
+pg_float_sqrt     (r2,r1,                  NFLO,NMAN, 3);
+pg_float_mult     (r2,r1,r3,               NFLO,NMAN, 2);
+pg_float_recipro  (r3,r3i,                 NFLO,NMAN, 2);
+pg_float_mult     (r3i,mj,mf,              NFLO,NMAN, 2);
+pg_float_expadd   (mf,fs,                  NEXAD,NFLO,NMAN,1);
+pg_float_mult     (fs,dx,fx,               NFLO,NMAN, 2);
+pg_float_fixaccum (fx,sx,                  NFLO,NMAN, NFIX, NACC, 4);

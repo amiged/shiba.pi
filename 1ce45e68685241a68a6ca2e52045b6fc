@@ -1,16 +1,29 @@
-Wed Jan 18 19:34:59 JST 2017
-/** 
-# xを1ステップ進める
-# x(k+1) = x(k) + v(k+1/2)*dt
-*/
+Wed Mar 29 19:46:10 JST 2017
+#!/usr/bin/env python3
+#Time-stamp: <>
+import fnmatch
+import functools
+import os
+import re
 
-#include <stdio.h>
-#include "nbodysim.h"
+def find(path, pattern):
 
-void leapflog(double dt,double x[][DIM],double v[][DIM],int n)
-{
-    int i,d;
-    for(i=0;i<n;i++)
-        for(d=0;d<3;d++)
-            x[i][d] = x[i][d]+v[i][d]*dt;
-}
+    if isinstance(pattern, str): 
+        match = functools.partial(fnmatch.fnmatch, pat=pattern)
+    elif isinstance(pattern, re._pattern_type):
+        match = pattern.match
+    elif callable(pattern):
+        match = pattern
+    else:
+        raise TypeError
+
+    for root, dirs, files in os.walk(path):
+        for file_ in files:
+            if match(file_):
+                yield os.path.join(root, file_)
+
+
+if __name__ == '__main__':
+    for i in find('../log/', '*.jpg'):
+        print (i)
+

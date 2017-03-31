@@ -1,68 +1,52 @@
-Mon Feb  6 19:46:32 JST 2017
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.std_logic_arith.all;                                        
-use ieee.std_logic_unsigned.all;                                    
+Fri Mar 31 19:28:45 JST 2017
+#include "cutil.h"
 
-entity calc is
-  port (
-    start      : in  std_logic;
-    clk        : in  std_logic;
-    pclk       : in  std_logic;
-    n          : in  std_logic_vector(31 downto 0);
-    run        : out  std_logic;
-    mem_adr    : out  std_logic_vector(31 downto 0));
-end calc;
+__device__ float4 
+inter(float4 xj, float4 xi, float4 apot)
+{
+  /* ここは図5.と同じ */ 
+  float mj    = xj.w;        // Mass Mj
+  float ieps2 = xi.w;        // epsilon^2
+  float dx = xj.x - xi.x;    // Coordinates Xj - Xi
+  float dy = xj.y - xi.y;    // Coordinates Yj - Yi
+  float dz = xj.z - xi.z;    // Coordinates Zj - Zi
+  float r2 = dx*dx+dy*dy+dz*dz+ieps2;
+  float r1i = 1/sqrt(r2);
+  float r2i = r1i * r1i;
+  float mr3i = mj * r2i * r1i;
+  apot.x += dx * mr3i;       // Accel AXi
+  apot.y += dy * mr3i;       // Accel AYi
+  apot.z += dz * mr3i;       // Accel AZi
+  return (apot);
+}
+#define NTHRE (128) // blockDim.xと同値
+__global__ void
+kernel(float4* g_xj,
+       float* g_xi,
+       float* g_fi,
+       int ni,
+       int nj)
+{
+  int tid      = threadIdx.x;
+  int i = blockIdx.x*NTHRE+tid;
+  float4 ai = make_float4(0.0, 0.0, 0.0, 0.0);
+  float4 xi;
+  xi.x = g_xi[i];
+  xi.y = g_xi[i+ni];
+  xi.z = g_xi[i+ni*2];
+  xi.w = g_xi[i+ni*3];
+  __shared__ float4 s_xj[NTHRE];
+  for(int j = 0; j<nj; j+=NTHRE){
+    __syncthreads();
+    s_xj[tid] = g_xj[j+tid];
+    __syncthreads();
+    for(int js = 0; js<NTHRE; js++) ai = inter(s_xj[js], xi, ai);
+  }
+  if(i<ni){
+    g_fi[i]      = ai.x;
+    g_fi[i+ni]   = ai.y;
+    g_fi[i+ni*2] = ai.z;
+  }
+}
 
-architecture rtl of calc is
-
-signal rst :  std_logic;
-signal rstn : std_logic_vector(31 downto 0);
-signal start_r : std_logic;
-signal mema_dc : std_logic_vector(17 downto 0) := (others=>'0');
-begin
-
--- GENERATE rst PULS ------------------
-process(pclk) begin
-  if(pclk'event and pclk='1') then
-    rst <= rstn(0);
-  end if;
-end process;
-
-process (clk) begin
-  if(clk'event and clk='1') then
-    rstn(0) <= start_r AND (NOT start);
-    start_r <= start;
-  end if;
-end process;
----------------------------------------
-
--- GENERATE run --------------------------
-process(pclk,rst) begin
-  if(rst = '1') then
-    run <= '0';
-  elsif(pclk'event and pclk='1') then
-    if(mema_dc /= "000000000000000000") then
-      run <= '1';
-    else
-      run <= '0';
-    end if;
-  end if;
-end process;
-
--- GENERATE mem_adr  ---------------------
-process(pclk,rst) begin
-  if(rst = '1') then
-    mema_dc <=  n(17 downto 0) ;
-  elsif(pclk'event and pclk='1') then
-    if(mema_dc /= "000000000000000000") then
-      mema_dc <= mema_dc - "000000000000000001";
-    end if;
-  end if;
-end process;
---hoge
-  mem_adr <= "000000000000000" & mema_dc(15 downto 0) & "0";  -- G5
---mem_adr <= "00000000000000" & mema_dc(15 downto 0) & "00";  -- SPH FirstStage
---mem_adr <= "0000000000000" & mema_dc(15 downto 0) & "000";  -- SPH SecondStage
-
-end rtl;
+#include "api.h"

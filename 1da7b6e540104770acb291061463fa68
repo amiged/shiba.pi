@@ -1,27 +1,28 @@
-Sun Mar 26 19:56:48 JST 2017
-vlib work
-vcom -93 -explicit  ../rtl/local_write.vhd
-vcom -93 -explicit  ../rtl/local_read_cnt.vhd
-vcom -93 -explicit  ../rtl/local_read_if.vhd
-vcom -93 -explicit  ../rtl/local_read.vhd
-vcom -93 -explicit  ../rtl/local_io.vhd
-vcom -93 -explicit  sim_local_io.vhw
-vsim -t 1ps   -lib work sim_local_io
-do sim_local_io.udo
-view wave
-add wave -hex /uut/busy_dmar
-add wave -hex *
+Mon Apr 17 19:39:14 JST 2017
+// Copyright(c) 2004- by PGPG
+// The original source : contrib/src_h/vi/pg_util.h
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <math.h>
+#ifndef LONG
+#define LONG unsigned long long int
+#endif
+LONG  double2pgpglog(double x, int nbit_log, int nbit_man);
+double pgpglog2double(LONG x,  int nbit_log, int nbit_man);
+LONG  double2pgpgfloat(double a, int nbit_float, int nbit_man);
+LONG  double2pgpgfloat_r(double a, int nbit_float, int nbit_man, int rmode);
+double pgpgfloat2double(LONG x, int nbit_float, int nbit_man);
+LONG extractbit_long(LONG in, int hi, int lo);
+void l2bit(LONG a);
+void putbits(LONG a);
+void putbits32(LONG a);
+void putbitsn(LONG a,int n);
+double gen_rand_abs(void);
+double gen_rand(void);
+double gen_rand_tamanizero(void);
 
 
-add wave -hex /uut/u1/u0/clk
-add wave -hex /uut/u1/u0/CALC_DONE
-add wave -dec /uut/u1/u0/cnt
-add wave -hex /uut/u1/u0/cnt_en
-add wave -hex /uut/u1/u0/is_finish
-add wave -hex /uut/u1/u0/EXEC
-add wave -hex /uut/u1/u0/CHIPSEL
-add wave -hex /uut/u1/u0/START_AD
-add wave -hex /uut/u1/u0/NQWORD
-add wave -hex /uut/u1/u0/MEM_AD_BASE
-
-run -all
+#include <sys/time.h>
+#include <sys/resource.h>
+double e_time(void);

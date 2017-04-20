@@ -1,50 +1,91 @@
-Tue Apr 18 19:37:12 JST 2017
-#!/usr/bin/env python3
-import numpy as np
-import cv2
-from datetime import datetime
-import mkdir
-import sys
+Thu Apr 20 19:29:32 JST 2017
+//-----------------------------------------------------------------------------
+// Output Pair-Wise Error
+// Modify: Tsuyoshi Hamada, Nov, 2006
+//-----------------------------------------------------------------------------
+#include  <iostream>
+#include  <cmath>
+#include  <cstdlib>
+#include  <iomanip> // cout << setw() << setprecision() 
+using namespace std;
 
-def put_text(image, text):
-    font_size = 1.0
-    font_type = cv2.FONT_HERSHEY_PLAIN
-    font_color = (0xf, 0xf, 0xff)
-    cv2.putText(image, text, (460, 15), font_type, font_size, font_color)
+extern "C" void  force(double x[][3], double v[][3], double m[], double p[], double a[][3], double j[][3], int n);
+extern "C" void _force(double x[][3], double v[][3], double m[], double p[], double a[][3], double j[][3], int n);
+
+extern "C" void debug_position_snap(double x[][3], double Gflops, int n, int nstep);
+
+#define NMAX 1024
+
+double rsv[65536][3];
+
+int main(int argc, char *argv[]) {
+  int index;
+  int n = 2;
+
+  double m[NMAX];
+  double r[NMAX][3];
+  double v[NMAX][3];
+
+  double p[NMAX];
+  double a[NMAX][3];
+  double jk[NMAX][3];
+
+  double _p[NMAX];
+  double _a[NMAX][3];
+  double _jk[NMAX][3];
+
+  m[0] = m[1] = 1.0;
+
+  for (int i = 0; i < 3 ; i++) r[i][0] = 0.0;
+  for (int i = 0; i < 3 ; i++) v[i][0] = 0.0;
+  for (int i = 0; i < 3 ; i++) v[i][1] = 0.0;
+
+  index=0;
+  srand(0x12345);
+
+  for (int t = 0; t < 1000 ; t++){
     
 
+    //    for (int i = 0; i < 3 ; i++) r[1][i] = pow(10.0, 2.0*rand()/(RAND_MAX+1.0));
 
-if (__name__ == '__main__'):
-    argv = sys.argv
-    devid = int(argv[1])
-    log_base = '../log/'
-    cap = cv2.VideoCapture(devid)
 
-    cap_width  = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
-    cap_height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
-    cap_fps    = cap.get(cv2.CAP_PROP_FPS)
 
-    print(cap_width, "x", cap_height, ":", cap_fps)
+    for (int i = 0; i < 3 ; i++) r[1][i] = 1.0*rand()/(RAND_MAX+1.0);
 
-    tnow0 = datetime.now().strftime('%Y%m%d_%H_%M_%S') # ('%Y%m%d_%H_%M_%S_%f')
+    for (int i = 0; i < 3 ; i++)  rsv[index][i] = r[1][i];
+    index++;
 
-    while(cap.isOpened()):
-        ret, frame = cap.read()
-        cv2.imshow('frame', frame)
 
-        tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S')
-        if(tnow != tnow0):
-            put_text(frame, tnow)
-            ofname = mkdir.get_filename_frame('../log/', tnow)
-#            cv2.imwrite(ofname, frame)
-            print(ofname, ": TEST on devid=%d"%devid)
-            tnow0 = tnow
- 
+    _force(r, v, m, _p, _a, _jk, n);
+     force(r, v, m,  p,  a,  jk, n);
 
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
+     double err_p, err_a[3], err_jk[3];
+     double rad;
+     rad = sqrt(r[1][0]*r[1][0]+r[1][1]*r[1][1]+r[1][2]*r[1][2]);
+     err_p = fabs(p[0]-_p[0])/_p[0];
 
-    cap.release()
-    cv2.destroyAllWindows()
+    
+     for (int k = 0; k < 3; k++){
+       double host  = _a[0][k];
+       double pipe  =  a[0][k];
+       double err = sqrt((host - pipe)*(host - pipe))/host;
 
-    print("Done.")
+       cout << setw(8);
+       cout.precision(6);
+       cout << rad  << "\t";
+       cout.precision(6);
+       cout << err  << "\t";
+       cout.precision(6);
+       cout << host << "\t";
+       cout.precision(6);
+       cout << pipe << endl;
+
+     }
+
+  }
+  
+
+  debug_position_snap(rsv, 123.456, index, 10);
+
+  return 0;
+}

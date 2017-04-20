@@ -1,256 +1,180 @@
-Thu Mar 16 19:47:26 JST 2017
--- LOCAL READ INTERFACE ( ifpga <- pfpga )
--- by Tsuyoshi Hamada
---
--- CLK            __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ 
--- EXEC           __/~~~~~\_____
--- BUSY           ________/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\_______
--- DMAR_ENABLE                   __/~~~~~~~~~~~~~~~\___ { (Ndata+1) clock }
--- DBUS_Port                       < adr ><XXXX
--- DBUS_idata                                          < d0 >< d1 >
--- DBUS                                  <adr><XXXXXXX>< d0 >< d1 >
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL;
-use IEEE.STD_LOGIC_ARITH.ALL;
-
-entity LOCAL_READ_IF is
-  port (
-    -- PGPG REG input
-    EXEC : in std_logic;                         -- Execution Pulse
-    START_AD : in std_logic_vector(18 downto 0); -- 19 bit  -- constant in transaction
-    NQWORD   : in std_logic_vector( 8 downto 0); --  9 bit  -- constant in transaction : (NQWORD + 1) words transfer
-    CHIPSEL  : in std_logic_vector( 3 downto 0); --  4 bit  -- constant in transaction
-    MEM_AD_BASE : in std_logic_vector(12 downto 0);         -- constant in transaction
-    BUSY : out std_logic;  -- to GPREG0
-
-    -- CBUS/DBUS
-    DMAR_ENABLE : out std_logic_vector(3 downto 0); -- for 4 pfpga chip
-    DBUS_Port : out std_logic_vector(63 downto 0);
-    DBUS_idata: in std_logic_vector(63 downto 0);
-    DBUS_HiZ  : out std_logic;
-
-    -- DPRAM R/W ports
-    MEM_ADB     : out std_logic_vector(12 downto 0);     -- DPRAM Port B R/W Address
-    MEM_WEHB    : out std_logic;                         -- DPRAM Port B Write Enable (High Word)
-    MEM_WELB    : out std_logic;                         -- DPRAM Port B Write Enable (Low  Word)
-    MEM_DTIB    : out std_logic_vector(63 downto 0);     -- DPRAM Port B Write Data
-
-    RST : in  std_logic;
-    CLK : in  std_logic
-    );
-end LOCAL_READ_IF;
-
-architecture rtl of LOCAL_READ_IF is
-
------------------------------------------------------------------
--- DMAW/R
-  signal hit,hitr : std_logic;
-  signal csel    : std_logic_vector(3 downto 0);
-  signal s_adr : std_logic_vector(18 downto 0);
-
--- DMAR
-  signal en_cnt0   : std_logic_vector(12 downto 0) :=(others=>'0');
-  signal en_cnt0_r : std_logic_vector(12 downto 0) :=(others=>'0');
-  signal en0,en1,en2,en3,en4,en5,en6,en7 : std_logic :='0';
-  signal lo_mem_wad, lo_mem_wad_z : std_logic_vector(12 downto 0) :=(others=>'0');
-  signal mem_ad_offset : std_logic_vector(12 downto 0) :=(others=>'0');
-begin
-
-  -- DMA BUSY or IDLE
-  BUSY  <= hit or hitr or en0 or en1 or en2 or en3 or en4 or en5 or en6 or en7;
-  hit <= EXEC;
-  process (CLK) begin
-    if (CLK'event and CLK='1') then
-      hitr <= hit;
-    end if;
-  end process;
-
-  ----------------------------
-  --- DMAR START ADR       ---
-  ----------------------------
-  process (CLK,hit,hitr) begin
-    if(RST='1') then
-      s_adr <= (others=>'0');
-    elsif(CLK'event and CLK='1') then
-      if((hit = '0') AND (hitr = '1')) then
-        s_adr <= START_AD(18 downto 0);
-      end if;
-    end if;
-  end process;
-
-  ----------------------------
-  --- DMAR START ADR       ---
-  ----------------------------
-  process (CLK,hit,hitr) begin
-    if(RST='1') then
-      mem_ad_offset <= (others=>'0');
-    elsif(CLK'event and CLK='1') then
-      if((hit = '0') AND (hitr = '1')) then
-        mem_ad_offset <= MEM_AD_BASE;
-      end if;
-    end if;
-  end process;
+Thu Apr 20 19:48:16 JST 2017
+/*
+  Copyright(c) 2003-2004 by Tsuyoshi Hamada
+  Nbody program for programmable GRAPE
+  Last Modified at 2004/04/13
+*/
+#include <stdio.h>
+#include <stdlib.h> // exit()
+#include <string.h> // strcpy()
+#include "nbodysim.h"
 
 
-  ----------------------------
-  --- CHIP SEL             ---
-  ----------------------------
-  process (CLK,hit,hitr) begin
-    if(RST='1') then
-      csel <= (others=>'0');
-    elsif(CLK'event and CLK='1') then
-      if((hit = '0') AND (hitr = '1')) then
-        if    (CHIPSEL(0) = '1') then
-          csel <= "0001";
-        elsif (CHIPSEL(1) = '1') then
-          csel <= "0010";
-        elsif (CHIPSEL(2) = '1') then
-          csel <= "0100";
-        else
-          csel <= "1000";
-        end if;
-      end if;
-    end if;
-  end process;
-
-  ------------------------------
-  --- MEM_ADB                ---
-  ------------------------------
-  process (CLK) begin
-    if(CLK'event and CLK='1') then
-      MEM_ADB <= lo_mem_wad + mem_ad_offset;
-    end if;
-  end process;
-
-  ----------------------------
-  -- DMAR EN COUNT     ---
-  ----------------------------
-  en_cnt0_r <= en_cnt0;
-  process (RST,CLK,hit,hitr,en_cnt0_r) begin
-    if(RST='1') then
-      en_cnt0 <= (others=>'0');
-    elsif(CLK'event and CLK='1') then
-      if((hit = '0') AND (hitr = '1'))then
-        en_cnt0 <= "0000" & NQWORD(8 downto 0);   -- SET NQWORD
-      elsif(en_cnt0_r /= "000000000000") then
-        en_cnt0 <= en_cnt0_r - "000000000001";
-      end if;
-    end if;
-  end process;
-
-  ----------------------------
-  -- DMAR EN 0         ---
-  ----------------------------
-  process (RST,CLK,hit,hitr,en_cnt0) begin
-    if(RST='1') then
-      en0 <= '0';
-    elsif(CLK'event and CLK='1') then
-      if((hit = '0') AND (hitr = '1'))then
-        en0 <= '1';
-      elsif(en_cnt0 = "000000000000") then
-        en0 <= '0';
-      end if;
-    end if;
-  end process;
-
-  process (CLK) begin
-    if(CLK'event and CLK='1') then
-      en7 <= en6;
-      en6 <= en5;
-      en5 <= en4;
-      en4 <= en3;
-      en3 <= en2;
-      en2 <= en1;
-      en1 <= en0;
-    end if;
-  end process;
+#define PI (3.1415926535897932)
+//#define TRIALS_PER_R (6000)
+//#define TRIALS_PER_R (300)
 
 
-  ------------------------------
-  --- DMAR ENABLE            ---
-  ------------------------------
-  process (CLK,en1,en2)  begin
-    if(CLK'event and CLK='1') then
-      if((en0 = '1') OR (en1 = '1')) then
-        DMAR_ENABLE(0) <= '1' AND csel(0);
-        DMAR_ENABLE(1) <= '1' AND csel(1);
-        DMAR_ENABLE(2) <= '1' AND csel(2);
-        DMAR_ENABLE(3) <= '1' AND csel(3);
-      else
-        DMAR_ENABLE <= (others=>'0');
-      end if;
-    end if;
-  end process;
+//#define N_PLOTS (1920)
+//#define N_PLOTS (640)
 
-  ------------------------------
-  --- DBUS_PORT            ---
-  ------------------------------
-  process (RST,CLK,en0,en1,en2,en3)  begin
-    if(RST='1') then
-      DBUS_Port <= (others=>'0');
-    elsif(CLK'event and CLK='1') then
-      if(    (en0 = '1') AND (en1 = '0') ) then
-        DBUS_Port <= ("000000000000000000000000000000000000000000000" & s_adr);
-      elsif( (en1 = '1') AND (en2 = '0') ) then
---        DBUS_Port <= X"FFFFFFFFFFFFFFFF";
-        NULL;
-      elsif( (en2 = '1') AND (en3 = '0') ) then
-        DBUS_Port <= (others=>'0');
-      end if;
-    end if;
-  end process;
 
-  ------------------------------
-  --- DBUS_HiZ               ---
-  ------------------------------
-  process (RST,CLK,en2,en3,en4,en5)  begin
-    if(RST='1') then
-      DBUS_HiZ <= '0';
-    elsif(CLK'event and CLK='1') then
-      if((en2 = '1') OR (en3 = '1') OR (en4 = '1') OR (en5 = '1') ) then
-        DBUS_HiZ <= '1';
-      else
-        DBUS_HiZ <= '0';
-      end if;
-    end if;
-  end process;
+#define TRIALS_PER_R (300)
+#define N_PLOTS (640)
 
-  ------------------------------
-  --- MEM_DTIB               ---
-  ------------------------------
-  process (CLK)  begin
-    if(CLK'event and CLK='1') then
-      MEM_DTIB <= DBUS_idata;
-    end if;
-  end process;
 
-  ------------------------------
-  --- MEM_WEHB, MEM_WELB     ---
-  ------------------------------
-  process (CLK)  begin
-    if(CLK'event and CLK='1') then
-      MEM_WEHB <= en6;
-      MEM_WELB <= en6;
-    end if;
-  end process;
+#define XSIZE (1.0)
+#define RMAX (XSIZE*2.0)
+//#define EPS2 (pow((RMAX*9e-7),2.0))
+#define EPS2 (pow((RMAX*1e-6),2.0))
 
-  ------------------------------
-  --- lo_mem_wad             ---
-  ------------------------------
-  lo_mem_wad_z <= lo_mem_wad;
-  process (RST,CLK,en5,en6)  begin
-    if(RST='1') then
-      lo_mem_wad <= "0000000000000";
-    elsif(CLK'event and CLK='1') then
-      if((en5 = '1') AND (en6 = '0')) then
-        lo_mem_wad <= "0000000000000";
-      elsif((en5 = '1') AND (en6 = '1')) then
-        lo_mem_wad <= lo_mem_wad_z + "0000000000001";
-      elsif((en5 = '0') AND (en6 = '1')) then
-        lo_mem_wad <= "0000000000000";
-      end if;
-    end if;
-  end process;
 
-end rtl;
+#define MASS (1.0)
+
+//#define R_START (6.6)  //-- for G3
+#define R_START (9.9)  //-- for G5
+
+void get_xi(double x[])
+{
+  x[0] = XSIZE*rand()/(RAND_MAX+1.0);
+  x[1] = XSIZE*rand()/(RAND_MAX+1.0);
+  x[2] = XSIZE*rand()/(RAND_MAX+1.0);
+  if(rand()/(RAND_MAX+1.0)<0.5) x[0] *= -1.0;
+  if(rand()/(RAND_MAX+1.0)<0.5) x[1] *= -1.0;
+  if(rand()/(RAND_MAX+1.0)<0.5) x[2] *= -1.0;
+}
+
+int check_position(double xi[],double xj[],double r)
+{
+  static unsigned int count=0;
+  int d;
+  if(r>= RMAX){
+    fprintf(stderr,"r(%f)>%f, finished\n",r,RMAX);
+    exit(0);
+  }
+  if(count > 0x4000){
+    fprintf(stderr,"r %f\tlog(r/RMAX) %f\n",r,log(r/RMAX)/log(10.0));
+    exit(0);
+  }
+  count++;
+  for(d=0;d<3;d++){
+    if((xi[d]>=XSIZE)||(xi[d]<=-XSIZE)){
+      //      fprintf(stderr,"xi bad \t %f\t%f\t%f\n",xi[0],xi[1],xi[2]);
+      return 0;
+    }
+    if((xj[d]>=XSIZE)||(xj[d]<=-XSIZE)){
+      //      fprintf(stderr,"xj bad \t %f\t%f\t%f\n",xj[0],xj[1],xj[2]);
+      return 0;
+    }
+  }
+  count=0;
+  return 1;
+}
+
+void get_xj(double xi[],double r,double theta,double phi,double xj[])
+{
+  xj[0] = xi[0] + r*cos(phi)*cos(theta);
+  xj[1] = xi[1] + r*cos(phi)*sin(theta);
+  xj[2] = xi[2] + r*sin(phi);
+}
+
+int main(int argc,char** argv)
+{
+  double x[NMAX][DIM];
+  double m[NMAX];
+  double radmax=TRIALS_PER_R;
+  double r=R_START;
+  double eps2 = EPS2;
+  int i,k,n=2;
+
+  srand(0x1192296);
+  m[0]=MASS;  m[1]=MASS;
+
+  for(k=0;k<N_PLOTS;k++){
+    double Sr=0.0;
+    double a_host[2][DIM];
+    double a_b3[2][DIM];
+
+    r = pow(10,R_START*(k-N_PLOTS)/N_PLOTS)*RMAX;
+    for(i=0;i<radmax;i++){
+      int j,d, is_in_range;
+      double theta,phi;
+      is_in_range=0;
+
+      while(is_in_range==0){
+	get_xi(x[0]);
+	phi   = 2.0*PI*(double)(rand()/(RAND_MAX+1.0));
+	theta = 2.0*PI*(double)(rand()/(RAND_MAX+1.0));
+	get_xj(x[0],r,theta,phi,x[1]);
+	is_in_range = check_position(x[0],x[1],r);
+      }
+
+      force_on_host(x,m,eps2,a_host,n);
+      force(x,m,eps2,a_b3,n);
+      /*************************
+      if(0){
+	void scale_1f(int n, double x[],    double s, double z[]);
+	void scale_3f(int n, double x[][3], double s, double z[][3]);
+	double _m[NMAX];
+	double _a[NMAX][3];
+	double _e;
+	double s;
+	s = 1.0;
+	s = pow(2.0,-18.0);
+	scale_1f(n, m, s,             _m);
+	force(x,_m,_e,_a, n);
+	scale_3f(n, _a, 1.0/s, a_b3);
+      }
+      *****************************/
+      {
+	double df2,f2;
+	df2 = f2 = 0.0;
+	for(d=0;d<DIM;d++) df2 += (a_b3[0][d]-a_host[0][d])*(a_b3[0][d]-a_host[0][d]);
+	for(d=0;d<DIM;d++) f2 += a_host[0][d]*a_host[0][d];
+	Sr += df2/f2;
+      }
+    }
+    //    exit(0);
+
+    Sr /= (double)(radmax);
+    Sr = pow(Sr,0.5);
+    printf("%e\t",log(r/XSIZE)/log(10.0));
+    printf("%e\t",Sr);
+    printf("%e\t",r);
+
+
+    /****
+      printf("%e\t",a_host[0][1]);
+      printf("%e |\t",  a_b3[0][1]);
+      printf("%e\t",a_host[0][2]);
+      printf("%e |\t",  a_b3[0][2]);
+      printf("%e\t",a_host[0][3]);
+      printf("%e\n",  a_b3[0][3]);
+    ***/
+    printf("%e\t",a_host[0][0]);
+    printf("%e\t",  a_b3[0][0]);
+    puts("");    
+
+
+  }
+  return 0;
+}
+
+
+
+/////////////////////////////////////////
+void scale_1f(int n, double x[], double scale, double z[])
+{
+  int i;
+  for(i=0;i<n;i++) z[i] = x[i]*scale;
+}
+
+void scale_3f(int n, double x[][3], double scale, double z[][3])
+{
+  int i;
+  for(i=0;i<n;i++){
+    z[i][0] = x[i][0]*scale;
+    z[i][1] = x[i][1]*scale;
+    z[i][2] = x[i][2]*scale;
+  }
+}

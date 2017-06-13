@@ -1,57 +1,37 @@
-Wed May 10 19:50:51 JST 2017
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.std_logic_arith.all;                                        
-use ieee.std_logic_unsigned.all;                                    
+Tue Jun 13 19:26:57 JST 2017
+-- Copyright 2004 Tsuyoshi Hamada
+--
+--
+--clk         __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __
+--[dma_we]    _______/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
+--[ DBUS ]           X   >< n ><d0 ><d1 ><d2 ><d3 ><d4 ><d5 ><d6 ><d7 >
+--state_dmaw          0  >< 1 >< 2                                    >< 3 >< 0 
+--mem_data                          <d0 ><d1 ><d2 ><d3 ><d4 ><d5 ><d6 ><d7 >
 
-entity pipe_sts is
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+
+entity dmaw_mem_data is
   port (
-    rst        : in  std_logic;
-    clk        : in  std_logic;
-    run        : in  std_logic;
-    runret     : in  std_logic;
-    status     : out std_logic_vector(31 downto 0)
-  );
-end pipe_sts;
+    CLK      : in std_logic;
+    DBUS     : in std_logic_vector(63 downto 0);
+    STATE    : in std_logic_vector(1 downto 0);
+    MEM_DATA : out std_logic_vector(63 downto 0) );
+end dmaw_mem_data;
 
-architecture rtl of pipe_sts is
-signal sts_reg  : std_logic_vector(7 downto 0) :=X"77";
-signal rund,sts : std_logic;
-signal cntr : std_logic_vector(7 downto 0);
-signal irun : std_logic := '0';
-
+architecture rtl of dmaw_mem_data is
+constant zero : std_logic_vector(63 downto 0) := (others=>'0');
 begin
 
--- clk    ____~~~~____~~~~____~~~~____~~~~__
--- runret _____~~~~~~~~_____________________
--- rund   _____________~~~~~~~~_____________
--- status                      <finish     >
-
--- status
-status(31 downto 8) <= (others=>'0');
-process(clk,rst) begin
-  if(rst='1') then
-    status(7 downto 0) <= (others=>'1');
-  elsif(clk'event and clk='1') then
-    if((runret='0') AND (rund='1')) then  -- 計算終了
-      status(7 downto 0) <= (others=>'1');
-    elsif((run='1') AND (irun='0')) then -- 計算開始
-      status(7 downto 0) <= (others=>'0');
+  process (CLK,STATE) begin
+    if(CLK'event and CLK = '1') then
+      if(STATE="10") then
+        MEM_DATA <= DBUS;
+      else
+        MEM_DATA <= zero;
+      end if;
     end if;
-  end if;
-end process;
-
-process(clk) begin
-  if(clk'event and clk='1') then
-    rund  <= runret;
-  end if;
-end process;
-
-process(clk) begin
-  if(clk'event and clk='1') then
-    irun  <= run;
-  end if;
-end process;
-
+  end process;
 
 end rtl;

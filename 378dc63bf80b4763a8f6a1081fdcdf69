@@ -1,131 +1,220 @@
-Sat May  6 19:43:15 JST 2017
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL;
-use IEEE.STD_LOGIC_ARITH.ALL;
+Sun Jun 25 19:26:25 JST 2017
+/*
+ * pfpga_conf.c
+ *
+ * Copyright (C) 2006-2007 Tsuyoshi Hamada
+ *                                All rights reserved.
+ * 
+ * No warranty is attached; 
+ * I cannot take responsibility for errors or fitness for use.
+ *
+ */
 
-entity USER is
-  port (
-    RST         : in  std_logic;                     -- PCI Bus Reset
-    CLK         : in  std_logic;                     -- PCI bus Clock
-    PSW_IN      : in  std_logic_vector( 1 downto 0); -- Push SW Input
-    DIPSW       : out  std_logic_vector( 3 downto 0);-- DIPSW Signal
-    PSW_ON0     : out  std_logic;                    -- User Interrupt 0 On Request
-    PSW_ON1     : out  std_logic;                    -- User Interrupt 1 On Request
-    USERINT2_ON : out  std_logic                     -- User Interrupt 2 On Request
-    );
-end USER;
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <unistd.h>     // usleep
+#include "pg4.h"
+
+static char pfpga_info[256];
+#define CNF_CMD_ADR 0x80
+#define CNF_DAT_ADR 0x84
+
+static unsigned int *data;
+
+void get_header(char* bitfile, char* header)
+{
+  int index=0, x;
+  char buf[128];
+  
+  index += 2 + (((0xff&bitfile[index])<<8) | (0xff&bitfile[index+1]));
+  index += 2 + (((0xff&bitfile[index])<<8)|(0xff&bitfile[index+1]));
+
+  // --- NCD file name ---
+  x = ((0xff&bitfile[index])<<8)|(0xff&bitfile[index+1]);
+  //  memcpy(buf, &bitfile[index+2], x);
+  //  sprintf(header, "%s, %s", header, buf);
+
+  // --- device ---
+  index += (x+3);
+  x = ((0xff&bitfile[index])<<8)|(0xff&bitfile[index+1]);
+  memcpy(buf, &bitfile[index+2], x);
+  sprintf(header, "%s, %s", header, buf);
+
+  // --- data ---
+  index += (x+3);
+  x = ((0xff&bitfile[index])<<8)|(0xff&bitfile[index+1]);
+  memcpy(buf, &bitfile[index+2], x);
+  sprintf(header, "%s, %s", header, buf);
+
+  // --- time ---
+  index += (x+3);
+  x = ((0xff&bitfile[index])<<8)|(0xff&bitfile[index+1]);
+  memcpy(buf, &bitfile[index+2], x);
+  sprintf(header, "%s, %s", header, buf);
+
+  // --- key ---
+  index += (x+3);
+  x = ((0xff&bitfile[index])<<8)|(0xff&bitfile[index+1]);
+  //  memcpy(buf, &bitfile[index+2], x);
+  //  sprintf(header, "%s, %s", header, buf);
 
 
-architecture USER_rtl of USER is
-
---------------------------------------------------
--- signals
---------------------------------------------------
-
-  signal DIPSWi      : std_logic_vector( 3 downto 0);          ------ Internal DIPSW Data
-  signal SWCHK_CUNT  : std_logic_vector( 7 downto 0);          ------ Push SW Check Counter
-  signal PSWCHK_CNT0 : std_logic_vector( 2 downto 0);          ------ Push SW 0 Check
-  signal PSWCHK_CNT1 : std_logic_vector( 2 downto 0);          ------ Push SW 1 Check
-  signal PSW_ON0i    : std_logic;                      ------ User Interrupt 0 On Request
-  signal PSW_ON1i    : std_logic;                      ------ User Interrupt 1 On Request
-
-begin
+}
 
 
---------------------------------------------------------------------------------
--- DIPSW Input Signal Output Control Process
---------------------------------------------------------------------------------
-    DIPSWi <= (others=>'0');  -- 2004/11/11 by T.Hamada
-    DIPSW <= DIPSWi;
 
---------------------------------------------------------------------------------
--- Push SW Check Counter Control Process
---------------------------------------------------------------------------------
+int fread_config_data(char* fname, unsigned int *size)
+{
+  // -- Read Config File to 'config_bit_data'---
+  FILE* fin;
+  int ndata;
+  int i;
 
-  process (RST,CLK) begin
-    if (RST='1') then
-       SWCHK_CUNT <= (others=>'0');
-    elsif (CLK'event and CLK='1') then
-       SWCHK_CUNT <= SWCHK_CUNT+1;                  ------ Counter Increment
-    end if;
-  end process;
+  struct stat buf;
+  int fsize;
 
---------------------------------------------------------------------------------
--- Push SW 0 Check Control Process
---------------------------------------------------------------------------------
+  // read file status
+  if (stat(fname, &buf) == -1) {
+    fprintf(stderr, "fread_config_data: can't open bit file!!! %s\n", fname);
+    exit(-1);
+  }
 
-  process (RST,CLK) begin
-    if (RST='1') then
-       PSWCHK_CNT0 <= (others=>'1');
-    elsif (CLK'event and CLK='1') then
-      if (SWCHK_CUNT="11111111") then
-         PSWCHK_CNT0 <= PSWCHK_CNT0(1 downto 0) & PSW_IN(0);    ------ PSW_IN(0) Sampling
-      end if;
-    end if;
-  end process;
+  fsize = buf.st_size;
+  if (data != NULL) {
+    free(data);
+  }
+  data = (unsigned int*)malloc(fsize);
+  if (data == NULL) {
+    fprintf(stderr, "fread_config_data: memory allocation error!\n");
+    exit(-1);
+  }
+  
+  fin = fopen(fname, "r");
+  if (fin == NULL) {
+    fprintf(stderr, "fread_config_data: cannot open %s!\n", fname);
+    exit(-1);
+  }
+  fread(data,fsize,1,fin);
+  fclose(fin);
+  fprintf(stderr, "fread_config_data: read %i bytes.\n", fsize);
 
---------------------------------------------------------------------------------
--- Push SW 0 On Signal Output Control Process
---------------------------------------------------------------------------------
+  get_header((char*)data, pfpga_info);
 
-  process (RST,CLK) begin
-    if (RST='1') then
-       PSW_ON0i <= '0';
-    elsif (CLK'event and CLK='1') then
-      if (SWCHK_CUNT="11111111") then
-        PSW_ON0i <= PSWCHK_CNT0(2) and (not PSWCHK_CNT0(1));    ------ SW Check Signal Set
-      else
-        PSW_ON0i <= '0';
-      end if;
-    end if;
-  end process;
+  
+  ndata = fsize/sizeof(unsigned int);
 
-    PSW_ON0 <= PSW_ON0i;
+  // CHANGE ENDIAN (LittleEndian -> BigEndian)
+  for(i = 0;i < ndata; i++){
+    unsigned int byte[8];
+    byte[0] = 0xFF&(data[i]>>24);
+    byte[1] = 0xFF&(data[i]>>16);
+    byte[2] = 0xFF&(data[i]>>8);
+    byte[3] = 0xFF&(data[i]);
+    data[i]=0x0;
+    data[i]= (byte[3]<<24)|(byte[2]<<16)|(byte[1]<<8)|byte[0];
+  }
 
---------------------------------------------------------------------------------
--- Push SW 1 Check Control Process
---------------------------------------------------------------------------------
+  *size = (unsigned int)ndata;
 
-  process (RST,CLK) begin
-    if (RST='1') then
-       PSWCHK_CNT1 <= (others=>'1');
-    elsif (CLK'event and CLK='1') then
-      if (SWCHK_CUNT="11111111") then
-         PSWCHK_CNT1 <= PSWCHK_CNT1(1 downto 0) & PSW_IN(1);    ------ PSW_IN(1) Sampling
-      end if;
-    end if;
-  end process;
+  return fsize;
+}
 
---------------------------------------------------------------------------------
--- Push SW 1 On Signal Output Control Process
---------------------------------------------------------------------------------
+void config_onechip(int devid, unsigned int nfp, unsigned int ncfgdata)
+{
+  unsigned int i, d;
+  unsigned int *p;
 
-  process (RST,CLK) begin
-    if (RST='1') then
-       PSW_ON1i <= '0';
-    elsif (CLK'event and CLK='1') then
-      if (SWCHK_CUNT="11111111") then
-        PSW_ON1i <= PSWCHK_CNT1(2) and (not PSWCHK_CNT1(1));    ------ SW Check Signal Set
-      else
-        PSW_ON1i <= '0';
-      end if;
-    end if;
-  end process;
+  if (data == NULL) return;
+  if (nfp > 0x8) {
+    fprintf(stderr, "nfp err\n");
+    exit(-1);
+  } 
 
-    PSW_ON1 <= PSW_ON1i;
+  // ---------------------------------------- SETUP CONFIGURATION
+  d = (unsigned int)(0xf0|nfp);
+  WriteBase0(devid, CNF_CMD_ADR, d);
+  d = (unsigned int)(  ((0xF^nfp)<<4)   |nfp);
+  WriteBase0(devid, CNF_CMD_ADR, d);
+  d = (unsigned int)(0xf0|nfp);
+  WriteBase0(devid, CNF_CMD_ADR, d);
+  usleep(15000);
 
---------------------------------------------------------------------------------
--- User Interrupt 2 Signal Output Control Process
---------------------------------------------------------------------------------
+  // ---------------------------------------- SEND CONFIGURATION DATA
+  p = data;
+  for(i = 0; i < ncfgdata; i++){
+    WriteBase0(devid, CNF_DAT_ADR, *(p++));
+    d = (unsigned int)(0x1f0|nfp);
+    WriteBase0(devid, CNF_CMD_ADR,      d);
+    WriteBase0(devid, CNF_CMD_ADR, 0xff&d);
+  }
 
-  process (RST,CLK) begin
-    if (RST='1') then
-      USERINT2_ON <= '0';
-    elsif (CLK'event and CLK='1') then
-      USERINT2_ON <=  RST and DIPSWi(0) and (not PSWCHK_CNT1(2))
-                            and PSWCHK_CNT1(1);
-    end if;
-  end process;
+  // ---------------------------------------- STOP CFG_CCLK
+  d = (unsigned int)(0xf0);
+  WriteBase0(devid, CNF_CMD_ADR,d);
+}
 
-end USER_rtl;
+void config_pfpga_all(int devid, char* fname)
+{
+  unsigned int i, nfp, ncfgdata;
+
+  data = NULL;
+  fread_config_data(fname, &ncfgdata);
+
+  for(i = 0; i < 4; i++) {
+    nfp = 0xf&(0x1<<i);
+    fprintf(stderr, "configuring chip%i ...\n", i);
+    config_onechip(devid, nfp, ncfgdata);
+  }
+
+  free(data);
+}
+
+int main(int argc, char* argv[])
+{
+  int devid;
+
+  if (argc < 2) {
+    fprintf(stderr, "%s <bitfile> <devid>\n", argv[0]);
+    exit(-1);
+  }
+  if (argv[2] == NULL) {
+    devid = 0;
+  } else {
+    devid = atoi(argv[2]);
+    if (devid > 2) {
+      fprintf(stderr, "%s : invalid argument <devid>%s:%d\n", argv[0], __FILE__, __LINE__);
+      exit(-1);
+    }
+  }
+  fprintf(stderr, "%s configures all PFPGAs on progrape%i ...\n", argv[0], devid);
+
+  pg4_open(devid);
+
+  {
+    pg4_get_pfpga_info(devid, pfpga_info);
+    printf("----------------------\n");
+    printf("Previous config info: \n");
+    printf("%s\n",pfpga_info);
+    printf("----------------------\n");
+  }
+
+  {
+    sprintf(pfpga_info, "%s",argv[1]);
+    config_pfpga_all(devid, argv[1]);
+    pg4_set_pfpga_info(devid, pfpga_info);
+  }
+
+  {
+    pg4_get_pfpga_info(devid, pfpga_info);
+    printf("----------------------\n");
+    printf("Current config info: \n");
+    printf("%s\n",pfpga_info);
+    printf("----------------------\n");
+  }
+
+  pg4_close(devid);
+
+  return 0;
+}

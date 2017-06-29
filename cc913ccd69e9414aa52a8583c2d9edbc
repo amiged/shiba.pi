@@ -1,28 +1,6 @@
-Mon Jun 12 19:29:48 JST 2017
--- Copyright 2004 Tsuyoshi Hamada
---
---
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-
-entity dmar_mem_adr is
-  port (
-    CLK       : in  std_logic;
-    STATE     : in std_logic_vector(1 downto 0);
-    START_ADR : in std_logic_vector(18 downto 0);
-    MEM_ADR   : out  std_logic_vector(18 downto 0)
-    );
-end dmar_mem_adr;
-
-architecture rtl of dmar_mem_adr is
-component dmaw_mem_adr
-  port (
-    CLK       : in  std_logic;
-    STATE     : in std_logic_vector(1 downto 0);  -- STATE of DMAW
-    START_ADR : in std_logic_vector(18 downto 0);
-    MEM_ADR   : out  std_logic_vector(18 downto 0)
-    );
-end component;
-begin
-  u0 : dmaw_mem_adr port map(CLK=>CLK, STATE=>STATE, START_ADR=>START_ADR, MEM_ADR=>MEM_ADR);
-end rtl;
+Thu Jun 29 19:30:34 JST 2017
+3
+0
+1 0.9700436 -0.24308753 0 0.466203685 0.43236573 0
+1 -0.9700436 0.24308753 -0 0.466203685 0.43236573 0
+1 0 0 0 -0.93240737 -0.86473146 -0

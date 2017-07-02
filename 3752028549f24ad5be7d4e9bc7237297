@@ -1,71 +1,74 @@
-Wed Jun 28 19:30:59 JST 2017
--- 2004/05/13 16:30
--- for matsubayashi simulation
+Sun Jul  2 19:49:44 JST 2017
+// gravity3.pgdl
+// Calculate Potential, Acceleration and Jerk
+// Author: Andreas Ernst, August 18, 2006
 
-#define NPOS 32
-#define NLOG 17
-#define NMAN 8
-#define NCUT 6
-#define NFOR 57
+#define NFLO 26
+#define NMAN 16
+#define NFIX 57
 #define NACC 64
+#define NEXAD 31
+#define NEXAD2 1
+#define FSHIFT pow(2.0,(double)NEXAD)
 
-#define DELAY_SUB 2     /* A */
-#define DELAY_FL  4     /* B */
-#define DELAY_X2Y2 5    /* C */
-#define DELAY_R2   5    /* D */
-#define DELAY_R3   1    /* E */
-#define DELAY_MR3  1    /* F */
-#define DELAY_F    1    /* G */
-#define DELAY_OF   1    /* H */
-#define DELAY_LF   2    /* I */
-#define DELAY_AC   3    /* J */
+/MEM xj[3] <= x[][]  : float(NFLO, NMAN);
+/MEM vj[3] <= v[][]  : float(NFLO, NMAN);
+/MEM mj    <= m[]    : float(NFLO, NMAN);
+/REG xi[3] <= x[][]  : float(NFLO, NMAN);
+/REG vi[3] <= v[][]  : float(NFLO, NMAN);
+/REG rx    => p[]    : fix(NACC);
+/REG sx[3] => a[][]  : fix(NACC);
+/REG tx[3] => jk[][] : fix(NACC);
 
-#define DELAY_EPS  6    /* A+B */
-#define DELAY_DX   12   /* C+D+E+F */
-#define DELAY_M    17   /* A+B+C+D+E */
-#define DELAY_CLE  22   /* A+B+C+D+E+F+G+H+I */
-#define DELAY_TOT  25   /* (DELAY_CLE) + J */
+/SCALE rx    : (1.0/FSHIFT);
+/SCALE sx[3] : (1.0/FSHIFT);
+/SCALE tx[3] : (1.0/FSHIFT);
 
+/NVMP 1;
+/NPIPE 1;
 
+// Acceleration, 1st part
 
+pg_float_sub           (xj,xi,dx,              NFLO,NMAN, 4);     // (1)
+pg_float_mult          (dx,dx,dx2,             NFLO,NMAN, 2);     // (2)
+pg_float_unsigned_add  (dx2[0],dx2[1],x2y2,    NFLO,NMAN, 4);     // (3)
+pg_float_unsigned_add  (dx2[2],x2y2,r2,        NFLO,NMAN, 4);     // (4)
+pg_float_sqrt          (r2,r1,                 NFLO,NMAN, 3);     // (5)
+pg_float_mult          (r2,r1,r3,              NFLO,NMAN, 2);     // (6)
+pg_float_mult          (r3,r2,r5,              NFLO,NMAN, 2);     // (7)
+pg_float_recipro       (r5,r5i,                NFLO,NMAN, 2);     // (8)
+pg_float_mult          (r5i,mj,mr5i,           NFLO,NMAN, 2);     // (9)
+pg_float_mult          (mr5i,r2,mf,            NFLO,NMAN, 2);     // (10)
 
-#define xsize (100.0)
-#define mmin (1.220703125e-04)
-#define xoffset (xsize/2.0)
-#define xscale (pow(2.0,(double)NPOS)/xsize)
-#define mscale (pow(2.0,95.38)/mmin)
-#define escale (xscale*xscale)
-#define foffset (pow(2.0,23.0))
-#define fscale (-xscale*xscale*foffset/mscale)
---mmin 0xdf61
+// Potential
 
-/NPIPE 1
-/NVMP 1
+pg_float_mult          (mf,r2,mp,              NFLO,NMAN, 2);      // (11)
+pg_float_expadd        (mp,ps,                 NEXAD,NFLO,NMAN,1); // (12)
+pg_float_fixaccum      (ps,rx,                 NFLO,NMAN, NFIX, NACC, 2);  // (13)
 
-/JPSET xj,0,0,31,x[][0],ufix,NPOS,xscale,xoffset
-/JPSET yj,0,32,63,x[][1],ufix,NPOS,xscale,xoffset
-/JPSET zj,0,64,95,x[][2],ufix,NPOS,xscale,xoffset
-/JPSET mj,0,96,112,m[],log,NLOG,NMAN,mscale
-/IPSET xi,x[][0],ufix,NPOS,xscale,xoffset
-/IPSET yi,x[][1],ufix,NPOS,xscale,xoffset
-/IPSET zi,x[][2],ufix,NPOS,xscale,xoffset
-/IPSET ieps2,eps2,log,NLOG,NMAN,escale
-/FOSET sx,a[][0],fix,NACC,fscale
-/FOSET sy,a[][1],fix,NACC,fscale
-/FOSET sz,a[][2],fix,NACC,fscale
-/VALSET fx_ofst,0x9700,0,16
-/VALSET fy_ofst,0x9700,0,16
-/VALSET fz_ofst,0x9700,0,16
-/DATASET fx_ofst,01001011100000000,0,16
-/DATASET fy_ofst,01001011100000000,0,16
-/DATASET fz_ofst,01001011100000000,0,16
+// Acceleration, 2nd part
 
-void force_gravity_on_emulator(x,m,eps2,a,n)
-	double x[][3];
-	double m[];
-	double eps2;
-	double a[][3];
-	int n;
-{
-  pg_conv_ftol(xij,dx,NPOS,NLOG,NMAN,DELAY_FL);
-}
+pg_float_expadd        (mf,fs,                 NEXAD,NFLO,NMAN,1);// (14)
+pg_float_mult          (fs,dx,fx,              NFLO,NMAN, 2);     // (15)
+pg_float_fixaccum      (fx,sx,                 NFLO,NMAN, NFIX, NACC, 2);  // (16)
+
+// Jerk, 1st term
+
+pg_float_sub           (vj,vi,dv,              NFLO,NMAN, 4);     // (17)
+pg_float_mult          (fs,dv,jk1,             NFLO,NMAN, 2);     // (18)
+
+// Jerk, 2nd term
+
+pg_float_mult          (dx,dv,xv,              NFLO,NMAN, 2);      // (19)
+pg_float_unsigned_add  (xv[0],xv[1],xv1,       NFLO,NMAN, 4);      // (20)
+pg_float_unsigned_add  (xv[2],xv1,xv2,         NFLO,NMAN, 4);      // (21)
+pg_float_expadd        (xv2,xv2x2,             NEXAD2,NFLO,NMAN,1);// (22)
+pg_float_unsigned_add  (xv2x2,xv2,xv2x3,       NFLO,NMAN, 4);      // (23)
+pg_float_mult          (mr5i,xv2x3,jk2a,       NFLO,NMAN, 2);      // (24)
+pg_float_expadd        (jk2a,jk2s,             NEXAD,NFLO,NMAN,1); // (25)
+pg_float_mult          (jk2s,dx,jk2,           NFLO,NMAN, 2);      // (26)
+
+// Jerk, 1st - 2nd term
+
+pg_float_sub           (jk1,jk2,jk0,           NFLO,NMAN, 4);      // (27)
+pg_float_fixaccum      (jk0,tx,                NFLO,NMAN, NFIX, NACC, 2);  // (28)

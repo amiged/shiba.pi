@@ -1,2 +1,12 @@
-Wed Aug  2 19:44:38 JST 2017
-36330	80000000000000	4	FFFFFFFFFFFFFA00	
+Wed Aug 16 19:28:13 JST 2017
+
+all:
+	cp top.ucf.ISE6.3i_Synplify top.ucf
+	rm -rf proj
+	tar xvf proj.synplify.tar
+	cd proj;ngdbuild -intstyle ise -dd /home/hamada/VHDL/proj/_ngo -uc ../top.ucf  -p xc2vp70-ff1517-5 top.edn top.ngd
+	cd proj;map -intstyle ise -p xc2vp70-ff1517-5 -cm area -pr b -k 4 -c 100 -tx off -o top_map.ncd top.ngd top.pcf
+	cd proj;par -w -intstyle ise -ol std -t 1 top_map.ncd top.ncd top.pcf
+	cd proj;trce -intstyle ise -e 3 -l 3 -xml top top.ncd -o top.twr top.pcf
+	cd proj;bitgen -intstyle ise -f top.ut top.ncd
+

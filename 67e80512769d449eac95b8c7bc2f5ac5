@@ -1,4 +1,4 @@
-Thu Nov  2 19:44:54 JST 2017
+Tue Nov 14 19:50:19 JST 2017
 --------------------------------------------------------------------------
 --  File:   cfg.vhd
 --  Rev:    v3.100
@@ -113,7 +113,7 @@ architecture rtl of cfg is
 
   -- BAR1
   cfg_int(37)             <= ENABLE ;
-  cfg_int(69 downto 38)   <= SIZE16M ;
+  cfg_int(69 downto 38)   <= SIZE16M ; -- now 4MB ( TARGET_AD,DMA_ADRS of (21 downto 0)) is used : 2005/01/19
   cfg_int(70)             <= NOFETCH ;
   cfg_int(72 downto 71)   <= TYPE00 ;
   cfg_int(73)             <= MEMORY ;
@@ -132,8 +132,10 @@ architecture rtl of cfg is
 --------------------------------------------------------------
 
   -- MAX_LAT and MIN_GNT
-  cfg_int(231 downto 224) <= X"00" ;
-  cfg_int(223 downto 216) <= X"FF" ;
+--  cfg_int(231 downto 224) <= X"00" ;
+--  cfg_int(223 downto 216) <= X"FF" ;
+  cfg_int(231 downto 224) <= X"0F" ;   -- 2004/12/09 by T.H. 
+  cfg_int(223 downto 216) <= X"0F" ;   -- 2004/12/09 by T.H. 
 
 -------------------------------------------------------------
 --  Configure other PCI Header options

@@ -1,344 +1,115 @@
-Wed Jan  3 19:44:10 JST 2018
-/***************************************************
- * The lowest level library for PROGRAPE-4
- *
- * Copyright(c) by Tsuyoshi Hamada.
- * All rights reserved.
- *
- * PLEASE DO NOT BRANCH !!
- *
- * 20060916.rev1 : Development start
- ***************************************************/
+Sat Jan  6 19:28:54 JST 2018
+-- PGPG Floating-Point Compare
+-- by Tsuyoshi Hamada (2004/10/01)
+-- P: 1[O], 2[O], 
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.std_logic_unsigned.all;
+entity pg_float_compare_26_16_2 is
+  port( x : in std_logic_vector(25 downto 0);
+        y : in std_logic_vector(25 downto 0);
+        flag : out std_logic;           -- (x > y) ? 1 : 0
+        clk : in std_logic);
+end pg_float_compare_26_16_2;
+architecture rtl of pg_float_compare_26_16_2 is
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#include <unistd.h>
-#include <sys/ioctl.h> // ioctl()
-#include <sys/mman.h>  // mmap()
-#include <sys/types.h> // open()
-#include <sys/stat.h>  // open()
-#include <sys/fcntl.h> // open()
+-- ----------------------------------------------------------------------------
+signal signx, signy, nonzx, nonzy :  std_logic;
+signal expx,expy : std_logic_vector(7 downto 0);      -- nbit_exp-1
+signal manx,many : std_logic_vector(15 downto 0);     -- nbit_man-1
+-- ----------------------------------------------------------------------------
+signal sx0,sx1,sy0,sy1 : std_logic;
+signal nx0,nx1,ny0,ny1 : std_logic;
+signal expx0,expy0 : std_logic_vector(7 downto 0); -- nbit_exp-1
+signal manx0,many0 : std_logic_vector(15 downto 0); -- nbit_man-1
+signal exp_x,exp_y,exy0,eyx0 : std_logic_vector(8 downto 0); -- nbit_exp
+signal exgey0,exgey1,eygex0,eygex1 : std_logic;
+signal mx,my,mxy,myx : std_logic_vector(16 downto 0);   -- nbit_man
+signal mxgey0,mygex0,mygex1 : std_logic;
+signal exeqy : std_logic;
+signal flag0,flag1 : std_logic;
+signal nygex : std_logic;
+signal nontobi0 : std_logic;
+signal is_xeqy0,mxeqy,mxgey1 : std_logic;
+signal b : std_logic_vector(9 downto 0);
+begin
+                             --2.0,  4.0, 0.5, 0.0, 1024.0
+  signx <= x(25);            -- 0 ,  0  ,  0 , *,   0,
+  nonzx <= x(24);            -- 1 ,  1  ,  1 , 0,   1,
+  expx <= x(23 downto 16);   -- 1 ,  2  , -1 , *   10,
+  manx <= x(15 downto 0);    -- 0 ,  0  ,  0 , *,   0,
 
-#undef CERR
-#define CERR(fmt, args...) fprintf(stderr, fmt, ## args)
+  signy <= y(25);
+  nonzy <= y(24);
+  expy <= y(23 downto 16);
+  many <= y(15 downto 0);
 
-#undef _CERR
-#define _CERR(fmt, args...) 
+  -- buffering
+  sx0  <= signx;
+  sy0  <= signy;
+  nx0  <= nonzx;
+  ny0  <= nonzy;
+  expx0 <= expx;
+  expy0 <= expy;
+  manx0 <= manx;
+  many0 <= many;
 
-#define MAX_NBOARD 8
-unsigned int* bar0[MAX_NBOARD];
-unsigned int* bar1[MAX_NBOARD];
+  -- biassing to unsigned
+  exp_x(8) <= '0';                         -- nbit_exp
+  exp_x(7) <= not expx0(7);               -- nbit_exp-1, nbit_exp-1
+  exp_x(6 downto 0) <= expx0(6 downto 0); -- nbit_exp-2, nbit_exp-2
+  exp_y(8) <= '0';                         -- nbit_exp
+  exp_y(7) <= not expy0(7);               -- nbit_exp-1, nbit_exp-1
+  exp_y(6 downto 0) <= expy0(6 downto 0); -- nbit_exp-2, nbit_exp-2
 
-//---------------------------------------
-#include "progrape.h"
+  -- sub exponent
+  exy0 <= exp_x - exp_y;
+  eyx0 <= exp_y - exp_x;
+  eygex0 <= exy0(8);
+  exgey0 <= eyx0(8);
 
-static char *devname[] = {
-  "/dev/progrape0",
-  "/dev/progrape1",
-  "/dev/progrape2",
-  "/dev/progrape3",
-  "/dev/progrape4",
-  "/dev/progrape5",
-  "/dev/progrape6",
-  "/dev/progrape7",
-  "/dev/progrape8",
-};
+  -- compare mantissa
+  mx <= '0' & manx0;
+  my <= '0' & many0;
+  mxy <= mx - my;
+  myx <= my - mx;
+  mxgey0 <= myx(16);   -- nbit_man
+  mygex0 <= mxy(16);   -- nbit_man
 
-static int pg4_dev[] = {
-  -1,-1,-1,-1,-1,-1,-1,-1,
-};
+  -- PIPELINE 1 ----------------------------------------------------------------
+  process(clk) begin
+    if(clk'event and clk='1') then
+      sx1  <= sx0;
+      sy1  <= sy0;
+      nx1  <= nx0;
+      ny1  <= ny0;
+      exgey1 <= exgey0;
+      eygex1 <= eygex0;
+      mygex1 <= mygex0;
+      mxgey1 <= mxgey0;
+    end if;
+  end process;
 
-unsigned int *dmar_buf[MAX_NBOARD];
-unsigned int *dmaw_buf[MAX_NBOARD];
+  exeqy <= exgey1 nor eygex1;
+  mxeqy <= not (mygex1 or mxgey1);  
 
-unsigned int* pg4_get_bar0ptr(int devid){ return bar0[devid]; }
-unsigned int* pg4_get_bar1ptr(int devid){ return bar1[devid]; }
+  -- bawai wake vector
+  b <= nx1 & ny1 & sx1 & sy1 & exeqy & exgey1 & eygex1 & mxeqy & mxgey1 & mygex1;
 
-#define DMA_BSIZE (0x1<<10) // 4KB
+  flag0 <= 
+    ((not b(9)) and b(8) and b(6)         ) or                                                       -- "01X1XXXXXX", -- x = 0, y < 0
+    (b(9) and (not b(8)) and (not b(7))   ) or                                                       -- "100XXXXXXX", -- x > 0, y = 0
+    (b(9) and b(8) and (not b(7)) and b(6)) or                                                       -- "1101XXXXXX", -- x > 0, y < 0
+    (b(9) and b(8) and (not b(7)) and (not b(6)) and (not b(5)) and b(4) and (not b(3))) or          -- "1100010XXX", -- x > y > 0
+    (b(9) and b(8) and (not b(7)) and (not b(6)) and b(5) and (not b(2)) and b(1) and (not b(0))) or -- "11001XX010", -- x > y > 0
+    (b(9) and b(8) and b(7) and b(6) and (not b(5)) and (not b(4)) and b(3)) or                      -- "1111001XXX", -- 0 > x > y
+    (b(9) and b(8) and b(7) and b(6) and b(5) and (not b(2)) and (not b(1)) and b(0));               -- "11111XX001", -- 0 > x > y
 
-static void * __mmap_bar     (int devid, int bar);
-//    static int __pg4_DMA         (int devid, unsigned int size, unsigned int offset, unsigned int dir);
-//    static int __pg4_DMA_noInterrupt(int devid, unsigned int size, unsigned int offset, unsigned int dir);
-//    static int __pg4_DMA_with_retry(int devid, unsigned int size, unsigned int offset, unsigned int dir);
-int           pg4_DMAget     (int devid, unsigned int size);
-int           pg4_DMAput     (int devid, unsigned int size);
-int           pg4_DMAput_offset (int devid, unsigned int size, unsigned offset);
-int           pg4_DMAget_offset (int devid, unsigned int size, unsigned offset);
-void          pg4_wait       (int devid, int n);
-void          pg4_DMAcheck   (int devid);
-int           pg4_DMAretry   (int devid);
-unsigned long pg4_getbaseaddr(int devid, int j);
-unsigned long pg4_getbaseaddr_size(int devid, int bar);
-unsigned long pg4_read_pciconfig_dword(int devid, int adr);
-void pg4_get_pfpga_info(int devid, char *info);
-void pg4_set_pfpga_info(int devid, char *info);
+  -- PIPELINE 2 ----------------------------------------------------------------
+  process(clk) begin
+    if(clk'event and clk='1') then
+      flag <= flag0;
+    end if;
+  end process;
 
-
-static void * __mmap_dmabuf(int id, int is_wbuf)
-{
-  unsigned long size;
-  void *mapped_ptr;
-
-  switch (is_wbuf) {
-  case 0:
-    {
-      if (ioctl(pg4_dev[id], IOC_SV_MMAPMODE, MMAP_BUF_DMAR)) {
-	CERR("mmap dmar buf failed | %s:%d\n", __FILE__, __LINE__);
-	exit (-1);
-      }
-      size = ioctl(pg4_dev[id], IOC_GV_DMA_SIZE);
-
-    }
-    break;
-  case 1:
-    {
-      if (ioctl(pg4_dev[id], IOC_SV_MMAPMODE, MMAP_BUF_DMAW)) {
-	CERR("mmap dmaw buf failed | %s:%d\n", __FILE__, __LINE__);
-	exit (-1);
-      }
-      size = ioctl(pg4_dev[id], IOC_GV_DMA_SIZE);
-    }
-    break;
-  default :
-    CERR("mmap dmabuf %d invalid | %s:%d\n", is_wbuf, __FILE__, __LINE__);
-    exit (-1);
-  }
-
-  mapped_ptr = mmap(NULL,
-		    size,
-		    (PROT_READ| PROT_WRITE),
-		    MAP_SHARED,
-		    pg4_dev[id],
-		    0);
-  _CERR("mmap_ptr called\n");
-
-  return (mapped_ptr);
-}
-
-
-static void * __mmap_bar(int id, int bar)
-{
-  unsigned long size;
-  unsigned long pagesize = getpagesize();
-  void *mapped_ptr;
-
-  switch (bar) {
-  case 0:
-    {
-      if (ioctl(pg4_dev[id], IOC_SV_MMAPMODE, MMAP_REG_PIORW)) {
-	CERR("mmap bar%d failed | %s:%d\n",bar,__FILE__,__LINE__);
-	exit (-1);
-      }
-      size = ioctl(pg4_dev[id], IOC_GV_REG_SIZE);
-    }
-    break;
-  case 1:
-    {
-      if (ioctl(pg4_dev[id], IOC_SV_MMAPMODE, MMAP_MEM_PIORW)) {
-	CERR("mmap bar%d failed | %s:%d\n",bar,__FILE__,__LINE__);
-	exit (-1);
-      }
-      size = ioctl(pg4_dev[id], IOC_GV_MEM_SIZE);
-    }
-    break;
-  default :
-    CERR("mmap bar%d invalid | %s:%d\n",bar,__FILE__,__LINE__);
-    exit (-1);
-  }
-
-  mapped_ptr = mmap(NULL,
-		    (size/pagesize+1)*pagesize,
-		    (PROT_READ| PROT_WRITE),
-		    MAP_SHARED,
-		    pg4_dev[id],
-		    0);
-
-  return (mapped_ptr);
-}
-
-
-int pg4_open(int id)
-{
-  pg4_dev[id] = open(devname[id], O_RDWR);
-  if(pg4_dev[id] == -1) {
-    CERR("open failed %s | %s:%d\n",devname[id] ,__FILE__,__LINE__);
-    return -1;
-  }
-
-  bar0[id] = (unsigned int *) __mmap_bar(id, 0); // mmap BAR0
-  bar1[id] = (unsigned int *) __mmap_bar(id, 1); // mmap BAR1
-
-  dmaw_buf[id] = (unsigned int *) __mmap_dmabuf(id, 1); // mmap DMAW buf
-  dmar_buf[id] = (unsigned int *) __mmap_dmabuf(id, 0); // mmap DMAR buf
-
-  if(dmaw_buf[id] == NULL){
-    CERR("mmap dmaw_buf failed %s | %s:%d\n",devname[id] ,__FILE__,__LINE__);
-    return (-1);
-  }
-
-  if(dmar_buf[id] == NULL){
-    CERR("mmap dmar_buf failed %s | %s:%d\n",devname[id] ,__FILE__,__LINE__);
-    return (-1);
-  }
-
-  _CERR("DMAW Buff at 0x%x\n",(unsigned int)dmaw_buf[id]);
-  _CERR("DMAR Buff at 0x%x\n",(unsigned int)dmar_buf[id]);
-
-  return 1;
-}
-
-
-void pg4_close(int id){
-  close(pg4_dev[id]);
-  pg4_dev[id] = -1;
-}
-
-
-void pg4_close_and_exit(int id){
-  //  pg4_DMAcheck(id);
-  pg4_close(id);
-  exit(1);
-}
-
-
-inline unsigned int pg4_readbase0(int id, unsigned int index){ return *(bar0[id] + index); }
-inline void         pg4_writebase0(int id, unsigned int index, unsigned int val){ *(bar0[id] + index) = val; }
-inline unsigned int pg4_readbase1(int id, unsigned int index){ return *(bar1[id] + index); }
-inline void         pg4_writebase1(int id, unsigned int index, unsigned int val){ *(bar1[id] + index) = val; }
-inline unsigned int ReadBase0(int id, unsigned int addr){return pg4_readbase0(id, addr>>2);}
-inline unsigned int ReadBase1(int id, unsigned int addr){return pg4_readbase1(id, addr>>2);}
-inline void         WriteBase0(int id, unsigned int addr, unsigned int val){pg4_writebase0(id, addr>>2, val);}
-inline void         WriteBase1(int id, unsigned int addr, unsigned int val){pg4_writebase1(id, addr>>2, val);}
-
-
-unsigned int pg4_get_dma_size(int id) {
-  return ( (unsigned int)ioctl(pg4_dev[id], IOC_GV_DMA_SIZE) );
-}
-
-
-unsigned int* pg4_get_dmawptr(int id) {
-  return ( (unsigned int*)dmaw_buf[id] );
-}
-
-
-unsigned int* pg4_get_dmarptr(int id) {
-  return ( (unsigned int*)dmar_buf[id] );
-}
-
-
-int pg4_DMAput(int id, unsigned int size)
-{
-  int ret = ioctl(pg4_dev[id], IOC_SV_DMAW, size);
-  if(ret){
-    CERR("DMAW failed %d| %s:%d\n",ret ,__FILE__, __LINE__);
-    exit (-1);
-  }
-  return (0);
-}
-
-
-int pg4_DMAget(int id, unsigned int size)
-{
-  int ret = ioctl(pg4_dev[id], IOC_SV_DMAR, size);
-  if(ret){
-    CERR("DMAR failed %d| %s:%d\n",ret ,__FILE__, __LINE__);
-    exit (-1);
-  }
-  return (0);
-}
-
-
-void pg4_DMAcheck(int devid)
-{
-  unsigned int flag, retry;
-  fprintf(stderr,"\t INT_STAT       (0x%X) : %x\n", REG_INT_STAT,       ReadBase0(devid, REG_INT_STAT));
-  fprintf(stderr,"\t INT_MASK       (0x%X) : %x\n", REG_INT_MASK,       ReadBase0(devid, REG_INT_MASK));
-  fprintf(stderr,"\t DMA_PCI_ADRS   (0x%X) : %x\n", REG_DMA_PCI_ADRS,   ReadBase0(devid, REG_DMA_PCI_ADRS));
-  fprintf(stderr,"\t DMA_LOCAL_ADRS (0x%X) : %x\n", REG_DMA_LOCAL_ADRS, ReadBase0(devid, REG_DMA_LOCAL_ADRS));
-  fprintf(stderr,"\t DMA_COUNT      (0x%X) : %x\n", REG_DMA_COUNT,      ReadBase0(devid, REG_DMA_COUNT));
-  fprintf(stderr,"\t DMA_CTRL       (0x%X) : %x\n", REG_DMA_CTRL,       ReadBase0(devid, REG_DMA_CTRL));
-  fprintf(stderr,"\t DMA_INTERVAL   (0x%X) : %x\n", REG_DMA_INTERVAL,   ReadBase0(devid, REG_DMA_INTERVAL));
-  fprintf(stderr,"\t DMA_STAT       (0x%X) : %x\n", REG_DMA_STAT,       ReadBase0(devid, REG_DMA_STAT));
-
-  flag = ReadBase0(devid, REG_DMA_STAT);
-
-  retry = ((0x1<<16)-1)&flag;
-  fprintf(stderr,"\t DMA dissconnect count %i\n", (flag>>16));
-  fprintf(stderr,"\t DMA retry count       %i\n", retry);
-  fprintf(stderr,"\n");
-  fflush(NULL);
-}
-
-int pg4_DMAretry(int devid)
-{
-  unsigned int flag, retry;
-  flag = ReadBase0(devid, REG_DMA_STAT);
-  retry = ((0x1<<16)-1)&flag;
-  return retry;
-}
-
-int pg4_DMAput_offset(int devid, unsigned int size, unsigned offset)
-{
-  CERR("REMOVED, %s:%d\n", __FILE__, __LINE__);exit(-1);
-  return -1;
-}
-
-int pg4_DMAget_offset(int devid, unsigned int size, unsigned offset)
-{
-  CERR("REMOVED, %s:%d\n", __FILE__, __LINE__);exit(-1);
-  return -1;
-}
-
-void pg4_wait(int devid, int n)
-{
-  CERR("REMOVED, %s:%d\n", __FILE__, __LINE__);exit(-1);
-}
-
-unsigned long pg4_getbaseaddr(int id, int bar)
-{
-  unsigned long ret;
-  if( (bar==0) || (bar==1)){
-    int bar0_dword_adr = 0x4;
-    ret = pg4_read_pciconfig_dword(id, bar0_dword_adr + bar);
-  }else{
-    CERR("bar %d invalid | %s:%d\n",bar ,__FILE__ ,__LINE__);
-    exit(-1);
-  }
-  return ret;
-}
-
-unsigned long pg4_getbaseaddr_size(int id, int bar)
-{
-  unsigned long size;
-  switch (bar) {
-  case 0:
-    size = ioctl(pg4_dev[id], IOC_GV_REG_SIZE);
-    break;
-  case 1:
-    size = ioctl(pg4_dev[id], IOC_GV_MEM_SIZE);
-    break;
-  default :
-    CERR("bar%d invalid | %s:%d\n",bar,__FILE__,__LINE__);
-    exit (-1);
-  }
-
-  return (size); // [Bytes]
-}
-
-unsigned long pg4_read_pciconfig_dword(int id, int adr)
-{
-  // note : 'adr' uses dword address (not byte address).
-  return (unsigned long) ioctl(pg4_dev[id], IOC_GV_PCICFG, adr);
-}
-
-void pg4_get_pfpga_info(int id, char* ret){
-  char info[NB_FPGA_INFO];
-  ioctl(pg4_dev[id], IOC_GP_FPGA_INFO, info);
-  strcpy(ret, info);
-}
-
-void pg4_set_pfpga_info(int id, char* info){
-  ioctl(pg4_dev[id], IOC_SP_FPGA_INFO, info);
-}
+end rtl;

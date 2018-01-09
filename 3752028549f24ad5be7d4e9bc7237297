@@ -1,85 +1,168 @@
-Thu Dec 14 19:26:41 JST 2017
-#!/usr/bin/env python3
-#Time-stamp: <2017-05-30 09:51:10 hamada>
-import argparse
-import numpy as np
-import cv2
-from datetime import datetime
-import mkdir
+Tue Jan  9 19:48:32 JST 2018
+-- C:\CYGWIN\HOME\ADMINISTRATOR\FKIT\PCI64\PROJ
+-- VHDL Annotation Test Bench created by
+-- HDL Bencher 6.1i
+-- Wed Dec 29 19:47:04 2004
 
-def put_text(image, text):
-    font_size = 1.0
-    font_type = cv2.FONT_HERSHEY_PLAIN
-    font_color = (0xaf, 0xdf, 0xf)
-    #    cv2.putText(image, text, (460, 15), font_type, font_size, font_color)
-    cv2.putText(image, text, (10, 15), font_type, font_size, font_color)
+LIBRARY IEEE;
+USE IEEE.STD_LOGIC_1164.ALL;
+USE IEEE.STD_LOGIC_UNSIGNED.ALL;
+USE IEEE.STD_LOGIC_ARITH.ALL;
+USE IEEE.STD_LOGIC_TEXTIO.ALL;
+USE STD.TEXTIO.ALL;
 
-if (__name__ == '__main__'):
-    parser = argparse.ArgumentParser(description = "description goes here")
-    parser.add_argument("--devid", type=int, help = "set device id", required=False)
-    args = parser.parse_args()
-    devid = 0
-    if args.devid:
-        devid = int(args.devid)
-        print ("set devid = ", devid)
+ENTITY sim_writecomb_check IS
+END sim_writecomb_check;
 
-    log_base = '../log/'
-    cap = []
-    for i in range(3):
-        cap.append(cv2.VideoCapture(i))
+ARCHITECTURE testbench_arch OF sim_writecomb_check IS
+-- If you get a compiler error on the following line,
+-- from the menu do Options->Configuration select VHDL 87
+FILE RESULTS: TEXT OPEN WRITE_MODE IS "c:\cygwin\home\administrator\fkit\pci64\proj\sim_writecomb_check.ano";
+	COMPONENT writecomb_check
+		PORT (
+			MEM_WEHA : In  std_logic;
+			MEM_WELA : In  std_logic;
+			IS_ERR : Out  std_logic_vector (1 DOWNTO 0);
+			RST : In  std_logic;
+			CLK : In  std_logic
+		);
+	END COMPONENT;
 
-    # -- swap cap --
-    if True:
-        cap_tmp = cap[0]
-        cap[0] = cap[2]
-        cap[2] = cap_tmp
+	SIGNAL MEM_WEHA : std_logic;
+	SIGNAL MEM_WELA : std_logic;
+	SIGNAL IS_ERR : std_logic_vector (1 DOWNTO 0);
+	SIGNAL RST : std_logic;
+	SIGNAL CLK : std_logic;
 
+BEGIN
+	UUT : writecomb_check
+	PORT MAP (
+		MEM_WEHA => MEM_WEHA,
+		MEM_WELA => MEM_WELA,
+		IS_ERR => IS_ERR,
+		RST => RST,
+		CLK => CLK
+	);
 
-    cap_width  = cap[0].get(cv2.CAP_PROP_FRAME_WIDTH)
-    cap_height = cap[0].get(cv2.CAP_PROP_FRAME_HEIGHT)
-    cap_fps    = cap[0].get(cv2.CAP_PROP_FPS)
+	PROCESS -- clock process for CLK,
+		VARIABLE TX_TIME : INTEGER :=0;
 
-    print(cap_width, "x", cap_height, ":", cap_fps)
-    size = (int(cap_width/2), int(cap_height/2))
+		PROCEDURE ANNOTATE_IS_ERR(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",IS_ERR,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, IS_ERR);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
 
-    tnow0 = datetime.now().strftime('%Y%m%d_%H_%M_%S') # ('%Y%m%d_%H_%M_%S_%f')
+	BEGIN
+		CLOCK_LOOP : LOOP
+		CLK <= transport '0';
+		WAIT FOR 5 ns;
+		TX_TIME := TX_TIME + 5;
+		CLK <= transport '1';
+		WAIT FOR 50 ns;
+		TX_TIME := TX_TIME + 50;
+		CLK <= transport '0';
+		WAIT FOR 35 ns;
+		TX_TIME := TX_TIME + 35;
+		ANNOTATE_IS_ERR(TX_TIME);
+		WAIT FOR 10 ns;
+		TX_TIME := TX_TIME + 10;
+		END LOOP CLOCK_LOOP;
+	END PROCESS;
 
-    while(cap[0].isOpened() and cap[1].isOpened() and cap[2].isOpened()):
-        frame = [0,0,0]
-        for (i, fm) in enumerate(frame):
-            ret, fm = cap[i].read()
-            smallimg = cv2.resize(fm, size)
-            if False: cv2.imshow('camera: %d'%(i), smallimg)
-            frame[i] = smallimg
+	PROCESS   -- Process for CLK
+		VARIABLE TX_OUT : LINE;
 
-        # ----------------------------------------------------------------
-        frame_height, frame_width = frame[0].shape[:2]
-        image = np.zeros((frame_height, frame_width*3, 3), dtype=np.uint8)
+		BEGIN
+		-- --------------------
+		RST <= transport '0';
+		MEM_WEHA <= transport '0';
+		MEM_WELA <= transport '0';
+		-- --------------------
+		WAIT FOR 200 ns; -- Time=200 ns
+		RST <= transport '0';
+		-- --------------------
+		WAIT FOR 500 ns; -- Time=700 ns
+		MEM_WEHA <= transport '0';
+		MEM_WELA <= transport '0';
+		-- --------------------
+		WAIT FOR 200 ns; -- Time=900 ns
+		RST <= transport '1';
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=1000 ns
+		RST <= transport '0';
+		-- --------------------
+		WAIT FOR 1900 ns; -- Time=2900 ns
+		MEM_WEHA <= transport '1';
+		MEM_WELA <= transport '1';
+		-- --------------------
+		WAIT FOR 500 ns; -- Time=3400 ns
+		MEM_WEHA <= transport '0';
+		MEM_WELA <= transport '0';
+		-- --------------------
+		WAIT FOR 1100 ns; -- Time=4500 ns
+		MEM_WEHA <= transport '1';
+		MEM_WELA <= transport '1';
+		-- --------------------
+		WAIT FOR 200 ns; -- Time=4700 ns
+		MEM_WEHA <= transport '0';
+		MEM_WELA <= transport '0';
+		-- --------------------
+		WAIT FOR 1300 ns; -- Time=6000 ns
+		MEM_WELA <= transport '1';
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=6100 ns
+		MEM_WELA <= transport '0';
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=6200 ns
+		MEM_WEHA <= transport '0';
+		-- --------------------
+		WAIT FOR 300 ns; -- Time=6500 ns
+		MEM_WEHA <= transport '1';
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=6600 ns
+		MEM_WEHA <= transport '0';
+		-- --------------------
+		WAIT FOR 1300 ns; -- Time=7900 ns
+		MEM_WELA <= transport '1';
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=8000 ns
+		MEM_WEHA <= transport '1';
+		MEM_WELA <= transport '0';
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=8100 ns
+		MEM_WEHA <= transport '0';
+		MEM_WELA <= transport '1';
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=8200 ns
+		MEM_WEHA <= transport '1';
+		MEM_WELA <= transport '0';
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=8300 ns
+		MEM_WEHA <= transport '0';
+		-- --------------------
+		WAIT FOR 2005 ns; -- Time=10305 ns
+		-- --------------------
 
-        for (i, fm) in enumerate(frame):
-            sx = frame_width * i
-            sy = 0
-            ex = frame_width * (i+1)
-            ey = frame_height
-            image[sy:ey,sx:ex] = fm
+		STD.TEXTIO.write(TX_OUT, string'("Total[]"));
+		STD.TEXTIO.writeline(results, TX_OUT);
+		ASSERT (FALSE) REPORT
+			"Success! Simulation for annotation completed"
+			SEVERITY FAILURE;
+	END PROCESS;
+END testbench_arch;
 
-        cv2.imshow('pycam', image)
-
-        tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S')
-        if(tnow != tnow0):
-            put_text(image, tnow)
-            basedir = '../log/'
-            ofname = mkdir.get_filename_frame(basedir, tnow)
-            cv2.imwrite(ofname, image)
-            print(ofname)
-            tnow0 = tnow
-
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-
-    for (i, fm) in enumerate(frame):
-        cap[i].release()
-
-    cv2.destroyAllWindows()
-
-    print("Done.")
+CONFIGURATION writecomb_check_cfg OF sim_writecomb_check IS
+	FOR testbench_arch
+	END FOR;
+END writecomb_check_cfg;

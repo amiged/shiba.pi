@@ -1,170 +1,71 @@
-Thu Dec  7 19:28:39 JST 2017
-#!/bin/sh
-#
-# Copyright (c) 2006, 2008 Junio C Hamano
-#
-# The "pre-rebase" hook is run just before "git rebase" starts doing
-# its job, and can prevent the command from running by exiting with
-# non-zero status.
-#
-# The hook is called with the following parameters:
-#
-# $1 -- the upstream the series was forked from.
-# $2 -- the branch being rebased (or empty when rebasing the current branch).
-#
-# This sample shows how to prevent topic branches that are already
-# merged to 'next' branch from getting rebased, because allowing it
-# would result in rebasing already published history.
+Wed Jan 10 19:51:45 JST 2018
+-- 2004/05/13 16:30
+-- for matsubayashi simulation
 
-publish=next
-basebranch="$1"
-if test "$#" = 2
-then
-	topic="refs/heads/$2"
-else
-	topic=`git symbolic-ref HEAD` ||
-	exit 0 ;# we do not interrupt rebasing detached HEAD
-fi
+#define NPOS 32
+#define NLOG 17
+#define NMAN 8
+#define NCUT 6
+#define NFOR 57
+#define NACC 64
 
-case "$topic" in
-refs/heads/??/*)
-	;;
-*)
-	exit 0 ;# we do not interrupt others.
-	;;
-esac
+#define DELAY_SUB 2     /* A */
+#define DELAY_FL  4     /* B */
+#define DELAY_X2Y2 5    /* C */
+#define DELAY_R2   5    /* D */
+#define DELAY_R3   1    /* E */
+#define DELAY_MR3  1    /* F */
+#define DELAY_F    1    /* G */
+#define DELAY_OF   1    /* H */
+#define DELAY_LF   2    /* I */
+#define DELAY_AC   3    /* J */
 
-# Now we are dealing with a topic branch being rebased
-# on top of master.  Is it OK to rebase it?
+#define DELAY_EPS  6    /* A+B */
+#define DELAY_DX   12   /* C+D+E+F */
+#define DELAY_M    17   /* A+B+C+D+E */
+#define DELAY_CLE  22   /* A+B+C+D+E+F+G+H+I */
+#define DELAY_TOT  25   /* (DELAY_CLE) + J */
 
-# Does the topic really exist?
-git show-ref -q "$topic" || {
-	echo >&2 "No such branch $topic"
-	exit 1
+
+
+
+#define xsize (100.0)
+#define mmin (1.220703125e-04)
+#define xoffset (xsize/2.0)
+#define xscale (pow(2.0,(double)NPOS)/xsize)
+#define mscale (pow(2.0,95.38)/mmin)
+#define escale (xscale*xscale)
+#define foffset (pow(2.0,23.0))
+#define fscale (-xscale*xscale*foffset/mscale)
+--mmin 0xdf61
+
+/NPIPE 1
+/NVMP 1
+
+/JPSET xj,0,0,31,x[][0],ufix,NPOS,xscale,xoffset
+/JPSET yj,0,32,63,x[][1],ufix,NPOS,xscale,xoffset
+/JPSET zj,0,64,95,x[][2],ufix,NPOS,xscale,xoffset
+/JPSET mj,0,96,112,m[],log,NLOG,NMAN,mscale
+/IPSET xi,x[][0],ufix,NPOS,xscale,xoffset
+/IPSET yi,x[][1],ufix,NPOS,xscale,xoffset
+/IPSET zi,x[][2],ufix,NPOS,xscale,xoffset
+/IPSET ieps2,eps2,log,NLOG,NMAN,escale
+/FOSET sx,a[][0],fix,NACC,fscale
+/FOSET sy,a[][1],fix,NACC,fscale
+/FOSET sz,a[][2],fix,NACC,fscale
+/VALSET fx_ofst,0x9700,0,16
+/VALSET fy_ofst,0x9700,0,16
+/VALSET fz_ofst,0x9700,0,16
+/DATASET fx_ofst,01001011100000000,0,16
+/DATASET fy_ofst,01001011100000000,0,16
+/DATASET fz_ofst,01001011100000000,0,16
+
+void force_gravity_on_emulator(x,m,eps2,a,n)
+	double x[][3];
+	double m[];
+	double eps2;
+	double a[][3];
+	int n;
+{
+  pg_conv_ftol(xij,dx,NPOS,NLOG,NMAN,DELAY_FL);
 }
-
-# Is topic fully merged to master?
-not_in_master=`git rev-list --pretty=oneline ^master "$topic"`
-if test -z "$not_in_master"
-then
-	echo >&2 "$topic is fully merged to master; better remove it."
-	exit 1 ;# we could allow it, but there is no point.
-fi
-
-# Is topic ever merged to next?  If so you should not be rebasing it.
-only_next_1=`git rev-list ^master "^$topic" ${publish} | sort`
-only_next_2=`git rev-list ^master           ${publish} | sort`
-if test "$only_next_1" = "$only_next_2"
-then
-	not_in_topic=`git rev-list "^$topic" master`
-	if test -z "$not_in_topic"
-	then
-		echo >&2 "$topic is already up-to-date with master"
-		exit 1 ;# we could allow it, but there is no point.
-	else
-		exit 0
-	fi
-else
-	not_in_next=`git rev-list --pretty=oneline ^${publish} "$topic"`
-	/usr/bin/perl -e '
-		my $topic = $ARGV[0];
-		my $msg = "* $topic has commits already merged to public branch:\n";
-		my (%not_in_next) = map {
-			/^([0-9a-f]+) /;
-			($1 => 1);
-		} split(/\n/, $ARGV[1]);
-		for my $elem (map {
-				/^([0-9a-f]+) (.*)$/;
-				[$1 => $2];
-			} split(/\n/, $ARGV[2])) {
-			if (!exists $not_in_next{$elem->[0]}) {
-				if ($msg) {
-					print STDERR $msg;
-					undef $msg;
-				}
-				print STDERR " $elem->[1]\n";
-			}
-		}
-	' "$topic" "$not_in_next" "$not_in_master"
-	exit 1
-fi
-
-exit 0
-
-################################################################
-
-This sample hook safeguards topic branches that have been
-published from being rewound.
-
-The workflow assumed here is:
-
- * Once a topic branch forks from "master", "master" is never
-   merged into it again (either directly or indirectly).
-
- * Once a topic branch is fully cooked and merged into "master",
-   it is deleted.  If you need to build on top of it to correct
-   earlier mistakes, a new topic branch is created by forking at
-   the tip of the "master".  This is not strictly necessary, but
-   it makes it easier to keep your history simple.
-
- * Whenever you need to test or publish your changes to topic
-   branches, merge them into "next" branch.
-
-The script, being an example, hardcodes the publish branch name
-to be "next", but it is trivial to make it configurable via
-$GIT_DIR/config mechanism.
-
-With this workflow, you would want to know:
-
-(1) ... if a topic branch has ever been merged to "next".  Young
-    topic branches can have stupid mistakes you would rather
-    clean up before publishing, and things that have not been
-    merged into other branches can be easily rebased without
-    affecting other people.  But once it is published, you would
-    not want to rewind it.
-
-(2) ... if a topic branch has been fully merged to "master".
-    Then you can delete it.  More importantly, you should not
-    build on top of it -- other people may already want to
-    change things related to the topic as patches against your
-    "master", so if you need further changes, it is better to
-    fork the topic (perhaps with the same name) afresh from the
-    tip of "master".
-
-Let's look at this example:
-
-		   o---o---o---o---o---o---o---o---o---o "next"
-		  /       /           /           /
-		 /   a---a---b A     /           /
-		/   /               /           /
-	       /   /   c---c---c---c B         /
-	      /   /   /             \         /
-	     /   /   /   b---b C     \       /
-	    /   /   /   /             \     /
-    ---o---o---o---o---o---o---o---o---o---o---o "master"
-
-
-A, B and C are topic branches.
-
- * A has one fix since it was merged up to "next".
-
- * B has finished.  It has been fully merged up to "master" and "next",
-   and is ready to be deleted.
-
- * C has not merged to "next" at all.
-
-We would want to allow C to be rebased, refuse A, and encourage
-B to be deleted.
-
-To compute (1):
-
-	git rev-list ^master ^topic next
-	git rev-list ^master        next
-
-	if these match, topic has not merged in next at all.
-
-To compute (2):
-
-	git rev-list master..topic
-
-	if this is empty, it is fully merged to "master".

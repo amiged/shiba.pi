@@ -1,25 +1,45 @@
-Sat Dec  2 19:49:27 JST 2017
-#!/bin/sh
-#
-# An example hook script to check the commit log message.
-# Called by "git commit" with one argument, the name of the file
-# that has the commit message.  The hook should exit with non-zero
-# status after issuing an appropriate message if it wants to stop the
-# commit.  The hook is allowed to edit the commit message file.
-#
-# To enable this hook, rename this file to "commit-msg".
+Mon Jan 15 19:29:15 JST 2018
+all:
+	./pycam.py |tee log.txt
 
-# Uncomment the below to add a Signed-off-by line to the message.
-# Doing this in a hook is a bad idea in general, but the prepare-commit-msg
-# hook is more suited to it.
-#
-# SOB=$(git var GIT_AUTHOR_IDENT | sed -n 's/^\(.*>\).*$/Signed-off-by: \1/p')
-# grep -qs "^$SOB" "$1" || echo "$SOB" >> "$1"
 
-# This example catches duplicate Signed-off-by lines.
+clean:
+	rm -rf ../conv
+	mkdir ../conv
+	rm -f *~ .*~
+	rm -rf __pycache__
 
-test "" = "$(grep '^Signed-off-by: ' "$1" |
-	 sort | uniq -c | sed -e '/^[ 	]*1[ 	]/d')" || {
-	echo >&2 Duplicate Signed-off-by lines.
-	exit 1
-}
+c: clean
+
+conv:
+	rm -rf ../conv
+	mkdir ../conv
+	./gen_cmd.py > xxx
+	bash ./xxx
+
+
+mov:
+	./mov.py 1 0
+
+
+0.mov: 
+	rm -f out.mp4
+	ffmpeg -r 1 -start_number 0 -i ../conv/%08d.jpg -vcodec libx264 -pix_fmt yuv420p -r 1 out.mp4
+
+r: run
+
+run:
+	./mpycam.py
+
+run3:
+	./pycam.py --devid=0 &
+	./pycam.py --devid=1 &
+	./pycam.py --devid=2 &
+
+kill:
+	killall python3
+	killall pycam.py
+
+clog: clean
+	rm -rf ../log* ../data4bbox ../data4darknet ../conv
+	rm -rf ./tmp.mp4

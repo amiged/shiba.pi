@@ -1,53 +1,42 @@
-Fri Jan 19 19:26:57 JST 2018
-/***************************************************
- * The lowest level library for PROGRAPE-4
- *
- * Copyright(c) by Tsuyoshi Hamada.
- * All rights reserved.
- *
- * PLEASE DO NOT BRANCH !!
- *
- * 20060916.rev1 : Development start
- *
- ***************************************************/
+Sun Jan 21 19:48:26 JST 2018
+// Time-stamp: "2006-12-07 13:35:12 hamada"
+// Copyright (c) 2006 by Tsuyoshi Hamada, All rights reserved.
 
-inline unsigned int    ReadBase0 (int devid, unsigned int addr);
-inline unsigned int    ReadBase1 (int devid, unsigned int addr);
-inline void            WriteBase0 (int devid, unsigned int addr, unsigned int val);
-inline void            WriteBase1 (int devid, unsigned int addr, unsigned int val);
+#include <stdio.h>
+#include <stdlib.h>
+#include "pg4.h"
 
-void                   pg4_close (int id);
+//#define NMAX (0x1<<10) // 4KB
+//#define NMAX (0x1<<11) // 8KB
+//#define NMAX (0x1<<12) // 16KB
+//#define NMAX (0x1<<13) // 32KB
+#define NMAX (0x1<<14) // 64KB
 
-int                    pg4_DMAput (int devid, unsigned int size);
-int                    pg4_DMAget (int devid, unsigned int size);
-void                   pg4_DMAcheck (int devid);
-int                    pg4_DMAretry (int devid);
+unsigned int* ptr;
+unsigned int* bar1;
 
-unsigned long          pg4_getbaseaddr (int devid, int j);
-unsigned long          pg4_getbaseaddr_size (int devid, int bar);
-unsigned int*          pg4_get_bar0ptr(int devid);
-unsigned int*          pg4_get_bar1ptr(int devid);
-unsigned int*          pg4_get_dmawptr (int devid);
-unsigned int*          pg4_get_dmarptr (int devid);
-unsigned int           pg4_get_dma_size (int devid);
-void                   pg4_get_pfpga_info (int devid, char *info);
+int main(int argc,char *argv[])
+{
+  int devid = 0;
+  int n = NMAX;
+  int i;
 
-int                    pg4_open (int id);
+  if(argc > 1){
+    n = atoi(argv[1]);
+  }
+  printf("n = %d\n",n);
 
-inline unsigned int    pg4_readbase0 (int devid, unsigned int index);
-inline unsigned int    pg4_readbase1 (int devid, unsigned int index);
-unsigned long          pg4_read_pciconfig_dword (int devid, int adr);
+  pg4_open(devid);
+  bar1 = pg4_get_bar1ptr(devid);
+  printf("BAR0: %lx\n",pg4_getbaseaddr(devid,0));
+  printf("BAR1: %lx\n",pg4_getbaseaddr(devid,1));
 
-void                   pg4_set_pfpga_info (int devid, char *info);
-
-inline void            pg4_writebase0 (int devid, unsigned int index, unsigned int val);
-inline void            pg4_writebase1 (int devid, unsigned int index, unsigned int val);
+  for(i = 0; i < n; i++) {
+    unsigned int x;
+    x = pg4_readbase1(devid, i);
+    printf("%x : %x\n",i,x);
+  }
 
 
-
-// --- following are removed. ---
-int                    pg4_DMAput_offset (int devid, unsigned int size, unsigned offset);
-int                    pg4_DMAget_offset (int devid, unsigned int size, unsigned offset);
-void                   pg4_wait (int devid, int n);
-
-
+  return 0;
+}

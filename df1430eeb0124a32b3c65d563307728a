@@ -1,19 +1,25 @@
-Mon Feb 26 19:42:44 JST 2018
-//============================================================================
-struct flops_member {
-  double Gflops;
-  double start_time;
-  double force_time;
-  int nbody;
-  int times;
-  int nstep;
-  int nskip;
-};
+Wed Apr  4 19:51:56 JST 2018
+#!/usr/bin/env python3
+#Time-stamp: <2017-06-03 00:45:13 hamada>
+import cv2
+import glob
+import aieye_find
+from datetime import datetime
 
-void flops_initialize(struct flops_member *fm, int n, int nskip);
-void flops_check(struct flops_member *fm);
+iflist = [] 
+for fname in aieye_find.find('../log.0/20170602/18/', 'sss_*.jpg'):
+    iflist.append(fname)
 
-void flops_ftime_init(struct flops_member *fm);
-void flops_ftime_save(struct flops_member *fm);
+iflist.sort()
+i = 0
+index = 0
 
-
+for fname in iflist:
+    fname_src = fname # fname.replace('../log/', "/mnt/data/work/bak/log/")
+    fname_dst = fname.replace('sss_', 'CanonG1X_')
+    if( i % 1 == 0):  # every 30 sec 
+#        cmd =  "ln -s " + fname_src + " " + "../conv/%08d.jpg" % (index)
+        cmd =  "mv " + fname_src + " " + fname_dst
+        print (cmd, "; echo '%d/%d: %s'; "%(i, len(iflist), fname_src) )
+        index += 1
+    i += 1

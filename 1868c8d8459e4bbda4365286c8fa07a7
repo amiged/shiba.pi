@@ -1,2314 +1,641 @@
-Sun Apr 15 19:42:08 JST 2018
---------------------------------------------------------------------------
---
---  File:   pcim_lc.vhd
---  Rev:    3.0.0
---
---  This is a lower-level VHDL module which serves as a wrapper
---  for the PCI interface.  This module makes use of Unified Library
---  Primitives.  Do not modify this file.
---
---  Copyright (c) 2005 Xilinx, Inc.  All rights reserved.
---
---------------------------------------------------------------------------
-
-
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
--- synthesis translate_off
-library UNISIM;
-use UNISIM.VCOMPONENTS.ALL;
--- synthesis translate_on
-
-
-entity pcim_lc is
-  port (
-        AD_IO           : inout std_logic_vector( 63 downto 0);
-        CBE_IO          : inout std_logic_vector(  7 downto 0);
-        PAR_IO          : inout std_logic;
-        PAR64_IO        : inout std_logic;
-        FRAME_IO        : inout std_logic;
-        REQ64_IO        : inout std_logic;
-        TRDY_IO         : inout std_logic;
-        IRDY_IO         : inout std_logic;
-        STOP_IO         : inout std_logic;
-        DEVSEL_IO       : inout std_logic;
-        ACK64_IO        : inout std_logic;
-        IDSEL_I         : in    std_logic;
-        INTA_O          : out   std_logic;
-        PERR_IO         : inout std_logic;
-        SERR_IO         : inout std_logic;
-        REQ_O           : out   std_logic;
-        GNT_I           : in    std_logic;
-
-        RST_I           : in    std_logic;
-        PCLK            : in    std_logic;
-
-        CFG             : in    std_logic_vector(255 downto 0);
-
-        FRAMEQ_N        : out   std_logic;
-        REQ64Q_N        : out   std_logic;
-        TRDYQ_N         : out   std_logic;
-        IRDYQ_N         : out   std_logic;
-        STOPQ_N         : out   std_logic;
-        DEVSELQ_N       : out   std_logic;
-        ACK64Q_N        : out   std_logic;
-
-        ADDR            : out   std_logic_vector( 31 downto 0);
-        ADIO            : inout std_logic_vector( 63 downto 0);
-
-        CFG_VLD         : out   std_logic;
-        CFG_HIT         : out   std_logic;
-        C_TERM          : in    std_logic;
-        C_READY         : in    std_logic;
-        ADDR_VLD        : out   std_logic;
-        BASE_HIT        : out   std_logic_vector(  7 downto 0);
-        S_CYCLE64       : out   std_logic;
-        S_TERM          : in    std_logic;
-        S_READY         : in    std_logic;
-        S_ABORT         : in    std_logic;
-        S_WRDN          : out   std_logic;
-        S_SRC_EN        : out   std_logic;
-        S_DATA_VLD      : out   std_logic;
-        S_CBE           : out   std_logic_vector(  7 downto 0);
-        PCI_CMD         : out   std_logic_vector( 15 downto 0);
-
-        REQUEST         : in    std_logic;
-        REQUEST64       : in    std_logic;
-        REQUESTHOLD     : in    std_logic;
-        COMPLETE        : in    std_logic;
-        M_WRDN          : in    std_logic;
-        M_READY         : in    std_logic;
-        M_SRC_EN        : out   std_logic;
-        M_DATA_VLD      : out   std_logic;
-        M_CBE           : in    std_logic_vector(  7 downto 0);
-        TIME_OUT        : out   std_logic;
-        M_FAIL64        : out   std_logic;
-        CFG_SELF        : in    std_logic;
-
-        M_DATA          : out   std_logic;
-        DR_BUS          : out   std_logic;
-        I_IDLE          : out   std_logic;
-        M_ADDR_N        : out   std_logic;
-
-        IDLE            : out   std_logic;
-        B_BUSY          : out   std_logic;
-        S_DATA          : out   std_logic;
-        BACKOFF         : out   std_logic;
-
-        SLOT64          : in    std_logic;
-        INTR_N          : in    std_logic;
-        PERRQ_N         : out   std_logic;
-        SERRQ_N         : out   std_logic;
-        KEEPOUT         : in    std_logic;
-        CSR             : out   std_logic_vector( 39 downto 0);
-        SUB_DATA        : in    std_logic_vector( 31 downto 0);
-
-        RST             : inout std_logic;
-        CLK             : inout std_logic
-  );
-end pcim_lc;
-
-
-architecture WRAPPER of pcim_lc is
-
-  attribute syn_edif_bit_format : string;
-  attribute syn_edif_scalar_format : string;
-  attribute syn_noclockbuf : boolean;
-  attribute syn_hier : string;
-  attribute syn_edif_bit_format of WRAPPER : architecture is "%u<%i>";
-  attribute syn_edif_scalar_format of WRAPPER : architecture is "%u";
-  attribute syn_noclockbuf of WRAPPER : architecture is true;
-  attribute syn_hier of WRAPPER : architecture is "hard";
-
-  component IOBUF_PCI66_3
-    port(O: out STD_LOGIC;
-         IO: inout STD_LOGIC;
-         I: in STD_LOGIC;
-         T: in STD_LOGIC
-    );
-  end component;
-
-  component IBUF_PCI66_3
-    port(O: out STD_LOGIC;
-         I: in STD_LOGIC
-    );
-  end component; 
-
-  component OBUFT_PCI66_3
-    port(O: out STD_LOGIC;
-         I: in STD_LOGIC;
-         T: in STD_LOGIC
-    );
-  end component; 
-
-  component IBUFG_PCI66_3
-    port(O: out STD_LOGIC; 
-         I: in STD_LOGIC
-    ); 
-  end component;  
-
-  component BUFG
-    port(O: out STD_LOGIC; 
-         I: in STD_LOGIC
-    ); 
-  end component;  
-
-  component FDPE
-    port(Q: out STD_LOGIC;
-         D: in STD_LOGIC;
-         C: in STD_LOGIC;
-         CE: in STD_LOGIC;
-         PRE: in STD_LOGIC
-    );
-  end component;
-
-  component PCI_LC_I
-    port (
-      OE_ADO_T64 : out STD_LOGIC; 
-      OE_ADO_T : out STD_LOGIC; 
-      OE_ADO_LT64 : out STD_LOGIC; 
-      OE_ADO_LT : out STD_LOGIC; 
-      OE_ADO_LB64 : out STD_LOGIC; 
-      OE_ADO_LB : out STD_LOGIC; 
-      OE_ADO_B64 : out STD_LOGIC; 
-      OE_ADO_B : out STD_LOGIC; 
-      AD63 : in STD_LOGIC; 
-      AD62 : in STD_LOGIC; 
-      AD61 : in STD_LOGIC; 
-      AD60 : in STD_LOGIC; 
-      AD59 : in STD_LOGIC; 
-      AD58 : in STD_LOGIC; 
-      AD57 : in STD_LOGIC; 
-      AD56 : in STD_LOGIC; 
-      AD55 : in STD_LOGIC; 
-      AD54 : in STD_LOGIC; 
-      AD53 : in STD_LOGIC; 
-      AD52 : in STD_LOGIC; 
-      AD51 : in STD_LOGIC; 
-      AD50 : in STD_LOGIC; 
-      AD49 : in STD_LOGIC; 
-      AD48 : in STD_LOGIC; 
-      AD47 : in STD_LOGIC; 
-      AD46 : in STD_LOGIC; 
-      AD45 : in STD_LOGIC; 
-      AD44 : in STD_LOGIC; 
-      AD43 : in STD_LOGIC; 
-      AD42 : in STD_LOGIC; 
-      AD41 : in STD_LOGIC; 
-      AD40 : in STD_LOGIC; 
-      AD39 : in STD_LOGIC; 
-      AD38 : in STD_LOGIC; 
-      AD37 : in STD_LOGIC; 
-      AD36 : in STD_LOGIC; 
-      AD35 : in STD_LOGIC; 
-      AD34 : in STD_LOGIC; 
-      AD33 : in STD_LOGIC; 
-      AD32 : in STD_LOGIC; 
-      AD31 : in STD_LOGIC; 
-      AD30 : in STD_LOGIC; 
-      AD29 : in STD_LOGIC; 
-      AD28 : in STD_LOGIC; 
-      AD27 : in STD_LOGIC; 
-      AD26 : in STD_LOGIC; 
-      AD25 : in STD_LOGIC; 
-      AD24 : in STD_LOGIC; 
-      AD23 : in STD_LOGIC; 
-      AD22 : in STD_LOGIC; 
-      AD21 : in STD_LOGIC; 
-      AD20 : in STD_LOGIC; 
-      AD19 : in STD_LOGIC; 
-      AD18 : in STD_LOGIC; 
-      AD17 : in STD_LOGIC; 
-      AD16 : in STD_LOGIC; 
-      AD15 : in STD_LOGIC; 
-      AD14 : in STD_LOGIC; 
-      AD13 : in STD_LOGIC; 
-      AD12 : in STD_LOGIC; 
-      AD11 : in STD_LOGIC; 
-      AD10 : in STD_LOGIC; 
-      AD9 : in STD_LOGIC; 
-      AD8 : in STD_LOGIC; 
-      AD7 : in STD_LOGIC; 
-      AD6 : in STD_LOGIC; 
-      AD5 : in STD_LOGIC; 
-      AD4 : in STD_LOGIC; 
-      AD3 : in STD_LOGIC; 
-      AD2 : in STD_LOGIC; 
-      AD1 : in STD_LOGIC; 
-      AD0 : in STD_LOGIC; 
-      AD_O63 : out STD_LOGIC; 
-      AD_O62 : out STD_LOGIC; 
-      AD_O61 : out STD_LOGIC; 
-      AD_O60 : out STD_LOGIC; 
-      AD_O59 : out STD_LOGIC; 
-      AD_O58 : out STD_LOGIC; 
-      AD_O57 : out STD_LOGIC; 
-      AD_O56 : out STD_LOGIC; 
-      AD_O55 : out STD_LOGIC; 
-      AD_O54 : out STD_LOGIC; 
-      AD_O53 : out STD_LOGIC; 
-      AD_O52 : out STD_LOGIC; 
-      AD_O51 : out STD_LOGIC; 
-      AD_O50 : out STD_LOGIC; 
-      AD_O49 : out STD_LOGIC; 
-      AD_O48 : out STD_LOGIC; 
-      AD_O47 : out STD_LOGIC; 
-      AD_O46 : out STD_LOGIC; 
-      AD_O45 : out STD_LOGIC; 
-      AD_O44 : out STD_LOGIC; 
-      AD_O43 : out STD_LOGIC; 
-      AD_O42 : out STD_LOGIC; 
-      AD_O41 : out STD_LOGIC; 
-      AD_O40 : out STD_LOGIC; 
-      AD_O39 : out STD_LOGIC; 
-      AD_O38 : out STD_LOGIC; 
-      AD_O37 : out STD_LOGIC; 
-      AD_O36 : out STD_LOGIC; 
-      AD_O35 : out STD_LOGIC; 
-      AD_O34 : out STD_LOGIC; 
-      AD_O33 : out STD_LOGIC; 
-      AD_O32 : out STD_LOGIC; 
-      AD_O31 : out STD_LOGIC; 
-      AD_O30 : out STD_LOGIC; 
-      AD_O29 : out STD_LOGIC; 
-      AD_O28 : out STD_LOGIC; 
-      AD_O27 : out STD_LOGIC; 
-      AD_O26 : out STD_LOGIC; 
-      AD_O25 : out STD_LOGIC; 
-      AD_O24 : out STD_LOGIC; 
-      AD_O23 : out STD_LOGIC; 
-      AD_O22 : out STD_LOGIC; 
-      AD_O21 : out STD_LOGIC; 
-      AD_O20 : out STD_LOGIC; 
-      AD_O19 : out STD_LOGIC; 
-      AD_O18 : out STD_LOGIC; 
-      AD_O17 : out STD_LOGIC; 
-      AD_O16 : out STD_LOGIC; 
-      AD_O15 : out STD_LOGIC; 
-      AD_O14 : out STD_LOGIC; 
-      AD_O13 : out STD_LOGIC; 
-      AD_O12 : out STD_LOGIC; 
-      AD_O11 : out STD_LOGIC; 
-      AD_O10 : out STD_LOGIC; 
-      AD_O9 : out STD_LOGIC; 
-      AD_O8 : out STD_LOGIC; 
-      AD_O7 : out STD_LOGIC; 
-      AD_O6 : out STD_LOGIC; 
-      AD_O5 : out STD_LOGIC; 
-      AD_O4 : out STD_LOGIC; 
-      AD_O3 : out STD_LOGIC; 
-      AD_O2 : out STD_LOGIC; 
-      AD_O1 : out STD_LOGIC; 
-      AD_O0 : out STD_LOGIC; 
-
-      OE_CBE64 : out STD_LOGIC; 
-      OE_CBE : out STD_LOGIC; 
-      CBE_I7 : in STD_LOGIC; 
-      CBE_I6 : in STD_LOGIC; 
-      CBE_I5 : in STD_LOGIC; 
-      CBE_I4 : in STD_LOGIC; 
-      CBE_I3 : in STD_LOGIC; 
-      CBE_I2 : in STD_LOGIC; 
-      CBE_I1 : in STD_LOGIC; 
-      CBE_I0 : in STD_LOGIC; 
-      CBE_IN7 : in STD_LOGIC; 
-      CBE_IN6 : in STD_LOGIC; 
-      CBE_IN5 : in STD_LOGIC; 
-      CBE_IN4 : in STD_LOGIC; 
-      CBE_IN3 : in STD_LOGIC; 
-      CBE_IN2 : in STD_LOGIC; 
-      CBE_IN1 : in STD_LOGIC; 
-      CBE_IN0 : in STD_LOGIC; 
-      CBE_O7 : out STD_LOGIC; 
-      CBE_O6 : out STD_LOGIC; 
-      CBE_O5 : out STD_LOGIC; 
-      CBE_O4 : out STD_LOGIC; 
-      CBE_O3 : out STD_LOGIC; 
-      CBE_O2 : out STD_LOGIC; 
-      CBE_O1 : out STD_LOGIC; 
-      CBE_O0 : out STD_LOGIC; 
-
-      OE_PAR64 : out STD_LOGIC; 
-      PAR64_I : in STD_LOGIC; 
-      PAR64_O : out STD_LOGIC; 
-
-      OE_PAR : out STD_LOGIC; 
-      PAR_I : in STD_LOGIC; 
-      PAR_O : out STD_LOGIC; 
-
-      OE_FRAME : out STD_LOGIC; 
-      FRAME_I : in STD_LOGIC; 
-      FRAME_O : out STD_LOGIC; 
-
-      OE_REQ64 : out STD_LOGIC; 
-      REQ64_I : in STD_LOGIC; 
-      REQ64_O : out STD_LOGIC; 
-
-      OE_TRDY : out STD_LOGIC; 
-      TRDY_I : in STD_LOGIC; 
-      TRDY_O : out STD_LOGIC; 
-
-      OE_IRDY : out STD_LOGIC; 
-      IRDY_I : in STD_LOGIC; 
-      IRDY_O : out STD_LOGIC; 
-
-      OE_STOP : out STD_LOGIC; 
-      STOP_I : in STD_LOGIC; 
-      STOP_O : out STD_LOGIC; 
-
-      OE_DEVSEL : out STD_LOGIC; 
-      DEVSEL_I : in STD_LOGIC; 
-      DEVSEL_O : out STD_LOGIC; 
-
-      OE_ACK64 : out STD_LOGIC; 
-      ACK64_I : in STD_LOGIC; 
-      ACK64_O : out STD_LOGIC; 
-
-      IDSEL_IN : in STD_LOGIC; 
-
-      OE_INTA : out STD_LOGIC; 
-
-      OE_PERR : out STD_LOGIC; 
-      PERR_I : in STD_LOGIC; 
-      PERR_O : out STD_LOGIC; 
-
-      OE_SERR : out STD_LOGIC; 
-      SERR_I : in STD_LOGIC; 
-
-      OE_REQ : out STD_LOGIC; 
-      REQ_OUT : out STD_LOGIC; 
-
-      GNT_IN : in STD_LOGIC; 
-
-      RST_N : in STD_LOGIC; 
-
-      CFG255 : in STD_LOGIC; 
-      CFG254 : in STD_LOGIC; 
-      CFG253 : in STD_LOGIC; 
-      CFG252 : in STD_LOGIC; 
-      CFG251 : in STD_LOGIC; 
-      CFG250 : in STD_LOGIC; 
-      CFG249 : in STD_LOGIC; 
-      CFG248 : in STD_LOGIC; 
-      CFG247 : in STD_LOGIC; 
-      CFG246 : in STD_LOGIC; 
-      CFG245 : in STD_LOGIC; 
-      CFG244 : in STD_LOGIC; 
-      CFG243 : in STD_LOGIC; 
-      CFG242 : in STD_LOGIC; 
-      CFG241 : in STD_LOGIC; 
-      CFG240 : in STD_LOGIC; 
-      CFG239 : in STD_LOGIC; 
-      CFG238 : in STD_LOGIC; 
-      CFG237 : in STD_LOGIC; 
-      CFG236 : in STD_LOGIC; 
-      CFG235 : in STD_LOGIC; 
-      CFG234 : in STD_LOGIC; 
-      CFG233 : in STD_LOGIC; 
-      CFG232 : in STD_LOGIC; 
-      CFG231 : in STD_LOGIC; 
-      CFG230 : in STD_LOGIC; 
-      CFG229 : in STD_LOGIC; 
-      CFG228 : in STD_LOGIC; 
-      CFG227 : in STD_LOGIC; 
-      CFG226 : in STD_LOGIC; 
-      CFG225 : in STD_LOGIC; 
-      CFG224 : in STD_LOGIC; 
-      CFG223 : in STD_LOGIC; 
-      CFG222 : in STD_LOGIC; 
-      CFG221 : in STD_LOGIC; 
-      CFG220 : in STD_LOGIC; 
-      CFG219 : in STD_LOGIC; 
-      CFG218 : in STD_LOGIC; 
-      CFG217 : in STD_LOGIC; 
-      CFG216 : in STD_LOGIC; 
-      CFG215 : in STD_LOGIC; 
-      CFG214 : in STD_LOGIC; 
-      CFG213 : in STD_LOGIC; 
-      CFG212 : in STD_LOGIC; 
-      CFG211 : in STD_LOGIC; 
-      CFG210 : in STD_LOGIC; 
-      CFG209 : in STD_LOGIC; 
-      CFG208 : in STD_LOGIC; 
-      CFG207 : in STD_LOGIC; 
-      CFG206 : in STD_LOGIC; 
-      CFG205 : in STD_LOGIC; 
-      CFG204 : in STD_LOGIC; 
-      CFG203 : in STD_LOGIC; 
-      CFG202 : in STD_LOGIC; 
-      CFG201 : in STD_LOGIC; 
-      CFG200 : in STD_LOGIC; 
-      CFG199 : in STD_LOGIC; 
-      CFG198 : in STD_LOGIC; 
-      CFG197 : in STD_LOGIC; 
-      CFG196 : in STD_LOGIC; 
-      CFG195 : in STD_LOGIC; 
-      CFG194 : in STD_LOGIC; 
-      CFG193 : in STD_LOGIC; 
-      CFG192 : in STD_LOGIC; 
-      CFG191 : in STD_LOGIC; 
-      CFG190 : in STD_LOGIC; 
-      CFG189 : in STD_LOGIC; 
-      CFG188 : in STD_LOGIC; 
-      CFG187 : in STD_LOGIC; 
-      CFG186 : in STD_LOGIC; 
-      CFG185 : in STD_LOGIC; 
-      CFG184 : in STD_LOGIC; 
-      CFG183 : in STD_LOGIC; 
-      CFG182 : in STD_LOGIC; 
-      CFG181 : in STD_LOGIC; 
-      CFG180 : in STD_LOGIC; 
-      CFG179 : in STD_LOGIC; 
-      CFG178 : in STD_LOGIC; 
-      CFG177 : in STD_LOGIC; 
-      CFG176 : in STD_LOGIC; 
-      CFG175 : in STD_LOGIC; 
-      CFG174 : in STD_LOGIC; 
-      CFG173 : in STD_LOGIC; 
-      CFG172 : in STD_LOGIC; 
-      CFG171 : in STD_LOGIC; 
-      CFG170 : in STD_LOGIC; 
-      CFG169 : in STD_LOGIC; 
-      CFG168 : in STD_LOGIC; 
-      CFG167 : in STD_LOGIC; 
-      CFG166 : in STD_LOGIC; 
-      CFG165 : in STD_LOGIC; 
-      CFG164 : in STD_LOGIC; 
-      CFG163 : in STD_LOGIC; 
-      CFG162 : in STD_LOGIC; 
-      CFG161 : in STD_LOGIC; 
-      CFG160 : in STD_LOGIC; 
-      CFG159 : in STD_LOGIC; 
-      CFG158 : in STD_LOGIC; 
-      CFG157 : in STD_LOGIC; 
-      CFG156 : in STD_LOGIC; 
-      CFG155 : in STD_LOGIC; 
-      CFG154 : in STD_LOGIC; 
-      CFG153 : in STD_LOGIC; 
-      CFG152 : in STD_LOGIC; 
-      CFG151 : in STD_LOGIC; 
-      CFG150 : in STD_LOGIC; 
-      CFG149 : in STD_LOGIC; 
-      CFG148 : in STD_LOGIC; 
-      CFG147 : in STD_LOGIC; 
-      CFG146 : in STD_LOGIC; 
-      CFG145 : in STD_LOGIC; 
-      CFG144 : in STD_LOGIC; 
-      CFG143 : in STD_LOGIC; 
-      CFG142 : in STD_LOGIC; 
-      CFG141 : in STD_LOGIC; 
-      CFG140 : in STD_LOGIC; 
-      CFG139 : in STD_LOGIC; 
-      CFG138 : in STD_LOGIC; 
-      CFG137 : in STD_LOGIC; 
-      CFG136 : in STD_LOGIC; 
-      CFG135 : in STD_LOGIC; 
-      CFG134 : in STD_LOGIC; 
-      CFG133 : in STD_LOGIC; 
-      CFG132 : in STD_LOGIC; 
-      CFG131 : in STD_LOGIC; 
-      CFG130 : in STD_LOGIC; 
-      CFG129 : in STD_LOGIC; 
-      CFG128 : in STD_LOGIC; 
-      CFG127 : in STD_LOGIC; 
-      CFG126 : in STD_LOGIC; 
-      CFG125 : in STD_LOGIC; 
-      CFG124 : in STD_LOGIC; 
-      CFG123 : in STD_LOGIC; 
-      CFG122 : in STD_LOGIC; 
-      CFG121 : in STD_LOGIC; 
-      CFG120 : in STD_LOGIC; 
-      CFG119 : in STD_LOGIC; 
-      CFG118 : in STD_LOGIC; 
-      CFG117 : in STD_LOGIC; 
-      CFG116 : in STD_LOGIC; 
-      CFG115 : in STD_LOGIC; 
-      CFG114 : in STD_LOGIC; 
-      CFG113 : in STD_LOGIC; 
-      CFG112 : in STD_LOGIC; 
-      CFG111 : in STD_LOGIC; 
-      CFG110 : in STD_LOGIC; 
-      CFG109 : in STD_LOGIC; 
-      CFG108 : in STD_LOGIC; 
-      CFG107 : in STD_LOGIC; 
-      CFG106 : in STD_LOGIC; 
-      CFG105 : in STD_LOGIC; 
-      CFG104 : in STD_LOGIC; 
-      CFG103 : in STD_LOGIC; 
-      CFG102 : in STD_LOGIC; 
-      CFG101 : in STD_LOGIC; 
-      CFG100 : in STD_LOGIC; 
-      CFG99 : in STD_LOGIC; 
-      CFG98 : in STD_LOGIC; 
-      CFG97 : in STD_LOGIC; 
-      CFG96 : in STD_LOGIC; 
-      CFG95 : in STD_LOGIC; 
-      CFG94 : in STD_LOGIC; 
-      CFG93 : in STD_LOGIC; 
-      CFG92 : in STD_LOGIC; 
-      CFG91 : in STD_LOGIC; 
-      CFG90 : in STD_LOGIC; 
-      CFG89 : in STD_LOGIC; 
-      CFG88 : in STD_LOGIC; 
-      CFG87 : in STD_LOGIC; 
-      CFG86 : in STD_LOGIC; 
-      CFG85 : in STD_LOGIC; 
-      CFG84 : in STD_LOGIC; 
-      CFG83 : in STD_LOGIC; 
-      CFG82 : in STD_LOGIC; 
-      CFG81 : in STD_LOGIC; 
-      CFG80 : in STD_LOGIC; 
-      CFG79 : in STD_LOGIC; 
-      CFG78 : in STD_LOGIC; 
-      CFG77 : in STD_LOGIC; 
-      CFG76 : in STD_LOGIC; 
-      CFG75 : in STD_LOGIC; 
-      CFG74 : in STD_LOGIC; 
-      CFG73 : in STD_LOGIC; 
-      CFG72 : in STD_LOGIC; 
-      CFG71 : in STD_LOGIC; 
-      CFG70 : in STD_LOGIC; 
-      CFG69 : in STD_LOGIC; 
-      CFG68 : in STD_LOGIC; 
-      CFG67 : in STD_LOGIC; 
-      CFG66 : in STD_LOGIC; 
-      CFG65 : in STD_LOGIC; 
-      CFG64 : in STD_LOGIC; 
-      CFG63 : in STD_LOGIC; 
-      CFG62 : in STD_LOGIC; 
-      CFG61 : in STD_LOGIC; 
-      CFG60 : in STD_LOGIC; 
-      CFG59 : in STD_LOGIC; 
-      CFG58 : in STD_LOGIC; 
-      CFG57 : in STD_LOGIC; 
-      CFG56 : in STD_LOGIC; 
-      CFG55 : in STD_LOGIC; 
-      CFG54 : in STD_LOGIC; 
-      CFG53 : in STD_LOGIC; 
-      CFG52 : in STD_LOGIC; 
-      CFG51 : in STD_LOGIC; 
-      CFG50 : in STD_LOGIC; 
-      CFG49 : in STD_LOGIC; 
-      CFG48 : in STD_LOGIC; 
-      CFG47 : in STD_LOGIC; 
-      CFG46 : in STD_LOGIC; 
-      CFG45 : in STD_LOGIC; 
-      CFG44 : in STD_LOGIC; 
-      CFG43 : in STD_LOGIC; 
-      CFG42 : in STD_LOGIC; 
-      CFG41 : in STD_LOGIC; 
-      CFG40 : in STD_LOGIC; 
-      CFG39 : in STD_LOGIC; 
-      CFG38 : in STD_LOGIC; 
-      CFG37 : in STD_LOGIC; 
-      CFG36 : in STD_LOGIC; 
-      CFG35 : in STD_LOGIC; 
-      CFG34 : in STD_LOGIC; 
-      CFG33 : in STD_LOGIC; 
-      CFG32 : in STD_LOGIC; 
-      CFG31 : in STD_LOGIC; 
-      CFG30 : in STD_LOGIC; 
-      CFG29 : in STD_LOGIC; 
-      CFG28 : in STD_LOGIC; 
-      CFG27 : in STD_LOGIC; 
-      CFG26 : in STD_LOGIC; 
-      CFG25 : in STD_LOGIC; 
-      CFG24 : in STD_LOGIC; 
-      CFG23 : in STD_LOGIC; 
-      CFG22 : in STD_LOGIC; 
-      CFG21 : in STD_LOGIC; 
-      CFG20 : in STD_LOGIC; 
-      CFG19 : in STD_LOGIC; 
-      CFG18 : in STD_LOGIC; 
-      CFG17 : in STD_LOGIC; 
-      CFG16 : in STD_LOGIC; 
-      CFG15 : in STD_LOGIC; 
-      CFG14 : in STD_LOGIC; 
-      CFG13 : in STD_LOGIC; 
-      CFG12 : in STD_LOGIC; 
-      CFG11 : in STD_LOGIC; 
-      CFG10 : in STD_LOGIC; 
-      CFG9 : in STD_LOGIC; 
-      CFG8 : in STD_LOGIC; 
-      CFG7 : in STD_LOGIC; 
-      CFG6 : in STD_LOGIC; 
-      CFG5 : in STD_LOGIC; 
-      CFG4 : in STD_LOGIC; 
-      CFG3 : in STD_LOGIC; 
-      CFG2 : in STD_LOGIC; 
-      CFG1 : in STD_LOGIC; 
-      CFG0 : in STD_LOGIC; 
-
-      FRAMEQ_N : out STD_LOGIC; 
-      REQ64Q_N : out STD_LOGIC; 
-      TRDYQ_N : out STD_LOGIC; 
-      IRDYQ_N : out STD_LOGIC; 
-      STOPQ_N : out STD_LOGIC; 
-      DEVSELQ_N : out STD_LOGIC; 
-      ACK64Q_N : out STD_LOGIC;
-
-      ADDR31 : out STD_LOGIC; 
-      ADDR30 : out STD_LOGIC; 
-      ADDR29 : out STD_LOGIC; 
-      ADDR28 : out STD_LOGIC; 
-      ADDR27 : out STD_LOGIC; 
-      ADDR26 : out STD_LOGIC; 
-      ADDR25 : out STD_LOGIC; 
-      ADDR24 : out STD_LOGIC; 
-      ADDR23 : out STD_LOGIC; 
-      ADDR22 : out STD_LOGIC; 
-      ADDR21 : out STD_LOGIC; 
-      ADDR20 : out STD_LOGIC; 
-      ADDR19 : out STD_LOGIC; 
-      ADDR18 : out STD_LOGIC; 
-      ADDR17 : out STD_LOGIC; 
-      ADDR16 : out STD_LOGIC; 
-      ADDR15 : out STD_LOGIC; 
-      ADDR14 : out STD_LOGIC; 
-      ADDR13 : out STD_LOGIC; 
-      ADDR12 : out STD_LOGIC; 
-      ADDR11 : out STD_LOGIC; 
-      ADDR10 : out STD_LOGIC; 
-      ADDR9 : out STD_LOGIC; 
-      ADDR8 : out STD_LOGIC; 
-      ADDR7 : out STD_LOGIC; 
-      ADDR6 : out STD_LOGIC; 
-      ADDR5 : out STD_LOGIC; 
-      ADDR4 : out STD_LOGIC; 
-      ADDR3 : out STD_LOGIC; 
-      ADDR2 : out STD_LOGIC; 
-      ADDR1 : out STD_LOGIC; 
-      ADDR0 : out STD_LOGIC; 
-
-      ADIO63 : inout STD_LOGIC; 
-      ADIO62 : inout STD_LOGIC; 
-      ADIO61 : inout STD_LOGIC; 
-      ADIO60 : inout STD_LOGIC; 
-      ADIO59 : inout STD_LOGIC; 
-      ADIO58 : inout STD_LOGIC; 
-      ADIO57 : inout STD_LOGIC; 
-      ADIO56 : inout STD_LOGIC; 
-      ADIO55 : inout STD_LOGIC; 
-      ADIO54 : inout STD_LOGIC; 
-      ADIO53 : inout STD_LOGIC; 
-      ADIO52 : inout STD_LOGIC; 
-      ADIO51 : inout STD_LOGIC; 
-      ADIO50 : inout STD_LOGIC; 
-      ADIO49 : inout STD_LOGIC; 
-      ADIO48 : inout STD_LOGIC; 
-      ADIO47 : inout STD_LOGIC; 
-      ADIO46 : inout STD_LOGIC; 
-      ADIO45 : inout STD_LOGIC; 
-      ADIO44 : inout STD_LOGIC; 
-      ADIO43 : inout STD_LOGIC; 
-      ADIO42 : inout STD_LOGIC; 
-      ADIO41 : inout STD_LOGIC; 
-      ADIO40 : inout STD_LOGIC; 
-      ADIO39 : inout STD_LOGIC; 
-      ADIO38 : inout STD_LOGIC; 
-      ADIO37 : inout STD_LOGIC; 
-      ADIO36 : inout STD_LOGIC; 
-      ADIO35 : inout STD_LOGIC; 
-      ADIO34 : inout STD_LOGIC; 
-      ADIO33 : inout STD_LOGIC; 
-      ADIO32 : inout STD_LOGIC; 
-      ADIO31 : inout STD_LOGIC; 
-      ADIO30 : inout STD_LOGIC; 
-      ADIO29 : inout STD_LOGIC; 
-      ADIO28 : inout STD_LOGIC; 
-      ADIO27 : inout STD_LOGIC; 
-      ADIO26 : inout STD_LOGIC; 
-      ADIO25 : inout STD_LOGIC; 
-      ADIO24 : inout STD_LOGIC; 
-      ADIO23 : inout STD_LOGIC; 
-      ADIO22 : inout STD_LOGIC; 
-      ADIO21 : inout STD_LOGIC; 
-      ADIO20 : inout STD_LOGIC; 
-      ADIO19 : inout STD_LOGIC; 
-      ADIO18 : inout STD_LOGIC; 
-      ADIO17 : inout STD_LOGIC; 
-      ADIO16 : inout STD_LOGIC; 
-      ADIO15 : inout STD_LOGIC; 
-      ADIO14 : inout STD_LOGIC; 
-      ADIO13 : inout STD_LOGIC; 
-      ADIO12 : inout STD_LOGIC; 
-      ADIO11 : inout STD_LOGIC; 
-      ADIO10 : inout STD_LOGIC; 
-      ADIO9 : inout STD_LOGIC; 
-      ADIO8 : inout STD_LOGIC; 
-      ADIO7 : inout STD_LOGIC; 
-      ADIO6 : inout STD_LOGIC; 
-      ADIO5 : inout STD_LOGIC; 
-      ADIO4 : inout STD_LOGIC; 
-      ADIO3 : inout STD_LOGIC; 
-      ADIO2 : inout STD_LOGIC; 
-      ADIO1 : inout STD_LOGIC; 
-      ADIO0 : inout STD_LOGIC; 
-
-      CFG_VLD : out STD_LOGIC; 
-      CFG_HIT : out STD_LOGIC; 
-      C_TERM : in STD_LOGIC; 
-      C_READY : in STD_LOGIC; 
-      ADDR_VLD : out STD_LOGIC; 
-      BASE_HIT7 : out STD_LOGIC; 
-      BASE_HIT6 : out STD_LOGIC; 
-      BASE_HIT5 : out STD_LOGIC; 
-      BASE_HIT4 : out STD_LOGIC; 
-      BASE_HIT3 : out STD_LOGIC; 
-      BASE_HIT2 : out STD_LOGIC; 
-      BASE_HIT1 : out STD_LOGIC; 
-      BASE_HIT0 : out STD_LOGIC; 
-      S_CYCLE64 : out STD_LOGIC; 
-      S_TERM : in STD_LOGIC; 
-      S_READY : in STD_LOGIC; 
-      S_ABORT : in STD_LOGIC; 
-      S_WRDN : out STD_LOGIC; 
-      S_SRC_EN : out STD_LOGIC; 
-      S_DATA_VLD : out STD_LOGIC; 
-      S_CBE7 : out STD_LOGIC; 
-      S_CBE6 : out STD_LOGIC; 
-      S_CBE5 : out STD_LOGIC; 
-      S_CBE4 : out STD_LOGIC; 
-      S_CBE3 : out STD_LOGIC; 
-      S_CBE2 : out STD_LOGIC; 
-      S_CBE1 : out STD_LOGIC; 
-      S_CBE0 : out STD_LOGIC; 
-      PCI_CMD15 : out STD_LOGIC; 
-      PCI_CMD14 : out STD_LOGIC; 
-      PCI_CMD13 : out STD_LOGIC; 
-      PCI_CMD12 : out STD_LOGIC; 
-      PCI_CMD11 : out STD_LOGIC; 
-      PCI_CMD10 : out STD_LOGIC; 
-      PCI_CMD9 : out STD_LOGIC; 
-      PCI_CMD8 : out STD_LOGIC; 
-      PCI_CMD7 : out STD_LOGIC; 
-      PCI_CMD6 : out STD_LOGIC; 
-      PCI_CMD5 : out STD_LOGIC; 
-      PCI_CMD4 : out STD_LOGIC; 
-      PCI_CMD3 : out STD_LOGIC; 
-      PCI_CMD2 : out STD_LOGIC; 
-      PCI_CMD1 : out STD_LOGIC; 
-      PCI_CMD0 : out STD_LOGIC; 
-
-      REQUEST : in STD_LOGIC; 
-      REQUEST64 : in STD_LOGIC; 
-      REQUESTHOLD : in STD_LOGIC; 
-      COMPLETE : in STD_LOGIC; 
-
-      M_WRDN : in STD_LOGIC; 
-      M_READY : in STD_LOGIC; 
-      M_SRC_EN : out STD_LOGIC; 
-      M_DATA_VLD : out STD_LOGIC; 
-      M_CBE7 : in STD_LOGIC; 
-      M_CBE6 : in STD_LOGIC; 
-      M_CBE5 : in STD_LOGIC; 
-      M_CBE4 : in STD_LOGIC; 
-      M_CBE3 : in STD_LOGIC; 
-      M_CBE2 : in STD_LOGIC; 
-      M_CBE1 : in STD_LOGIC; 
-      M_CBE0 : in STD_LOGIC; 
-      TIME_OUT : out STD_LOGIC; 
-      M_FAIL64 : out STD_LOGIC; 
-      CFG_SELF : in STD_LOGIC; 
-
-      M_DATA : out STD_LOGIC; 
-      DR_BUS : out STD_LOGIC; 
-      I_IDLE : out STD_LOGIC; 
-      M_ADDR_N : out STD_LOGIC; 
-      IDLE : out STD_LOGIC; 
-      B_BUSY : out STD_LOGIC; 
-      S_DATA : out STD_LOGIC; 
-      BACKOFF : out STD_LOGIC; 
-
-      SLOT64 : in STD_LOGIC; 
-      INTR_N : in STD_LOGIC; 
-      PERRQ_N : out STD_LOGIC; 
-      SERRQ_N : out STD_LOGIC; 
-      KEEPOUT : in STD_LOGIC; 
-
-      CSR39 : out STD_LOGIC; 
-      CSR38 : out STD_LOGIC; 
-      CSR37 : out STD_LOGIC; 
-      CSR36 : out STD_LOGIC; 
-      CSR35 : out STD_LOGIC; 
-      CSR34 : out STD_LOGIC; 
-      CSR33 : out STD_LOGIC; 
-      CSR32 : out STD_LOGIC; 
-      CSR31 : out STD_LOGIC; 
-      CSR30 : out STD_LOGIC; 
-      CSR29 : out STD_LOGIC; 
-      CSR28 : out STD_LOGIC; 
-      CSR27 : out STD_LOGIC; 
-      CSR26 : out STD_LOGIC; 
-      CSR25 : out STD_LOGIC; 
-      CSR24 : out STD_LOGIC; 
-      CSR23 : out STD_LOGIC; 
-      CSR22 : out STD_LOGIC; 
-      CSR21 : out STD_LOGIC; 
-      CSR20 : out STD_LOGIC; 
-      CSR19 : out STD_LOGIC; 
-      CSR18 : out STD_LOGIC; 
-      CSR17 : out STD_LOGIC; 
-      CSR16 : out STD_LOGIC; 
-      CSR15 : out STD_LOGIC; 
-      CSR14 : out STD_LOGIC; 
-      CSR13 : out STD_LOGIC; 
-      CSR12 : out STD_LOGIC; 
-      CSR11 : out STD_LOGIC; 
-      CSR10 : out STD_LOGIC; 
-      CSR9 : out STD_LOGIC; 
-      CSR8 : out STD_LOGIC; 
-      CSR7 : out STD_LOGIC; 
-      CSR6 : out STD_LOGIC; 
-      CSR5 : out STD_LOGIC; 
-      CSR4 : out STD_LOGIC; 
-      CSR3 : out STD_LOGIC; 
-      CSR2 : out STD_LOGIC; 
-      CSR1 : out STD_LOGIC; 
-      CSR0 : out STD_LOGIC; 
-      SUB_DATA31 : in STD_LOGIC; 
-      SUB_DATA30 : in STD_LOGIC; 
-      SUB_DATA29 : in STD_LOGIC;
-      SUB_DATA28 : in STD_LOGIC;
-      SUB_DATA27 : in STD_LOGIC;
-      SUB_DATA26 : in STD_LOGIC;
-      SUB_DATA25 : in STD_LOGIC;
-      SUB_DATA24 : in STD_LOGIC;
-      SUB_DATA23 : in STD_LOGIC;
-      SUB_DATA22 : in STD_LOGIC;
-      SUB_DATA21 : in STD_LOGIC;
-      SUB_DATA20 : in STD_LOGIC;
-      SUB_DATA19 : in STD_LOGIC;
-      SUB_DATA18 : in STD_LOGIC;
-      SUB_DATA17 : in STD_LOGIC;
-      SUB_DATA16 : in STD_LOGIC;
-      SUB_DATA15 : in STD_LOGIC;
-      SUB_DATA14 : in STD_LOGIC;
-      SUB_DATA13 : in STD_LOGIC;
-      SUB_DATA12 : in STD_LOGIC;
-      SUB_DATA11 : in STD_LOGIC;
-      SUB_DATA10 : in STD_LOGIC;
-      SUB_DATA9 : in STD_LOGIC;
-      SUB_DATA8 : in STD_LOGIC;
-      SUB_DATA7 : in STD_LOGIC;
-      SUB_DATA6 : in STD_LOGIC;
-      SUB_DATA5 : in STD_LOGIC;
-      SUB_DATA4 : in STD_LOGIC;
-      SUB_DATA3 : in STD_LOGIC;
-      SUB_DATA2 : in STD_LOGIC;
-      SUB_DATA1 : in STD_LOGIC;
-      SUB_DATA0 : in STD_LOGIC;
-      CLK : in STD_LOGIC;
-      CLKX : in STD_LOGIC;
-      RST : out STD_LOGIC
-    );
-  end component;
-
-
-  signal LO: std_logic;
-  signal HI: std_logic;
-
-  signal OE_ADO_T64: std_logic;
-  signal OE_ADO_LT64: std_logic;
-  signal OE_ADO_LB64: std_logic;
-  signal OE_ADO_B64: std_logic;
-
-  signal OE_ADO_T: std_logic;
-  signal OE_ADO_LT: std_logic;
-  signal OE_ADO_LB: std_logic;
-  signal OE_ADO_B: std_logic;
-
-  signal OE_CBE64: std_logic;
-  signal OE_CBE: std_logic;
-
-  signal OE_PAR64: std_logic;
-  signal PAR64_I: std_logic;
-  signal PAR64_O: std_logic;
-
-  signal OE_PAR: std_logic;
-  signal PAR_I: std_logic;
-  signal PAR_O: std_logic;
-
-  signal OE_FRAME: std_logic;
-  signal FRAME_I: std_logic;
-  signal FRAME_O: std_logic;
-
-  signal OE_REQ64: std_logic;
-  signal REQ64_I: std_logic;
-  signal REQ64_O: std_logic;
-
-  signal OE_TRDY: std_logic;
-  signal TRDY_I: std_logic;
-  signal TRDY_O: std_logic;
-
-  signal OE_IRDY: std_logic;
-  signal IRDY_I: std_logic;
-  signal IRDY_O: std_logic;
-
-  signal OE_STOP: std_logic;
-  signal STOP_I: std_logic;
-  signal STOP_O: std_logic;
-
-  signal OE_DEVSEL: std_logic;
-  signal DEVSEL_I: std_logic;
-  signal DEVSEL_O: std_logic;
-
-  signal OE_ACK64: std_logic;
-  signal ACK64_I: std_logic;
-  signal ACK64_O: std_logic;
-
-  signal OE_PERR: std_logic;
-  signal PERR_I: std_logic;
-  signal PERR_O: std_logic;
-
-  signal OE_SERR: std_logic;
-  signal SERR_I: std_logic;
-
-  signal OE_REQ: std_logic;
-  signal REQ_OUT: std_logic;
-
-  signal OE_INTA: std_logic;
-
-  signal IDSEL_IN: std_logic;
-
-  signal GNT_IN: std_logic;
-
-  signal NUB: std_logic;
-  signal CLKX: std_logic;
-
-  signal RST_N: std_logic;
-
-  signal AD63: std_logic; 
-  signal AD62: std_logic; 
-  signal AD61: std_logic; 
-  signal AD60: std_logic; 
-  signal AD59: std_logic; 
-  signal AD58: std_logic; 
-  signal AD57: std_logic; 
-  signal AD56: std_logic; 
-  signal AD55: std_logic; 
-  signal AD54: std_logic; 
-  signal AD53: std_logic; 
-  signal AD52: std_logic; 
-  signal AD51: std_logic; 
-  signal AD50: std_logic; 
-  signal AD49: std_logic; 
-  signal AD48: std_logic; 
-  signal AD47: std_logic; 
-  signal AD46: std_logic; 
-  signal AD45: std_logic; 
-  signal AD44: std_logic; 
-  signal AD43: std_logic; 
-  signal AD42: std_logic; 
-  signal AD41: std_logic; 
-  signal AD40: std_logic; 
-  signal AD39: std_logic; 
-  signal AD38: std_logic; 
-  signal AD37: std_logic; 
-  signal AD36: std_logic; 
-  signal AD35: std_logic; 
-  signal AD34: std_logic; 
-  signal AD33: std_logic; 
-  signal AD32: std_logic; 
-  signal AD31: std_logic; 
-  signal AD30: std_logic; 
-  signal AD29: std_logic; 
-  signal AD28: std_logic; 
-  signal AD27: std_logic; 
-  signal AD26: std_logic; 
-  signal AD25: std_logic; 
-  signal AD24: std_logic; 
-  signal AD23: std_logic; 
-  signal AD22: std_logic; 
-  signal AD21: std_logic; 
-  signal AD20: std_logic; 
-  signal AD19: std_logic; 
-  signal AD18: std_logic; 
-  signal AD17: std_logic; 
-  signal AD16: std_logic; 
-  signal AD15: std_logic; 
-  signal AD14: std_logic; 
-  signal AD13: std_logic; 
-  signal AD12: std_logic; 
-  signal AD11: std_logic; 
-  signal AD10: std_logic; 
-  signal AD9: std_logic; 
-  signal AD8: std_logic; 
-  signal AD7: std_logic; 
-  signal AD6: std_logic; 
-  signal AD5: std_logic; 
-  signal AD4: std_logic; 
-  signal AD3: std_logic; 
-  signal AD2: std_logic; 
-  signal AD1: std_logic; 
-  signal AD0: std_logic; 
-
-  signal AD_I63: std_logic; 
-  signal AD_I62: std_logic; 
-  signal AD_I61: std_logic; 
-  signal AD_I60: std_logic; 
-  signal AD_I59: std_logic; 
-  signal AD_I58: std_logic; 
-  signal AD_I57: std_logic; 
-  signal AD_I56: std_logic; 
-  signal AD_I55: std_logic; 
-  signal AD_I54: std_logic; 
-  signal AD_I53: std_logic; 
-  signal AD_I52: std_logic; 
-  signal AD_I51: std_logic; 
-  signal AD_I50: std_logic; 
-  signal AD_I49: std_logic; 
-  signal AD_I48: std_logic; 
-  signal AD_I47: std_logic; 
-  signal AD_I46: std_logic; 
-  signal AD_I45: std_logic; 
-  signal AD_I44: std_logic; 
-  signal AD_I43: std_logic; 
-  signal AD_I42: std_logic; 
-  signal AD_I41: std_logic; 
-  signal AD_I40: std_logic; 
-  signal AD_I39: std_logic; 
-  signal AD_I38: std_logic; 
-  signal AD_I37: std_logic; 
-  signal AD_I36: std_logic; 
-  signal AD_I35: std_logic; 
-  signal AD_I34: std_logic; 
-  signal AD_I33: std_logic; 
-  signal AD_I32: std_logic; 
-  signal AD_I31: std_logic; 
-  signal AD_I30: std_logic; 
-  signal AD_I29: std_logic; 
-  signal AD_I28: std_logic; 
-  signal AD_I27: std_logic; 
-  signal AD_I26: std_logic; 
-  signal AD_I25: std_logic; 
-  signal AD_I24: std_logic; 
-  signal AD_I23: std_logic; 
-  signal AD_I22: std_logic; 
-  signal AD_I21: std_logic; 
-  signal AD_I20: std_logic; 
-  signal AD_I19: std_logic; 
-  signal AD_I18: std_logic; 
-  signal AD_I17: std_logic; 
-  signal AD_I16: std_logic; 
-  signal AD_I15: std_logic; 
-  signal AD_I14: std_logic; 
-  signal AD_I13: std_logic; 
-  signal AD_I12: std_logic; 
-  signal AD_I11: std_logic; 
-  signal AD_I10: std_logic; 
-  signal AD_I9: std_logic; 
-  signal AD_I8: std_logic; 
-  signal AD_I7: std_logic; 
-  signal AD_I6: std_logic; 
-  signal AD_I5: std_logic; 
-  signal AD_I4: std_logic; 
-  signal AD_I3: std_logic; 
-  signal AD_I2: std_logic; 
-  signal AD_I1: std_logic; 
-  signal AD_I0: std_logic; 
-
-  signal AD_O63: std_logic; 
-  signal AD_O62: std_logic; 
-  signal AD_O61: std_logic; 
-  signal AD_O60: std_logic; 
-  signal AD_O59: std_logic; 
-  signal AD_O58: std_logic; 
-  signal AD_O57: std_logic; 
-  signal AD_O56: std_logic; 
-  signal AD_O55: std_logic; 
-  signal AD_O54: std_logic; 
-  signal AD_O53: std_logic; 
-  signal AD_O52: std_logic; 
-  signal AD_O51: std_logic; 
-  signal AD_O50: std_logic; 
-  signal AD_O49: std_logic; 
-  signal AD_O48: std_logic; 
-  signal AD_O47: std_logic; 
-  signal AD_O46: std_logic; 
-  signal AD_O45: std_logic; 
-  signal AD_O44: std_logic; 
-  signal AD_O43: std_logic; 
-  signal AD_O42: std_logic; 
-  signal AD_O41: std_logic; 
-  signal AD_O40: std_logic; 
-  signal AD_O39: std_logic; 
-  signal AD_O38: std_logic; 
-  signal AD_O37: std_logic; 
-  signal AD_O36: std_logic; 
-  signal AD_O35: std_logic; 
-  signal AD_O34: std_logic; 
-  signal AD_O33: std_logic; 
-  signal AD_O32: std_logic; 
-  signal AD_O31: std_logic; 
-  signal AD_O30: std_logic; 
-  signal AD_O29: std_logic; 
-  signal AD_O28: std_logic; 
-  signal AD_O27: std_logic; 
-  signal AD_O26: std_logic; 
-  signal AD_O25: std_logic; 
-  signal AD_O24: std_logic; 
-  signal AD_O23: std_logic; 
-  signal AD_O22: std_logic; 
-  signal AD_O21: std_logic; 
-  signal AD_O20: std_logic; 
-  signal AD_O19: std_logic; 
-  signal AD_O18: std_logic; 
-  signal AD_O17: std_logic; 
-  signal AD_O16: std_logic; 
-  signal AD_O15: std_logic; 
-  signal AD_O14: std_logic; 
-  signal AD_O13: std_logic; 
-  signal AD_O12: std_logic; 
-  signal AD_O11: std_logic; 
-  signal AD_O10: std_logic; 
-  signal AD_O9: std_logic; 
-  signal AD_O8: std_logic; 
-  signal AD_O7: std_logic; 
-  signal AD_O6: std_logic; 
-  signal AD_O5: std_logic; 
-  signal AD_O4: std_logic; 
-  signal AD_O3: std_logic; 
-  signal AD_O2: std_logic; 
-  signal AD_O1: std_logic; 
-  signal AD_O0: std_logic; 
-
-  signal CBE_IN7: std_logic; 
-  signal CBE_IN6: std_logic; 
-  signal CBE_IN5: std_logic; 
-  signal CBE_IN4: std_logic; 
-  signal CBE_IN3: std_logic; 
-  signal CBE_IN2: std_logic; 
-  signal CBE_IN1: std_logic; 
-  signal CBE_IN0: std_logic; 
-
-  signal CBE_I7: std_logic; 
-  signal CBE_I6: std_logic; 
-  signal CBE_I5: std_logic; 
-  signal CBE_I4: std_logic; 
-  signal CBE_I3: std_logic; 
-  signal CBE_I2: std_logic; 
-  signal CBE_I1: std_logic; 
-  signal CBE_I0: std_logic; 
-
-  signal CBE_O7: std_logic; 
-  signal CBE_O6: std_logic; 
-  signal CBE_O5: std_logic; 
-  signal CBE_O4: std_logic; 
-  signal CBE_O3: std_logic; 
-  signal CBE_O2: std_logic; 
-  signal CBE_O1: std_logic; 
-  signal CBE_O0: std_logic; 
-
-
-begin
-
-  LO <= '0';
-  HI <= '1';
-
-  XPCI_ADB63: IOBUF_PCI66_3 port map
-              ( O => AD_I63, IO => AD_IO(63), I => AD_O63, T => OE_ADO_T64 );
-  XPCI_ADB62: IOBUF_PCI66_3 port map
-              ( O => AD_I62, IO => AD_IO(62), I => AD_O62, T => OE_ADO_T64 );
-  XPCI_ADB61: IOBUF_PCI66_3 port map
-              ( O => AD_I61, IO => AD_IO(61), I => AD_O61, T => OE_ADO_T64 );
-  XPCI_ADB60: IOBUF_PCI66_3 port map
-              ( O => AD_I60, IO => AD_IO(60), I => AD_O60, T => OE_ADO_T64 );
-  XPCI_ADB59: IOBUF_PCI66_3 port map
-              ( O => AD_I59, IO => AD_IO(59), I => AD_O59, T => OE_ADO_T64 );
-  XPCI_ADB58: IOBUF_PCI66_3 port map
-              ( O => AD_I58, IO => AD_IO(58), I => AD_O58, T => OE_ADO_T64 );
-  XPCI_ADB57: IOBUF_PCI66_3 port map
-              ( O => AD_I57, IO => AD_IO(57), I => AD_O57, T => OE_ADO_T64 );
-  XPCI_ADB56: IOBUF_PCI66_3 port map
-              ( O => AD_I56, IO => AD_IO(56), I => AD_O56, T => OE_ADO_T64 );
-
-  XPCI_ADB55: IOBUF_PCI66_3 port map
-              ( O => AD_I55, IO => AD_IO(55), I => AD_O55, T => OE_ADO_LT64);
-  XPCI_ADB54: IOBUF_PCI66_3 port map
-              ( O => AD_I54, IO => AD_IO(54), I => AD_O54, T => OE_ADO_LT64);
-  XPCI_ADB53: IOBUF_PCI66_3 port map
-              ( O => AD_I53, IO => AD_IO(53), I => AD_O53, T => OE_ADO_LT64);
-  XPCI_ADB52: IOBUF_PCI66_3 port map
-              ( O => AD_I52, IO => AD_IO(52), I => AD_O52, T => OE_ADO_LT64);
-  XPCI_ADB51: IOBUF_PCI66_3 port map
-              ( O => AD_I51, IO => AD_IO(51), I => AD_O51, T => OE_ADO_LT64);
-  XPCI_ADB50: IOBUF_PCI66_3 port map
-              ( O => AD_I50, IO => AD_IO(50), I => AD_O50, T => OE_ADO_LT64);
-  XPCI_ADB49: IOBUF_PCI66_3 port map
-              ( O => AD_I49, IO => AD_IO(49), I => AD_O49, T => OE_ADO_LT64);
-  XPCI_ADB48: IOBUF_PCI66_3 port map
-              ( O => AD_I48, IO => AD_IO(48), I => AD_O48, T => OE_ADO_LT64);
-
-  XPCI_ADB47: IOBUF_PCI66_3 port map
-              ( O => AD_I47, IO => AD_IO(47), I => AD_O47, T => OE_ADO_LB64);
-  XPCI_ADB46: IOBUF_PCI66_3 port map
-              ( O => AD_I46, IO => AD_IO(46), I => AD_O46, T => OE_ADO_LB64);
-  XPCI_ADB45: IOBUF_PCI66_3 port map
-              ( O => AD_I45, IO => AD_IO(45), I => AD_O45, T => OE_ADO_LB64);
-  XPCI_ADB44: IOBUF_PCI66_3 port map
-              ( O => AD_I44, IO => AD_IO(44), I => AD_O44, T => OE_ADO_LB64);
-  XPCI_ADB43: IOBUF_PCI66_3 port map
-              ( O => AD_I43, IO => AD_IO(43), I => AD_O43, T => OE_ADO_LB64);
-  XPCI_ADB42: IOBUF_PCI66_3 port map
-              ( O => AD_I42, IO => AD_IO(42), I => AD_O42, T => OE_ADO_LB64);
-  XPCI_ADB41: IOBUF_PCI66_3 port map
-              ( O => AD_I41, IO => AD_IO(41), I => AD_O41, T => OE_ADO_LB64);
-  XPCI_ADB40: IOBUF_PCI66_3 port map
-              ( O => AD_I40, IO => AD_IO(40), I => AD_O40, T => OE_ADO_LB64);
-
-  XPCI_ADB39: IOBUF_PCI66_3 port map
-              ( O => AD_I39, IO => AD_IO(39), I => AD_O39, T => OE_ADO_B64 );
-  XPCI_ADB38: IOBUF_PCI66_3 port map
-              ( O => AD_I38, IO => AD_IO(38), I => AD_O38, T => OE_ADO_B64 );
-  XPCI_ADB37: IOBUF_PCI66_3 port map
-              ( O => AD_I37, IO => AD_IO(37), I => AD_O37, T => OE_ADO_B64 );
-  XPCI_ADB36: IOBUF_PCI66_3 port map
-              ( O => AD_I36, IO => AD_IO(36), I => AD_O36, T => OE_ADO_B64 );
-  XPCI_ADB35: IOBUF_PCI66_3 port map
-              ( O => AD_I35, IO => AD_IO(35), I => AD_O35, T => OE_ADO_B64 );
-  XPCI_ADB34: IOBUF_PCI66_3 port map
-              ( O => AD_I34, IO => AD_IO(34), I => AD_O34, T => OE_ADO_B64 );
-  XPCI_ADB33: IOBUF_PCI66_3 port map
-              ( O => AD_I33, IO => AD_IO(33), I => AD_O33, T => OE_ADO_B64 );
-  XPCI_ADB32: IOBUF_PCI66_3 port map
-              ( O => AD_I32, IO => AD_IO(32), I => AD_O32, T => OE_ADO_B64 );
-
-  XPCI_ADB31: IOBUF_PCI66_3 port map
-              ( O => AD_I31, IO => AD_IO(31), I => AD_O31, T => OE_ADO_T   );
-  XPCI_ADB30: IOBUF_PCI66_3 port map
-              ( O => AD_I30, IO => AD_IO(30), I => AD_O30, T => OE_ADO_T   );
-  XPCI_ADB29: IOBUF_PCI66_3 port map
-              ( O => AD_I29, IO => AD_IO(29), I => AD_O29, T => OE_ADO_T   );
-  XPCI_ADB28: IOBUF_PCI66_3 port map
-              ( O => AD_I28, IO => AD_IO(28), I => AD_O28, T => OE_ADO_T   );
-  XPCI_ADB27: IOBUF_PCI66_3 port map
-              ( O => AD_I27, IO => AD_IO(27), I => AD_O27, T => OE_ADO_T   );
-  XPCI_ADB26: IOBUF_PCI66_3 port map
-              ( O => AD_I26, IO => AD_IO(26), I => AD_O26, T => OE_ADO_T   );
-  XPCI_ADB25: IOBUF_PCI66_3 port map
-              ( O => AD_I25, IO => AD_IO(25), I => AD_O25, T => OE_ADO_T   );
-  XPCI_ADB24: IOBUF_PCI66_3 port map
-              ( O => AD_I24, IO => AD_IO(24), I => AD_O24, T => OE_ADO_T   );
-
-  XPCI_ADB23: IOBUF_PCI66_3 port map
-              ( O => AD_I23, IO => AD_IO(23), I => AD_O23, T => OE_ADO_LT  );
-  XPCI_ADB22: IOBUF_PCI66_3 port map
-              ( O => AD_I22, IO => AD_IO(22), I => AD_O22, T => OE_ADO_LT  );
-  XPCI_ADB21: IOBUF_PCI66_3 port map
-              ( O => AD_I21, IO => AD_IO(21), I => AD_O21, T => OE_ADO_LT  );
-  XPCI_ADB20: IOBUF_PCI66_3 port map
-              ( O => AD_I20, IO => AD_IO(20), I => AD_O20, T => OE_ADO_LT  );
-  XPCI_ADB19: IOBUF_PCI66_3 port map
-              ( O => AD_I19, IO => AD_IO(19), I => AD_O19, T => OE_ADO_LT  );
-  XPCI_ADB18: IOBUF_PCI66_3 port map
-              ( O => AD_I18, IO => AD_IO(18), I => AD_O18, T => OE_ADO_LT  );
-  XPCI_ADB17: IOBUF_PCI66_3 port map
-              ( O => AD_I17, IO => AD_IO(17), I => AD_O17, T => OE_ADO_LT  );
-  XPCI_ADB16: IOBUF_PCI66_3 port map
-              ( O => AD_I16, IO => AD_IO(16), I => AD_O16, T => OE_ADO_LT  );
-
-  XPCI_ADB15: IOBUF_PCI66_3 port map
-              ( O => AD_I15, IO => AD_IO(15), I => AD_O15, T => OE_ADO_LB  );
-  XPCI_ADB14: IOBUF_PCI66_3 port map
-              ( O => AD_I14, IO => AD_IO(14), I => AD_O14, T => OE_ADO_LB  );
-  XPCI_ADB13: IOBUF_PCI66_3 port map
-              ( O => AD_I13, IO => AD_IO(13), I => AD_O13, T => OE_ADO_LB  );
-  XPCI_ADB12: IOBUF_PCI66_3 port map
-              ( O => AD_I12, IO => AD_IO(12), I => AD_O12, T => OE_ADO_LB  );
-  XPCI_ADB11: IOBUF_PCI66_3 port map
-              ( O => AD_I11, IO => AD_IO(11), I => AD_O11, T => OE_ADO_LB  );
-  XPCI_ADB10: IOBUF_PCI66_3 port map
-              ( O => AD_I10, IO => AD_IO(10), I => AD_O10, T => OE_ADO_LB  );
-  XPCI_ADB9 : IOBUF_PCI66_3 port map
-              ( O => AD_I9 , IO => AD_IO( 9), I => AD_O9 , T => OE_ADO_LB  );
-  XPCI_ADB8 : IOBUF_PCI66_3 port map
-              ( O => AD_I8 , IO => AD_IO( 8), I => AD_O8 , T => OE_ADO_LB  );
-
-  XPCI_ADB7 : IOBUF_PCI66_3 port map
-              ( O => AD_I7 , IO => AD_IO( 7), I => AD_O7 , T => OE_ADO_B   );
-  XPCI_ADB6 : IOBUF_PCI66_3 port map
-              ( O => AD_I6 , IO => AD_IO( 6), I => AD_O6 , T => OE_ADO_B   );
-  XPCI_ADB5 : IOBUF_PCI66_3 port map
-              ( O => AD_I5 , IO => AD_IO( 5), I => AD_O5 , T => OE_ADO_B   );
-  XPCI_ADB4 : IOBUF_PCI66_3 port map
-              ( O => AD_I4 , IO => AD_IO( 4), I => AD_O4 , T => OE_ADO_B   );
-  XPCI_ADB3 : IOBUF_PCI66_3 port map
-              ( O => AD_I3 , IO => AD_IO( 3), I => AD_O3 , T => OE_ADO_B   );
-  XPCI_ADB2 : IOBUF_PCI66_3 port map
-              ( O => AD_I2 , IO => AD_IO( 2), I => AD_O2 , T => OE_ADO_B   );
-  XPCI_ADB1 : IOBUF_PCI66_3 port map
-              ( O => AD_I1 , IO => AD_IO( 1), I => AD_O1 , T => OE_ADO_B   );
-  XPCI_ADB0 : IOBUF_PCI66_3 port map
-              ( O => AD_I0 , IO => AD_IO( 0), I => AD_O0 , T => OE_ADO_B   );
-
-  XPCI_ADQ63: FDPE port map
-              ( Q => AD63, D => AD_I63, C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ62: FDPE port map
-              ( Q => AD62, D => AD_I62, C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ61: FDPE port map
-              ( Q => AD61, D => AD_I61, C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ60: FDPE port map
-              ( Q => AD60, D => AD_I60, C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ59: FDPE port map
-              ( Q => AD59, D => AD_I59, C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ58: FDPE port map
-              ( Q => AD58, D => AD_I58, C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ57: FDPE port map
-              ( Q => AD57, D => AD_I57, C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ56: FDPE port map
-              ( Q => AD56, D => AD_I56, C => CLKX, CE => HI, PRE => RST );
-
-  XPCI_ADQ55: FDPE port map
-              ( Q => AD55, D => AD_I55, C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ54: FDPE port map
-              ( Q => AD54, D => AD_I54, C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ53: FDPE port map
-              ( Q => AD53, D => AD_I53, C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ52: FDPE port map
-              ( Q => AD52, D => AD_I52, C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ51: FDPE port map
-              ( Q => AD51, D => AD_I51, C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ50: FDPE port map
-              ( Q => AD50, D => AD_I50, C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ49: FDPE port map
-              ( Q => AD49, D => AD_I49, C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ48: FDPE port map
-              ( Q => AD48, D => AD_I48, C => CLKX, CE => HI, PRE => RST );
-
-  XPCI_ADQ47: FDPE port map
-              ( Q => AD47, D => AD_I47, C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ46: FDPE port map
-              ( Q => AD46, D => AD_I46, C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ45: FDPE port map
-              ( Q => AD45, D => AD_I45, C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ44: FDPE port map
-              ( Q => AD44, D => AD_I44, C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ43: FDPE port map
-              ( Q => AD43, D => AD_I43, C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ42: FDPE port map
-              ( Q => AD42, D => AD_I42, C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ41: FDPE port map
-              ( Q => AD41, D => AD_I41, C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ40: FDPE port map
-              ( Q => AD40, D => AD_I40, C => CLKX, CE => HI, PRE => RST );
-
-  XPCI_ADQ39: FDPE port map
-              ( Q => AD39, D => AD_I39, C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ38: FDPE port map
-              ( Q => AD38, D => AD_I38, C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ37: FDPE port map
-              ( Q => AD37, D => AD_I37, C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ36: FDPE port map
-              ( Q => AD36, D => AD_I36, C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ35: FDPE port map
-              ( Q => AD35, D => AD_I35, C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ34: FDPE port map
-              ( Q => AD34, D => AD_I34, C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ33: FDPE port map
-              ( Q => AD33, D => AD_I33, C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ32: FDPE port map
-              ( Q => AD32, D => AD_I32, C => CLKX, CE => HI, PRE => RST );
-
-  XPCI_ADQ31: FDPE port map
-              ( Q => AD31, D => AD_I31, C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ30: FDPE port map
-              ( Q => AD30, D => AD_I30, C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ29: FDPE port map
-              ( Q => AD29, D => AD_I29, C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ28: FDPE port map
-              ( Q => AD28, D => AD_I28, C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ27: FDPE port map
-              ( Q => AD27, D => AD_I27, C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ26: FDPE port map
-              ( Q => AD26, D => AD_I26, C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ25: FDPE port map
-              ( Q => AD25, D => AD_I25, C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ24: FDPE port map
-              ( Q => AD24, D => AD_I24, C => CLKX, CE => HI, PRE => RST );
-
-  XPCI_ADQ23: FDPE port map
-              ( Q => AD23, D => AD_I23, C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ22: FDPE port map
-              ( Q => AD22, D => AD_I22, C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ21: FDPE port map
-              ( Q => AD21, D => AD_I21, C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ20: FDPE port map
-              ( Q => AD20, D => AD_I20, C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ19: FDPE port map
-              ( Q => AD19, D => AD_I19, C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ18: FDPE port map
-              ( Q => AD18, D => AD_I18, C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ17: FDPE port map
-              ( Q => AD17, D => AD_I17, C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ16: FDPE port map
-              ( Q => AD16, D => AD_I16, C => CLKX, CE => HI, PRE => RST );
-
-  XPCI_ADQ15: FDPE port map
-              ( Q => AD15, D => AD_I15, C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ14: FDPE port map
-              ( Q => AD14, D => AD_I14, C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ13: FDPE port map
-              ( Q => AD13, D => AD_I13, C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ12: FDPE port map
-              ( Q => AD12, D => AD_I12, C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ11: FDPE port map
-              ( Q => AD11, D => AD_I11, C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ10: FDPE port map
-              ( Q => AD10, D => AD_I10, C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ9 : FDPE port map
-              ( Q => AD9 , D => AD_I9 , C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ8 : FDPE port map
-              ( Q => AD8 , D => AD_I8 , C => CLKX, CE => HI, PRE => RST );
-
-  XPCI_ADQ7 : FDPE port map
-              ( Q => AD7 , D => AD_I7 , C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ6 : FDPE port map
-              ( Q => AD6 , D => AD_I6 , C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ5 : FDPE port map
-              ( Q => AD5 , D => AD_I5 , C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ4 : FDPE port map
-              ( Q => AD4 , D => AD_I4 , C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ3 : FDPE port map
-              ( Q => AD3 , D => AD_I3 , C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ2 : FDPE port map
-              ( Q => AD2 , D => AD_I2 , C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ1 : FDPE port map
-              ( Q => AD1 , D => AD_I1 , C => CLKX, CE => HI, PRE => RST );
-  XPCI_ADQ0 : FDPE port map
-              ( Q => AD0 , D => AD_I0 , C => CLKX, CE => HI, PRE => RST );
-
-  XPCI_CBB7 : IOBUF_PCI66_3 port map
-              ( O => CBE_I7 , IO => CBE_IO(7), I => CBE_O7 , T => OE_CBE64 );
-  XPCI_CBB6 : IOBUF_PCI66_3 port map  
-              ( O => CBE_I6 , IO => CBE_IO(6), I => CBE_O6 , T => OE_CBE64 );
-  XPCI_CBB5 : IOBUF_PCI66_3 port map  
-              ( O => CBE_I5 , IO => CBE_IO(5), I => CBE_O5 , T => OE_CBE64 );
-  XPCI_CBB4 : IOBUF_PCI66_3 port map  
-              ( O => CBE_I4 , IO => CBE_IO(4), I => CBE_O4 , T => OE_CBE64 );
-  XPCI_CBB3 : IOBUF_PCI66_3 port map  
-              ( O => CBE_I3 , IO => CBE_IO(3), I => CBE_O3 , T => OE_CBE   );
-  XPCI_CBB2 : IOBUF_PCI66_3 port map  
-              ( O => CBE_I2 , IO => CBE_IO(2), I => CBE_O2 , T => OE_CBE   );
-  XPCI_CBB1 : IOBUF_PCI66_3 port map  
-              ( O => CBE_I1 , IO => CBE_IO(1), I => CBE_O1 , T => OE_CBE   );
-  XPCI_CBB0 : IOBUF_PCI66_3 port map  
-              ( O => CBE_I0 , IO => CBE_IO(0), I => CBE_O0 , T => OE_CBE   );
- 
-  XPCI_CBQ7 : FDPE port map
-              ( Q => CBE_IN7 , D => CBE_I7 , C => CLKX, CE => HI, PRE => RST );
-  XPCI_CBQ6 : FDPE port map
-              ( Q => CBE_IN6 , D => CBE_I6 , C => CLKX, CE => HI, PRE => RST );
-  XPCI_CBQ5 : FDPE port map
-              ( Q => CBE_IN5 , D => CBE_I5 , C => CLKX, CE => HI, PRE => RST );
-  XPCI_CBQ4 : FDPE port map
-              ( Q => CBE_IN4 , D => CBE_I4 , C => CLKX, CE => HI, PRE => RST );
-  XPCI_CBQ3 : FDPE port map
-              ( Q => CBE_IN3 , D => CBE_I3 , C => CLKX, CE => HI, PRE => RST );
-  XPCI_CBQ2 : FDPE port map
-              ( Q => CBE_IN2 , D => CBE_I2 , C => CLKX, CE => HI, PRE => RST );
-  XPCI_CBQ1 : FDPE port map
-              ( Q => CBE_IN1 , D => CBE_I1 , C => CLKX, CE => HI, PRE => RST );
-  XPCI_CBQ0 : FDPE port map
-              ( Q => CBE_IN0 , D => CBE_I0 , C => CLKX, CE => HI, PRE => RST );
-
-  XPCI_PAR64 : IOBUF_PCI66_3 port map
-              ( O => PAR64_I, IO => PAR64_IO, I => PAR64_O, T => OE_PAR64 );
- 
-  XPCI_PAR : IOBUF_PCI66_3 port map
-              ( O => PAR_I, IO => PAR_IO, I => PAR_O, T => OE_PAR );
-
-  XPCI_FRAME : IOBUF_PCI66_3 port map
-              ( O => FRAME_I, IO => FRAME_IO, I => FRAME_O, T => OE_FRAME );
-
-  XPCI_REQ64 : IOBUF_PCI66_3 port map
-              ( O => REQ64_I, IO => REQ64_IO, I => REQ64_O, T => OE_REQ64 );
-
-  XPCI_TRDY : IOBUF_PCI66_3 port map
-              ( O => TRDY_I, IO => TRDY_IO, I => TRDY_O, T => OE_TRDY );
-
-  XPCI_IRDY : IOBUF_PCI66_3 port map
-              ( O => IRDY_I, IO => IRDY_IO, I => IRDY_O, T => OE_IRDY );
-
-  XPCI_STOP : IOBUF_PCI66_3 port map
-              ( O => STOP_I, IO => STOP_IO, I => STOP_O, T => OE_STOP );
-
-  XPCI_DEVSEL : IOBUF_PCI66_3 port map
-              ( O => DEVSEL_I, IO => DEVSEL_IO, I => DEVSEL_O, T => OE_DEVSEL );
-
-  XPCI_ACK64 : IOBUF_PCI66_3 port map
-              ( O => ACK64_I, IO => ACK64_IO, I => ACK64_O, T => OE_ACK64 );
-
-  XPCI_PERR : IOBUF_PCI66_3 port map
-              ( O => PERR_I, IO => PERR_IO, I => PERR_O, T => OE_PERR );
-
-  XPCI_SERR : IOBUF_PCI66_3 port map
-              ( O => SERR_I, IO => SERR_IO, I => LO, T => OE_SERR );
-
-  XPCI_REQ : OBUFT_PCI66_3 port map
-              ( O => REQ_O, I => REQ_OUT, T => OE_REQ );
-
-  XPCI_INTA : OBUFT_PCI66_3 port map
-              ( O => INTA_O, I => LO, T => OE_INTA );
-
-  XPCI_IDSEL : IBUF_PCI66_3 port map
-              ( O => IDSEL_IN, I => IDSEL_I );
-
-  XPCI_GNT : IBUF_PCI66_3 port map
-              ( O => GNT_IN, I => GNT_I );
-
-  XPCI_RST : IBUF_PCI66_3 port map
-              ( O => RST_N, I => RST_I );
-
-  XPCI_CKI : IBUFG_PCI66_3 port map
-              ( O => NUB, I => PCLK );
-
-  XPCI_CKA : BUFG port map
-              ( O => CLK, I => NUB );
-
-  XPCI_CKB : BUFG port map
-              ( O => CLKX, I => NUB );
-
-  PCI_LC : PCI_LC_I port map (
-    OE_ADO_T64          => OE_ADO_T64,
-    OE_ADO_T            => OE_ADO_T,
-    OE_ADO_LT64         => OE_ADO_LT64,
-    OE_ADO_LT           => OE_ADO_LT,
-    OE_ADO_LB64         => OE_ADO_LB64,
-    OE_ADO_LB           => OE_ADO_LB,
-    OE_ADO_B64          => OE_ADO_B64,
-    OE_ADO_B            => OE_ADO_B,
-    AD63                => AD63,
-    AD62                => AD62,
-    AD61                => AD61,
-    AD60                => AD60,
-    AD59                => AD59,
-    AD58                => AD58,
-    AD57                => AD57,
-    AD56                => AD56,
-    AD55                => AD55,
-    AD54                => AD54,
-    AD53                => AD53,
-    AD52                => AD52,
-    AD51                => AD51,
-    AD50                => AD50,
-    AD49                => AD49,
-    AD48                => AD48,
-    AD47                => AD47,
-    AD46                => AD46,
-    AD45                => AD45,
-    AD44                => AD44,
-    AD43                => AD43,
-    AD42                => AD42,
-    AD41                => AD41,
-    AD40                => AD40,
-    AD39                => AD39,
-    AD38                => AD38,
-    AD37                => AD37,
-    AD36                => AD36,
-    AD35                => AD35,
-    AD34                => AD34,
-    AD33                => AD33,
-    AD32                => AD32,
-    AD31                => AD31,
-    AD30                => AD30,
-    AD29                => AD29,
-    AD28                => AD28,
-    AD27                => AD27,
-    AD26                => AD26,
-    AD25                => AD25,
-    AD24                => AD24,
-    AD23                => AD23,
-    AD22                => AD22,
-    AD21                => AD21,
-    AD20                => AD20,
-    AD19                => AD19,
-    AD18                => AD18,
-    AD17                => AD17,
-    AD16                => AD16,
-    AD15                => AD15,
-    AD14                => AD14,
-    AD13                => AD13,
-    AD12                => AD12,
-    AD11                => AD11,
-    AD10                => AD10,
-    AD9                 => AD9,
-    AD8                 => AD8,
-    AD7                 => AD7,
-    AD6                 => AD6,
-    AD5                 => AD5,
-    AD4                 => AD4,
-    AD3                 => AD3,
-    AD2                 => AD2,
-    AD1                 => AD1,
-    AD0                 => AD0,
-    AD_O63              => AD_O63,
-    AD_O62              => AD_O62,
-    AD_O61              => AD_O61,
-    AD_O60              => AD_O60,
-    AD_O59              => AD_O59,
-    AD_O58              => AD_O58,
-    AD_O57              => AD_O57,
-    AD_O56              => AD_O56,
-    AD_O55              => AD_O55,
-    AD_O54              => AD_O54,
-    AD_O53              => AD_O53,
-    AD_O52              => AD_O52,
-    AD_O51              => AD_O51,
-    AD_O50              => AD_O50,
-    AD_O49              => AD_O49,
-    AD_O48              => AD_O48,
-    AD_O47              => AD_O47,
-    AD_O46              => AD_O46,
-    AD_O45              => AD_O45,
-    AD_O44              => AD_O44,
-    AD_O43              => AD_O43,
-    AD_O42              => AD_O42,
-    AD_O41              => AD_O41,
-    AD_O40              => AD_O40,
-    AD_O39              => AD_O39,
-    AD_O38              => AD_O38,
-    AD_O37              => AD_O37,
-    AD_O36              => AD_O36,
-    AD_O35              => AD_O35,
-    AD_O34              => AD_O34,
-    AD_O33              => AD_O33,
-    AD_O32              => AD_O32,
-    AD_O31              => AD_O31,
-    AD_O30              => AD_O30,
-    AD_O29              => AD_O29,
-    AD_O28              => AD_O28,
-    AD_O27              => AD_O27,
-    AD_O26              => AD_O26,
-    AD_O25              => AD_O25,
-    AD_O24              => AD_O24,
-    AD_O23              => AD_O23,
-    AD_O22              => AD_O22,
-    AD_O21              => AD_O21,
-    AD_O20              => AD_O20,
-    AD_O19              => AD_O19,
-    AD_O18              => AD_O18,
-    AD_O17              => AD_O17,
-    AD_O16              => AD_O16,
-    AD_O15              => AD_O15,
-    AD_O14              => AD_O14,
-    AD_O13              => AD_O13,
-    AD_O12              => AD_O12,
-    AD_O11              => AD_O11,
-    AD_O10              => AD_O10,
-    AD_O9               => AD_O9,
-    AD_O8               => AD_O8,
-    AD_O7               => AD_O7,
-    AD_O6               => AD_O6,
-    AD_O5               => AD_O5,
-    AD_O4               => AD_O4,
-    AD_O3               => AD_O3,
-    AD_O2               => AD_O2,
-    AD_O1               => AD_O1,
-    AD_O0               => AD_O0,
-
-    OE_CBE64            => OE_CBE64,
-    OE_CBE              => OE_CBE,
-    CBE_I7              => CBE_I7,
-    CBE_I6              => CBE_I6,
-    CBE_I5              => CBE_I5,
-    CBE_I4              => CBE_I4,
-    CBE_I3              => CBE_I3,
-    CBE_I2              => CBE_I2,
-    CBE_I1              => CBE_I1,
-    CBE_I0              => CBE_I0,
-    CBE_IN7             => CBE_IN7,
-    CBE_IN6             => CBE_IN6,
-    CBE_IN5             => CBE_IN5,
-    CBE_IN4             => CBE_IN4,
-    CBE_IN3             => CBE_IN3,
-    CBE_IN2             => CBE_IN2,
-    CBE_IN1             => CBE_IN1,
-    CBE_IN0             => CBE_IN0,
-    CBE_O7              => CBE_O7,
-    CBE_O6              => CBE_O6,
-    CBE_O5              => CBE_O5,
-    CBE_O4              => CBE_O4,
-    CBE_O3              => CBE_O3,
-    CBE_O2              => CBE_O2,
-    CBE_O1              => CBE_O1,
-    CBE_O0              => CBE_O0,
-
-    OE_PAR64            => OE_PAR64,
-    PAR64_I             => PAR64_I,
-    PAR64_O             => PAR64_O,
-
-    OE_PAR              => OE_PAR,
-    PAR_I               => PAR_I,
-    PAR_O               => PAR_O,
-
-    OE_FRAME            => OE_FRAME,
-    FRAME_I             => FRAME_I,
-    FRAME_O             => FRAME_O,
-
-    OE_REQ64            => OE_REQ64,
-    REQ64_I             => REQ64_I,
-    REQ64_O             => REQ64_O,
-
-    OE_TRDY             => OE_TRDY,
-    TRDY_I              => TRDY_I,
-    TRDY_O              => TRDY_O,
-
-    OE_IRDY             => OE_IRDY,
-    IRDY_I              => IRDY_I,
-    IRDY_O              => IRDY_O,
-
-    OE_STOP             => OE_STOP,
-    STOP_I              => STOP_I,
-    STOP_O              => STOP_O,
-
-    OE_DEVSEL           => OE_DEVSEL,
-    DEVSEL_I            => DEVSEL_I,
-    DEVSEL_O            => DEVSEL_O,
-
-    OE_ACK64            => OE_ACK64,
-    ACK64_I             => ACK64_I,
-    ACK64_O             => ACK64_O,
-
-    IDSEL_IN            => IDSEL_IN,
-
-    OE_INTA             => OE_INTA,
-
-    OE_PERR             => OE_PERR,
-    PERR_I              => PERR_I,
-    PERR_O              => PERR_O,
-
-    OE_SERR             => OE_SERR,
-    SERR_I              => SERR_I,
-
-    OE_REQ              => OE_REQ,
-    REQ_OUT             => REQ_OUT,
-
-    GNT_IN              => GNT_IN,
-
-    RST_N               => RST_N,
-
-    CFG255              => CFG(255),
-    CFG254              => CFG(254),
-    CFG253              => CFG(253),
-    CFG252              => CFG(252),
-    CFG251              => CFG(251),
-    CFG250              => CFG(250),
-    CFG249              => CFG(249),
-    CFG248              => CFG(248),
-    CFG247              => CFG(247),
-    CFG246              => CFG(246),
-    CFG245              => CFG(245),
-    CFG244              => CFG(244),
-    CFG243              => CFG(243),
-    CFG242              => CFG(242),
-    CFG241              => CFG(241),
-    CFG240              => CFG(240),
-    CFG239              => CFG(239),
-    CFG238              => CFG(238),
-    CFG237              => CFG(237),
-    CFG236              => CFG(236),
-    CFG235              => CFG(235),
-    CFG234              => CFG(234),
-    CFG233              => CFG(233),
-    CFG232              => CFG(232),
-    CFG231              => CFG(231),
-    CFG230              => CFG(230),
-    CFG229              => CFG(229),
-    CFG228              => CFG(228),
-    CFG227              => CFG(227),
-    CFG226              => CFG(226),
-    CFG225              => CFG(225),
-    CFG224              => CFG(224),
-    CFG223              => CFG(223),
-    CFG222              => CFG(222),
-    CFG221              => CFG(221),
-    CFG220              => CFG(220),
-    CFG219              => CFG(219),
-    CFG218              => CFG(218),
-    CFG217              => CFG(217),
-    CFG216              => CFG(216),
-    CFG215              => CFG(215),
-    CFG214              => CFG(214),
-    CFG213              => CFG(213),
-    CFG212              => CFG(212),
-    CFG211              => CFG(211),
-    CFG210              => CFG(210),
-    CFG209              => CFG(209),
-    CFG208              => CFG(208),
-    CFG207              => CFG(207),
-    CFG206              => CFG(206),
-    CFG205              => CFG(205),
-    CFG204              => CFG(204),
-    CFG203              => CFG(203),
-    CFG202              => CFG(202),
-    CFG201              => CFG(201),
-    CFG200              => CFG(200),
-    CFG199              => CFG(199),
-    CFG198              => CFG(198),
-    CFG197              => CFG(197),
-    CFG196              => CFG(196),
-    CFG195              => CFG(195),
-    CFG194              => CFG(194),
-    CFG193              => CFG(193),
-    CFG192              => CFG(192),
-    CFG191              => CFG(191),
-    CFG190              => CFG(190),
-    CFG189              => CFG(189),
-    CFG188              => CFG(188),
-    CFG187              => CFG(187),
-    CFG186              => CFG(186),
-    CFG185              => CFG(185),
-    CFG184              => CFG(184),
-    CFG183              => CFG(183),
-    CFG182              => CFG(182),
-    CFG181              => CFG(181),
-    CFG180              => CFG(180),
-    CFG179              => CFG(179),
-    CFG178              => CFG(178),
-    CFG177              => CFG(177),
-    CFG176              => CFG(176),
-    CFG175              => CFG(175),
-    CFG174              => CFG(174),
-    CFG173              => CFG(173),
-    CFG172              => CFG(172),
-    CFG171              => CFG(171),
-    CFG170              => CFG(170),
-    CFG169              => CFG(169),
-    CFG168              => CFG(168),
-    CFG167              => CFG(167),
-    CFG166              => CFG(166),
-    CFG165              => CFG(165),
-    CFG164              => CFG(164),
-    CFG163              => CFG(163),
-    CFG162              => CFG(162),
-    CFG161              => CFG(161),
-    CFG160              => CFG(160),
-    CFG159              => CFG(159),
-    CFG158              => CFG(158),
-    CFG157              => CFG(157),
-    CFG156              => CFG(156),
-    CFG155              => CFG(155),
-    CFG154              => CFG(154),
-    CFG153              => CFG(153),
-    CFG152              => CFG(152),
-    CFG151              => CFG(151),
-    CFG150              => CFG(150),
-    CFG149              => CFG(149),
-    CFG148              => CFG(148),
-    CFG147              => CFG(147),
-    CFG146              => CFG(146),
-    CFG145              => CFG(145),
-    CFG144              => CFG(144),
-    CFG143              => CFG(143),
-    CFG142              => CFG(142),
-    CFG141              => CFG(141),
-    CFG140              => CFG(140),
-    CFG139              => CFG(139),
-    CFG138              => CFG(138),
-    CFG137              => CFG(137),
-    CFG136              => CFG(136),
-    CFG135              => CFG(135),
-    CFG134              => CFG(134),
-    CFG133              => CFG(133),
-    CFG132              => CFG(132),
-    CFG131              => CFG(131),
-    CFG130              => CFG(130),
-    CFG129              => CFG(129),
-    CFG128              => CFG(128),
-    CFG127              => CFG(127),
-    CFG126              => CFG(126),
-    CFG125              => CFG(125),
-    CFG124              => CFG(124),
-    CFG123              => CFG(123),
-    CFG122              => CFG(122),
-    CFG121              => CFG(121),
-    CFG120              => CFG(120),
-    CFG119              => CFG(119),
-    CFG118              => CFG(118),
-    CFG117              => CFG(117),
-    CFG116              => CFG(116),
-    CFG115              => CFG(115),
-    CFG114              => CFG(114),
-    CFG113              => CFG(113),
-    CFG112              => CFG(112),
-    CFG111              => CFG(111),
-    CFG110              => CFG(110),
-    CFG109              => CFG(109),
-    CFG108              => CFG(108),
-    CFG107              => CFG(107),
-    CFG106              => CFG(106),
-    CFG105              => CFG(105),
-    CFG104              => CFG(104),
-    CFG103              => CFG(103),
-    CFG102              => CFG(102),
-    CFG101              => CFG(101),
-    CFG100              => CFG(100),
-    CFG99               => CFG(99),
-    CFG98               => CFG(98),
-    CFG97               => CFG(97),
-    CFG96               => CFG(96),
-    CFG95               => CFG(95),
-    CFG94               => CFG(94),
-    CFG93               => CFG(93),
-    CFG92               => CFG(92),
-    CFG91               => CFG(91),
-    CFG90               => CFG(90),
-    CFG89               => CFG(89),
-    CFG88               => CFG(88),
-    CFG87               => CFG(87),
-    CFG86               => CFG(86),
-    CFG85               => CFG(85),
-    CFG84               => CFG(84),
-    CFG83               => CFG(83),
-    CFG82               => CFG(82),
-    CFG81               => CFG(81),
-    CFG80               => CFG(80),
-    CFG79               => CFG(79),
-    CFG78               => CFG(78),
-    CFG77               => CFG(77),
-    CFG76               => CFG(76),
-    CFG75               => CFG(75),
-    CFG74               => CFG(74),
-    CFG73               => CFG(73),
-    CFG72               => CFG(72),
-    CFG71               => CFG(71),
-    CFG70               => CFG(70),
-    CFG69               => CFG(69),
-    CFG68               => CFG(68),
-    CFG67               => CFG(67),
-    CFG66               => CFG(66),
-    CFG65               => CFG(65),
-    CFG64               => CFG(64),
-    CFG63               => CFG(63),
-    CFG62               => CFG(62),
-    CFG61               => CFG(61),
-    CFG60               => CFG(60),
-    CFG59               => CFG(59),
-    CFG58               => CFG(58),
-    CFG57               => CFG(57),
-    CFG56               => CFG(56),
-    CFG55               => CFG(55),
-    CFG54               => CFG(54),
-    CFG53               => CFG(53),
-    CFG52               => CFG(52),
-    CFG51               => CFG(51),
-    CFG50               => CFG(50),
-    CFG49               => CFG(49),
-    CFG48               => CFG(48),
-    CFG47               => CFG(47),
-    CFG46               => CFG(46),
-    CFG45               => CFG(45),
-    CFG44               => CFG(44),
-    CFG43               => CFG(43),
-    CFG42               => CFG(42),
-    CFG41               => CFG(41),
-    CFG40               => CFG(40),
-    CFG39               => CFG(39),
-    CFG38               => CFG(38),
-    CFG37               => CFG(37),
-    CFG36               => CFG(36),
-    CFG35               => CFG(35),
-    CFG34               => CFG(34),
-    CFG33               => CFG(33),
-    CFG32               => CFG(32),
-    CFG31               => CFG(31),
-    CFG30               => CFG(30),
-    CFG29               => CFG(29),
-    CFG28               => CFG(28),
-    CFG27               => CFG(27),
-    CFG26               => CFG(26),
-    CFG25               => CFG(25),
-    CFG24               => CFG(24),
-    CFG23               => CFG(23),
-    CFG22               => CFG(22),
-    CFG21               => CFG(21),
-    CFG20               => CFG(20),
-    CFG19               => CFG(19),
-    CFG18               => CFG(18),
-    CFG17               => CFG(17),
-    CFG16               => CFG(16),
-    CFG15               => CFG(15),
-    CFG14               => CFG(14),
-    CFG13               => CFG(13),
-    CFG12               => CFG(12),
-    CFG11               => CFG(11),
-    CFG10               => CFG(10),
-    CFG9                => CFG(9),
-    CFG8                => CFG(8),
-    CFG7                => CFG(7),
-    CFG6                => CFG(6),
-    CFG5                => CFG(5),
-    CFG4                => CFG(4),
-    CFG3                => CFG(3),
-    CFG2                => CFG(2),
-    CFG1                => CFG(1),
-    CFG0                => CFG(0),
-
-    FRAMEQ_N            => FRAMEQ_N,
-    REQ64Q_N            => REQ64Q_N,
-    TRDYQ_N             => TRDYQ_N,
-    IRDYQ_N             => IRDYQ_N,
-    STOPQ_N             => STOPQ_N,
-    DEVSELQ_N           => DEVSELQ_N,
-    ACK64Q_N            => ACK64Q_N,
-
-    ADDR31              => ADDR(31),
-    ADDR30              => ADDR(30),
-    ADDR29              => ADDR(29),
-    ADDR28              => ADDR(28),
-    ADDR27              => ADDR(27),
-    ADDR26              => ADDR(26),
-    ADDR25              => ADDR(25),
-    ADDR24              => ADDR(24),
-    ADDR23              => ADDR(23),
-    ADDR22              => ADDR(22),
-    ADDR21              => ADDR(21),
-    ADDR20              => ADDR(20),
-    ADDR19              => ADDR(19),
-    ADDR18              => ADDR(18),
-    ADDR17              => ADDR(17),
-    ADDR16              => ADDR(16),
-    ADDR15              => ADDR(15),
-    ADDR14              => ADDR(14),
-    ADDR13              => ADDR(13),
-    ADDR12              => ADDR(12),
-    ADDR11              => ADDR(11),
-    ADDR10              => ADDR(10),
-    ADDR9               => ADDR(9),
-    ADDR8               => ADDR(8),
-    ADDR7               => ADDR(7),
-    ADDR6               => ADDR(6),
-    ADDR5               => ADDR(5),
-    ADDR4               => ADDR(4),
-    ADDR3               => ADDR(3),
-    ADDR2               => ADDR(2),
-    ADDR1               => ADDR(1),
-    ADDR0               => ADDR(0),
-
-    ADIO63              => ADIO(63),
-    ADIO62              => ADIO(62),
-    ADIO61              => ADIO(61),
-    ADIO60              => ADIO(60),
-    ADIO59              => ADIO(59),
-    ADIO58              => ADIO(58),
-    ADIO57              => ADIO(57),
-    ADIO56              => ADIO(56),
-    ADIO55              => ADIO(55),
-    ADIO54              => ADIO(54),
-    ADIO53              => ADIO(53),
-    ADIO52              => ADIO(52),
-    ADIO51              => ADIO(51),
-    ADIO50              => ADIO(50),
-    ADIO49              => ADIO(49),
-    ADIO48              => ADIO(48),
-    ADIO47              => ADIO(47),
-    ADIO46              => ADIO(46),
-    ADIO45              => ADIO(45),
-    ADIO44              => ADIO(44),
-    ADIO43              => ADIO(43),
-    ADIO42              => ADIO(42),
-    ADIO41              => ADIO(41),
-    ADIO40              => ADIO(40),
-    ADIO39              => ADIO(39),
-    ADIO38              => ADIO(38),
-    ADIO37              => ADIO(37),
-    ADIO36              => ADIO(36),
-    ADIO35              => ADIO(35),
-    ADIO34              => ADIO(34),
-    ADIO33              => ADIO(33),
-    ADIO32              => ADIO(32),
-    ADIO31              => ADIO(31),
-    ADIO30              => ADIO(30),
-    ADIO29              => ADIO(29),
-    ADIO28              => ADIO(28),
-    ADIO27              => ADIO(27),
-    ADIO26              => ADIO(26),
-    ADIO25              => ADIO(25),
-    ADIO24              => ADIO(24),
-    ADIO23              => ADIO(23),
-    ADIO22              => ADIO(22),
-    ADIO21              => ADIO(21),
-    ADIO20              => ADIO(20),
-    ADIO19              => ADIO(19),
-    ADIO18              => ADIO(18),
-    ADIO17              => ADIO(17),
-    ADIO16              => ADIO(16),
-    ADIO15              => ADIO(15),
-    ADIO14              => ADIO(14),
-    ADIO13              => ADIO(13),
-    ADIO12              => ADIO(12),
-    ADIO11              => ADIO(11),
-    ADIO10              => ADIO(10),
-    ADIO9               => ADIO(9),
-    ADIO8               => ADIO(8),
-    ADIO7               => ADIO(7),
-    ADIO6               => ADIO(6),
-    ADIO5               => ADIO(5),
-    ADIO4               => ADIO(4),
-    ADIO3               => ADIO(3),
-    ADIO2               => ADIO(2),
-    ADIO1               => ADIO(1),
-    ADIO0               => ADIO(0),
-
-    CFG_VLD             => CFG_VLD,
-    CFG_HIT             => CFG_HIT,
-    C_TERM              => C_TERM,
-    C_READY             => C_READY,
-    ADDR_VLD            => ADDR_VLD,
-    BASE_HIT7           => BASE_HIT(7),
-    BASE_HIT6           => BASE_HIT(6),
-    BASE_HIT5           => BASE_HIT(5),
-    BASE_HIT4           => BASE_HIT(4),
-    BASE_HIT3           => BASE_HIT(3),
-    BASE_HIT2           => BASE_HIT(2),
-    BASE_HIT1           => BASE_HIT(1),
-    BASE_HIT0           => BASE_HIT(0),
-    S_CYCLE64           => S_CYCLE64,
-    S_TERM              => S_TERM,
-    S_READY             => S_READY,
-    S_ABORT             => S_ABORT,
-    S_WRDN              => S_WRDN,
-    S_SRC_EN            => S_SRC_EN,
-    S_DATA_VLD          => S_DATA_VLD,
-    S_CBE7              => S_CBE(7),
-    S_CBE6              => S_CBE(6),
-    S_CBE5              => S_CBE(5),
-    S_CBE4              => S_CBE(4),
-    S_CBE3              => S_CBE(3),
-    S_CBE2              => S_CBE(2),
-    S_CBE1              => S_CBE(1),
-    S_CBE0              => S_CBE(0),
-    PCI_CMD15           => PCI_CMD(15),
-    PCI_CMD14           => PCI_CMD(14),
-    PCI_CMD13           => PCI_CMD(13),
-    PCI_CMD12           => PCI_CMD(12),
-    PCI_CMD11           => PCI_CMD(11),
-    PCI_CMD10           => PCI_CMD(10),
-    PCI_CMD9            => PCI_CMD(9),
-    PCI_CMD8            => PCI_CMD(8),
-    PCI_CMD7            => PCI_CMD(7),
-    PCI_CMD6            => PCI_CMD(6),
-    PCI_CMD5            => PCI_CMD(5),
-    PCI_CMD4            => PCI_CMD(4),
-    PCI_CMD3            => PCI_CMD(3),
-    PCI_CMD2            => PCI_CMD(2),
-    PCI_CMD1            => PCI_CMD(1),
-    PCI_CMD0            => PCI_CMD(0),
-
-    REQUEST             => REQUEST,
-    REQUEST64           => REQUEST64,
-    REQUESTHOLD         => REQUESTHOLD,
-    COMPLETE            => COMPLETE,
-
-    M_WRDN              => M_WRDN,
-    M_READY             => M_READY,
-    M_SRC_EN            => M_SRC_EN,
-    M_DATA_VLD          => M_DATA_VLD,
-    M_CBE7              => M_CBE(7),
-    M_CBE6              => M_CBE(6),
-    M_CBE5              => M_CBE(5),
-    M_CBE4              => M_CBE(4),
-    M_CBE3              => M_CBE(3),
-    M_CBE2              => M_CBE(2),
-    M_CBE1              => M_CBE(1),
-    M_CBE0              => M_CBE(0),
-    TIME_OUT            => TIME_OUT,
-    M_FAIL64            => M_FAIL64,
-    CFG_SELF            => CFG_SELF,
-
-    M_DATA              => M_DATA,
-    DR_BUS              => DR_BUS,
-    I_IDLE              => I_IDLE,
-    M_ADDR_N            => M_ADDR_N,
-    IDLE                => IDLE,
-    B_BUSY              => B_BUSY,
-    S_DATA              => S_DATA,
-    BACKOFF             => BACKOFF,
-
-    SLOT64              => SLOT64,
-    INTR_N              => INTR_N,
-    PERRQ_N             => PERRQ_N,
-    SERRQ_N             => SERRQ_N,
-    KEEPOUT             => KEEPOUT,
-
-    CSR39               => CSR(39),
-    CSR38               => CSR(38),
-    CSR37               => CSR(37),
-    CSR36               => CSR(36),
-    CSR35               => CSR(35),
-    CSR34               => CSR(34),
-    CSR33               => CSR(33),
-    CSR32               => CSR(32),
-    CSR31               => CSR(31),
-    CSR30               => CSR(30),
-    CSR29               => CSR(29),
-    CSR28               => CSR(28),
-    CSR27               => CSR(27),
-    CSR26               => CSR(26),
-    CSR25               => CSR(25),
-    CSR24               => CSR(24),
-    CSR23               => CSR(23),
-    CSR22               => CSR(22),
-    CSR21               => CSR(21),
-    CSR20               => CSR(20),
-    CSR19               => CSR(19),
-    CSR18               => CSR(18),
-    CSR17               => CSR(17),
-    CSR16               => CSR(16),
-    CSR15               => CSR(15),
-    CSR14               => CSR(14),
-    CSR13               => CSR(13),
-    CSR12               => CSR(12),
-    CSR11               => CSR(11),
-    CSR10               => CSR(10),
-    CSR9                => CSR(9),
-    CSR8                => CSR(8),
-    CSR7                => CSR(7),
-    CSR6                => CSR(6),
-    CSR5                => CSR(5),
-    CSR4                => CSR(4),
-    CSR3                => CSR(3),
-    CSR2                => CSR(2),
-    CSR1                => CSR(1),
-    CSR0                => CSR(0),
-    SUB_DATA31          => SUB_DATA(31),
-    SUB_DATA30          => SUB_DATA(30),
-    SUB_DATA29          => SUB_DATA(29),
-    SUB_DATA28          => SUB_DATA(28),
-    SUB_DATA27          => SUB_DATA(27),
-    SUB_DATA26          => SUB_DATA(26),
-    SUB_DATA25          => SUB_DATA(25),
-    SUB_DATA24          => SUB_DATA(24),
-    SUB_DATA23          => SUB_DATA(23),
-    SUB_DATA22          => SUB_DATA(22),
-    SUB_DATA21          => SUB_DATA(21),
-    SUB_DATA20          => SUB_DATA(20),
-    SUB_DATA19          => SUB_DATA(19),
-    SUB_DATA18          => SUB_DATA(18),
-    SUB_DATA17          => SUB_DATA(17),
-    SUB_DATA16          => SUB_DATA(16),
-    SUB_DATA15          => SUB_DATA(15),
-    SUB_DATA14          => SUB_DATA(14),
-    SUB_DATA13          => SUB_DATA(13),
-    SUB_DATA12          => SUB_DATA(12),
-    SUB_DATA11          => SUB_DATA(11),
-    SUB_DATA10          => SUB_DATA(10),
-    SUB_DATA9           => SUB_DATA(9),
-    SUB_DATA8           => SUB_DATA(8),
-    SUB_DATA7           => SUB_DATA(7),
-    SUB_DATA6           => SUB_DATA(6),
-    SUB_DATA5           => SUB_DATA(5),
-    SUB_DATA4           => SUB_DATA(4),
-    SUB_DATA3           => SUB_DATA(3),
-    SUB_DATA2           => SUB_DATA(2),
-    SUB_DATA1           => SUB_DATA(1),
-    SUB_DATA0           => SUB_DATA(0),
-    CLK                 => CLK,
-    CLKX                => CLKX,
-    RST                 => RST
-  );
-
-
-end WRAPPER;
+Tue May 15 19:29:00 JST 2018
+-8.900000e+00	9.059922e-02	1.258925e-07
+-8.886094e+00	9.227379e-02	1.299889e-07
+-8.872187e+00	8.873404e-02	1.342185e-07
+-8.858281e+00	8.221359e-02	1.385858e-07
+-8.844375e+00	7.882449e-02	1.430952e-07
+-8.830469e+00	7.726214e-02	1.477513e-07
+-8.816562e+00	7.845364e-02	1.525589e-07
+-8.802656e+00	7.507298e-02	1.575229e-07
+-8.788750e+00	7.067329e-02	1.626485e-07
+-8.774844e+00	6.690038e-02	1.679408e-07
+-8.760938e+00	6.756754e-02	1.734054e-07
+-8.747031e+00	6.649326e-02	1.790477e-07
+-8.733125e+00	6.275639e-02	1.848736e-07
+-8.719219e+00	5.900333e-02	1.908892e-07
+-8.705312e+00	5.927284e-02	1.971004e-07
+-8.691406e+00	5.826866e-02	2.035137e-07
+-8.677500e+00	5.469782e-02	2.101358e-07
+-8.663594e+00	5.242336e-02	2.169733e-07
+-8.649687e+00	5.356801e-02	2.240333e-07
+-8.635781e+00	5.009057e-02	2.313230e-07
+-8.621875e+00	4.748041e-02	2.388499e-07
+-8.607969e+00	4.818662e-02	2.466217e-07
+-8.594062e+00	4.547287e-02	2.546464e-07
+-8.580156e+00	4.337445e-02	2.629322e-07
+-8.566250e+00	4.374269e-02	2.714876e-07
+-8.552344e+00	4.041151e-02	2.803214e-07
+-8.538437e+00	4.048440e-02	2.894426e-07
+-8.524531e+00	3.902374e-02	2.988607e-07
+-8.510625e+00	3.694864e-02	3.085851e-07
+-8.496719e+00	3.709165e-02	3.186260e-07
+-8.482812e+00	3.453735e-02	3.289936e-07
+-8.468906e+00	3.492841e-02	3.396986e-07
+-8.455000e+00	3.252751e-02	3.507519e-07
+-8.441094e+00	3.262476e-02	3.621648e-07
+-8.427188e+00	3.056857e-02	3.739491e-07
+-8.413281e+00	3.100172e-02	3.861168e-07
+-8.399375e+00	2.863123e-02	3.986805e-07
+-8.385469e+00	2.901602e-02	4.116530e-07
+-8.371562e+00	2.714322e-02	4.250475e-07
+-8.357656e+00	2.685917e-02	4.388779e-07
+-8.343750e+00	2.567137e-02	4.531584e-07
+-8.329844e+00	2.475585e-02	4.679035e-07
+-8.315937e+00	2.436679e-02	4.831283e-07
+-8.302031e+00	2.333668e-02	4.988486e-07
+-8.288125e+00	2.248274e-02	5.150804e-07
+-8.274219e+00	2.207918e-02	5.318403e-07
+-8.260312e+00	2.154851e-02	5.491456e-07
+-8.246406e+00	2.043306e-02	5.670140e-07
+-8.232500e+00	1.965956e-02	5.854637e-07
+-8.218594e+00	1.927024e-02	6.045138e-07
+-8.204688e+00	1.883800e-02	6.241838e-07
+-8.190781e+00	1.839427e-02	6.444938e-07
+-8.176875e+00	1.779161e-02	6.654647e-07
+-8.162969e+00	1.715703e-02	6.871179e-07
+-8.149063e+00	1.648183e-02	7.094757e-07
+-8.135156e+00	1.586635e-02	7.325609e-07
+-8.121250e+00	1.554675e-02	7.563974e-07
+-8.107344e+00	1.533839e-02	7.810094e-07
+-8.093438e+00	1.472193e-02	8.064222e-07
+-8.079531e+00	1.439003e-02	8.326620e-07
+-8.065625e+00	1.382420e-02	8.597556e-07
+-8.051719e+00	1.324875e-02	8.877307e-07
+-8.037813e+00	1.284441e-02	9.166161e-07
+-8.023906e+00	1.257747e-02	9.464414e-07
+-8.010000e+00	1.209016e-02	9.772372e-07
+-7.996094e+00	1.158650e-02	1.009035e-06
+-7.982187e+00	1.153007e-02	1.041868e-06
+-7.968281e+00	1.091719e-02	1.075768e-06
+-7.954375e+00	1.085711e-02	1.110772e-06
+-7.940469e+00	1.015395e-02	1.146915e-06
+-7.926563e+00	1.001649e-02	1.184234e-06
+-7.912656e+00	9.716097e-03	1.222767e-06
+-7.898750e+00	9.284884e-03	1.262554e-06
+-7.884844e+00	9.040177e-03	1.303636e-06
+-7.870937e+00	8.909655e-03	1.346054e-06
+-7.857031e+00	8.535423e-03	1.389853e-06
+-7.843125e+00	8.377736e-03	1.435076e-06
+-7.829219e+00	8.055252e-03	1.481772e-06
+-7.815312e+00	7.996465e-03	1.529986e-06
+-7.801406e+00	7.821118e-03	1.579770e-06
+-7.787500e+00	7.387014e-03	1.631173e-06
+-7.773594e+00	7.186891e-03	1.684249e-06
+-7.759688e+00	7.089969e-03	1.739052e-06
+-7.745781e+00	6.767031e-03	1.795638e-06
+-7.731875e+00	6.667682e-03	1.854065e-06
+-7.717969e+00	6.412878e-03	1.914394e-06
+-7.704062e+00	6.305693e-03	1.976685e-06
+-7.690156e+00	6.243036e-03	2.041004e-06
+-7.676250e+00	5.872647e-03	2.107415e-06
+-7.662344e+00	5.752702e-03	2.175987e-06
+-7.648437e+00	5.573613e-03	2.246790e-06
+-7.634531e+00	5.550119e-03	2.319897e-06
+-7.620625e+00	5.448061e-03	2.395383e-06
+-7.606719e+00	5.200437e-03	2.473325e-06
+-7.592812e+00	5.187577e-03	2.553804e-06
+-7.578906e+00	5.003255e-03	2.636901e-06
+-7.565000e+00	4.815635e-03	2.722701e-06
+-7.551094e+00	4.753569e-03	2.811294e-06
+-7.537187e+00	4.703588e-03	2.902769e-06
+-7.523281e+00	4.695349e-03	2.997221e-06
+-7.509375e+00	4.631712e-03	3.094746e-06
+-7.495469e+00	4.518006e-03	3.195444e-06
+-7.481562e+00	4.649414e-03	3.299419e-06
+-7.467656e+00	4.523849e-03	3.406777e-06
+-7.453750e+00	4.572006e-03	3.517629e-06
+-7.439844e+00	4.511585e-03	3.632087e-06
+-7.425937e+00	4.634187e-03	3.750270e-06
+-7.412031e+00	4.591772e-03	3.872298e-06
+-7.398125e+00	4.572262e-03	3.998297e-06
+-7.384219e+00	4.749641e-03	4.128395e-06
+-7.370313e+00	4.752224e-03	4.262727e-06
+-7.356406e+00	4.821020e-03	4.401430e-06
+-7.342500e+00	5.057656e-03	4.544645e-06
+-7.328594e+00	5.106294e-03	4.692521e-06
+-7.314687e+00	4.930156e-03	4.845209e-06
+-7.300781e+00	4.616663e-03	5.002865e-06
+-7.286875e+00	4.440017e-03	5.165650e-06
+-7.272969e+00	4.252858e-03	5.333733e-06
+-7.259062e+00	4.118584e-03	5.507284e-06
+-7.245156e+00	3.949280e-03	5.686483e-06
+-7.231250e+00	3.769025e-03	5.871513e-06
+-7.217344e+00	3.623411e-03	6.062563e-06
+-7.203438e+00	3.497309e-03	6.259829e-06
+-7.189531e+00	3.451402e-03	6.463515e-06
+-7.175625e+00	3.370105e-03	6.673828e-06
+-7.161719e+00	3.437548e-03	6.890984e-06
+-7.147813e+00	3.305024e-03	7.115206e-06
+-7.133906e+00	3.322478e-03	7.346724e-06
+-7.120000e+00	3.314679e-03	7.585776e-06
+-7.106094e+00	3.494113e-03	7.832605e-06
+-7.092187e+00	3.555175e-03	8.087467e-06
+-7.078281e+00	3.905271e-03	8.350621e-06
+-7.064375e+00	4.294537e-03	8.622337e-06
+-7.050469e+00	4.333018e-03	8.902895e-06
+-7.036563e+00	3.971730e-03	9.192582e-06
+-7.022656e+00	3.667973e-03	9.491694e-06
+-7.008750e+00	3.222955e-03	9.800540e-06
+-6.994844e+00	3.119662e-03	1.011943e-05
+-6.980938e+00	3.226188e-03	1.044871e-05
+-6.967031e+00	3.386736e-03	1.078869e-05
+-6.953125e+00	3.782978e-03	1.113974e-05
+-6.939219e+00	4.190791e-03	1.150221e-05
+-6.925312e+00	3.901738e-03	1.187647e-05
+-6.911406e+00	3.088727e-03	1.226292e-05
+-6.897500e+00	3.126751e-03	1.266193e-05
+-6.883594e+00	3.558745e-03	1.307393e-05
+-6.869687e+00	4.132081e-03	1.349934e-05
+-6.855781e+00	4.019664e-03	1.393859e-05
+-6.841875e+00	2.884534e-03	1.439213e-05
+-6.827969e+00	3.359094e-03	1.486043e-05
+-6.814063e+00	3.761672e-03	1.534396e-05
+-6.800156e+00	3.790366e-03	1.584323e-05
+-6.786250e+00	2.886290e-03	1.635875e-05
+-6.772344e+00	3.711559e-03	1.689103e-05
+-6.758437e+00	4.086414e-03	1.744064e-05
+-6.744531e+00	2.933517e-03	1.800814e-05
+-6.730625e+00	3.687310e-03	1.859409e-05
+-6.716719e+00	3.307218e-03	1.919912e-05
+-6.702812e+00	3.250071e-03	1.982383e-05
+-6.688906e+00	3.548600e-03	2.046886e-05
+-6.675000e+00	3.128132e-03	2.113489e-05
+-6.661094e+00	3.718731e-03	2.182259e-05
+-6.647188e+00	3.368423e-03	2.253266e-05
+-6.633281e+00	3.039587e-03	2.326584e-05
+-6.619375e+00	4.020235e-03	2.402288e-05
+-6.605469e+00	3.210202e-03	2.480454e-05
+-6.591562e+00	2.850579e-03	2.561165e-05
+-6.577656e+00	3.788429e-03	2.644501e-05
+-6.563750e+00	3.616301e-03	2.730549e-05
+-6.549844e+00	3.200144e-03	2.819397e-05
+-6.535937e+00	3.008200e-03	2.911136e-05
+-6.522031e+00	3.282118e-03	3.005860e-05
+-6.508125e+00	3.088031e-03	3.103666e-05
+-6.494219e+00	3.257621e-03	3.204655e-05
+-6.480313e+00	3.425876e-03	3.308929e-05
+-6.466406e+00	3.898127e-03	3.416597e-05
+-6.452500e+00	2.734470e-03	3.527768e-05
+-6.438594e+00	2.946951e-03	3.642556e-05
+-6.424687e+00	3.921262e-03	3.761079e-05
+-6.410781e+00	2.827568e-03	3.883459e-05
+-6.396875e+00	3.561798e-03	4.009821e-05
+-6.382969e+00	3.239352e-03	4.140295e-05
+-6.369062e+00	2.913446e-03	4.275014e-05
+-6.355156e+00	2.622690e-03	4.414116e-05
+-6.341250e+00	2.631774e-03	4.557745e-05
+-6.327344e+00	2.776890e-03	4.706047e-05
+-6.313437e+00	3.022143e-03	4.859175e-05
+-6.299531e+00	3.786290e-03	5.017285e-05
+-6.285625e+00	2.649941e-03	5.180540e-05
+-6.271719e+00	3.518265e-03	5.349107e-05
+-6.257812e+00	3.120753e-03	5.523158e-05
+-6.243906e+00	2.844510e-03	5.702874e-05
+-6.230000e+00	2.765422e-03	5.888437e-05
+-6.216094e+00	2.881888e-03	6.080037e-05
+-6.202187e+00	3.496248e-03	6.277873e-05
+-6.188281e+00	2.370289e-03	6.482145e-05
+-6.174375e+00	3.565683e-03	6.693064e-05
+-6.160469e+00	2.804764e-03	6.910847e-05
+-6.146562e+00	2.858577e-03	7.135715e-05
+-6.132656e+00	2.919494e-03	7.367900e-05
+-6.118750e+00	3.552978e-03	7.607641e-05
+-6.104844e+00	2.565689e-03	7.855182e-05
+-6.090937e+00	3.563439e-03	8.110778e-05
+-6.077031e+00	3.005856e-03	8.374690e-05
+-6.063125e+00	2.922953e-03	8.647190e-05
+-6.049219e+00	3.316774e-03	8.928556e-05
+-6.035312e+00	3.636470e-03	9.219078e-05
+-6.021406e+00	2.979707e-03	9.519053e-05
+-6.007500e+00	2.691246e-03	9.828789e-05
+-5.993594e+00	2.767343e-03	1.014860e-04
+-5.979687e+00	2.457349e-03	1.047882e-04
+-5.965781e+00	2.923245e-03	1.081979e-04
+-5.951875e+00	3.369993e-03	1.117185e-04
+-5.937969e+00	3.323165e-03	1.153536e-04
+-5.924062e+00	2.973909e-03	1.191071e-04
+-5.910156e+00	2.980000e-03	1.229826e-04
+-5.896250e+00	3.403916e-03	1.269843e-04
+-5.882344e+00	3.084217e-03	1.311162e-04
+-5.868437e+00	3.460653e-03	1.353825e-04
+-5.854531e+00	3.008193e-03	1.397876e-04
+-5.840625e+00	2.763162e-03	1.443361e-04
+-5.826719e+00	2.788490e-03	1.490326e-04
+-5.812813e+00	3.333534e-03	1.538819e-04
+-5.798906e+00	3.214123e-03	1.588890e-04
+-5.785000e+00	3.072502e-03	1.640590e-04
+-5.771094e+00	2.597175e-03	1.693972e-04
+-5.757187e+00	2.847340e-03	1.749091e-04
+-5.743281e+00	2.997863e-03	1.806004e-04
+-5.729375e+00	2.845978e-03	1.864769e-04
+-5.715469e+00	2.827369e-03	1.925446e-04
+-5.701563e+00	3.391831e-03	1.988097e-04
+-5.687656e+00	2.634124e-03	2.052786e-04
+-5.673750e+00	3.169880e-03	2.119581e-04
+-5.659844e+00	3.268603e-03	2.188549e-04
+-5.645937e+00	3.030694e-03	2.259761e-04
+-5.632031e+00	2.974917e-03	2.333290e-04
+-5.618125e+00	3.028414e-03	2.409212e-04
+-5.604219e+00	3.306437e-03	2.487604e-04
+-5.590312e+00	3.414738e-03	2.568547e-04
+-5.576406e+00	2.956258e-03	2.652124e-04
+-5.562500e+00	3.184769e-03	2.738420e-04
+-5.548594e+00	3.326671e-03	2.827524e-04
+-5.534688e+00	3.085674e-03	2.919527e-04
+-5.520781e+00	2.753410e-03	3.014524e-04
+-5.506875e+00	3.371404e-03	3.112612e-04
+-5.492969e+00	3.285613e-03	3.213892e-04
+-5.479062e+00	2.890609e-03	3.318467e-04
+-5.465156e+00	2.889209e-03	3.426445e-04
+-5.451250e+00	2.784391e-03	3.537936e-04
+-5.437344e+00	2.846277e-03	3.653055e-04
+-5.423437e+00	2.844356e-03	3.771920e-04
+-5.409531e+00	2.614890e-03	3.894653e-04
+-5.395625e+00	2.971550e-03	4.021379e-04
+-5.381719e+00	3.081871e-03	4.152229e-04
+-5.367813e+00	3.458138e-03	4.287336e-04
+-5.353906e+00	3.284598e-03	4.426839e-04
+-5.340000e+00	2.899424e-03	4.570882e-04
+-5.326094e+00	3.312377e-03	4.719611e-04
+-5.312187e+00	3.311389e-03	4.873181e-04
+-5.298281e+00	2.875359e-03	5.031746e-04
+-5.284375e+00	3.342544e-03	5.195472e-04
+-5.270469e+00	3.070674e-03	5.364525e-04
+-5.256562e+00	3.118283e-03	5.539078e-04
+-5.242656e+00	3.343153e-03	5.719311e-04
+-5.228750e+00	3.123662e-03	5.905409e-04
+-5.214844e+00	3.399768e-03	6.097562e-04
+-5.200938e+00	3.061756e-03	6.295968e-04
+-5.187031e+00	3.282329e-03	6.500829e-04
+-5.173125e+00	3.300587e-03	6.712356e-04
+-5.159219e+00	3.203388e-03	6.930766e-04
+-5.145312e+00	3.474252e-03	7.156283e-04
+-5.131406e+00	3.051279e-03	7.389138e-04
+-5.117500e+00	3.357370e-03	7.629569e-04
+-5.103594e+00	3.354274e-03	7.877824e-04
+-5.089687e+00	3.044901e-03	8.134156e-04
+-5.075781e+00	3.328779e-03	8.398829e-04
+-5.061875e+00	3.162989e-03	8.672114e-04
+-5.047969e+00	3.038390e-03	8.954292e-04
+-5.034063e+00	3.477327e-03	9.245651e-04
+-5.020156e+00	3.319329e-03	9.546491e-04
+-5.006250e+00	2.743678e-03	9.857119e-04
+-4.992344e+00	3.469409e-03	1.017785e-03
+-4.978437e+00	3.709023e-03	1.050903e-03
+-4.964531e+00	3.218151e-03	1.085097e-03
+-4.950625e+00	2.838768e-03	1.120405e-03
+-4.936719e+00	3.604625e-03	1.156861e-03
+-4.922812e+00	3.617572e-03	1.194504e-03
+-4.908906e+00	3.153726e-03	1.233371e-03
+-4.895000e+00	3.124861e-03	1.273503e-03
+-4.881094e+00	3.389086e-03	1.314941e-03
+-4.867188e+00	3.372703e-03	1.357727e-03
+-4.853281e+00	3.052544e-03	1.401906e-03
+-4.839375e+00	3.068357e-03	1.447521e-03
+-4.825469e+00	3.546642e-03	1.494622e-03
+-4.811562e+00	3.685372e-03	1.543254e-03
+-4.797656e+00	3.412756e-03	1.593469e-03
+-4.783750e+00	3.025938e-03	1.645319e-03
+-4.769844e+00	3.259201e-03	1.698855e-03
+-4.755937e+00	3.442644e-03	1.754133e-03
+-4.742031e+00	3.367131e-03	1.811210e-03
+-4.728125e+00	2.999107e-03	1.870144e-03
+-4.714219e+00	2.711796e-03	1.930995e-03
+-4.700312e+00	2.977225e-03	1.993827e-03
+-4.686406e+00	3.293816e-03	2.058703e-03
+-4.672500e+00	3.534247e-03	2.125690e-03
+-4.658594e+00	3.392079e-03	2.194857e-03
+-4.644687e+00	3.304728e-03	2.266274e-03
+-4.630781e+00	3.544430e-03	2.340016e-03
+-4.616875e+00	3.728258e-03	2.416156e-03
+-4.602969e+00	3.764479e-03	2.494774e-03
+-4.589062e+00	3.381816e-03	2.575950e-03
+-4.575156e+00	3.355150e-03	2.659768e-03
+-4.561250e+00	3.419147e-03	2.746313e-03
+-4.547344e+00	3.532248e-03	2.835674e-03
+-4.533437e+00	3.709665e-03	2.927942e-03
+-4.519531e+00	3.443054e-03	3.023213e-03
+-4.505625e+00	3.159568e-03	3.121584e-03
+-4.491719e+00	3.443503e-03	3.223155e-03
+-4.477812e+00	3.520236e-03	3.328032e-03
+-4.463906e+00	3.573397e-03	3.436321e-03
+-4.450000e+00	3.437680e-03	3.548134e-03
+-4.436094e+00	3.060458e-03	3.663585e-03
+-4.422187e+00	3.090401e-03	3.782792e-03
+-4.408281e+00	3.280759e-03	3.905879e-03
+-4.394375e+00	3.416698e-03	4.032970e-03
+-4.380469e+00	3.461387e-03	4.164197e-03
+-4.366563e+00	3.251799e-03	4.299694e-03
+-4.352656e+00	2.839265e-03	4.439599e-03
+-4.338750e+00	3.002260e-03	4.584057e-03
+-4.324844e+00	3.231702e-03	4.733215e-03
+-4.310937e+00	3.333897e-03	4.887227e-03
+-4.297031e+00	3.276230e-03	5.046250e-03
+-4.283125e+00	2.926613e-03	5.210447e-03
+-4.269219e+00	2.591582e-03	5.379987e-03
+-4.255313e+00	2.871140e-03	5.555044e-03
+-4.241406e+00	3.240137e-03	5.735797e-03
+-4.227500e+00	3.296322e-03	5.922431e-03
+-4.213594e+00	3.190275e-03	6.115138e-03
+-4.199688e+00	2.881160e-03	6.314115e-03
+-4.185781e+00	2.702679e-03	6.519567e-03
+-4.171875e+00	2.979788e-03	6.731704e-03
+-4.157969e+00	3.203712e-03	6.950743e-03
+-4.144062e+00	3.140776e-03	7.176910e-03
+-4.130156e+00	3.018700e-03	7.410436e-03
+-4.116250e+00	2.654268e-03	7.651560e-03
+-4.102344e+00	2.599256e-03	7.900530e-03
+-4.088438e+00	2.960142e-03	8.157602e-03
+-4.074531e+00	3.250424e-03	8.423038e-03
+-4.060625e+00	3.117733e-03	8.697111e-03
+-4.046719e+00	2.973526e-03	8.980102e-03
+-4.032813e+00	2.520850e-03	9.272301e-03
+-4.018906e+00	2.798870e-03	9.574007e-03
+-4.005000e+00	2.973823e-03	9.885531e-03
+-3.991094e+00	3.155222e-03	1.020719e-02
+-3.977187e+00	3.030617e-03	1.053932e-02
+-3.963281e+00	2.715178e-03	1.088225e-02
+-3.949375e+00	2.553910e-03	1.123634e-02
+-3.935469e+00	2.799442e-03	1.160196e-02
+-3.921562e+00	3.111421e-03	1.197947e-02
+-3.907656e+00	3.159023e-03	1.236926e-02
+-3.893750e+00	3.001894e-03	1.277174e-02
+-3.879844e+00	2.637953e-03	1.318731e-02
+-3.865938e+00	2.525413e-03	1.361641e-02
+-3.852031e+00	2.750047e-03	1.405946e-02
+-3.838125e+00	3.101397e-03	1.451694e-02
+-3.824219e+00	2.994483e-03	1.498930e-02
+-3.810312e+00	2.910467e-03	1.547703e-02
+-3.796406e+00	2.454520e-03	1.598062e-02
+-3.782500e+00	2.593183e-03	1.650061e-02
+-3.768594e+00	2.931730e-03	1.703751e-02
+-3.754687e+00	3.121282e-03	1.759189e-02
+-3.740781e+00	3.080764e-03	1.816430e-02
+-3.726875e+00	2.835034e-03	1.875534e-02
+-3.712969e+00	2.434595e-03	1.936561e-02
+-3.699063e+00	2.640763e-03	1.999574e-02
+-3.685156e+00	2.958744e-03	2.064637e-02
+-3.671250e+00	3.080319e-03	2.131817e-02
+-3.657344e+00	2.983945e-03	2.201184e-02
+-3.643437e+00	2.692581e-03	2.272807e-02
+-3.629531e+00	2.450545e-03	2.346760e-02
+-3.615625e+00	2.790776e-03	2.423120e-02
+-3.601719e+00	3.032123e-03	2.501965e-02
+-3.587812e+00	3.139068e-03	2.583375e-02
+-3.573906e+00	2.944310e-03	2.667434e-02
+-3.560000e+00	2.582663e-03	2.754229e-02
+-3.546094e+00	2.476646e-03	2.843847e-02
+-3.532188e+00	2.880653e-03	2.936382e-02
+-3.518281e+00	3.078127e-03	3.031927e-02
+-3.504375e+00	3.074275e-03	3.130581e-02
+-3.490469e+00	2.871877e-03	3.232446e-02
+-3.476562e+00	2.537318e-03	3.337625e-02
+-3.462656e+00	2.584164e-03	3.446226e-02
+-3.448750e+00	2.961284e-03	3.558361e-02
+-3.434844e+00	3.110056e-03	3.674145e-02
+-3.420937e+00	3.053694e-03	3.793696e-02
+-3.407031e+00	2.800663e-03	3.917137e-02
+-3.393125e+00	2.398920e-03	4.044595e-02
+-3.379219e+00	2.625288e-03	4.176200e-02
+-3.365312e+00	2.984710e-03	4.312087e-02
+-3.351406e+00	3.002129e-03	4.452396e-02
+-3.337500e+00	2.974284e-03	4.597270e-02
+-3.323594e+00	2.729330e-03	4.746858e-02
+-3.309688e+00	2.380347e-03	4.901314e-02
+-3.295781e+00	2.728863e-03	5.060795e-02
+-3.281875e+00	3.072967e-03	5.225466e-02
+-3.267969e+00	3.030005e-03	5.395494e-02
+-3.254062e+00	2.950344e-03	5.571056e-02
+-3.240156e+00	2.574556e-03	5.752329e-02
+-3.226250e+00	2.466846e-03	5.939502e-02
+-3.212344e+00	2.879982e-03	6.132764e-02
+-3.198437e+00	3.033707e-03	6.332315e-02
+-3.184531e+00	3.089108e-03	6.538359e-02
+-3.170625e+00	2.989667e-03	6.751107e-02
+-3.156719e+00	2.643151e-03	6.970778e-02
+-3.142812e+00	2.570395e-03	7.197597e-02
+-3.128906e+00	2.935892e-03	7.431795e-02
+-3.115000e+00	3.111665e-03	7.673615e-02
+-3.101094e+00	2.958926e-03	7.923303e-02
+-3.087188e+00	2.768846e-03	8.181115e-02
+-3.073281e+00	2.439900e-03	8.447316e-02
+-3.059375e+00	2.601119e-03	8.722179e-02
+-3.045469e+00	2.937210e-03	9.005986e-02
+-3.031562e+00	3.122874e-03	9.299027e-02
+-3.017656e+00	3.040865e-03	9.601603e-02
+-3.003750e+00	2.770227e-03	9.914025e-02
+-2.989844e+00	2.504955e-03	1.023661e-01
+-2.975937e+00	2.804898e-03	1.056970e-01
+-2.962031e+00	3.028981e-03	1.091362e-01
+-2.948125e+00	3.052592e-03	1.126873e-01
+-2.934219e+00	2.945623e-03	1.163540e-01
+-2.920313e+00	2.563445e-03	1.201400e-01
+-2.906406e+00	2.488600e-03	1.240491e-01
+-2.892500e+00	2.826365e-03	1.280855e-01
+-2.878594e+00	3.056132e-03	1.322532e-01
+-2.864687e+00	3.130803e-03	1.365565e-01
+-2.850781e+00	2.927011e-03	1.409999e-01
+-2.836875e+00	2.542388e-03	1.455878e-01
+-2.822969e+00	2.514520e-03	1.503250e-01
+-2.809062e+00	2.889968e-03	1.552164e-01
+-2.795156e+00	2.991772e-03	1.602669e-01
+-2.781250e+00	2.994209e-03	1.654817e-01
+-2.767344e+00	2.765047e-03	1.708662e-01
+-2.753437e+00	2.421525e-03	1.764260e-01
+-2.739531e+00	2.567318e-03	1.821666e-01
+-2.725625e+00	2.999352e-03	1.880940e-01
+-2.711719e+00	3.130639e-03	1.942143e-01
+-2.697812e+00	3.004921e-03	2.005338e-01
+-2.683906e+00	2.728753e-03	2.070588e-01
+-2.670000e+00	2.432927e-03	2.137962e-01
+-2.656094e+00	2.656219e-03	2.207528e-01
+-2.642187e+00	2.987793e-03	2.279358e-01
+-2.628281e+00	3.068582e-03	2.353525e-01
+-2.614375e+00	2.987632e-03	2.430105e-01
+-2.600469e+00	2.566095e-03	2.509177e-01
+-2.586562e+00	2.372253e-03	2.590822e-01
+-2.572656e+00	2.855116e-03	2.675123e-01
+-2.558750e+00	3.088443e-03	2.762167e-01
+-2.544844e+00	3.088751e-03	2.852044e-01
+-2.530937e+00	2.922079e-03	2.944845e-01
+-2.517031e+00	2.506524e-03	3.040666e-01
+-2.503125e+00	2.549890e-03	3.139605e-01
+-2.489219e+00	2.920178e-03	3.241763e-01
+-2.475312e+00	3.097108e-03	3.347245e-01
+-2.461406e+00	3.037251e-03	3.456159e-01
+-2.447500e+00	2.731679e-03	3.568617e-01
+-2.433594e+00	2.490519e-03	3.684735e-01
+-2.419688e+00	2.656221e-03	3.804631e-01
+-2.405781e+00	2.980408e-03	3.928428e-01
+-2.391875e+00	3.045434e-03	4.056253e-01
+-2.377969e+00	2.993116e-03	4.188237e-01
+-2.364063e+00	2.686374e-03	4.324516e-01
+-2.350156e+00	2.519332e-03	4.465229e-01
+-2.336250e+00	2.670863e-03	4.610521e-01
+-2.322344e+00	3.021392e-03	4.760540e-01
+-2.308437e+00	3.005721e-03	4.915441e-01
+-2.294531e+00	2.920634e-03	5.075382e-01
+-2.280625e+00	2.595598e-03	5.240527e-01
+-2.266719e+00	2.576348e-03	5.411046e-01
+-2.252812e+00	2.842837e-03	5.587114e-01
+-2.238906e+00	3.062980e-03	5.768910e-01
+-2.225000e+00	3.058865e-03	5.956621e-01
+-2.211094e+00	2.931356e-03	6.150441e-01
+-2.197188e+00	2.446092e-03	6.350567e-01
+-2.183281e+00	2.546040e-03	6.557205e-01
+-2.169375e+00	2.902975e-03	6.770566e-01
+-2.155469e+00	3.090965e-03	6.990870e-01
+-2.141562e+00	3.026550e-03	7.218343e-01
+-2.127656e+00	2.781276e-03	7.453217e-01
+-2.113750e+00	2.438076e-03	7.695733e-01
+-2.099844e+00	2.635331e-03	7.946141e-01
+-2.085937e+00	3.045562e-03	8.204696e-01
+-2.072031e+00	3.084628e-03	8.471665e-01
+-2.058125e+00	3.011082e-03	8.747320e-01
+-2.044219e+00	2.645584e-03	9.031944e-01
+-2.030312e+00	2.322318e-03	9.325830e-01
+-2.016406e+00	2.733982e-03	9.629279e-01
+-2.002500e+00	3.024313e-03	9.942601e-01
+-1.988594e+00	3.039071e-03	1.026612e+00
+-1.974688e+00	2.950273e-03	1.060016e+00
+-1.960781e+00	2.683186e-03	1.094508e+00
+-1.946875e+00	2.497880e-03	1.130121e+00
+-1.932969e+00	2.949892e-03	1.166894e+00
+-1.919062e+00	3.102231e-03	1.204863e+00
+-1.905156e+00	3.057662e-03	1.244067e+00
+-1.891250e+00	2.841995e-03	1.284547e+00
+-1.877344e+00	2.495554e-03	1.326344e+00
+-1.863437e+00	2.550422e-03	1.369501e+00
+-1.849531e+00	2.910945e-03	1.414063e+00
+-1.835625e+00	3.018444e-03	1.460074e+00
+-1.821719e+00	3.049730e-03	1.507583e+00
+-1.807813e+00	2.899199e-03	1.556638e+00
+-1.793906e+00	2.396561e-03	1.607288e+00
+-1.780000e+00	2.704608e-03	1.659587e+00
+-1.766094e+00	3.007666e-03	1.713587e+00
+-1.752187e+00	3.049785e-03	1.769345e+00
+-1.738281e+00	2.988727e-03	1.826917e+00
+-1.724375e+00	2.702751e-03	1.886362e+00
+-1.710469e+00	2.431640e-03	1.947741e+00
+-1.696562e+00	2.668554e-03	2.011118e+00
+-1.682656e+00	3.030408e-03	2.076556e+00
+-1.668750e+00	3.102664e-03	2.144125e+00
+-1.654844e+00	2.950741e-03	2.213891e+00
+-1.640937e+00	2.661222e-03	2.285928e+00
+-1.627031e+00	2.429232e-03	2.360308e+00
+-1.613125e+00	2.857030e-03	2.437109e+00
+-1.599219e+00	2.998391e-03	2.516409e+00
+-1.585313e+00	3.026182e-03	2.598289e+00
+-1.571406e+00	2.855362e-03	2.682834e+00
+-1.557500e+00	2.513143e-03	2.770129e+00
+-1.543594e+00	2.476172e-03	2.860265e+00
+-1.529687e+00	2.921559e-03	2.953334e+00
+-1.515781e+00	3.144649e-03	3.049431e+00
+-1.501875e+00	3.025555e-03	3.148654e+00
+-1.487969e+00	2.814919e-03	3.251107e+00
+-1.474062e+00	2.495079e-03	3.356893e+00
+-1.460156e+00	2.520966e-03	3.466121e+00
+-1.446250e+00	2.982015e-03	3.578904e+00
+-1.432344e+00	3.030666e-03	3.695356e+00
+-1.418438e+00	2.943181e-03	3.815597e+00
+-1.404531e+00	2.617515e-03	3.939751e+00
+-1.390625e+00	2.466267e-03	4.067944e+00
+-1.376719e+00	2.755089e-03	4.200309e+00
+-1.362812e+00	3.044156e-03	4.336981e+00
+-1.348906e+00	3.081305e-03	4.478100e+00
+-1.335000e+00	2.958934e-03	4.623810e+00
+-1.321094e+00	2.583548e-03	4.774262e+00
+-1.307187e+00	2.490145e-03	4.929609e+00
+-1.293281e+00	2.827416e-03	5.090011e+00
+-1.279375e+00	3.035814e-03	5.255633e+00
+-1.265469e+00	3.020429e-03	5.426643e+00
+-1.251563e+00	2.893165e-03	5.603218e+00
+-1.237656e+00	2.355703e-03	5.785538e+00
+-1.223750e+00	2.501929e-03	5.973791e+00
+-1.209844e+00	2.927786e-03	6.168169e+00
+-1.195937e+00	3.114909e-03	6.368872e+00
+-1.182031e+00	3.092617e-03	6.576105e+00
+-1.168125e+00	2.789682e-03	6.790082e+00
+-1.154219e+00	2.398475e-03	7.011021e+00
+-1.140313e+00	2.639713e-03	7.239149e+00
+-1.126406e+00	2.936809e-03	7.474700e+00
+-1.112500e+00	3.139151e-03	7.717915e+00
+-1.098594e+00	2.937124e-03	7.969044e+00
+-1.084687e+00	2.667845e-03	8.228345e+00
+-1.070781e+00	2.437488e-03	8.496083e+00
+-1.056875e+00	2.739210e-03	8.772533e+00
+-1.042969e+00	3.018145e-03	9.057978e+00
+-1.029062e+00	3.112158e-03	9.352711e+00
+-1.015156e+00	2.941991e-03	9.657034e+00
+-1.001250e+00	2.592982e-03	9.971259e+00
+-9.873438e-01	2.371066e-03	1.029571e+01
+-9.734375e-01	2.795128e-03	1.063072e+01
+-9.595312e-01	3.007902e-03	1.097662e+01
+-9.456250e-01	3.014765e-03	1.133379e+01
+-9.317188e-01	2.843659e-03	1.170257e+01
+-9.178125e-01	2.545054e-03	1.208335e+01
+-9.039062e-01	2.641307e-03	1.247653e+01
+-8.900000e-01	2.973631e-03	1.288250e+01
+-8.760937e-01	3.085125e-03	1.330167e+01
+-8.621875e-01	2.987942e-03	1.373449e+01
+-8.482812e-01	2.716125e-03	1.418139e+01
+-8.343750e-01	2.478478e-03	1.464283e+01
+-8.204687e-01	2.647957e-03	1.511928e+01
+-8.065625e-01	2.919087e-03	1.561124e+01
+-7.926562e-01	3.046195e-03	1.611921e+01
+-7.787500e-01	3.008677e-03	1.664370e+01
+-7.648437e-01	2.712452e-03	1.718527e+01
+-7.509375e-01	2.374988e-03	1.774445e+01
+-7.370312e-01	2.766904e-03	1.832183e+01
+-7.231250e-01	3.111068e-03	1.891799e+01
+-7.092188e-01	3.065548e-03	1.953355e+01
+-6.953125e-01	2.900161e-03	2.016915e+01
+-6.814062e-01	2.573106e-03	2.082542e+01
+-6.675000e-01	2.417593e-03	2.150305e+01
+-6.535937e-01	2.828062e-03	2.220272e+01
+-6.396875e-01	3.070011e-03	2.292517e+01
+-6.257812e-01	3.059359e-03	2.367112e+01
+-6.118750e-01	2.955389e-03	2.444134e+01
+-5.979687e-01	2.605843e-03	2.523662e+01
+-5.840625e-01	2.567725e-03	2.605779e+01
+-5.701562e-01	2.950443e-03	2.690567e+01
+-5.562500e-01	3.031948e-03	2.778114e+01
+-5.423437e-01	2.991366e-03	2.868509e+01
+-5.284375e-01	2.760871e-03	2.961846e+01
+-5.145312e-01	2.457577e-03	3.058220e+01
+-5.006250e-01	2.683392e-03	3.157730e+01
+-4.867187e-01	2.975576e-03	3.260478e+01
+-4.728125e-01	3.065042e-03	3.366569e+01
+-4.589062e-01	3.007422e-03	3.476112e+01
+-4.450000e-01	2.754885e-03	3.589219e+01
+-4.310937e-01	2.471570e-03	3.706007e+01
+-4.171875e-01	2.799821e-03	3.826595e+01
+-4.032813e-01	3.059158e-03	3.951107e+01
+-3.893750e-01	3.035502e-03	4.079670e+01
+-3.754687e-01	2.951626e-03	4.212416e+01
+-3.615625e-01	2.542541e-03	4.349482e+01
+-3.476562e-01	2.349545e-03	4.491007e+01
+-3.337500e-01	2.739960e-03	4.637138e+01
+-3.198437e-01	3.060876e-03	4.788023e+01
+-3.059375e-01	3.042358e-03	4.943818e+01
+-2.920312e-01	8.840912e-01	5.104683e+01
+-2.781250e-01	1.163468e+00	5.270781e+01
+-2.642188e-01	1.408041e+00	5.442285e+01
+-2.503125e-01	1.595031e+00	5.619368e+01
+-2.364062e-01	1.753404e+00	5.802214e+01
+-2.225000e-01	1.956105e+00	5.991009e+01
+-2.085937e-01	2.208922e+00	6.185948e+01
+-1.946875e-01	2.451467e+00	6.387229e+01
+-1.807813e-01	2.740065e+00	6.595060e+01
+-1.668750e-01	3.070375e+00	6.809653e+01
+-1.529687e-01	3.412337e+00	7.031229e+01
+-1.390625e-01	3.998632e+00	7.260015e+01
+-1.251562e-01	4.702621e+00	7.496245e+01
+-1.112500e-01	5.538465e+00	7.740161e+01
+-9.734375e-02	6.815425e+00	7.992014e+01
+-8.343750e-02	8.436208e+00	8.252062e+01
+-6.953125e-02	1.105621e+01	8.520572e+01
+-5.562500e-02	1.549333e+01	8.797819e+01
+-4.171875e-02	2.256756e+01	9.084086e+01
+-2.781250e-02	3.350574e+01	9.379669e+01
+-1.390625e-02	8.479491e+01	9.684869e+01

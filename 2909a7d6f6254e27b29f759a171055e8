@@ -1,4 +1,17 @@
-Wed May 16 19:40:05 JST 2018
-C:\cygwin\home\Administrator\hamada\PG4\pci64\proj\ifpga.ngc 1139757967
-C:\cygwin\home\Administrator\hamada\PG4\pci64\proj\PCI_LC_I.ngo 1139541920
-OK
+Sat Jun 23 19:44:22 JST 2018
+#!/usr/bin/perl
+
+my $N = 300;
+my $XSCALE = 1.0;
+my $YSCALE = 1.0;
+
+srand(12345);
+
+print $N ."\n";
+
+for(my $i=0;$i<$N;$i++){
+    my $x = (rand(1.0)*$XSCALE - $XSCALE/2.0);
+    my $y = (rand(1.0)*$YSCALE - $XSCALE/2.0);
+    my $s = sprintf("%e\t%e\n",$x,$y);
+    print $s;
+}

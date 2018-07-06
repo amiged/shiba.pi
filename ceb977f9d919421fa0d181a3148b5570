@@ -1,129 +1,265 @@
-Mon Jun 11 19:48:54 JST 2018
-#!/bin/sh
-#
-# An example hook script to blocks unannotated tags from entering.
-# Called by "git receive-pack" with arguments: refname sha1-old sha1-new
-#
-# To enable this hook, rename this file to "update".
-#
-# Config
-# ------
-# hooks.allowunannotated
-#   This boolean sets whether unannotated tags will be allowed into the
-#   repository.  By default they won't be.
-# hooks.allowdeletetag
-#   This boolean sets whether deleting tags will be allowed in the
-#   repository.  By default they won't be.
-# hooks.allowmodifytag
-#   This boolean sets whether a tag may be modified after creation. By default
-#   it won't be.
-# hooks.allowdeletebranch
-#   This boolean sets whether deleting branches will be allowed in the
-#   repository.  By default they won't be.
-# hooks.denycreatebranch
-#   This boolean sets whether remotely creating branches will be denied
-#   in the repository.  By default this is allowed.
-#
+Fri Jul  6 19:28:44 JST 2018
+-- C:\CYGWIN\HOME\ADMINISTRATOR\FKIT\PCI64\PROJ
+-- VHDL Annotation Test Bench created by
+-- HDL Bencher 6.1i
+-- Tue Jan 04 18:45:17 2005
 
-# --- Command line
-refname="$1"
-oldrev="$2"
-newrev="$3"
+LIBRARY IEEE;
+USE IEEE.STD_LOGIC_1164.ALL;
+USE IEEE.STD_LOGIC_UNSIGNED.ALL;
+USE IEEE.STD_LOGIC_ARITH.ALL;
+USE IEEE.STD_LOGIC_TEXTIO.ALL;
+USE STD.TEXTIO.ALL;
 
-# --- Safety check
-if [ -z "$GIT_DIR" ]; then
-	echo "Don't run this script from the command line." >&2
-	echo " (if you want, you could supply GIT_DIR then run" >&2
-	echo "  $0 <ref> <oldrev> <newrev>)" >&2
-	exit 1
-fi
+ENTITY sim_local_read IS
+END sim_local_read;
 
-if [ -z "$refname" -o -z "$oldrev" -o -z "$newrev" ]; then
-	echo "usage: $0 <ref> <oldrev> <newrev>" >&2
-	exit 1
-fi
+ARCHITECTURE testbench_arch OF sim_local_read IS
+-- If you get a compiler error on the following line,
+-- from the menu do Options->Configuration select VHDL 87
+FILE RESULTS: TEXT OPEN WRITE_MODE IS "c:\cygwin\home\administrator\fkit\pci64\proj\sim_local_read.ano";
+	COMPONENT local_read
+		GENERIC (
+			NBIT_L_ADRO : INTEGER
+		);
+		PORT (
+			NPIPE : In  std_logic_vector (7 DOWNTO 0);
+			CALC_STS : In  std_logic;
+			BUSY : Out  std_logic;
+			DMAR_ENABLE : Out  std_logic_vector (3 DOWNTO 0);
+			DBUS_Port : Out  std_logic_vector (63 DOWNTO 0);
+			DBUS_idata : In  std_logic_vector (63 DOWNTO 0);
+			DBUS_HiZ : Out  std_logic;
+			MEM_ADB : Out  std_logic_vector (12 DOWNTO 0);
+			MEM_WEHB : Out  std_logic;
+			MEM_WELB : Out  std_logic;
+			MEM_DTIB : Out  std_logic_vector (63 DOWNTO 0);
+			RST : In  std_logic;
+			CLK : In  std_logic
+		);
+	END COMPONENT;
 
-# --- Config
-allowunannotated=$(git config --bool hooks.allowunannotated)
-allowdeletebranch=$(git config --bool hooks.allowdeletebranch)
-denycreatebranch=$(git config --bool hooks.denycreatebranch)
-allowdeletetag=$(git config --bool hooks.allowdeletetag)
-allowmodifytag=$(git config --bool hooks.allowmodifytag)
+	SIGNAL NPIPE : std_logic_vector (7 DOWNTO 0);
+	SIGNAL CALC_STS : std_logic;
+	SIGNAL BUSY : std_logic;
+	SIGNAL DMAR_ENABLE : std_logic_vector (3 DOWNTO 0);
+	SIGNAL DBUS_Port : std_logic_vector (63 DOWNTO 0);
+	SIGNAL DBUS_idata : std_logic_vector (63 DOWNTO 0);
+	SIGNAL DBUS_HiZ : std_logic;
+	SIGNAL MEM_ADB : std_logic_vector (12 DOWNTO 0);
+	SIGNAL MEM_WEHB : std_logic;
+	SIGNAL MEM_WELB : std_logic;
+	SIGNAL MEM_DTIB : std_logic_vector (63 DOWNTO 0);
+	SIGNAL RST : std_logic;
+	SIGNAL CLK : std_logic;
 
-# check for no description
-projectdesc=$(sed -e '1q' "$GIT_DIR/description")
-case "$projectdesc" in
-"Unnamed repository"* | "")
-	echo "*** Project description file hasn't been set" >&2
-	exit 1
-	;;
-esac
+BEGIN
+	UUT : local_read
+	GENERIC MAP (
+		NBIT_L_ADRO => 1
+	)
+	PORT MAP (
+		NPIPE => NPIPE,
+		CALC_STS => CALC_STS,
+		BUSY => BUSY,
+		DMAR_ENABLE => DMAR_ENABLE,
+		DBUS_Port => DBUS_Port,
+		DBUS_idata => DBUS_idata,
+		DBUS_HiZ => DBUS_HiZ,
+		MEM_ADB => MEM_ADB,
+		MEM_WEHB => MEM_WEHB,
+		MEM_WELB => MEM_WELB,
+		MEM_DTIB => MEM_DTIB,
+		RST => RST,
+		CLK => CLK
+	);
 
-# --- Check types
-# if $newrev is 0000...0000, it's a commit to delete a ref.
-zero="0000000000000000000000000000000000000000"
-if [ "$newrev" = "$zero" ]; then
-	newrev_type=delete
-else
-	newrev_type=$(git cat-file -t $newrev)
-fi
+	PROCESS -- clock process for CLK,
+		VARIABLE TX_TIME : INTEGER :=0;
 
-case "$refname","$newrev_type" in
-	refs/tags/*,commit)
-		# un-annotated tag
-		short_refname=${refname##refs/tags/}
-		if [ "$allowunannotated" != "true" ]; then
-			echo "*** The un-annotated tag, $short_refname, is not allowed in this repository" >&2
-			echo "*** Use 'git tag [ -a | -s ]' for tags you want to propagate." >&2
-			exit 1
-		fi
-		;;
-	refs/tags/*,delete)
-		# delete tag
-		if [ "$allowdeletetag" != "true" ]; then
-			echo "*** Deleting a tag is not allowed in this repository" >&2
-			exit 1
-		fi
-		;;
-	refs/tags/*,tag)
-		# annotated tag
-		if [ "$allowmodifytag" != "true" ] && git rev-parse $refname > /dev/null 2>&1
-		then
-			echo "*** Tag '$refname' already exists." >&2
-			echo "*** Modifying a tag is not allowed in this repository." >&2
-			exit 1
-		fi
-		;;
-	refs/heads/*,commit)
-		# branch
-		if [ "$oldrev" = "$zero" -a "$denycreatebranch" = "true" ]; then
-			echo "*** Creating a branch is not allowed in this repository" >&2
-			exit 1
-		fi
-		;;
-	refs/heads/*,delete)
-		# delete branch
-		if [ "$allowdeletebranch" != "true" ]; then
-			echo "*** Deleting a branch is not allowed in this repository" >&2
-			exit 1
-		fi
-		;;
-	refs/remotes/*,commit)
-		# tracking branch
-		;;
-	refs/remotes/*,delete)
-		# delete tracking branch
-		if [ "$allowdeletebranch" != "true" ]; then
-			echo "*** Deleting a tracking branch is not allowed in this repository" >&2
-			exit 1
-		fi
-		;;
-	*)
-		# Anything else (is there anything else?)
-		echo "*** Update hook: unknown type of update to ref $refname of type $newrev_type" >&2
-		exit 1
-		;;
-esac
+		PROCEDURE ANNOTATE_BUSY(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",BUSY,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, BUSY);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
 
-# --- Finished
-exit 0
+		PROCEDURE ANNOTATE_DMAR_ENABLE(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",DMAR_ENABLE,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, DMAR_ENABLE);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
+
+		PROCEDURE ANNOTATE_DBUS_Port(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",DBUS_Port,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, DBUS_Port);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
+
+		PROCEDURE ANNOTATE_DBUS_HiZ(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",DBUS_HiZ,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, DBUS_HiZ);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
+
+		PROCEDURE ANNOTATE_MEM_ADB(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",MEM_ADB,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, MEM_ADB);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
+
+		PROCEDURE ANNOTATE_MEM_WEHB(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",MEM_WEHB,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, MEM_WEHB);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
+
+		PROCEDURE ANNOTATE_MEM_WELB(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",MEM_WELB,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, MEM_WELB);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
+
+		PROCEDURE ANNOTATE_MEM_DTIB(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",MEM_DTIB,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, MEM_DTIB);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
+
+	BEGIN
+		CLOCK_LOOP : LOOP
+		CLK <= transport '0';
+		WAIT FOR 25 ns;
+		TX_TIME := TX_TIME + 25;
+		CLK <= transport '1';
+		WAIT FOR 25 ns;
+		TX_TIME := TX_TIME + 25;
+		ANNOTATE_BUSY(TX_TIME);
+		ANNOTATE_DMAR_ENABLE(TX_TIME);
+		ANNOTATE_DBUS_Port(TX_TIME);
+		ANNOTATE_DBUS_HiZ(TX_TIME);
+		ANNOTATE_MEM_ADB(TX_TIME);
+		ANNOTATE_MEM_WEHB(TX_TIME);
+		ANNOTATE_MEM_WELB(TX_TIME);
+		ANNOTATE_MEM_DTIB(TX_TIME);
+		WAIT FOR 25 ns;
+		TX_TIME := TX_TIME + 25;
+		CLK <= transport '0';
+		WAIT FOR 25 ns;
+		TX_TIME := TX_TIME + 25;
+		END LOOP CLOCK_LOOP;
+	END PROCESS;
+
+	PROCESS   -- Process for CLK
+		VARIABLE TX_OUT : LINE;
+
+		BEGIN
+		-- --------------------
+		CALC_STS <= transport '0';
+		DBUS_idata <= transport std_logic_vector'("0000000000000000000000000000000000000000000000000000000000000000"); --0
+		RST <= transport '0';
+		NPIPE <= transport std_logic_vector'("00000000"); --0
+		-- --------------------
+		WAIT FOR 200 ns; -- Time=200 ns
+		NPIPE <= transport std_logic_vector'("00010001"); --11
+		-- --------------------
+		WAIT FOR 600 ns; -- Time=800 ns
+		CALC_STS <= transport '1';
+		-- --------------------
+		WAIT FOR 4400 ns; -- Time=5200 ns
+		CALC_STS <= transport '0';
+		-- --------------------
+		WAIT FOR 60275 ns; -- Time=65475 ns
+		-- --------------------
+
+		STD.TEXTIO.write(TX_OUT, string'("Total[]"));
+		STD.TEXTIO.writeline(results, TX_OUT);
+		ASSERT (FALSE) REPORT
+			"Success! Simulation for annotation completed"
+			SEVERITY FAILURE;
+	END PROCESS;
+END testbench_arch;
+
+CONFIGURATION local_read_cfg OF sim_local_read IS
+	FOR testbench_arch
+	END FOR;
+END local_read_cfg;

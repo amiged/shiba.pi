@@ -1,157 +1,104 @@
-Fri Jun 29 19:29:11 JST 2018
--- C:\CYGWIN\HOME\ADMINISTRATOR\FKIT\PCI64\PROJ
--- VHDL Annotation Test Bench created by
--- HDL Bencher 6.1i
--- Sun Jan 02 23:14:58 2005
+Wed Jul 18 19:51:12 JST 2018
+#!/usr/bin/env python3
+#Time-stamp: <2017-06-01 03:19:59 hamada>
+import argparse
+import numpy as np
+import cv2
+from datetime import datetime
+import mkdir
 
-LIBRARY IEEE;
-USE IEEE.STD_LOGIC_1164.ALL;
-USE IEEE.STD_LOGIC_UNSIGNED.ALL;
-USE IEEE.STD_LOGIC_ARITH.ALL;
-USE IEEE.STD_LOGIC_TEXTIO.ALL;
-USE STD.TEXTIO.ALL;
+def get_ndev():
+    ndev = 0
+    devid = []
+    for i in range(0, 10):
+        c = cv2.VideoCapture(i)
+        if c.isOpened():
+            ndev = ndev + 1
+            devid.append(i)
+        c.release()
 
-ENTITY sim_local_write IS
-END sim_local_write;
+    print ("devid = ", devid)
+    return ndev
 
-ARCHITECTURE testbench_arch OF sim_local_write IS
--- If you get a compiler error on the following line,
--- from the menu do Options->Configuration select VHDL 87
-FILE RESULTS: TEXT OPEN WRITE_MODE IS "c:\cygwin\home\administrator\fkit\pci64\proj\sim_local_write.ano";
-	COMPONENT local_write
-		PORT (
-			MEM_AD : In  std_logic_vector (16 DOWNTO 0);
-			MEM_WE : In  std_logic;
-			MEM_DTI : In  std_logic_vector (63 DOWNTO 0);
-			DMAW_ENABLE : Out  std_logic_vector (3 DOWNTO 0);
-			DBUS_Port : Out  std_logic_vector (63 DOWNTO 0);
-			RST : In  std_logic;
-			CLK : In  std_logic
-		);
-	END COMPONENT;
+def isOpened(cap):
+    ret = True
+    for c in cap:
+        ret = ret and c.isOpened()
+    return ret
 
-	SIGNAL MEM_AD : std_logic_vector (16 DOWNTO 0);
-	SIGNAL MEM_WE : std_logic;
-	SIGNAL MEM_DTI : std_logic_vector (63 DOWNTO 0);
-	SIGNAL DMAW_ENABLE : std_logic_vector (3 DOWNTO 0);
-	SIGNAL DBUS_Port : std_logic_vector (63 DOWNTO 0);
-	SIGNAL RST : std_logic;
-	SIGNAL CLK : std_logic;
 
-BEGIN
-	UUT : local_write
-	PORT MAP (
-		MEM_AD => MEM_AD,
-		MEM_WE => MEM_WE,
-		MEM_DTI => MEM_DTI,
-		DMAW_ENABLE => DMAW_ENABLE,
-		DBUS_Port => DBUS_Port,
-		RST => RST,
-		CLK => CLK
-	);
+def put_text(image, text):
+    font_size = 1.0
+    font_type = cv2.FONT_HERSHEY_PLAIN
+    font_color = (0xaf, 0xff, 0xaf)
+    #    cv2.putText(image, text, (460, 15), font_type, font_size, font_color)
+    cv2.putText(image, text, (10, 15), font_type, font_size, font_color)
 
-	PROCESS -- clock process for CLK,
-		VARIABLE TX_TIME : INTEGER :=0;
+if (__name__ == '__main__'):
+    ndev = get_ndev()
+    log_base = '../log/'
+    cap = []
+    for i in range(ndev):
+        cap.append(cv2.VideoCapture(i))
 
-		PROCEDURE ANNOTATE_DMAW_ENABLE(
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
-			STD.TEXTIO.write(TX_LOC, TX_TIME);
-			STD.TEXTIO.write(TX_LOC,string'(",DMAW_ENABLE,"));
-			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, DMAW_ENABLE);
-			STD.TEXTIO.write(TX_LOC, string'("]"));
-			TX_STR(TX_LOC.all'range) := TX_LOC.all;
-			STD.TEXTIO.writeline(results, TX_LOC);
-			STD.TEXTIO.Deallocate(TX_LOC);
-		END;
+    # -- swap cap --
+    if False:
+        cap_tmp = cap[0]
+        cap[0] = cap[2]
+        cap[2] = cap_tmp
 
-		PROCEDURE ANNOTATE_DBUS_Port(
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
-			STD.TEXTIO.write(TX_LOC, TX_TIME);
-			STD.TEXTIO.write(TX_LOC,string'(",DBUS_Port,"));
-			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, DBUS_Port);
-			STD.TEXTIO.write(TX_LOC, string'("]"));
-			TX_STR(TX_LOC.all'range) := TX_LOC.all;
-			STD.TEXTIO.writeline(results, TX_LOC);
-			STD.TEXTIO.Deallocate(TX_LOC);
-		END;
 
-	BEGIN
-		CLOCK_LOOP : LOOP
-		CLK <= transport '0';
-		WAIT FOR 5 ns;
-		TX_TIME := TX_TIME + 5;
-		CLK <= transport '1';
-		WAIT FOR 50 ns;
-		TX_TIME := TX_TIME + 50;
-		CLK <= transport '0';
-		WAIT FOR 35 ns;
-		TX_TIME := TX_TIME + 35;
-		ANNOTATE_DMAW_ENABLE(TX_TIME);
-		ANNOTATE_DBUS_Port(TX_TIME);
-		WAIT FOR 10 ns;
-		TX_TIME := TX_TIME + 10;
-		END LOOP CLOCK_LOOP;
-	END PROCESS;
+    cap_width  = cap[0].get(cv2.CAP_PROP_FRAME_WIDTH)
+    cap_height = cap[0].get(cv2.CAP_PROP_FRAME_HEIGHT)
+    cap_fps    = cap[0].get(cv2.CAP_PROP_FPS)
 
-	PROCESS   -- Process for CLK
-		VARIABLE TX_OUT : LINE;
+    print(cap_width, "x", cap_height, ":", cap_fps)
+    size = (int(cap_width/2), int(cap_height/2))
 
-		BEGIN
-		-- --------------------
-		MEM_AD <= transport std_logic_vector'("00000000000000000"); --0
-		MEM_WE <= transport '0';
-		MEM_DTI <= transport std_logic_vector'("0000000000000000000000000000000000000000000000000000000000000000"); --0
-		RST <= transport '0';
-		-- --------------------
-		WAIT FOR 500 ns; -- Time=500 ns
-		MEM_AD <= transport std_logic_vector'("01100000000000000"); --C000
-		MEM_WE <= transport '1';
-		MEM_DTI <= transport std_logic_vector'("0000000000000000000000000000000000000000000000000001000100010001"); --1111
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=600 ns
-		MEM_DTI <= transport std_logic_vector'("0000000000000000000000000000000000000000000000000010001000100010"); --2222
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=700 ns
-		MEM_DTI <= transport std_logic_vector'("0000000000000000000000000000000000000000000000000011001100110011"); --3333
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=800 ns
-		MEM_DTI <= transport std_logic_vector'("0000000000000000000000000000000000000000000000000100010001000100"); --4444
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=900 ns
-		MEM_WE <= transport '0';
-		-- --------------------
-		WAIT FOR 800 ns; -- Time=1700 ns
-		MEM_AD <= transport std_logic_vector'("01000000000000000"); --8000
-		MEM_WE <= transport '1';
-		MEM_DTI <= transport std_logic_vector'("0000000000000000000000000000000000000000101010111100110111101111"); --ABCDEF
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=1800 ns
-		MEM_AD <= transport std_logic_vector'("00000000000000000"); --0
-		MEM_WE <= transport '0';
-		MEM_DTI <= transport std_logic_vector'("0000000000000000000000000000000000000000000000000000000000000000"); --0
-		-- --------------------
-		WAIT FOR 1205 ns; -- Time=3005 ns
-		-- --------------------
+    tnow0 = datetime.now().strftime('%Y%m%d_%H_%M_%S') # ('%Y%m%d_%H_%M_%S_%f')
 
-		STD.TEXTIO.write(TX_OUT, string'("Total[]"));
-		STD.TEXTIO.writeline(results, TX_OUT);
-		ASSERT (FALSE) REPORT
-			"Success! Simulation for annotation completed"
-			SEVERITY FAILURE;
-	END PROCESS;
-END testbench_arch;
+    while(isOpened(cap)):
+        frame = [0] * ndev
+        for (i, fm) in enumerate(frame):
+            ret, fm = cap[i].read()
+            smallimg = cv2.resize(fm, size)
+            if False: cv2.imshow('camera: %d'%(i), smallimg)
+            frame[i] = smallimg
 
-CONFIGURATION local_write_cfg OF sim_local_write IS
-	FOR testbench_arch
-	END FOR;
-END local_write_cfg;
+        # ----------------------------------------------------------------
+        frame_height, frame_width = frame[0].shape[:2]
+
+        nwx = 3
+        nwy = int(1.0+(ndev-1)/3.0)
+
+        image = np.zeros((frame_height * nwy, frame_width*nwx, 3), dtype=np.uint8)
+        # image = np.zeros((frame_height, frame_width*ndev, 3), dtype=np.uint8)
+
+        # --- ROI ---
+        for (i, fm) in enumerate(frame):
+            sx = frame_width * (i%nwx)
+            sy = frame_height * int(i/nwx)
+            ex = frame_width * (i%nwx+1)
+            ey = frame_height * int(1+i/nwx)
+            image[sy:ey,sx:ex] = fm
+
+        cv2.imshow(__file__, image)
+
+        tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S_%f')
+        if(tnow != tnow0):
+            put_text(image, tnow)
+            basedir = '../log/'
+            ofname = mkdir.get_filename_frame(basedir, tnow)
+            cv2.imwrite(ofname, image)
+            print(ofname)
+            tnow0 = tnow
+
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    for (i, fm) in enumerate(frame):
+        cap[i].release()
+
+    cv2.destroyAllWindows()
+
+    print("Done.")

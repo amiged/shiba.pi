@@ -1,26 +1,28 @@
-Wed Aug  8 19:38:28 JST 2018
--- Copyright 2004 Tsuyoshi Hamada
---
---
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
+Mon Aug 13 19:30:40 JST 2018
+#!/usr/bin/env python3
+import numpy as np
+import cv2
+from datetime import datetime
 
-entity dmar_start_adr is
-  port (
-    CLK       : in std_logic;
-    DBUS      : in std_logic_vector(63 downto 0);
-    STATE     : in std_logic_vector(1 downto 0);
-    START_ADR : out std_logic_vector(18 downto 0) );
-end dmar_start_adr;
 
-architecture rtl of dmar_start_adr is
-component dmaw_start_adr
-  port (
-    CLK       : in std_logic;
-    DBUS      : in std_logic_vector(63 downto 0);
-    STATE     : in std_logic_vector(1 downto 0);
-    START_ADR : out std_logic_vector(18 downto 0) );
-end component;
-begin
-  u0 : dmaw_start_adr port map(CLK=>CLK, DBUS=>DBUS, STATE=>STATE, START_ADR=>START_ADR);
-end rtl;
+def put_text(image, text):
+    font_size = 1.0
+    font_type = cv2.FONT_HERSHEY_PLAIN
+    font_color = (0xff, 0xf, 0xff)
+    cv2.putText(image, text, (460, 15), font_type, font_size, font_color)
+    
+
+image = cv2.imread("/tmp/tmp.jpg")
+
+tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S') # ('%Y%m%d_%H_%M_%S_%f')
+put_text(image, tnow)
+cv2.imshow('test', image)
+
+
+while(True):
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+cv2.destroyAllWindows()
+
+print("Done.")

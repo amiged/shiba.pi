@@ -1,41 +1,56 @@
-Fri Jul  6 19:47:53 JST 2018
-Release 6.2.03i - ngdbuild G.31a
-Copyright (c) 1995-2004 Xilinx, Inc.  All rights reserved.
+Wed Aug 15 19:29:17 JST 2018
+#!/usr/bin/env python3
+#Time-stamp: <2017-06-04 15:57:17 hamada>
+import argparse
+import numpy as np
+import cv2
+from datetime import datetime
+import mkdir
 
-Command Line: ngdbuild -intstyle ise -dd ./_ngo -uc ../top.ucf -p
-xc2vp70-ff1517-5 top.ngc top.ngd 
+class State(object):
+    def __init__(self):
+        self.is_record = False
 
-Reading NGO file
-"/home/hamada/pgr/Demos/PairWiseErr/pgr/ISE_PROJECT/proj/top.ngc" ...
-Reading component libraries for design expansion...
+if (__name__ == '__main__'):
+    state = State()
 
-Annotating constraints to design from file "../top.ucf" ...
+    parser = argparse.ArgumentParser(description = "description goes here")
+    parser.add_argument("--devid", type=int, help = "set device id", required=False)
+    args = parser.parse_args()
+    devid = 0
+    if args.devid:
+        devid = int(args.devid)
+        print ("set devid = ", devid)
 
-Checking timing specifications ...
-WARNING:XdmHelpers:793 - The TNM "CLK66" drives the CLKIN pin of DCM
-   "dcm0_dcm0". This TNM cannot be traced through the DCM because it is not used
-   in exactly one PERIOD specification. This TNM is used in the following user
-   groups and/or specifications:
-   <none>
-WARNING:XdmHelpers:625 - No instances driven from signal "CK66" are valid for
-   inclusion in TNM group "CLK66". A TNM property on a pin or signal marks only
-   the flip-flops, latches and/or RAMs which are directly or indirectly driven
-   by that pin or signal.
-INFO:XdmHelpers:851 - TNM "CK66", used in period specification "TS_CK66", was
-   traced into DCM instance "dcm0_dcm0". The following new TNM groups and period
-   specifications were generated at the DCM output(s):
-   CLK0: TS_dcm0_dcm_out=PERIOD dcm0_dcm_out TS_CK66*1.000000 HIGH 50.000000%
-   CLKFX: TS_dcm0_dcm_fx=PERIOD dcm0_dcm_fx TS_CK66*1.000000 HIGH 50.000000%
-WARNING:XdmHelpers:644 - No appropriate elements were found for the TNM group
-   "CLK66". This group has been removed from the design.
-Checking expanded design ...
 
-NGDBUILD Design Results Summary:
-  Number of errors:     0
-  Number of warnings:   3
+    log_base = '../log/'
+    cap = cv2.VideoCapture(devid)
 
-Total memory usage is 67920 kilobytes
+    cap_width  = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+    cap_height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+    cap_fps    = cap.get(cv2.CAP_PROP_FPS)
 
-Writing NGD file "top.ngd" ...
+    print(cap_width, "x", cap_height, ":", cap_fps)
 
-Writing NGDBUILD log file "top.bld"...
+
+    while(cap.isOpened()):
+        ret, frame = cap.read()
+        cv2.imshow('camera: %d'%(devid), frame)
+
+        tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S_%f')
+        if(state.is_record):
+            basedir = '../log.%d/'% (devid)
+            ofname = mkdir.get_filename_frame(basedir, tnow)
+            cv2.imwrite(ofname, frame)
+            print(ofname, "devid = %d"%devid)
+            tnow0 = tnow
+
+        key = cv2.waitKey(1) & 0xFF
+        if key == ord('q'): break
+        if key == ord(' '): state.is_record = not (state.is_record)
+
+
+    cap.release()
+    cv2.destroyAllWindows()
+
+    print("Done.")

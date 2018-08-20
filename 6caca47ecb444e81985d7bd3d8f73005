@@ -1,45 +1,17 @@
-Sun Aug  5 19:53:34 JST 2018
-all:
-	./pycam.py |tee log.txt
+Mon Aug 20 19:46:12 JST 2018
+#!/usr/bin/perl
 
 
-clean:
-	rm -rf ../conv
-	mkdir ../conv
-	rm -f *~ .*~
-	rm -rf __pycache__
+my $is_stop = 0;
+my $nboard = 0;
 
-c: clean
+if($ARGV[0]){
+    $nboard = $ARGV[0];
+}
 
-conv:
-	rm -rf ../conv
-	mkdir ../conv
-	./gen_cmd.py > xxx
-	bash ./xxx
+my $cmd ="cat /sys/class/fpga/fpga". sprintf("%d",$nboard). "/kbuffers";
 
+my $exe = `$cmd`;
+print $exe;
 
-mov:
-	./mov.py 1 0
-
-
-0.mov: 
-	rm -f out.mp4
-	ffmpeg -r 1 -start_number 0 -i ../conv/%08d.jpg -vcodec libx264 -pix_fmt yuv420p -r 1 out.mp4
-
-r: run
-
-run:
-	./mpycam.py
-
-run3:
-	./pycam.py --devid=0 &
-	./pycam.py --devid=1 &
-	./pycam.py --devid=2 &
-
-kill:
-	killall python3
-	killall pycam.py
-
-clog: clean
-	rm -rf ../log* ../data4bbox ../data4darknet ../conv
-	rm -rf ./tmp.mp4
+1;

@@ -1,54 +1,42 @@
-Wed Oct  3 19:36:53 JST 2018
-#!/bin/sh
+Sun Nov  4 19:31:11 JST 2018
+/**
+   # ハードウェア化する部分 
+   #     1.加速度a[][]の初期化
+   #     2.加速度a[][]の計算
+*/
 
-# An example hook script to verify what is about to be pushed.  Called by "git
-# push" after it has checked the remote status, but before anything has been
-# pushed.  If this script exits with a non-zero status nothing will be pushed.
-#
-# This hook is called with the following parameters:
-#
-# $1 -- Name of the remote to which the push is being done
-# $2 -- URL to which the push is being done
-#
-# If pushing without using a named remote those arguments will be equal.
-#
-# Information about the commits which are being pushed is supplied as lines to
-# the standard input in the form:
-#
-#   <local ref> <local sha1> <remote ref> <remote sha1>
-#
-# This sample shows how to prevent push of commits where the log message starts
-# with "WIP" (work in progress).
+#include <stdio.h>
+#include <math.h>
+#include "nbodysim.h"
 
-remote="$1"
-url="$2"
+void force_on_host(double x[][DIM],
+	   double m[],
+	   double eps2,
+	   double a[][DIM],
+	   int n)
+{
+  int i,j,d;
+  double dx[3];
 
-z40=0000000000000000000000000000000000000000
+  /* a[][]の初期化 */
+  for(i=0;i<n;i++) for(d=0;d<3;d++) a[i][d] = 0.0;
 
-IFS=' '
-while read local_ref local_sha remote_ref remote_sha
-do
-	if [ "$local_sha" = $z40 ]
-	then
-		# Handle delete
-	else
-		if [ "$remote_sha" = $z40 ]
-		then
-			# New branch, examine all commits
-			range="$local_sha"
-		else
-			# Update to existing branch, examine new commits
-			range="$remote_sha..$local_sha"
-		fi
+  /* 相互作用の計算  */
+  for(i=0;i<n-1;i++){
+    for(j=i+1;j<n;j++){
+      double r2,r3;
+      r2 = eps2;
+      for(d=0;d<3;d++){
+	dx[d] = x[j][d] - x[i][d];
+	r2 += dx[d] * dx[d];
+      }
+      r3 = sqrt(r2)*r2;
+      for(d=0;d<3;d++){
+	a[i][d] +=  m[j]*dx[d]/r3;
+	a[j][d] += -m[i]*dx[d]/r3;
+      }
+    }
+  }
 
-		# Check for WIP commit
-		commit=`git rev-list -n 1 --grep '^WIP' "$range"`
-		if [ -n "$commit" ]
-		then
-			echo "Found WIP commit in $local_ref, not pushing"
-			exit 1
-		fi
-	fi
-done
 
-exit 0
+}

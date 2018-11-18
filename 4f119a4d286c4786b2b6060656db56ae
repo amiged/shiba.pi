@@ -1,60 +1,134 @@
-Fri Sep 21 19:30:00 JST 2018
-info x 52 510 0 0 0 0 0 0 0 0 0 0 0 0 0 0 VHDL
-col x 1028 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-radix x 16 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-entity name 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 local_io
-term mark 784 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-vlib save 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL;
-use IEEE.STD_LOGIC_ARITH.ALL;
-
-var add 19 0 0 226 36 0 1028 100 50 50 25 25 0 0 0 0 CLKInstd_logicRISING_EDGECLK
-var add 1 0 0 98 11 0 1028 100 50 50 25 25 0 0 0 0 CALC_STSInstd_logicRISING_EDGECLK
-var add 4 16 0 100 16 0 1028 100 50 50 25 25 0 0 0 0 MEM_ADAInstd_logic_vectorRISING_EDGECLK
-var add 5 0 0 98 17 0 1028 100 50 50 25 25 0 0 0 0 MEM_WEHAInstd_logicRISING_EDGECLK
-var add 6 0 0 98 18 0 1028 100 50 50 25 25 0 0 0 0 MEM_WELAInstd_logicRISING_EDGECLK
-var add 7 63 0 100 19 0 1028 100 50 50 25 25 0 0 0 0 MEM_DTIAInstd_logic_vectorRISING_EDGECLK
-var add 11 63 0 100 25 0 1028 100 50 50 25 25 0 0 0 0 DBUS_idataInstd_logic_vectorRISING_EDGECLK
-var add 17 63 0 100 33 0 1028 100 50 50 25 25 0 0 0 0 MEM_DTOBInstd_logic_vectorRISING_EDGECLK
-var add 18 0 0 98 35 0 1028 100 50 50 25 25 0 0 0 0 RSTInstd_logicRISING_EDGECLK
-var add 2 7 0 100 12 0 1028 100 50 50 25 25 0 0 0 0 NPIPEInstd_logic_vectorRISING_EDGECLK
-var add 8 3 0 100 22 0 1028 100 50 50 25 25 0 0 0 0 DMAW_ENABLEOutstd_logic_vectorRISING_EDGECLK
-var add 9 3 0 100 23 0 1028 100 50 50 25 25 0 0 0 0 DMAR_ENABLEOutstd_logic_vectorRISING_EDGECLK
-var add 10 63 0 100 24 0 1028 100 50 50 25 25 0 0 0 0 DBUS_PortOutstd_logic_vectorRISING_EDGECLK
-var add 12 0 0 98 26 0 1028 100 50 50 25 25 0 0 0 0 DBUS_HiZOutstd_logicRISING_EDGECLK
-var add 13 12 0 100 29 0 1028 100 50 50 25 25 0 0 0 0 MEM_ADBOutstd_logic_vectorRISING_EDGECLK
-var add 14 0 0 98 30 0 1028 100 50 50 25 25 0 0 0 0 MEM_WEHBOutstd_logicRISING_EDGECLK
-var add 15 0 0 98 31 0 1028 100 50 50 25 25 0 0 0 0 MEM_WELBOutstd_logicRISING_EDGECLK
-var add 16 63 0 100 32 0 1028 100 50 50 25 25 0 0 0 0 MEM_DTIBOutstd_logic_vectorRISING_EDGECLK
-var add 3 0 0 98 13 0 1028 100 50 50 25 25 0 0 0 0 BUSY_LOCAL_READOutstd_logicRISING_EDGECLK
-vdone xxx 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-npos xxx 183 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-cell fill 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-cell fill 2 136 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
-cell fill 2 680 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-cell fill 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 00000000000000000
-cell fill 4 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-cell fill 5 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-cell fill 6 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0000000000000000000000000000000000000000000000000000000000000000
-cell fill 7 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0000000000000000000000000000000000000000000000000000000000000000
-cell fill 8 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0000000000000000000000000000000000000000000000000000000000000000
-cell fill 9 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-cell fill 10 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 00000010
-time info 50 50 25 25 50 50 1 1 0 0 0 0 0 0 0 0 nsCLK
-font save -14 0 400 49 0 0 0 0 0 0 0 0 0 0 0 0 Times New Roman
-generic add 1 3 1 0 0 0 0 0 0 0 0 0 0 0 0 0 NBIT_L_ADROINTEGER3
-src mod 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 c:\cygwin\home\administrator\fkit\pci64\rtl\local_io.vhd
-utd true 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-cellenab on 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-grid on 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-com add 1 1 0 383 22 0 -67 0 0 0 0 0 0 0 0 0 Waveform created by
-HDL Bencher 6.1i
-Source = c:\cygwin\home\administrator\fkit\pci64\rtl\local_io.vhd
-Tue Jan 04 19:10:26 2005
-type info 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 std_logicBITDOWNTO
-type info 31 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 std_logic_vectorVECTORDOWNTO
-opt vhdl87 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-NumClocks x 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-clock_1 name 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 CLK
-Zoom_level x 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 5.06250000000000
+Sun Nov 18 19:33:40 JST 2018
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <math.h>
+#include "pg_util.h"
+
+#include "pgrapi.h"
+
+// #define DEBUG
+
+#define   MAX(x,y)     (((x) > (y)) ?  (x) : (y))
+#define   MIN(x,y)     (((x) < (y)) ?  (x) : (y))
+
+#define NJMAX 16384
+
+#define NPIPE_PER_CHIP  1
+#define NCHIP_PER_BOARD 4
+
+#define NFLO 26
+#define NMAN 16
+#define RMODE 6
+
+static int      devid = 0;
+static int      __first = 0;
+
+static unsigned long long int fdata[NJMAX][FDIM];
+
+void
+force(double x[][3], double m[], double eps2, double a[][3], int n)
+{
+    double          log2(double);
+    int             i, j;
+    unsigned int    npipe, npipe_per_chip;
+    unsigned int    nchip;
+    unsigned int    jdata[JDIM];
+    if (__first == 0) {
+	b3open(devid);
+	pgr_reset(devid);
+	pgr_set_npipe_per_chip(devid, NPIPE_PER_CHIP);
+	pgr_set_jwidth(devid, 16);	// change manually 4 if grape
+	pgr_set_nchip(NCHIP_PER_BOARD);
+	__first = 1;
+    }
+
+    npipe_per_chip = NPIPE_PER_CHIP;
+    nchip = NCHIP_PER_BOARD;
+    npipe = nchip * npipe_per_chip;
+
+    for (j = 0; j < n; j++) {
+	unsigned int    xj[4];
+	xj[0] = (unsigned int) (double2pgpgfloat_r(x[j][0], 26, 16, 6));
+	xj[1] = (unsigned int) (double2pgpgfloat_r(x[j][1], 26, 16, 6));
+	xj[2] = (unsigned int) (double2pgpgfloat_r(x[j][2], 26, 16, 6));
+	xj[3] = (unsigned int) (double2pgpgfloat_r(m[j], 26, 16, 6));
+	for (i = 0; i < JDIM; i++)   jdata[i] = 0x0;
+	jdata[0] |= (0x3ffffff & xj[0]) << 0;	// mask(26)
+	jdata[0] |= (0x3f & xj[1]) << 26;	// mask(6)
+	jdata[1] |= (0xfffff & (xj[1] >> 6));	// mask(20)
+	jdata[1] |= (0xfff & xj[2]) << 20;	// mask(12)
+	jdata[2] |= (0x3fff & (xj[2] >> 12));	// mask(14)
+	jdata[2] |= (0x3ffff & xj[3]) << 14;	// mask(18)
+	jdata[3] |= (0xff & (xj[3] >> 18));	// mask(8)
+	pgr_setjpset_one(devid, j, jdata);
+    }
+
+    for (i = 0; i < n; i += npipe) {
+	int             nn, ii, ichip;
+	nn = MIN(npipe, n - i);
+
+#ifdef DEBUG
+	dum = e_time();
+#endif
+
+	for (ii = 0; ii < nn; ii += npipe_per_chip) {
+	    int             nnn, iii;
+	    ichip = ii / npipe_per_chip;
+
+	    nnn = MIN(npipe_per_chip, nn - ii);
+	    for (iii = 0; iii < nnn; iii++) {
+		unsigned int    idata[4];
+		idata[0] =
+		    (unsigned
+		     int) (double2pgpgfloat_r(x[i + ii + iii][0], 26, 16,
+					      6));
+		idata[1] =
+		    (unsigned
+		     int) (double2pgpgfloat_r(x[i + ii + iii][1], 26, 16,
+					      6));
+		idata[2] =
+		    (unsigned
+		     int) (double2pgpgfloat_r(x[i + ii + iii][2], 26, 16,
+					      6));
+		idata[3] =
+		    (unsigned int) (double2pgpgfloat_r(eps2, 26, 16, 6));
+		pgr_setipset_one(devid, ichip, iii, idata, 4);
+	    }
+	}
+#ifdef DEBUG
+	_t[2] += e_time() - dum;
+	dum = e_time();
+#endif
+
+	pgr_start_calc(devid, n);
+#ifdef DEBUG
+	_t[3] += e_time() - dum;
+	dum = e_time();
+#endif
+
+	pgr_getfoset(devid, fdata);
+	for (ii = 0; ii < nn; ii++) {
+	    a[i + ii][0] =
+		((double) ((long long int) fdata[ii][0] << 0)) *
+		((-1.0 / pow(2.0, (double) 31))) / pow(2.0, 0.0);
+	    a[i + ii][1] =
+		((double) ((long long int) fdata[ii][1] << 0)) *
+		((-1.0 / pow(2.0, (double) 31))) / pow(2.0, 0.0);
+	    a[i + ii][2] =
+		((double) ((long long int) fdata[ii][2] << 0)) *
+		((-1.0 / pow(2.0, (double) 31))) / pow(2.0, 0.0);
+	}
+#ifdef DEBUG
+	_t[4] += e_time() - dum;
+#endif
+
+    }
+#ifdef DEBUG
+    _t[0] = e_time() - _t[0];
+    fprintf(stderr, "total %g sec (jp %g, ip %g, c %g, fo %g %%)\n", _t[0],
+	    100.0 * _t[1] / _t[0], 100.0 * _t[2] / _t[0],
+	    100.0 * _t[3] / _t[0], 100.0 * _t[4] / _t[0]);
+#endif
+}

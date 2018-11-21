@@ -1,26 +1,25 @@
-Sun Nov 11 19:49:34 JST 2018
--- Copyright 2004 Tsuyoshi Hamada
---
---
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-
-entity dmar_start_adr is
-  port (
-    CLK       : in std_logic;
-    DBUS      : in std_logic_vector(63 downto 0);
-    STATE     : in std_logic_vector(1 downto 0);
-    START_ADR : out std_logic_vector(18 downto 0) );
-end dmar_start_adr;
-
-architecture rtl of dmar_start_adr is
-component dmaw_start_adr
-  port (
-    CLK       : in std_logic;
-    DBUS      : in std_logic_vector(63 downto 0);
-    STATE     : in std_logic_vector(1 downto 0);
-    START_ADR : out std_logic_vector(18 downto 0) );
-end component;
-begin
-  u0 : dmaw_start_adr port map(CLK=>CLK, DBUS=>DBUS, STATE=>STATE, START_ADR=>START_ADR);
-end rtl;
+Wed Nov 21 19:34:25 JST 2018
+JDF G
+// Created by Project Navigator ver 1.0
+PROJECT tmp2
+DESIGN tmp2
+DEVFAM virtex2
+DEVFAMTIME 0
+DEVICE xc2v1000
+DEVICETIME 0
+DEVPKG fg456
+DEVPKGTIME 0
+DEVSPEED -5
+DEVSPEEDTIME 0
+DEVTOPLEVELMODULETYPE HDL
+TOPLEVELMODULETYPETIME 0
+DEVSYNTHESISTOOL XST (VHDL/Verilog)
+SYNTHESISTOOLTIME 0
+DEVSIMULATOR Modelsim
+SIMULATORTIME 0
+DEVGENERATEDSIMULATIONMODEL VHDL
+GENERATEDSIMULATIONMODELTIME 0
+SOURCE pfpga_config.vhd
+STIMULUS sim.tbw
+[STRATEGY-LIST]
+Normal=True

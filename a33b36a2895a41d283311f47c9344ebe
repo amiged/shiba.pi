@@ -1,59 +1,144 @@
-Fri Nov  9 19:29:44 JST 2018
-//-----------------------------------------------------------------------------
-// mk_eight.C:  prints initial conditions for the figure eight
-//              of the three-body problem
-//-----------------------------------------------------------------------------
-#include  <iostream>
-using namespace std;
+Fri Dec  7 19:46:04 JST 2018
+-- C:\CYGWIN\HOME\ADMINISTRATOR\FKIT\PCI64\PROJ
+-- VHDL Annotation Test Bench created by
+-- HDL Bencher 6.1i
+-- Sun Jan 02 23:10:52 2005
 
-typedef double  real;                      // "real" as a general name for the
-                                           // standard floating-point data type
-#define  NDIM     3                        // number of spatial dimensions
+LIBRARY IEEE;
+USE IEEE.STD_LOGIC_1164.ALL;
+USE IEEE.STD_LOGIC_UNSIGNED.ALL;
+USE IEEE.STD_LOGIC_ARITH.ALL;
+USE IEEE.STD_LOGIC_TEXTIO.ALL;
+USE STD.TEXTIO.ALL;
 
-int main()
-{
-    const int n = 3;           // number of particles
-    const real t = 0;          // time
-    real r[n][NDIM];           // r[i][k] : position component k for particle i
-    real v[n][NDIM];           // v[i][k] : velocity component k for particle i
-    real m[n];                 // m[i] : mass for particle i
+ENTITY local_write IS
+END local_write;
 
-    m[0] = 1;
-    m[1] = 1;
-    m[2] = 1;
+ARCHITECTURE testbench_arch OF local_write IS
+-- If you get a compiler error on the following line,
+-- from the menu do Options->Configuration select VHDL 87
+FILE RESULTS: TEXT OPEN WRITE_MODE IS "c:\cygwin\home\administrator\fkit\pci64\proj\local_write.ano";
+	COMPONENT local_write
+		PORT (
+			MEM_AD : In  std_logic_vector (16 DOWNTO 0);
+			MEM_WE : In  std_logic;
+			MEM_DTI : In  std_logic_vector (63 DOWNTO 0);
+			DMAW_ENABLE : Out  std_logic_vector (3 DOWNTO 0);
+			DBUS_Port : Out  std_logic_vector (63 DOWNTO 0);
+			RST : In  std_logic;
+			CLK : In  std_logic
+		);
+	END COMPONENT;
 
-    r[0][0] = 0.9700436;
-    r[0][1] = -0.24308753;
-    r[0][2] = 0;
-    v[0][0] = 0.466203685;
-    v[0][1] = 0.43236573;
-    v[0][2] = 0;
+	SIGNAL MEM_AD : std_logic_vector (16 DOWNTO 0);
+	SIGNAL MEM_WE : std_logic;
+	SIGNAL MEM_DTI : std_logic_vector (63 DOWNTO 0);
+	SIGNAL DMAW_ENABLE : std_logic_vector (3 DOWNTO 0);
+	SIGNAL DBUS_Port : std_logic_vector (63 DOWNTO 0);
+	SIGNAL RST : std_logic;
+	SIGNAL CLK : std_logic;
 
-    r[1][0] = -r[0][0];
-    r[1][1] = -r[0][1];
-    r[1][2] = -r[0][2];
-    v[1][0] = v[0][0];
-    v[1][1] = v[0][1];
-    v[1][2] = v[0][2];
+BEGIN
+	UUT : local_write
+	PORT MAP (
+		MEM_AD => MEM_AD,
+		MEM_WE => MEM_WE,
+		MEM_DTI => MEM_DTI,
+		DMAW_ENABLE => DMAW_ENABLE,
+		DBUS_Port => DBUS_Port,
+		RST => RST,
+		CLK => CLK
+	);
 
-    r[2][0] = 0;
-    r[2][1] = 0;
-    r[2][2] = 0;
-    v[2][0] = -2 * v[0][0];
-    v[2][1] = -2 * v[0][1];
-    v[2][2] = -2 * v[0][2];
+	PROCESS -- clock process for CLK,
+		VARIABLE TX_TIME : INTEGER :=0;
 
-    cout.precision(16);
+		PROCEDURE ANNOTATE_DMAW_ENABLE(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",DMAW_ENABLE,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, DMAW_ENABLE);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
 
-    cout << n << endl;                      // first output line:  N
-    cout << t << endl;                      // second output line:  time
-    for (int i = 0; i < n; i++){
-        cout << m[i];                       // each next output line:
-        for (int k = 0; k < NDIM; k++)      //   m r_x r_y r_z v_x v_y v_z
-            cout << ' ' << r[i][k];
-        for (int k = 0; k < NDIM; k++)
-            cout << ' ' << v[i][k];
-        cout << endl;
-    }
-}
-//-----------------------------------------------------------------------------
+		PROCEDURE ANNOTATE_DBUS_Port(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",DBUS_Port,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, DBUS_Port);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
+
+	BEGIN
+		CLOCK_LOOP : LOOP
+		CLK <= transport '0';
+		WAIT FOR 5 ns;
+		TX_TIME := TX_TIME + 5;
+		CLK <= transport '1';
+		WAIT FOR 50 ns;
+		TX_TIME := TX_TIME + 50;
+		CLK <= transport '0';
+		WAIT FOR 35 ns;
+		TX_TIME := TX_TIME + 35;
+		ANNOTATE_DMAW_ENABLE(TX_TIME);
+		ANNOTATE_DBUS_Port(TX_TIME);
+		WAIT FOR 10 ns;
+		TX_TIME := TX_TIME + 10;
+		END LOOP CLOCK_LOOP;
+	END PROCESS;
+
+	PROCESS   -- Process for CLK
+		VARIABLE TX_OUT : LINE;
+
+		BEGIN
+		-- --------------------
+		MEM_AD <= transport std_logic_vector'("00000000000000000"); --0
+		MEM_WE <= transport '0';
+		MEM_DTI <= transport std_logic_vector'("0000000000000000000000000000000000000000000000000000000000000000"); --0
+		RST <= transport '0';
+		-- --------------------
+		WAIT FOR 300 ns; -- Time=300 ns
+		MEM_AD <= transport std_logic_vector'("00000010100000000"); --500
+		MEM_WE <= transport '1';
+		MEM_DTI <= transport std_logic_vector'("0000000000000000000000000000000000000000000000000001000100010001"); --1111
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=400 ns
+		MEM_DTI <= transport std_logic_vector'("0000000000000000000000000000000000000000000000000010001000100010"); --2222
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=500 ns
+		MEM_DTI <= transport std_logic_vector'("0000000000000000000000000000000000000000000000000011001100110011"); --3333
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=600 ns
+		MEM_WE <= transport '0';
+		-- --------------------
+		WAIT FOR 3505 ns; -- Time=4105 ns
+		-- --------------------
+
+		STD.TEXTIO.write(TX_OUT, string'("Total[]"));
+		STD.TEXTIO.writeline(results, TX_OUT);
+		ASSERT (FALSE) REPORT
+			"Success! Simulation for annotation completed"
+			SEVERITY FAILURE;
+	END PROCESS;
+END testbench_arch;
+
+CONFIGURATION local_write_cfg OF local_write IS
+	FOR testbench_arch
+	END FOR;
+END local_write_cfg;

@@ -1,50 +1,68 @@
-Tue Nov 13 19:26:56 JST 2018
--- Copyright 2004 Tsuyoshi Hamada
---
---
---clk         __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __
---[DMAR_ENABLE] _____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
---en0                _____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
---en1                     _____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
---en2                          _____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
---en3                               _____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
---DBUS_HiZ            ~~~~~~~~~~~~~~\_________________________________________________/~~~~
+Fri Jan 11 19:32:34 JST 2019
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.std_logic_arith.all;                                        
+use ieee.std_logic_unsigned.all;                                    
 
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-
-entity dmar_dbus_hiz is
+entity calc is
   port (
-    RST       : in std_logic;
-    CLK       : in std_logic;
-    ENABLE    : in std_logic;
-    DBUS_HiZ  : out std_logic :='1');
-end dmar_dbus_hiz;
+    start      : in  std_logic;
+    clk        : in  std_logic;
+    pclk       : in  std_logic;
+    n          : in  std_logic_vector(31 downto 0);
+    run        : out  std_logic;
+    mem_adr    : out  std_logic_vector(31 downto 0));
+end calc;
 
-architecture rtl of dmar_dbus_hiz is
-signal en0,en1,en2,en3 : std_logic :='0';
+architecture rtl of calc is
+
+signal rst :  std_logic;
+signal rstn : std_logic_vector(31 downto 0);
+signal start_r : std_logic;
+signal mema_dc : std_logic_vector(17 downto 0) := (others=>'0');
 begin
 
-  process(CLK) begin
-    if(CLK'event and CLK = '1') then
-      en3 <= en2;
-      en2 <= en1;
-      en1 <= en0;
-      en0 <= ENABLE;
-    end if;
-  end process;
+-- GENERATE rst PULS ------------------
+process(pclk) begin
+  if(pclk'event and pclk='1') then
+    rst <= rstn(0);
+  end if;
+end process;
 
+process (clk) begin
+  if(clk'event and clk='1') then
+    rstn(0) <= start_r AND (NOT start);
+    start_r <= start;
+  end if;
+end process;
+---------------------------------------
 
-  process(RST,CLK,en2,en3) begin
-    if(RST='1') then
-      DBUS_HiZ <= '1';
-    elsif(CLK'event and CLK = '1') then
-     if( (en1='1') AND (en2='0') ) then
-       DBUS_HiZ <= '0';
-     elsif( (en2='0') AND (en3='1') ) then
-       DBUS_HiZ <= '1';
-     end if;
+-- GENERATE run --------------------------
+process(pclk,rst) begin
+  if(rst = '1') then
+    run <= '0';
+  elsif(pclk'event and pclk='1') then
+    if(mema_dc /= "000000000000000000") then
+      run <= '1';
+    else
+      run <= '0';
     end if;
-  end process;
+  end if;
+end process;
+
+-- GENERATE mem_adr  ---------------------
+process(pclk,rst) begin
+  if(rst = '1') then
+    mema_dc <=  n(17 downto 0) ;
+  elsif(pclk'event and pclk='1') then
+    if(mema_dc /= "000000000000000000") then
+      mema_dc <= mema_dc - "000000000000000001";
+    end if;
+  end if;
+end process;
+--hoge
+  mem_adr <= "000000000000000" & mema_dc(15 downto 0) & "0";  -- G5
+--mem_adr <= "00000000000000" & mema_dc(15 downto 0) & "00";  -- SPH FirstStage
+--mem_adr <= "0000000000000" & mema_dc(15 downto 0) & "000";  -- SPH SecondStage
 
 end rtl;

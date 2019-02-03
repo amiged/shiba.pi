@@ -1,42 +1,91 @@
-Tue Dec 25 19:57:34 JST 2018
-// Time-stamp: "2006-12-07 13:35:12 hamada"
-// Copyright (c) 2006 by Tsuyoshi Hamada, All rights reserved.
+Sun Feb  3 19:31:13 JST 2019
+-- Copyright 2004 Tsuyoshi Hamada
+--
+--
+--clk         __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __
+--[ENABLE]    _______/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
+--DBUS               X   >< n ><HHH>----------<d0 ><d1 ><d2 ><d3 ><d4 ><d5 ><d6 ><d7 >
+--DBUS_Port                              <d0 ><d1 ><d2 ><d3 ><d4 ><d5 ><d6 ><d7 >
+--DBUS_HiZ           ~~~~~~~~~~~~~~~\_________________________________________________/~~~~
+--MEM_RE                        ____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______
+--MEM_ADR                        0 >< n ><n+1><n+2><n+3><n+4><n+5><n+6><n+7>< 0
+--MEM_DATA                               <d0 ><d1 ><d2 ><d3 ><d4 ><d5 ><d6 ><d7 >
 
-#include <stdio.h>
-#include <stdlib.h>
-#include "pg4.h"
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
-//#define NMAX (0x1<<10) // 4KB
-//#define NMAX (0x1<<11) // 8KB
-//#define NMAX (0x1<<12) // 16KB
-//#define NMAX (0x1<<13) // 32KB
-#define NMAX (0x1<<14) // 64KB
+entity dmar is
+  port (
+    RST       : in std_logic;
+    CLK       : in std_logic;
+    ENABLE    : in std_logic;
+    DBUS      : in std_logic_vector(63 downto 0);
+    DBUS_Port : out std_logic_vector(63 downto 0);
+    DBUS_HiZ  : out std_logic;
+    MEM_RE    : out std_logic;
+    MEM_ADR   : out std_logic_vector(18 downto 0);
+    MEM_DATA  : in std_logic_vector(63 downto 0)  ); 
+end dmar;
 
-unsigned int* ptr;
-unsigned int* bar1;
+architecture rtl of dmar is
 
-int main(int argc,char *argv[])
-{
-  int devid = 0;
-  int n = NMAX;
-  int i;
+component dmar_dbus_hiz
+  port (
+    RST       : in std_logic;
+    CLK       : in std_logic;
+    ENABLE    : in std_logic;
+    DBUS_HiZ  : out std_logic);
+end component;
 
-  if(argc > 1){
-    n = atoi(argv[1]);
-  }
-  printf("n = %d\n",n);
+component dmar_state
+  port (
+    RST      : in std_logic;
+    CLK      : in std_logic;
+    ENABLE   : in std_logic;
+    STATE    : out std_logic_vector(1 downto 0) );
+end component;
 
-  pg4_open(devid);
-  bar1 = pg4_get_bar1ptr(devid);
-  printf("BAR0: %lx\n",pg4_getbaseaddr(devid,0));
-  printf("BAR1: %lx\n",pg4_getbaseaddr(devid,1));
+component dmar_start_adr
+  port (
+    CLK       : in std_logic;
+    DBUS      : in std_logic_vector(63 downto 0);
+    STATE     : in std_logic_vector(1 downto 0);
+    START_ADR : out std_logic_vector(18 downto 0) );
+end component;
 
-  for(i = 0; i < n; i++) {
-    unsigned int x;
-    x = pg4_readbase1(devid, i);
-    printf("%x : %x\n",i,x);
-  }
+component dmar_mem_adr
+  port (
+    CLK       : in  std_logic;
+    STATE     : in std_logic_vector(1 downto 0);  -- STATE of DMAW
+    START_ADR : in std_logic_vector(18 downto 0);
+    MEM_ADR   : out  std_logic_vector(18 downto 0)
+    );
+end component;
 
 
-  return 0;
-}
+component dmar_mem_re
+  port (
+    CLK       : in std_logic;
+    STATE     : in std_logic_vector(1 downto 0);
+    MEM_RE    : out std_logic );
+end component;
+
+signal state : std_logic_vector(1 downto 0);
+signal start_adr : std_logic_vector(18 downto 0);
+
+begin
+
+-- DBUSのトライステート処理は上位で行う
+-- DBUS <= (others=>'Z') when DBUS_HiZ = '1' else DBUS_Port;
+
+ u0 : dmar_state     port map(RST=>RST, CLK=>CLK,     ENABLE=>ENABLE,       STATE=>state);
+ u1 : dmar_start_adr port map(CLK=>CLK, STATE=>state, DBUS=>DBUS,           START_ADR=>start_adr);
+ u2 : dmar_mem_adr   port map(CLK=>CLK, STATE=>state, START_ADR=>start_adr, MEM_ADR  => MEM_ADR);
+ u3 : dmar_mem_re    port map(CLK=>CLK, STATE=>state,                       MEM_RE   => MEM_RE);
+
+ u4 : dmar_dbus_hiz  port map(RST=>RST, CLK=>CLK,     ENABLE=>ENABLE,       DBUS_HiZ=>DBUS_HiZ);
+ DBUS_Port <= MEM_DATA;
+
+
+end rtl;

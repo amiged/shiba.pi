@@ -1,189 +1,124 @@
-Wed Jan  9 19:32:06 JST 2019
--- C:\CYGWIN\HOME\ADMINISTRATOR\FKIT\PCI64\PROJ
--- VHDL Test Bench created by
--- HDL Bencher 6.1i
--- Wed Dec 29 19:47:04 2004
--- 
--- Notes:
--- 1) This testbench has been automatically generated from
---   your Test Bench Waveform
--- 2) To use this as a user modifiable testbench do the following:
---   - Save it as a file with a .vhd extension (i.e. File->Save As...)
---   - Add it to your project as a testbench source (i.e. Project->Add Source...)
--- 
+Sat Feb 16 19:46:57 JST 2019
+#include "pg_util.h"
+// Funtion Prototyping
+void            pg_float_sub_26_16(LONG x, LONG y, LONG * z);
+void            pg_float_sub_26_16(LONG x, LONG y, LONG * z);
+void            pg_float_sub_26_16(LONG x, LONG y, LONG * z);
+void            pg_float_mult_26_16(LONG x, LONG y, LONG * z);
+void            pg_float_mult_26_16(LONG x, LONG y, LONG * z);
+void            pg_float_mult_26_16(LONG x, LONG y, LONG * z);
+void            pg_float_unsigned_add_26_16(LONG x, LONG y, LONG * z);
+void            pg_float_unsigned_add_26_16(LONG x, LONG y, LONG * z);
+void            pg_float_unsigned_add_26_16(LONG x, LONG y, LONG * z);
+void            pg_float_sqrt_26_16(LONG x, LONG * z);
+void            pg_float_mult_26_16(LONG x, LONG y, LONG * z);
+void            pg_float_recipro_26_16(LONG x, LONG * z);
+void            pg_float_mult_26_16(LONG x, LONG y, LONG * z);
+void            pg_float_expadd_31_26_16(LONG x, LONG * z);
+void            pg_float_mult_26_16(LONG x, LONG y, LONG * z);
+void            pg_float_mult_26_16(LONG x, LONG y, LONG * z);
+void            pg_float_mult_26_16(LONG x, LONG y, LONG * z);
+void            pg_float_fixaccum_26_16(LONG x, LONG * z);
+void            pg_float_fixaccum_26_16(LONG x, LONG * z);
+void            pg_float_fixaccum_26_16(LONG x, LONG * z);
 
-LIBRARY IEEE;
-USE IEEE.STD_LOGIC_1164.ALL;
-USE IEEE.STD_LOGIC_UNSIGNED.ALL;
-USE IEEE.STD_LOGIC_ARITH.ALL;
-USE IEEE.STD_LOGIC_TEXTIO.ALL;
-USE STD.TEXTIO.ALL;
 
-ENTITY sim_writecomb_check IS
-END sim_writecomb_check;
+// API
+void
+force(double x[][3], double m[], double eps2, double a[][3], int n)
+{
+    int             i, j;
+    LONG            sx_0;
+    LONG            sx_1;
+    LONG            sx_2;
+    LONG            xi_0;
+    LONG            xj_0;
+    LONG            xi_1;
+    LONG            xj_1;
+    LONG            xi_2;
+    LONG            xj_2;
+    LONG            dx2_0;
+    LONG            dx2_1;
+    LONG            dx2_2;
+    LONG            ieps2;
+    LONG            x2y2;
+    LONG            z2e2;
+    LONG            r2;
+    LONG            r1;
+    LONG            r3;
+    LONG            r3i;
+    LONG            mj;
+    LONG            mf;
+    LONG            dx_0;
+    LONG            dx_1;
+    LONG            fs;
+    LONG            dx_2;
+    LONG            fx_0;
+    LONG            fx_1;
+    LONG            fx_2;
 
-ARCHITECTURE testbench_arch OF sim_writecomb_check IS
--- If you get a compiler error on the following line,
--- from the menu do Options->Configuration select VHDL 87
-FILE RESULTS: TEXT OPEN WRITE_MODE IS "results.txt";
-	COMPONENT writecomb_check
-		PORT (
-			MEM_WEHA : In  std_logic;
-			MEM_WELA : In  std_logic;
-			IS_ERR : Out  std_logic_vector (1 DOWNTO 0);
-			RST : In  std_logic;
-			CLK : In  std_logic
-		);
-	END COMPONENT;
 
-	SIGNAL MEM_WEHA : std_logic;
-	SIGNAL MEM_WELA : std_logic;
-	SIGNAL IS_ERR : std_logic_vector (1 DOWNTO 0);
-	SIGNAL RST : std_logic;
-	SIGNAL CLK : std_logic;
+    for (i = 0; i < n; i++) {
+	/*
+	 * CONVERT(xi_0,float) 
+	 */ xi_0 = double2pgpgfloat_r(x[i][0], 26, 16, 6);
+	/*
+	 * CONVERT(xi_1,float) 
+	 */ xi_1 = double2pgpgfloat_r(x[i][1], 26, 16, 6);
+	/*
+	 * CONVERT(xi_2,float) 
+	 */ xi_2 = double2pgpgfloat_r(x[i][2], 26, 16, 6);
+	/*
+	 * CONVERT(ieps2,float) 
+	 */ ieps2 = double2pgpgfloat_r(eps2, 26, 16, 6);
 
-BEGIN
-	UUT : writecomb_check
-	PORT MAP (
-		MEM_WEHA => MEM_WEHA,
-		MEM_WELA => MEM_WELA,
-		IS_ERR => IS_ERR,
-		RST => RST,
-		CLK => CLK
-	);
+	sx_0 = 0;
+	sx_1 = 0;
+	sx_2 = 0;
 
-	PROCESS -- clock process for CLK,
-	BEGIN
-		CLOCK_LOOP : LOOP
-		CLK <= transport '0';
-		WAIT FOR 5 ns;
-		CLK <= transport '1';
-		WAIT FOR 50 ns;
-		CLK <= transport '0';
-		WAIT FOR 35 ns;
-		WAIT FOR 10 ns;
-		END LOOP CLOCK_LOOP;
-	END PROCESS;
+	for (j = n - 1; j >= 0; j--) {
+	    /*
+	     * CONVERT(xj_0,float) 
+	     */ xj_0 = double2pgpgfloat_r(x[j][0], 26, 16, 6);
+	    /*
+	     * CONVERT(xj_1,float) 
+	     */ xj_1 = double2pgpgfloat_r(x[j][1], 26, 16, 6);
+	    /*
+	     * CONVERT(xj_2,float) 
+	     */ xj_2 = double2pgpgfloat_r(x[j][2], 26, 16, 6);
+	    /*
+	     * CONVERT(mj,float) 
+	     */ mj = double2pgpgfloat_r(m[j], 26, 16, 6);
 
-	PROCESS   -- Process for CLK
-		VARIABLE TX_OUT : LINE;
-		VARIABLE TX_ERROR : INTEGER := 0;
-
-		PROCEDURE CHECK_IS_ERR(
-			next_IS_ERR : std_logic_vector (1 DOWNTO 0);
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			-- If compiler error ("/=" is ambiguous) occurs in the next line of code
-			-- change compiler settings to use explicit declarations only
-			IF (IS_ERR /= next_IS_ERR) THEN 
-				STD.TEXTIO.write(TX_LOC,string'("Error at time="));
-				STD.TEXTIO.write(TX_LOC, TX_TIME);
-				STD.TEXTIO.write(TX_LOC,string'("ns IS_ERR="));
-				IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, IS_ERR);
-				STD.TEXTIO.write(TX_LOC, string'(", Expected = "));
-				IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, next_IS_ERR);
-				STD.TEXTIO.write(TX_LOC, string'(" "));
-				TX_STR(TX_LOC.all'range) := TX_LOC.all;
-				STD.TEXTIO.writeline(results, TX_LOC);
-				STD.TEXTIO.Deallocate(TX_LOC);
-				ASSERT (FALSE) REPORT TX_STR SEVERITY ERROR;
-				TX_ERROR := TX_ERROR + 1;
-			END IF;
-		END;
-
-		BEGIN
-		-- --------------------
-		RST <= transport '0';
-		MEM_WEHA <= transport '0';
-		MEM_WELA <= transport '0';
-		-- --------------------
-		WAIT FOR 200 ns; -- Time=200 ns
-		RST <= transport '0';
-		-- --------------------
-		WAIT FOR 500 ns; -- Time=700 ns
-		MEM_WEHA <= transport '0';
-		MEM_WELA <= transport '0';
-		-- --------------------
-		WAIT FOR 200 ns; -- Time=900 ns
-		RST <= transport '1';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=1000 ns
-		RST <= transport '0';
-		-- --------------------
-		WAIT FOR 1900 ns; -- Time=2900 ns
-		MEM_WEHA <= transport '1';
-		MEM_WELA <= transport '1';
-		-- --------------------
-		WAIT FOR 500 ns; -- Time=3400 ns
-		MEM_WEHA <= transport '0';
-		MEM_WELA <= transport '0';
-		-- --------------------
-		WAIT FOR 1100 ns; -- Time=4500 ns
-		MEM_WEHA <= transport '1';
-		MEM_WELA <= transport '1';
-		-- --------------------
-		WAIT FOR 200 ns; -- Time=4700 ns
-		MEM_WEHA <= transport '0';
-		MEM_WELA <= transport '0';
-		-- --------------------
-		WAIT FOR 1300 ns; -- Time=6000 ns
-		MEM_WELA <= transport '1';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=6100 ns
-		MEM_WELA <= transport '0';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=6200 ns
-		MEM_WEHA <= transport '0';
-		-- --------------------
-		WAIT FOR 300 ns; -- Time=6500 ns
-		MEM_WEHA <= transport '1';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=6600 ns
-		MEM_WEHA <= transport '0';
-		-- --------------------
-		WAIT FOR 1300 ns; -- Time=7900 ns
-		MEM_WELA <= transport '1';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=8000 ns
-		MEM_WEHA <= transport '1';
-		MEM_WELA <= transport '0';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=8100 ns
-		MEM_WEHA <= transport '0';
-		MEM_WELA <= transport '1';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=8200 ns
-		MEM_WEHA <= transport '1';
-		MEM_WELA <= transport '0';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=8300 ns
-		MEM_WEHA <= transport '0';
-		-- --------------------
-		WAIT FOR 2005 ns; -- Time=10305 ns
-		-- --------------------
-
-		IF (TX_ERROR = 0) THEN 
-			STD.TEXTIO.write(TX_OUT,string'("No errors or warnings"));
-			STD.TEXTIO.writeline(results, TX_OUT);
-			ASSERT (FALSE) REPORT
-				"Simulation successful (not a failure).  No problems detected. "
-				SEVERITY FAILURE;
-		ELSE
-			STD.TEXTIO.write(TX_OUT, TX_ERROR);
-			STD.TEXTIO.write(TX_OUT, string'(
-				" errors found in simulation"));
-			STD.TEXTIO.writeline(results, TX_OUT);
-			ASSERT (FALSE) REPORT
-				"Errors found during simulation"
-				SEVERITY FAILURE;
-		END IF;
-	END PROCESS;
-END testbench_arch;
-
-CONFIGURATION writecomb_check_cfg OF sim_writecomb_check IS
-	FOR testbench_arch
-	END FOR;
-END writecomb_check_cfg;
+	    pg_float_sub_26_16(xi_0, xj_0, &dx_0);
+	    pg_float_sub_26_16(xi_1, xj_1, &dx_1);
+	    pg_float_sub_26_16(xi_2, xj_2, &dx_2);
+	    pg_float_mult_26_16(dx_0, dx_0, &dx2_0);
+	    pg_float_mult_26_16(dx_1, dx_1, &dx2_1);
+	    pg_float_mult_26_16(dx_2, dx_2, &dx2_2);
+	    pg_float_unsigned_add_26_16(dx2_0, dx2_1, &x2y2);
+	    pg_float_unsigned_add_26_16(dx2_2, ieps2, &z2e2);
+	    pg_float_unsigned_add_26_16(x2y2, z2e2, &r2);
+	    pg_float_sqrt_26_16(r2, &r1);
+	    pg_float_mult_26_16(r2, r1, &r3);
+	    pg_float_recipro_26_16(r3, &r3i);
+	    pg_float_mult_26_16(r3i, mj, &mf);
+	    pg_float_expadd_31_26_16(mf, &fs);
+	    pg_float_mult_26_16(fs, dx_0, &fx_0);
+	    pg_float_mult_26_16(fs, dx_1, &fx_1);
+	    pg_float_mult_26_16(fs, dx_2, &fx_2);
+	    pg_float_fixaccum_26_16_57_64(fx_0, &sx_0);
+	    pg_float_fixaccum_26_16_57_64(fx_1, &sx_1);
+	    pg_float_fixaccum_26_16_57_64(fx_2, &sx_2);
+	}
+	a[i][0] =
+	    ((double) (((long long int) sx_0) << 0)) *
+	    ((-1.0 / pow(2.0, (double) 31))) / pow(2.0, 0.0);
+	a[i][1] =
+	    ((double) (((long long int) sx_1) << 0)) *
+	    ((-1.0 / pow(2.0, (double) 31))) / pow(2.0, 0.0);
+	a[i][2] =
+	    ((double) (((long long int) sx_2) << 0)) *
+	    ((-1.0 / pow(2.0, (double) 31))) / pow(2.0, 0.0);
+    }
+}

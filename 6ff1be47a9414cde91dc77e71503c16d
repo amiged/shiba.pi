@@ -1,20 +1,5 @@
-Mon Jan 28 19:26:20 JST 2019
-#!/usr/bin/perl
-
-
-my $is_stop = 0;
-
-if($ARGV[0]){
-    $is_stop = 1;
-}
-
-my $cmd ="cat /sys/class/fpga/fpga0/irq_count";
-
-while(1){
-    my $exe = `$cmd`;
-    print $exe;
-    exit (1) if($is_stop == 1);
-    sleep (2);
-}
-
-1;
+Tue Mar 12 19:28:40 JST 2019
+INFO:DesignRules:547 - Blockcheck: To achieve optimal frequency synthesis
+   performance with the CLKFX and CLKFX180 outputs of the DCM comp dcm0_dcm0,
+   consult the Virtex-II Interactive Data Sheet.
+DRC detected 0 errors and 0 warnings.

@@ -1,40 +1,52 @@
-Tue Mar 26 19:29:22 JST 2019
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL;
-use IEEE.STD_LOGIC_ARITH.ALL;
-
-
-entity WRITECOMB_CHECK is
-  port (
-    MEM_WEHA : in std_logic;
-    MEM_WELA : in std_logic;
-    IS_ERR : out std_logic_vector(25 downto 0);
-    RST : in  std_logic;
-    CLK : in  std_logic
-    );
-end WRITECOMB_CHECK;
-
-architecture rtl of WRITECOMB_CHECK is
-
-signal cnt,cntr : std_logic_vector(25 downto 0) := (others=>'0');
-
-begin
-
-  IS_ERR <= cnt;
-
-  cntr <= cnt;
-
-  process(CLK, RST, MEM_WEHA, MEM_WELA) begin
-    if(RST = '1') then
-      cnt <= (others=>'0');
-    elsif(CLK'event and CLK='1') then
-      if(MEM_WEHA='1' AND MEM_WELA='0') then
-        cnt <= cntr + "00000000000000000000000001";
-      elsif(MEM_WEHA='0' AND MEM_WELA='1') then
-        cnt <= cntr + "00000000000000000000000001";
-      end if;
-    end if;
-  end process;
-
-end rtl;
+Fri Apr  5 19:27:20 JST 2019
+set -tmpdir __projnav
+set -xsthdpdir ./xst
+run
+-ifn top.prj
+-ifmt mixed
+-ofn top
+-ofmt NGC
+-p xc2vp70-5-ff1517
+-top top
+-opt_mode Speed
+-opt_level 1
+-iuc NO
+-lso top.lso
+-keep_hierarchy NO
+-glob_opt AllClockNets
+-rtlview Yes
+-read_cores YES
+-write_timing_constraints NO
+-cross_clock_analysis NO
+-hierarchy_separator _
+-bus_delimiter <>
+-case maintain
+-slice_utilization_ratio 100
+-verilog2001 YES
+-vlgincdir 
+-fsm_extract YES -fsm_encoding Auto
+-fsm_style lut
+-ram_extract Yes
+-ram_style Auto
+-rom_extract Yes
+-rom_style Auto
+-mux_extract YES
+-mux_style Auto
+-decoder_extract YES
+-priority_extract YES
+-shreg_extract YES
+-shift_extract YES
+-xor_collapse YES
+-resource_sharing YES
+-mult_style auto
+-iobuf YES
+-max_fanout 500
+-bufg 16
+-register_duplication YES
+-equivalent_register_removal YES
+-register_balancing No
+-slice_packing YES
+-optimize_primitives NO
+-tristate2logic No
+-iob auto
+-slice_utilization_ratio_maxmargin 5

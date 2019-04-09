@@ -1,29 +1,41 @@
-Sat Feb 16 19:30:51 JST 2019
-//Time-stamp: "2006-11-21 00:17:47 hamada"
+Tue Apr  9 19:44:02 JST 2019
+Release 6.2.03i - ngdbuild G.31a
+Copyright (c) 1995-2004 Xilinx, Inc.  All rights reserved.
 
-#define FDIM 8       // depend on NBIT_L_UADR     (@ ifpga.vhd)
-#define JDIM 4       // depend on dpram adr width (@ pgpg_mem.vhd)
-#define XI_AWIDTH 4  // depend on l_adri width    (@ pgpg_mem.vhd)
+Command Line: ngdbuild -intstyle ise -dd ./_ngo -uc ../top.ucf -p
+xc2vp70-ff1517-5 top.ngc top.ngd 
 
-int pgr_open(int);
-void pgr_close(int);
+Reading NGO file
+"/home/hamada/pgr/Demos/PairWiseErr/pgr/ISE_PROJECT/proj/top.ngc" ...
+Reading component libraries for design expansion...
 
-void pgr_reset(int devid);
-int  pgr_get_writecomb_err(int devid);
+Annotating constraints to design from file "../top.ucf" ...
 
-void pgr_setjpset(int devid, unsigned int jdata[][JDIM], int nj);
-void pgr_setjpset_one(int devid, int j, unsigned int jdata[JDIM]);
+Checking timing specifications ...
+WARNING:XdmHelpers:793 - The TNM "CLK66" drives the CLKIN pin of DCM
+   "dcm0_dcm0". This TNM cannot be traced through the DCM because it is not used
+   in exactly one PERIOD specification. This TNM is used in the following user
+   groups and/or specifications:
+   <none>
+WARNING:XdmHelpers:625 - No instances driven from signal "CK66" are valid for
+   inclusion in TNM group "CLK66". A TNM property on a pin or signal marks only
+   the flip-flops, latches and/or RAMs which are directly or indirectly driven
+   by that pin or signal.
+INFO:XdmHelpers:851 - TNM "CK66", used in period specification "TS_CK66", was
+   traced into DCM instance "dcm0_dcm0". The following new TNM groups and period
+   specifications were generated at the DCM output(s):
+   CLK0: TS_dcm0_dcm_out=PERIOD dcm0_dcm_out TS_CK66*1.000000 HIGH 50.000000%
+   CLKFX: TS_dcm0_dcm_fx=PERIOD dcm0_dcm_fx TS_CK66*1.000000 HIGH 50.000000%
+WARNING:XdmHelpers:644 - No appropriate elements were found for the TNM group
+   "CLK66". This group has been removed from the design.
+Checking expanded design ...
 
-void pgr_setipset(int devid, unsigned int *idata, int num);
-void pgr_setipset_ichip(int devid, unsigned int ichip, unsigned int *idata, int number_of_pipelines);
-void pgr_setipset_one(int devid, unsigned int ichip, int ipipe, unsigned int *idata, int idim);
+NGDBUILD Design Results Summary:
+  Number of errors:     0
+  Number of warnings:   3
 
-void pgr_start_calc(int devid, unsigned int n);
-void pgr_calc_start(int devid, unsigned int n);
-void pgr_calc_finish(int devid);
+Total memory usage is 67920 kilobytes
 
-void pgr_getfoset(int devid, unsigned long long int fodata[][FDIM]);
+Writing NGD file "top.ngd" ...
 
-void pgr_set_npipe_per_chip(int devid, int n);
-void pgr_set_jwidth(int devid, int n);
-void pgr_set_nchip(int nchip);
+Writing NGDBUILD log file "top.bld"...

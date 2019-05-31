@@ -1,50 +1,34 @@
-Mon May 20 19:30:43 JST 2019
-#!/usr/bin/env python3
-import numpy as np
-import cv2
-from datetime import datetime
-import mkdir
-import sys
+Fri May 31 19:54:24 JST 2019
+-- Copyright 2004 Tsuyoshi Hamada
+--
+--
+--clk         __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __
+--state_dmaw          0  >< 1 >< 2                                    >< 3 >< 0 
+--mem_we                        ____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______
 
-def put_text(image, text):
-    font_size = 1.0
-    font_type = cv2.FONT_HERSHEY_PLAIN
-    font_color = (0xf, 0xf, 0xff)
-    cv2.putText(image, text, (460, 15), font_type, font_size, font_color)
-    
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
+entity dmaw_mem_we is
+  port (
+    CLK       : in std_logic;
+    STATE     : in std_logic_vector(1 downto 0);
+    MEM_WE    : out std_logic );
+end dmaw_mem_we;
 
-if (__name__ == '__main__'):
-    argv = sys.argv
-    devid = int(argv[1])
-    log_base = '../log/'
-    cap = cv2.VideoCapture(devid)
+architecture rtl of dmaw_mem_we is
 
-    cap_width  = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
-    cap_height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
-    cap_fps    = cap.get(cv2.CAP_PROP_FPS)
+begin
 
-    print(cap_width, "x", cap_height, ":", cap_fps)
+  process (CLK,STATE) begin
+    if(CLK'event and CLK = '1') then
+      if(STATE="10") then
+        MEM_WE <= '1';
+      else
+        MEM_WE <= '0';
+      end if;
+    end if;
+  end process;
 
-    tnow0 = datetime.now().strftime('%Y%m%d_%H_%M_%S') # ('%Y%m%d_%H_%M_%S_%f')
-
-    while(cap.isOpened()):
-        ret, frame = cap.read()
-        cv2.imshow('frame', frame)
-
-        tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S')
-        if(tnow != tnow0):
-            put_text(frame, tnow)
-            ofname = mkdir.get_filename_frame('../log/', tnow)
-#            cv2.imwrite(ofname, frame)
-            print(ofname, ": TEST on devid=%d"%devid)
-            tnow0 = tnow
- 
-
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-
-    cap.release()
-    cv2.destroyAllWindows()
-
-    print("Done.")
+end rtl;

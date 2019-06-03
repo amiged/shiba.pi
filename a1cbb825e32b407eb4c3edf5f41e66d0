@@ -1,18 +1,15 @@
-Wed Apr 24 19:58:14 JST 2019
-FILES
-{
-	VHDL_FILE = pgfpga.vhd;
-}
-COMPILER_SETTINGS_LIST
-{
-	COMPILER_SETTINGS = pgfpga;
-}
-SIMULATOR_SETTINGS_LIST
-{
-	SIMULATOR_SETTINGS = pgfpga;
-}
-SOFTWARE_SETTINGS_LIST
-{
-	SOFTWARE_SETTINGS = Debug;
-	SOFTWARE_SETTINGS = Release;
-}
+Mon Jun  3 19:28:38 JST 2019
+#!/bin/sh
+#
+# An example hook script to verify what is about to be committed
+# by applypatch from an e-mail message.
+#
+# The hook should exit with non-zero status after issuing an
+# appropriate message if it wants to stop the commit.
+#
+# To enable this hook, rename this file to "pre-applypatch".
+
+. git-sh-setup
+test -x "$GIT_DIR/hooks/pre-commit" &&
+	exec "$GIT_DIR/hooks/pre-commit" ${1+"$@"}
+:

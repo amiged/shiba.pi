@@ -1,29 +1,168 @@
-Fri May 17 19:30:28 JST 2019
-//Time-stamp: "2006-11-21 00:17:47 hamada"
+Fri Jul 12 19:26:39 JST 2019
+-- C:\CYGWIN\HOME\ADMINISTRATOR\FKIT\PCI64\PROJ
+-- VHDL Annotation Test Bench created by
+-- HDL Bencher 6.1i
+-- Wed Dec 29 19:47:04 2004
 
-#define FDIM 8       // depend on NBIT_L_UADR     (@ ifpga.vhd)
-#define JDIM 4       // depend on dpram adr width (@ pgpg_mem.vhd)
-#define XI_AWIDTH 4  // depend on l_adri width    (@ pgpg_mem.vhd)
+LIBRARY IEEE;
+USE IEEE.STD_LOGIC_1164.ALL;
+USE IEEE.STD_LOGIC_UNSIGNED.ALL;
+USE IEEE.STD_LOGIC_ARITH.ALL;
+USE IEEE.STD_LOGIC_TEXTIO.ALL;
+USE STD.TEXTIO.ALL;
 
-int pgr_open(int);
-void pgr_close(int);
+ENTITY sim_writecomb_check IS
+END sim_writecomb_check;
 
-void pgr_reset(int devid);
-int  pgr_get_writecomb_err(int devid);
+ARCHITECTURE testbench_arch OF sim_writecomb_check IS
+-- If you get a compiler error on the following line,
+-- from the menu do Options->Configuration select VHDL 87
+FILE RESULTS: TEXT OPEN WRITE_MODE IS "c:\cygwin\home\administrator\fkit\pci64\proj\sim_writecomb_check.ano";
+	COMPONENT writecomb_check
+		PORT (
+			MEM_WEHA : In  std_logic;
+			MEM_WELA : In  std_logic;
+			IS_ERR : Out  std_logic_vector (1 DOWNTO 0);
+			RST : In  std_logic;
+			CLK : In  std_logic
+		);
+	END COMPONENT;
 
-void pgr_setjpset(int devid, unsigned int jdata[][JDIM], int nj);
-void pgr_setjpset_one(int devid, int j, unsigned int jdata[JDIM]);
+	SIGNAL MEM_WEHA : std_logic;
+	SIGNAL MEM_WELA : std_logic;
+	SIGNAL IS_ERR : std_logic_vector (1 DOWNTO 0);
+	SIGNAL RST : std_logic;
+	SIGNAL CLK : std_logic;
 
-void pgr_setipset(int devid, unsigned int *idata, int num);
-void pgr_setipset_ichip(int devid, unsigned int ichip, unsigned int *idata, int number_of_pipelines);
-void pgr_setipset_one(int devid, unsigned int ichip, int ipipe, unsigned int *idata, int idim);
+BEGIN
+	UUT : writecomb_check
+	PORT MAP (
+		MEM_WEHA => MEM_WEHA,
+		MEM_WELA => MEM_WELA,
+		IS_ERR => IS_ERR,
+		RST => RST,
+		CLK => CLK
+	);
 
-void pgr_start_calc(int devid, unsigned int n);
-void pgr_calc_start(int devid, unsigned int n);
-void pgr_calc_finish(int devid);
+	PROCESS -- clock process for CLK,
+		VARIABLE TX_TIME : INTEGER :=0;
 
-void pgr_getfoset(int devid, unsigned long long int fodata[][FDIM]);
+		PROCEDURE ANNOTATE_IS_ERR(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",IS_ERR,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, IS_ERR);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
 
-void pgr_set_npipe_per_chip(int devid, int n);
-void pgr_set_jwidth(int devid, int n);
-void pgr_set_nchip(int nchip);
+	BEGIN
+		CLOCK_LOOP : LOOP
+		CLK <= transport '0';
+		WAIT FOR 5 ns;
+		TX_TIME := TX_TIME + 5;
+		CLK <= transport '1';
+		WAIT FOR 50 ns;
+		TX_TIME := TX_TIME + 50;
+		CLK <= transport '0';
+		WAIT FOR 35 ns;
+		TX_TIME := TX_TIME + 35;
+		ANNOTATE_IS_ERR(TX_TIME);
+		WAIT FOR 10 ns;
+		TX_TIME := TX_TIME + 10;
+		END LOOP CLOCK_LOOP;
+	END PROCESS;
+
+	PROCESS   -- Process for CLK
+		VARIABLE TX_OUT : LINE;
+
+		BEGIN
+		-- --------------------
+		RST <= transport '0';
+		MEM_WEHA <= transport '0';
+		MEM_WELA <= transport '0';
+		-- --------------------
+		WAIT FOR 200 ns; -- Time=200 ns
+		RST <= transport '0';
+		-- --------------------
+		WAIT FOR 500 ns; -- Time=700 ns
+		MEM_WEHA <= transport '0';
+		MEM_WELA <= transport '0';
+		-- --------------------
+		WAIT FOR 200 ns; -- Time=900 ns
+		RST <= transport '1';
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=1000 ns
+		RST <= transport '0';
+		-- --------------------
+		WAIT FOR 1900 ns; -- Time=2900 ns
+		MEM_WEHA <= transport '1';
+		MEM_WELA <= transport '1';
+		-- --------------------
+		WAIT FOR 500 ns; -- Time=3400 ns
+		MEM_WEHA <= transport '0';
+		MEM_WELA <= transport '0';
+		-- --------------------
+		WAIT FOR 1100 ns; -- Time=4500 ns
+		MEM_WEHA <= transport '1';
+		MEM_WELA <= transport '1';
+		-- --------------------
+		WAIT FOR 200 ns; -- Time=4700 ns
+		MEM_WEHA <= transport '0';
+		MEM_WELA <= transport '0';
+		-- --------------------
+		WAIT FOR 1300 ns; -- Time=6000 ns
+		MEM_WELA <= transport '1';
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=6100 ns
+		MEM_WELA <= transport '0';
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=6200 ns
+		MEM_WEHA <= transport '0';
+		-- --------------------
+		WAIT FOR 300 ns; -- Time=6500 ns
+		MEM_WEHA <= transport '1';
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=6600 ns
+		MEM_WEHA <= transport '0';
+		-- --------------------
+		WAIT FOR 1300 ns; -- Time=7900 ns
+		MEM_WELA <= transport '1';
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=8000 ns
+		MEM_WEHA <= transport '1';
+		MEM_WELA <= transport '0';
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=8100 ns
+		MEM_WEHA <= transport '0';
+		MEM_WELA <= transport '1';
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=8200 ns
+		MEM_WEHA <= transport '1';
+		MEM_WELA <= transport '0';
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=8300 ns
+		MEM_WEHA <= transport '0';
+		-- --------------------
+		WAIT FOR 2005 ns; -- Time=10305 ns
+		-- --------------------
+
+		STD.TEXTIO.write(TX_OUT, string'("Total[]"));
+		STD.TEXTIO.writeline(results, TX_OUT);
+		ASSERT (FALSE) REPORT
+			"Success! Simulation for annotation completed"
+			SEVERITY FAILURE;
+	END PROCESS;
+END testbench_arch;
+
+CONFIGURATION writecomb_check_cfg OF sim_writecomb_check IS
+	FOR testbench_arch
+	END FOR;
+END writecomb_check_cfg;

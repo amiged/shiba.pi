@@ -1,2 +1,19 @@
-Thu Jul 25 19:46:15 JST 2019
-EN pfpga_config NULL c:/cygwin/home/administrator/fkit/pci64/tmp2/pfpga_config.vhd sub00/vhpl00
+Wed Aug 14 19:53:06 JST 2019
+//============================================================================
+struct flops_member {
+  double Gflops;
+  double start_time;
+  double force_time;
+  int nbody;
+  int times;
+  int nstep;
+  int nskip;
+};
+
+void flops_initialize(struct flops_member *fm, int n, int nskip);
+void flops_check(struct flops_member *fm);
+
+void flops_ftime_init(struct flops_member *fm);
+void flops_ftime_save(struct flops_member *fm);
+
+

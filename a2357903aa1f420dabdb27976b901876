@@ -1,170 +1,57 @@
-Sun Aug 25 19:46:13 JST 2019
-#!/bin/sh
-#
-# Copyright (c) 2006, 2008 Junio C Hamano
-#
-# The "pre-rebase" hook is run just before "git rebase" starts doing
-# its job, and can prevent the command from running by exiting with
-# non-zero status.
-#
-# The hook is called with the following parameters:
-#
-# $1 -- the upstream the series was forked from.
-# $2 -- the branch being rebased (or empty when rebasing the current branch).
-#
-# This sample shows how to prevent topic branches that are already
-# merged to 'next' branch from getting rebased, because allowing it
-# would result in rebasing already published history.
-
-publish=next
-basebranch="$1"
-if test "$#" = 2
-then
-	topic="refs/heads/$2"
-else
-	topic=`git symbolic-ref HEAD` ||
-	exit 0 ;# we do not interrupt rebasing detached HEAD
-fi
-
-case "$topic" in
-refs/heads/??/*)
-	;;
-*)
-	exit 0 ;# we do not interrupt others.
-	;;
-esac
-
-# Now we are dealing with a topic branch being rebased
-# on top of master.  Is it OK to rebase it?
-
-# Does the topic really exist?
-git show-ref -q "$topic" || {
-	echo >&2 "No such branch $topic"
-	exit 1
-}
-
-# Is topic fully merged to master?
-not_in_master=`git rev-list --pretty=oneline ^master "$topic"`
-if test -z "$not_in_master"
-then
-	echo >&2 "$topic is fully merged to master; better remove it."
-	exit 1 ;# we could allow it, but there is no point.
-fi
-
-# Is topic ever merged to next?  If so you should not be rebasing it.
-only_next_1=`git rev-list ^master "^$topic" ${publish} | sort`
-only_next_2=`git rev-list ^master           ${publish} | sort`
-if test "$only_next_1" = "$only_next_2"
-then
-	not_in_topic=`git rev-list "^$topic" master`
-	if test -z "$not_in_topic"
-	then
-		echo >&2 "$topic is already up-to-date with master"
-		exit 1 ;# we could allow it, but there is no point.
-	else
-		exit 0
-	fi
-else
-	not_in_next=`git rev-list --pretty=oneline ^${publish} "$topic"`
-	/usr/bin/perl -e '
-		my $topic = $ARGV[0];
-		my $msg = "* $topic has commits already merged to public branch:\n";
-		my (%not_in_next) = map {
-			/^([0-9a-f]+) /;
-			($1 => 1);
-		} split(/\n/, $ARGV[1]);
-		for my $elem (map {
-				/^([0-9a-f]+) (.*)$/;
-				[$1 => $2];
-			} split(/\n/, $ARGV[2])) {
-			if (!exists $not_in_next{$elem->[0]}) {
-				if ($msg) {
-					print STDERR $msg;
-					undef $msg;
-				}
-				print STDERR " $elem->[1]\n";
-			}
-		}
-	' "$topic" "$not_in_next" "$not_in_master"
-	exit 1
-fi
-
-exit 0
-
-################################################################
-
-This sample hook safeguards topic branches that have been
-published from being rewound.
-
-The workflow assumed here is:
-
- * Once a topic branch forks from "master", "master" is never
-   merged into it again (either directly or indirectly).
-
- * Once a topic branch is fully cooked and merged into "master",
-   it is deleted.  If you need to build on top of it to correct
-   earlier mistakes, a new topic branch is created by forking at
-   the tip of the "master".  This is not strictly necessary, but
-   it makes it easier to keep your history simple.
-
- * Whenever you need to test or publish your changes to topic
-   branches, merge them into "next" branch.
-
-The script, being an example, hardcodes the publish branch name
-to be "next", but it is trivial to make it configurable via
-$GIT_DIR/config mechanism.
-
-With this workflow, you would want to know:
-
-(1) ... if a topic branch has ever been merged to "next".  Young
-    topic branches can have stupid mistakes you would rather
-    clean up before publishing, and things that have not been
-    merged into other branches can be easily rebased without
-    affecting other people.  But once it is published, you would
-    not want to rewind it.
-
-(2) ... if a topic branch has been fully merged to "master".
-    Then you can delete it.  More importantly, you should not
-    build on top of it -- other people may already want to
-    change things related to the topic as patches against your
-    "master", so if you need further changes, it is better to
-    fork the topic (perhaps with the same name) afresh from the
-    tip of "master".
-
-Let's look at this example:
-
-		   o---o---o---o---o---o---o---o---o---o "next"
-		  /       /           /           /
-		 /   a---a---b A     /           /
-		/   /               /           /
-	       /   /   c---c---c---c B         /
-	      /   /   /             \         /
-	     /   /   /   b---b C     \       /
-	    /   /   /   /             \     /
-    ---o---o---o---o---o---o---o---o---o---o---o "master"
-
-
-A, B and C are topic branches.
-
- * A has one fix since it was merged up to "next".
-
- * B has finished.  It has been fully merged up to "master" and "next",
-   and is ready to be deleted.
-
- * C has not merged to "next" at all.
-
-We would want to allow C to be rebased, refuse A, and encourage
-B to be deleted.
-
-To compute (1):
-
-	git rev-list ^master ^topic next
-	git rev-list ^master        next
-
-	if these match, topic has not merged in next at all.
-
-To compute (2):
-
-	git rev-list master..topic
-
-	if this is empty, it is fully merged to "master".
+Mon Oct 14 19:54:49 JST 2019
+1
+0.0	0.0
+-100.0	0.0
+-100.0	0.0
+-100.0	0.0
+-100.0	0.0
+-2.746715e-01	4.191831e-01
+-2.931587e-01	2.247797e-01
+2.321991e-01	4.064824e-01
+-1.520429e-01	3.578809e-01
+-8.481506e-02	-3.058323e-01
+1.856104e-01	2.437552e-02
+-3.403643e-01	4.547575e-01
+-3.730157e-01	-4.956605e-01
+-1.173085e-01	-2.492071e-01
+1.552879e-01	3.449078e-02
+1.099664e-01	-2.121421e-01
+4.092620e-01	2.361288e-01
+-3.788992e-01	1.148062e-01
+-2.340848e-01	4.453564e-01
+-7.531051e-02	-2.516460e-01
+1.772955e-01	-4.287967e-01
+-4.426001e-02	-3.237644e-04
+-4.797312e-01	3.861750e-01
+1.545830e-01	5.970007e-02
+4.850480e-01	-1.605443e-01
+-4.632017e-01	-2.009751e-01
+4.881687e-01	-5.634217e-02
+-3.708808e-01	4.150378e-01
+-1.135756e-01	-4.695678e-01
+-3.155564e-01	4.356883e-01
+-1.920876e-02	9.783734e-02
+-6.385236e-02	-3.949834e-01
+2.275205e-01	-3.768423e-01
+1.721155e-01	-4.660092e-01
+4.644338e-01	-4.804784e-01
+-4.553355e-01	-7.876486e-02
+2.642185e-01	4.444889e-01
+5.434882e-02	1.171663e-01
+1.465040e-01	-1.143288e-01
+4.021194e-01	-1.771178e-01
+-7.684997e-02	-4.504972e-02
+7.223762e-02	-4.515364e-01
+-2.392842e-02	-3.878574e-01
+3.425949e-01	-1.136164e-01
+-4.632521e-01	2.447992e-01
+2.661087e-03	-2.676771e-01
+-2.328564e-01	-3.223420e-01
+-4.466751e-01	-1.286633e-01
+-4.479510e-01	-6.189542e-02
+-4.433532e-01	1.711145e-01
+-2.251056e-01	-4.814771e-01
+1.644014e-01	3.307433e-01
+-4.618902e-01	1.489123e-01
+7.775744e-02	3.332788e-01
+3.334003e-01	-1.894713e-01

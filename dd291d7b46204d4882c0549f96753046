@@ -1,59 +1,44 @@
-Sun Aug 11 19:31:38 JST 2019
-//-----------------------------------------------------------------------------
-// mk_eight.C:  prints initial conditions for the figure eight
-//              of the three-body problem
-//-----------------------------------------------------------------------------
-#include  <iostream>
-using namespace std;
+Wed Oct 16 19:46:50 JST 2019
+////////////////////////////////////// ADDRESS OF IFPGA REGISTERS
+#define PIPE_DMA_STAT      0x0   // gpreg0(0) : pipe calc sts | available but not used in api
+#define PIPE_RST           0x4
+#define CNF_CMD_ADR       0x80
+#define CNF_DAT_ADR       0x84
+#define PIPE_DMA_WRITE    0x88   // unused
+#define PIPE_DMA_READ     0x8C   // unused
+#define NPIPE_IFPGA       0x8C  // PGPG_REG3 @ ifpga.vhd
 
-typedef double  real;                      // "real" as a general name for the
-                                           // standard floating-point data type
-#define  NDIM     3                        // number of spatial dimensions
+/********************************************************************
+ * PIPE_DMA_WRITE (31 downto 28) : pfpga chip select
+ *       "        (27 downto 19) : num of 64-bit WARD
+ *       "        (18 downto  0) : offset of pfpga address
+ *
+ * PIPE_DMA_READ  (31 downto 28) : pfpga chip select
+ *       "        (27 downto 19) : num of 64-bit WARD
+ *       "        (18 downto  0) : offset of pfpga address
+ ********************************************************************/
 
-int main()
-{
-    const int n = 3;           // number of particles
-    const real t = 0;          // time
-    real r[n][NDIM];           // r[i][k] : position component k for particle i
-    real v[n][NDIM];           // v[i][k] : velocity component k for particle i
-    real m[n];                 // m[i] : mass for particle i
+/*****************************************************
+0x5000 - 0x501f : i 0
+0x5020 - 0x503f : i 1
+0x5040 - 0x505f : i 2
+0x5060 - 0x507f : i 3
+0x5080 - 0x5fff : -- none --
 
-    m[0] = 1;
-    m[1] = 1;
-    m[2] = 1;
+0x6000 - 0x60ff : f 0
+0x6100 - 0x61ff : f 1
+0x6200 - 0x62ff : f 2
+0x6300 - 0x63ff : f 3
+0x6400 - 0x6fff : -- none --
 
-    r[0][0] = 0.9700436;
-    r[0][1] = -0.24308753;
-    r[0][2] = 0;
-    v[0][0] = 0.466203685;
-    v[0][1] = 0.43236573;
-    v[0][2] = 0;
+0x7000          : set n
+0x7001          : run
 
-    r[1][0] = -r[0][0];
-    r[1][1] = -r[0][1];
-    r[1][2] = -r[0][2];
-    v[1][0] = v[0][0];
-    v[1][1] = v[0][1];
-    v[1][2] = v[0][2];
+0x40000 -       : j
+********************************************/
+#define ADR_IPSET 0x5000
+#define ADR_FOSET 0x6000
+#define ADR_SETN  0x7000
+#define ADR_RUN   0x7008
 
-    r[2][0] = 0;
-    r[2][1] = 0;
-    r[2][2] = 0;
-    v[2][0] = -2 * v[0][0];
-    v[2][1] = -2 * v[0][1];
-    v[2][2] = -2 * v[0][2];
-
-    cout.precision(16);
-
-    cout << n << endl;                      // first output line:  N
-    cout << t << endl;                      // second output line:  time
-    for (int i = 0; i < n; i++){
-        cout << m[i];                       // each next output line:
-        for (int k = 0; k < NDIM; k++)      //   m r_x r_y r_z v_x v_y v_z
-            cout << ' ' << r[i][k];
-        for (int k = 0; k < NDIM; k++)
-            cout << ' ' << v[i][k];
-        cout << endl;
-    }
-}
-//-----------------------------------------------------------------------------
+#define ADR_JPSET 0x40000

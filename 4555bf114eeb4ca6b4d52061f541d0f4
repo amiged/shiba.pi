@@ -1,271 +1,279 @@
-Wed Aug 28 19:43:40 JST 2019
--- PGR ALLCORE
--- by Tsuyoshi Hamada
--- Last Modified at 2005/01/02
--- Last Modified at 2004/11/20
---
--- SYS_CLK   __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __
--- WE        __/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\____
---(WRITE)
--- ADR         < 0 >< 1 >< 2 >< 3 >< 4 >< 5 >< 6 >< 7 >
--- DTI         < 0 >< 1 >< 2 >< 3 >< 4 >< 5 >< 6 >< 7 >
---(READ)
--- ADR         < 0 >< 1 >< 2 >< 3 >< 4 >< 5 >< 6 >< 7 >
--- DTO              < 0 >< 1 >< 2 >< 3 >< 4 >< 5 >< 6 >< 7 >
+Thu Oct 24 19:29:47 JST 2019
+Release 6.2.03i Par G.31a
+Copyright (c) 1995-2004 Xilinx, Inc.  All rights reserved.
+
+a1::  Mon Jun 13 23:37:32 2005
 
 
-library ieee;
-LIBRARY UNISIM;
-use ieee.std_logic_1164.all;
-use ieee.std_logic_arith.all;
-use ieee.std_logic_unsigned.all;
-USE UNISIM.Vcomponents.ALL;
-
-entity pgpg_mem is
-  port (
-    RST           : in  std_logic;
-    SYS_CLK       : in  std_logic;
-    PIPE_CLK      : in  std_logic;
-    ADR           : in  std_logic_vector(18 downto 0);
-    WE            : in  std_logic;
-    DTI           : in  std_logic_vector(63 downto 0);
-    DTO           : out std_logic_vector(63 downto 0);
-    STS           : out std_logic;
-    FPGA_NO       : in std_logic_vector(1 downto 0));
-end pgpg_mem;
-
-architecture RTL of pgpg_mem is
-
-component adr_dec
-  port (
-    clk        : in std_logic;
-    adr        : in std_logic_vector(18 downto 0);
-    is_jpw     : out std_logic;
-    is_ipw     : out std_logic;
-    is_fo      : out std_logic;
-    is_setn    : out std_logic;
-    is_run     : out std_logic;
-    FPGA_NO    : in std_logic_vector(1 downto 0));
-end component;
-
-component pipe_sts
-  port (
-    rst        : in  std_logic;
-    clk        : in  std_logic;
-    run        : in  std_logic;
-    runret     : in  std_logic;
-    status     : out std_logic_vector(31 downto 0));
-end component;
-
-component calc is
-  port (
-    start      : in  std_logic;
-    clk        : in  std_logic;
-    pclk       : in  std_logic;
-    n          : in  std_logic_vector(31 downto 0);
-    run        : out  std_logic;
-    mem_adr    : out  std_logic_vector(31 downto 0));
-end component;
-
-component setn
-  port (
-    clk       : in std_logic;
-    we        : in std_logic;
-    idata     : in std_logic_vector(31 downto 0);
-    odata     : out std_logic_vector(31 downto 0));
-end component;
-
-component jmem
-  port (
-    wadr        : in  std_logic_vector(15 downto 0);
-    wclk        : in  std_logic;
-    radr        : in  std_logic_vector(15 downto 0);
-    rclk        : in  std_logic;
-    rst        : in  std_logic; -- not used
-    we         : in  std_logic;
-    idata      : in  std_logic_vector(63 downto 0);
-    odata      : out  std_logic_vector(127 downto 0));  -- for G5            (JDIM 4)
---  odata      : out  std_logic_vector(255 downto 0));  -- for SPH 1st stage (JDIM 8)
---  odata      : out  std_logic_vector(511 downto 0));  -- for SPH 2nd stage (JDIM 16)
-end component;
-
--- pg_pipe
-component pg_pipe
-  generic(JDATA_WIDTH : integer := 384;
-          IDATA_WIDTH : integer := 64  );
-  port(
-    p_jdata : in std_logic_vector(JDATA_WIDTH-1 downto 0);
-    p_run : in std_logic;
-    p_we :  in std_logic;
-    p_adri : in std_logic_vector(11 downto 0);
-    p_datai : in std_logic_vector(IDATA_WIDTH-1 downto 0);
-    p_adro : in std_logic_vector(11 downto 0);
-    p_datao : out std_logic_vector(IDATA_WIDTH-1 downto 0);
-    p_runret : out std_logic;
---  aclk : in std_logic;                -- for pg_float_accum
-    rst,pclk,clk : in std_logic);
-end component;
-
--- adr_dec
-signal is_jpw : std_logic;
-signal is_ipw : std_logic;
-signal is_fo  : std_logic;
-signal is_setn : std_logic;
-signal is_run : std_logic;
-
--- pipe_sts
-signal p_runret  : std_logic;
-signal odata_sts : std_logic_vector(31 downto 0);
-
--- calc
-signal calc_we : std_logic;
-signal calc_jadr : std_logic_vector(31 downto 0);
-signal p_run : std_logic;
-
--- setn
-signal setn_we : std_logic;
-signal odata_setn : std_logic_vector(31 downto 0);
-
--- fo
-signal odata_fo : std_logic_vector(63 downto 0);
-signal p_adro   : std_logic_vector(11 downto 0);
-
--- ipw
-signal p_we    : std_logic;
-signal p_adri : std_logic_vector(11 downto 0);
-
--- jmem
-signal jmem_d : std_logic_vector(127 downto 0);  -- for G5
---signal jmem_d : std_logic_vector(255 downto 0);  -- for SHP 1st Stage
---signal jmem_d : std_logic_vector(511 downto 0);  -- for SHP 2nd Stage
-signal jpw_we : std_logic;
-signal jmem_adr : std_logic_vector(63 downto 0);
-signal jmem_adr_outside : std_logic_vector(15 downto 0);
+par -w -intstyle ise -ol std -t 1 top_map.ncd top.ncd top.pcf 
 
 
-signal idata : std_logic_vector(63 downto 0);
-signal clk : std_logic;
-signal pclk : std_logic;
-constant zero32 : std_logic_vector(31 downto 0) := (others=>'0');
-signal ADR_ff : std_logic_vector(18 downto 0) := (others=>'0');
-signal odata_jmem : std_logic_vector(63 downto 0) := (others=>'0');
+Constraints file: top.pcf
 
--- DEBUG ---------------------------------------------
-signal debug_p_jdata : std_logic_vector(511 downto 0);
-constant c_zero : std_logic_vector(1023 downto 0) := (others=>'0');
-------------------------------------------------------
+Loading device database for application Par from file "top_map.ncd".
+   "top" is an NCD, version 2.38, device xc2vp70, package ff1517, speed -5
+Loading device for application Par from file '2vp70.nph' in environment
+/export/home/opt/xilinx.
+Device speed data version:  PRODUCTION 1.86 2004-05-01.
 
-begin
 
-clk  <= SYS_CLK;
-pclk <= PIPE_CLK;
---pclk <= SYS_CLK;
+Resolved that IOB <TPIN<0>> must be placed at site Y36.
+Resolved that IOB <TPIN<1>> must be placed at site W27.
+Resolved that IOB <TPIN<2>> must be placed at site Y37.
+Resolved that IOB <TPIN<3>> must be placed at site W28.
+Resolved that IOB <TPIN<4>> must be placed at site Y31.
+Resolved that IOB <TPIN<5>> must be placed at site W34.
+Resolved that IOB <TPIN<6>> must be placed at site W31.
+Resolved that IOB <TPIN<7>> must be placed at site W35.
+Resolved that IOB <TPIN<10>> must be placed at site Y33.
+Resolved that IOB <TPIN<11>> must be placed at site G39.
+Resolved that IOB <TPIN<12>> must be placed at site W36.
+Resolved that IOB <TPIN<13>> must be placed at site G36.
+Resolved that IOB <TPIN<14>> must be placed at site W37.
+Resolved that IOB <TPIN<15>> must be placed at site G37.
+Resolved that IOB <RST> must be placed at site AR19.
+Resolved that IOB <CK66> must be placed at site AG20.
+Resolved that IOB <CK133> must be placed at site AK20.
+Resolved that IOB <LED<0>> must be placed at site P34.
+Resolved that IOB <LED<1>> must be placed at site P33.
+Resolved that IOB <LED<2>> must be placed at site R27.
+Resolved that IOB <LED<3>> must be placed at site T27.
+Resolved that IOB <LED<4>> must be placed at site P36.
+Resolved that IOB <LED<5>> must be placed at site P35.
+Resolved that IOB <LED<6>> must be placed at site P37.
+Resolved that IOB <LED<7>> must be placed at site N37.
+Resolved that IOB <DSW<0>> must be placed at site T30.
+Resolved that IOB <DSW<1>> must be placed at site T29.
+Resolved that IOB <DSW<2>> must be placed at site P39.
+Resolved that IOB <DSW<3>> must be placed at site P38.
+Resolved that IOB <DSW<4>> must be placed at site R33.
+Resolved that IOB <DSW<5>> must be placed at site R32.
+Resolved that IOB <DSW<6>> must be placed at site T28.
+Resolved that IOB <DSW<7>> must be placed at site U28.
+Resolved that IOB <FPGA_NO<0>> must be placed at site AP19.
+Resolved that IOB <FPGA_NO<1>> must be placed at site AN19.
+Resolved that IOB <DBUS<10>> must be placed at site AT12.
+Resolved that IOB <DBUS<11>> must be placed at site AR12.
+Resolved that IOB <DBUS<20>> must be placed at site AT13.
+Resolved that IOB <DBUS<12>> must be placed at site AJ14.
+Resolved that IOB <DBUS<21>> must be placed at site AR13.
+Resolved that IOB <DBUS<13>> must be placed at site AJ15.
+Resolved that IOB <DBUS<30>> must be placed at site AH17.
+Resolved that IOB <DBUS<22>> must be placed at site AN14.
+Resolved that IOB <DBUS<14>> must be placed at site AM13.
+Resolved that IOB <DBUS<31>> must be placed at site AG17.
+Resolved that IOB <DBUS<23>> must be placed at site AM14.
+Resolved that IOB <DBUS<15>> must be placed at site AL13.
+Resolved that IOB <DBUS<40>> must be placed at site AM16.
+Resolved that IOB <DBUS<32>> must be placed at site AN15.
+Resolved that IOB <DBUS<24>> must be placed at site AH15.
+Resolved that IOB <DBUS<16>> must be placed at site AP12.
+Resolved that IOB <DBUS<41>> must be placed at site AL16.
+Resolved that IOB <DBUS<33>> must be placed at site AM15.
+Resolved that IOB <DBUS<25>> must be placed at site AH16.
+Resolved that IOB <DBUS<17>> must be placed at site AN13.
+Resolved that IOB <DBUS<50>> must be placed at site AM18.
+Resolved that IOB <DBUS<42>> must be placed at site AM17.
+Resolved that IOB <DBUS<34>> must be placed at site AR15.
+Resolved that IOB <DBUS<26>> must be placed at site AR14.
+Resolved that IOB <DBUS<18>> must be placed at site AL15.
+Resolved that IOB <DBUS<51>> must be placed at site AL18.
+Resolved that IOB <DBUS<43>> must be placed at site AL17.
+Resolved that IOB <DBUS<35>> must be placed at site AP15.
+Resolved that IOB <DBUS<27>> must be placed at site AP14.
+Resolved that IOB <DBUS<19>> must be placed at site AK15.
+Resolved that IOB <DBUS<60>> must be placed at site AU18.
+Resolved that IOB <DBUS<52>> must be placed at site AK18.
+Resolved that IOB <DBUS<44>> must be placed at site AR16.
+Resolved that IOB <DBUS<36>> must be placed at site AK16.
+Resolved that IOB <DBUS<28>> must be placed at site AU14.
+Resolved that IOB <DBUS<61>> must be placed at site AU19.
+Resolved that IOB <DBUS<53>> must be placed at site AJ18.
+Resolved that IOB <DBUS<45>> must be placed at site AR17.
+Resolved that IOB <DBUS<37>> must be placed at site AJ17.
+Resolved that IOB <DBUS<29>> must be placed at site AT14.
+Resolved that IOB <DBUS<62>> must be placed at site AM19.
+Resolved that IOB <DBUS<54>> must be placed at site AP18.
+Resolved that IOB <DBUS<46>> must be placed at site AH18.
+Resolved that IOB <DBUS<38>> must be placed at site AU15.
+Resolved that IOB <DBUS<63>> must be placed at site AL19.
+Resolved that IOB <DBUS<55>> must be placed at site AN18.
+Resolved that IOB <DBUS<47>> must be placed at site AG18.
+Resolved that IOB <DBUS<39>> must be placed at site AT15.
+Resolved that IOB <DBUS<56>> must be placed at site AT18.
+Resolved that IOB <DBUS<48>> must be placed at site AU17.
+Resolved that IOB <DBUS<57>> must be placed at site AR18.
+Resolved that IOB <DBUS<49>> must be placed at site AT17.
+Resolved that IOB <DBUS<58>> must be placed at site AH19.
+Resolved that IOB <DBUS<59>> must be placed at site AG19.
+Resolved that IOB <CBUS<0>> must be placed at site AU10.
+Resolved that IOB <CBUS<1>> must be placed at site AT10.
+Resolved that IOB <CBUS<2>> must be placed at site AJ12.
+Resolved that IOB <CBUS<3>> must be placed at site AJ13.
+Resolved that IOB <CBUS<4>> must be placed at site AL10.
+Resolved that IOB <CBUS<5>> must be placed at site AL11.
+Resolved that IOB <CBUS<6>> must be placed at site AN11.
+Resolved that IOB <CBUS<7>> must be placed at site AM11.
+Resolved that IOB <DBUS<0>> must be placed at site AH13.
+Resolved that IOB <DBUS<1>> must be placed at site AH14.
+Resolved that IOB <DBUS<2>> must be placed at site AR11.
+Resolved that IOB <DBUS<3>> must be placed at site AP11.
+Resolved that IOB <DBUS<4>> must be placed at site AU11.
+Resolved that IOB <DBUS<5>> must be placed at site AT11.
+Resolved that IOB <DBUS<6>> must be placed at site AL14.
+Resolved that IOB <DBUS<7>> must be placed at site AK14.
+Resolved that IOB <DBUS<8>> must be placed at site AM12.
+Resolved that IOB <DBUS<9>> must be placed at site AL12.
 
-idata <= DTI;
 
--- calc status
-process(clk) begin
-  if(clk'event and clk='1') then
-    STS <= odata_sts(0);
-  end if;
-end process;
+Device utilization summary:
+
+   Number of External IOBs           107 out of 964    11%
+      Number of LOCed External IOBs  107 out of 107   100%
+
+   Number of MULT18X18s               15 out of 328     4%
+   Number of RAMB16s                 143 out of 328    43%
+   Number of SLICEs                 9450 out of 33088  28%
+
+   Number of BUFGMUXs                  2 out of 16     12%
+   Number of DCMs                      1 out of 8      12%
 
 
 
-----------
--- DTO ---
-----------
+Overall effort level (-ol):   Standard (set by user)
+Placer effort level (-pl):    Standard (set by user)
+Placer cost table entry (-t): 1
+Router effort level (-rl):    Standard (set by user)
 
-DTO <= odata_fo;
-
-unit0: adr_dec port map(
-    clk=>clk,
-    adr=>ADR,
-    is_jpw =>is_jpw,  -- jmem
-    is_ipw =>is_ipw,  -- ireg
-    is_fo  =>is_fo,   -- fo
-    is_setn=>is_setn, -- setn
-    is_run =>is_run, -- do calc
-    FPGA_NO => FPGA_NO);
-
--------------------------------------------------------------------------------
--- pg_pipe
--------------------------------------------------------------------------------
-p_we <= is_ipw and WE;
---- ADR CONVERSION XI ---
-p_adri(3 downto 0)  <= '0' & ADR(2 downto 0); --  16 xi       (2004/01/01)
-p_adri(10 downto 4) <= ADR(9 downto 3);       -- 128 pipes    (2004/01/01)
-p_adri(11)          <= '0';                   -- chipsel mask (2005/01/01)
---- ADR CONVERSION AI ---
-p_adro(3 downto 0)  <= '0' & ADR(2 downto 0); --   8 ai       (2004/01/02)
-p_adro(10 downto 4) <= ADR(9 downto 3);       -- 128 pipes    (2004/01/02)
-p_adro(11)          <= '0';                   -- chipsel mask
-
-unit1 : pg_pipe
-    generic map (JDATA_WIDTH =>128,     -- for G5
---  generic map (JDATA_WIDTH =>113,     -- for G5
---  generic map (JDATA_WIDTH =>208,     -- for SPH 1st Stage
---  generic map (JDATA_WIDTH =>384,     -- for SPH 2nd Stage
-                 IDATA_WIDTH =>64 )
-    port map(
---  p_jdata => jmem_d(73 downto 0),     -- G3
-    p_jdata => jmem_d(127 downto 0),    -- G5
---  p_jdata => jmem_d(112 downto 0),    -- G5
---  p_jdata => jmem_d(207 downto 0),    -- SPH 1st Stage
---  p_jdata => jmem_d(383 downto 0),    -- SPH 2nd Stage
-    p_run   => p_run,
-    p_we    => p_we,
-    p_adri  => p_adri,
-    p_datai => idata,
-    p_adro  => p_adro,
-    p_datao => odata_fo,
-    p_runret=> p_runret,
-    rst => '0',
-    pclk => pclk,
-    clk =>clk);
-
--- calc ---------------------------------------------
-calc_we <= is_run AND WE;
-unit2 : calc port map(
-       start   => calc_we,
-       clk     => clk,
-       pclk    => pclk,
-       n       => odata_setn,
-       run     => p_run,
-       mem_adr => calc_jadr);
-
--- pipe_sts
-unit3 : pipe_sts port map(
-           rst => RST,
-           clk => pclk,
-           run => p_run,
-           runret=>p_runret,
-           status=>odata_sts);
-
--- setn access -------------------------------------
-setn_we <= is_setn AND WE;
-unit8 : setn port map(
-       clk=>clk,
-       we=>setn_we,
-       idata=>idata(31 downto 0),
-       odata=>odata_setn);
-
--- jmem access -------------------------------------
-jpw_we <= is_jpw AND WE;
-
---jmem_adr_outside <= "0" & ADR(14 downto 0);
-jmem_adr_outside <= ADR(15 downto 0);
+Starting initial Timing Analysis.  REAL time: 5 secs 
+Finished initial Timing Analysis.  REAL time: 17 secs 
 
 
-unit9: jmem port map(
-    rst=>'0',
-    we=>jpw_we,
-    wadr=>jmem_adr_outside(15 downto 0),  -- ADDRESS for WRITE 
-    wclk=>clk,                            -- CLOCK   for WRITE
-    radr => calc_jadr(15 downto 0),       -- ADDRESS for READ 
-    rclk=>pclk,                           -- CLOCK   for READ
-    idata=>idata,
-    odata=>jmem_d);
+Phase 1.1
+WARNING:Place - Use of the left PPC405 has been detected. The left processor
+   requires specialdesign considerations when operating above 350 MHz in the -7
+   speed grade part.Please see Xilinx Application Note XAPP755 for details.
+Phase 1.1 (Checksum:9a3864) REAL time: 19 secs 
 
-end rtl;
+Phase 2.2
+.
+Phase 2.2 (Checksum:1312cfe) REAL time: 40 secs 
 
+Phase 3.3
+Phase 3.3 (Checksum:1c9c37d) REAL time: 41 secs 
+
+Phase 4.5
+Phase 4.5 (Checksum:26259fc) REAL time: 41 secs 
+
+Phase 5.8
+..................................................................................................................................................................
+...
+Phase 5.8 (Checksum:13ca16c) REAL time: 1 mins 35 secs 
+
+Phase 6.5
+Phase 6.5 (Checksum:39386fa) REAL time: 1 mins 35 secs 
+
+Phase 7.18
+Phase 7.18 (Checksum:42c1d79) REAL time: 2 mins 1 secs 
+
+Phase 8.24
+Phase 8.24 (Checksum:4c4b3f8) REAL time: 2 mins 1 secs 
+
+Phase 9.27
+Phase 9.27 (Checksum:55d4a77) REAL time: 2 mins 7 secs 
+
+Writing design to file top.ncd.
+
+Total REAL time to Placer completion: 2 mins 12 secs 
+Total CPU time to Placer completion: 2 mins 12 secs 
+
+
+Phase 1: 67799 unrouted;       REAL time: 2 mins 16 secs 
+
+Phase 2: 58070 unrouted;       REAL time: 3 mins 2 secs 
+
+Phase 3: 12914 unrouted;       REAL time: 3 mins 11 secs 
+
+Phase 4: 12914 unrouted; (15928)      REAL time: 3 mins 12 secs 
+
+Phase 5: 12990 unrouted; (0)      REAL time: 3 mins 38 secs 
+
+Phase 6: 12990 unrouted; (0)      REAL time: 3 mins 39 secs 
+
+Phase 7: 0 unrouted; (0)      REAL time: 4 mins 7 secs 
+
+Total REAL time to Router completion: 4 mins 17 secs 
+Total CPU time to Router completion: 4 mins 16 secs 
+
+Generating "par" statistics.
+
+**************************
+Generating Clock Report
+**************************
+
++-------------------------+----------+------+------+------------+-------------+
+|        Clock Net        | Resource |Locked|Fanout|Net Skew(ns)|Max Delay(ns)|
++-------------------------+----------+------+------+------------+-------------+
+|              CLK1       | BUFGMUX0P| No   | 4371 |  0.920     |  2.402      |
++-------------------------+----------+------+------+------------+-------------+
+|              CLK0       | BUFGMUX2P| No   |  949 |  0.919     |  2.401      |
++-------------------------+----------+------+------+------------+-------------+
+
+
+   The Delay Summary Report
+
+   The SCORE FOR THIS DESIGN is: 429
+
+
+The NUMBER OF SIGNALS NOT COMPLETELY ROUTED for this design is: 0
+
+   The AVERAGE CONNECTION DELAY for this design is:        1.575
+   The MAXIMUM PIN DELAY IS:                              14.387
+   The AVERAGE CONNECTION DELAY on the 10 WORST NETS is:  13.600
+
+   Listing Pin Delays by value: (nsec)
+
+    d < 3.00   < d < 6.00  < d < 9.00  < d < 12.00  < d < 15.00  d >= 15.00
+   ---------   ---------   ---------   ---------   ---------   ---------
+       60630        5087        1328         617         137           0
+
+Timing Score: 0
+
+Asterisk (*) preceding a constraint indicates it was not met.
+   This may be due to a setup or hold violation.
+
+--------------------------------------------------------------------------------
+  Constraint                                | Requested  | Actual     | Logic 
+                                            |            |            | Levels
+--------------------------------------------------------------------------------
+  TS_CK66 = PERIOD TIMEGRP "CK66"  20 nS    | N/A        | N/A        | N/A  
+  HIGH 50.000000 %                          |            |            |      
+--------------------------------------------------------------------------------
+  TS_dcm0_dcm_out = PERIOD TIMEGRP "dcm0_dc | 20.000ns   | 19.569ns   | 2    
+  m_out" TS_CK66 * 1.000000  HIGH 50.000 %  |            |            |      
+--------------------------------------------------------------------------------
+  TS_dcm0_dcm_fx = PERIOD TIMEGRP "dcm0_dcm | 20.000ns   | 14.739ns   | 0    
+  _fx" TS_CK66 * 1.000000  HIGH 50.000 %    |            |            |      
+--------------------------------------------------------------------------------
+
+
+All constraints were met.
+INFO:Timing:2761 - N/A entries in the Constraints list may indicate that the
+   constraint does not cover any paths or that it has no requested value.
+Generating Pad Report.
+
+All signals are completely routed.
+
+Total REAL time to PAR completion: 4 mins 24 secs 
+Total CPU time to PAR completion: 4 mins 23 secs 
+
+Peak Memory Usage:  537 MB
+
+Placement: Completed - No errors found.
+Routing: Completed - No errors found.
+Timing: Completed - No errors found.
+
+Writing design to file top.ncd.
+
+
+PAR done.

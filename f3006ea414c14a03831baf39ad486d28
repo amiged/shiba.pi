@@ -1,53 +1,75 @@
-Wed Oct 23 19:51:14 JST 2019
-/*
- * ifpga_bram_clear.c
- *
- * Copyright (C) 2006-2007 Tsuyoshi Hamada
- *                                All rights reserved.
- * 
- * No warranty is attached; 
- * I cannot take responsibility for errors or fitness for use.
- *
- */
+Sat Oct 26 19:37:46 JST 2019
+#!/usr/bin/perl
+#
+# mtrr : MTRR register resetting script for PROGRAPE-4
+#
+# Copyright (C) 2006-2007 Tsuyoshi Hamada. All rights reserved.
+# 
+# No warranty is attached; 
+#
 
-#include <stdio.h>
-#include <stdlib.h>
-#include "pg4.h"
+my $devid   = 0;
+my $bar;
+my $cmd;
+my $exe;
 
-//#define NMAX (0x1<<10) // 4KB
-//#define NMAX (0x1<<11) // 8KB
-//#define NMAX (0x1<<12) // 16KB
-//#define NMAX (0x1<<13) // 32KB
-#define NMAX (0x1<<14) // 64KB
-
-unsigned int* ptr;
-unsigned int* bar1;
-
-int main(int argc,char *argv[])
-{
-  int devid = 0;
-  int n = NMAX;
-  int val = 0x1234567;
-  int i;
-
-  if(argc > 1){
-    n = atoi(argv[1]);
-  }
-  if(argc > 2){
-    val = atoi(argv[2]);
-  }
-
-  printf("n = %d\n",n);
-  printf("filled by %x\n",val);
-
-  pg4_open(devid);
-  bar1 = pg4_get_bar1ptr(devid);
-  printf("BAR0: %lx\n",pg4_getbaseaddr(devid,0));
-  printf("BAR1: %lx\n",pg4_getbaseaddr(devid,1));
-
-  for(i = 0; i < n; i++) {
-    pg4_writebase1(devid, i, val);
-  }
-
-  return 0;
+if(@ARGV){
+    sprintf($devid, "%d", $ARGV[0]);
 }
+
+$bar = 1;
+
+my $adr=0, $size;
+
+$cmd = "ifpga_get_barinfo $devid $bar";
+$exe = `$cmd`;
+chomp($exe);
+$adr = $exe;
+
+$cmd = "ifpga_get_barinfo $devid $bar 1";
+$exe = `$cmd`;
+chomp($exe);
+$size = $exe;
+
+print "BAR1 start at $adr, size $size bytes\n";
+
+if( ($adr eq '') || ($adr eq '0x0') || ($adr eq "0xffffffff")){
+    print "discontinued\n";
+    exit(-1);
+}
+
+
+open(RD,"/proc/mtrr");
+my $hit_line = '';
+while(<RD>){
+    my $s = $_;
+    chomp($s);
+    if($s =~ /$adr/){
+	$hit_line = $s;
+    }
+}
+close(RD);
+
+if($hit_line ne ''){
+    print "Hit: ". $hit_line ."\n";
+}else{
+    $cmd = "cat /proc/mtrr";
+    print `$cmd` ."\n";
+    print "Can't find the mtrr register for bar1($adr)\n";
+    print "discontinued\n";
+    exit(-1);
+}
+
+my ($reg_nr, ) = split(/\:/,$hit_line);
+$reg_nr =~ s/reg//;
+$reg_nr = sprintf("%d",$reg_nr);
+
+$cmd = "echo \"disable=$reg_nr\" >| /proc/mtrr";
+print  $cmd. "\n";
+print  `$cmd`. "\n";
+
+$cmd = "cat /proc/mtrr";
+print `$cmd`;
+
+
+1;

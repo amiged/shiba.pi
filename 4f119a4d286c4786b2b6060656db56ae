@@ -1,22 +1,25 @@
-Fri Oct 25 19:30:58 JST 2019
-# Xilinx CORE Generator 6.2.03i
-# User = Administrator
-Initializing default project...
-Loading plug-ins...
-All runtime messages will be recorded in C:\cygwin\home\Administrator\PG4\pci64\proj\coregen.log
-# busformat=BusFormatAngleBracketNotRipped
-# designflow=VHDL
-# expandedprojectpath=C:\cygwin\home\Administrator\PG4\pci64\proj
-# flowvendor=Foundation_iSE
-# formalverification=None
-# simulationoutputproducts=VHDL
-# xilinxfamily=Virtex2
-# outputoption=DesignFlow
-# overwritefiles=Default
-# simvendor=ModelSim
-# expandedprojectpath=C:\cygwin\home\Administrator\PG4\pci64\proj
-SETPROJECT .
-Set current Project to C:\cygwin\home\Administrator\PG4\pci64\proj
-SET BusFormat = BusFormatAngleBracketNotRipped
-SETXIPCPORTHOST 1271
-XIPCPJSENDCORES virtex2
+Sun Nov  3 19:52:22 JST 2019
+#!/bin/sh
+#
+# An example hook script to check the commit log message.
+# Called by "git commit" with one argument, the name of the file
+# that has the commit message.  The hook should exit with non-zero
+# status after issuing an appropriate message if it wants to stop the
+# commit.  The hook is allowed to edit the commit message file.
+#
+# To enable this hook, rename this file to "commit-msg".
+
+# Uncomment the below to add a Signed-off-by line to the message.
+# Doing this in a hook is a bad idea in general, but the prepare-commit-msg
+# hook is more suited to it.
+#
+# SOB=$(git var GIT_AUTHOR_IDENT | sed -n 's/^\(.*>\).*$/Signed-off-by: \1/p')
+# grep -qs "^$SOB" "$1" || echo "$SOB" >> "$1"
+
+# This example catches duplicate Signed-off-by lines.
+
+test "" = "$(grep '^Signed-off-by: ' "$1" |
+	 sort | uniq -c | sed -e '/^[ 	]*1[ 	]/d')" || {
+	echo >&2 Duplicate Signed-off-by lines.
+	exit 1
+}

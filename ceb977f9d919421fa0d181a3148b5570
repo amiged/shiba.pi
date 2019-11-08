@@ -1,2 +1,20 @@
-Fri Oct 18 19:29:44 JST 2019
-EN pfpga_config NULL c:/cygwin/home/administrator/fkit/pci64/tmp2/pfpga_config.vhd sub00/vhpl00
+Fri Nov  8 19:39:56 JST 2019
+#!/usr/bin/perl
+
+
+my $is_stop = 0;
+
+if($ARGV[0]){
+    $is_stop = 1;
+}
+
+my $cmd ="cat /sys/class/fpga/fpga0/irq_count";
+
+while(1){
+    my $exe = `$cmd`;
+    print $exe;
+    exit (1) if($is_stop == 1);
+    sleep (2);
+}
+
+1;

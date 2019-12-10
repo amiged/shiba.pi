@@ -1,28 +1,29 @@
-Sat Oct 26 19:43:21 JST 2019
-#define NFLO 26
-#define NMAN 16
-#define NFIX 57
-#define NACC 64
-#define NEXAD 31
-#define FSHIFT pow(2.0,(double)NEXAD)
+Tue Dec 10 19:27:07 JST 2019
+#!/usr/bin/env python3
+#Time-stamp: <>
+import fnmatch
+import functools
+import os
+import re
 
-/JPSET xj[3],  x[][],  float, NFLO, NMAN;
-/JPSET mj,     m[],    float, NFLO, NMAN;
-/IPSET xi[3],  x[][],  float, NFLO, NMAN;
-/IPSET ieps2,  eps2,   float, NFLO, NMAN;
-/FOSET sx[3],  a[][],  fix,   NACC, (-1.0/FSHIFT);
-/NVMP 1;
-/NPIPE 1;
+def find(path, pattern):
 
-pg_float_sub      (xi,xj, dx,              NFLO,NMAN, 4);
-pg_float_mult     (dx,dx, dx2,             NFLO,NMAN, 2);
-pg_float_unsigned_add(dx2[0],dx2[1], x2y2, NFLO,NMAN, 4);
-pg_float_unsigned_add(dx2[2],ieps2,  z2e2, NFLO,NMAN, 4);
-pg_float_unsigned_add(x2y2,z2e2,r2,        NFLO,NMAN, 4);
-pg_float_sqrt     (r2,r1,                  NFLO,NMAN, 3);
-pg_float_mult     (r2,r1,r3,               NFLO,NMAN, 2);
-pg_float_recipro  (r3,r3i,                 NFLO,NMAN, 2);
-pg_float_mult     (r3i,mj,mf,              NFLO,NMAN, 2);
-pg_float_expadd   (mf,fs,                  NEXAD,NFLO,NMAN,1);
-pg_float_mult     (fs,dx,fx,               NFLO,NMAN, 2);
-pg_float_fixaccum (fx,sx,                  NFLO,NMAN, NFIX, NACC, 4);
+    if isinstance(pattern, str): 
+        match = functools.partial(fnmatch.fnmatch, pat=pattern)
+    elif isinstance(pattern, re._pattern_type):
+        match = pattern.match
+    elif callable(pattern):
+        match = pattern
+    else:
+        raise TypeError
+
+    for root, dirs, files in os.walk(path):
+        for file_ in files:
+            if match(file_):
+                yield os.path.join(root, file_)
+
+
+if __name__ == '__main__':
+    for i in find('../log/', '*.jpg'):
+        print (i)
+

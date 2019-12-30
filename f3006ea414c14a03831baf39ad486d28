@@ -1,75 +1,47 @@
-Sat Oct 26 19:37:46 JST 2019
-#!/usr/bin/perl
-#
-# mtrr : MTRR register resetting script for PROGRAPE-4
-#
-# Copyright (C) 2006-2007 Tsuyoshi Hamada. All rights reserved.
-# 
-# No warranty is attached; 
-#
+Mon Dec 30 19:26:52 JST 2019
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-my $devid   = 0;
-my $bar;
-my $cmd;
-my $exe;
-
-if(@ARGV){
-    sprintf($devid, "%d", $ARGV[0]);
-}
-
-$bar = 1;
-
-my $adr=0, $size;
-
-$cmd = "ifpga_get_barinfo $devid $bar";
-$exe = `$cmd`;
-chomp($exe);
-$adr = $exe;
-
-$cmd = "ifpga_get_barinfo $devid $bar 1";
-$exe = `$cmd`;
-chomp($exe);
-$size = $exe;
-
-print "BAR1 start at $adr, size $size bytes\n";
-
-if( ($adr eq '') || ($adr eq '0x0') || ($adr eq "0xffffffff")){
-    print "discontinued\n";
-    exit(-1);
-}
+void b3_init(int devid);
+void b3_init_config(int devid, char* fpga_conf_file);
 
 
-open(RD,"/proc/mtrr");
-my $hit_line = '';
-while(<RD>){
-    my $s = $_;
-    chomp($s);
-    if($s =~ /$adr/){
-	$hit_line = $s;
-    }
-}
-close(RD);
 
-if($hit_line ne ''){
-    print "Hit: ". $hit_line ."\n";
-}else{
-    $cmd = "cat /proc/mtrr";
-    print `$cmd` ."\n";
-    print "Can't find the mtrr register for bar1($adr)\n";
-    print "discontinued\n";
-    exit(-1);
-}
+void b3_set_idata(unsigned int devid,      // device id
+		  unsigned int chip_sel,   // chip select
+                  unsigned int npipe,      // pipeline number
+                  unsigned int ireg_index, // iregister index
+                  unsigned int data);      // data
 
-my ($reg_nr, ) = split(/\:/,$hit_line);
-$reg_nr =~ s/reg//;
-$reg_nr = sprintf("%d",$reg_nr);
+void b3_reset_jmem_adr();
+void b3_reset_jmem_adr_n(int nchip);
 
-$cmd = "echo \"disable=$reg_nr\" >| /proc/mtrr";
-print  $cmd. "\n";
-print  `$cmd`. "\n";
+void b3_set_jdata(unsigned int devid,      // device id
+                  unsigned int nword,      // number of jdata
+                  unsigned int jdata[] );  // 
 
-$cmd = "cat /proc/mtrr";
-print `$cmd`;
+void b3_set_jdata_n_chip(unsigned int devid,    // device id
+			 unsigned int nchip,    // 0, 1, 2, 3
+			 unsigned int nword,    // number of jdata
+			 unsigned int jdata[]);
 
 
-1;
+void b3_get_jdata(unsigned int devid,      // device id
+                  unsigned int chip_sel,   // chip_sel
+		  unsigned int jmem_adr,   // mem adr
+                  unsigned int* data );    // data 
+
+void b3_start_calc(unsigned int n,
+		   unsigned int chip_sel);
+
+void b3_start_calc_sepa4jM(unsigned int nrun[]);
+
+unsigned int b3_get_calcsts(unsigned int chip_sel);
+
+
+void b3_get_fodata(unsigned int devid,     // device id
+		  unsigned int chip_sel,   // chip select
+                  unsigned int npipe,      // pipeline number
+                  unsigned int fo_index,   // iregister index
+                  unsigned int* data);     // data

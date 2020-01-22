@@ -1,56 +1,59 @@
-Wed Dec 25 19:41:44 JST 2019
-#!/usr/bin/env python3
-#Time-stamp: <2017-06-04 15:57:17 hamada>
-import argparse
-import numpy as np
-import cv2
-from datetime import datetime
-import mkdir
+Wed Jan 22 19:27:36 JST 2020
+//-----------------------------------------------------------------------------
+// mk_eight.C:  prints initial conditions for the figure eight
+//              of the three-body problem
+//-----------------------------------------------------------------------------
+#include  <iostream>
+using namespace std;
 
-class State(object):
-    def __init__(self):
-        self.is_record = False
+typedef double  real;                      // "real" as a general name for the
+                                           // standard floating-point data type
+#define  NDIM     3                        // number of spatial dimensions
 
-if (__name__ == '__main__'):
-    state = State()
+int main()
+{
+    const int n = 3;           // number of particles
+    const real t = 0;          // time
+    real r[n][NDIM];           // r[i][k] : position component k for particle i
+    real v[n][NDIM];           // v[i][k] : velocity component k for particle i
+    real m[n];                 // m[i] : mass for particle i
 
-    parser = argparse.ArgumentParser(description = "description goes here")
-    parser.add_argument("--devid", type=int, help = "set device id", required=False)
-    args = parser.parse_args()
-    devid = 0
-    if args.devid:
-        devid = int(args.devid)
-        print ("set devid = ", devid)
+    m[0] = 1;
+    m[1] = 1;
+    m[2] = 1;
 
+    r[0][0] = 0.9700436;
+    r[0][1] = -0.24308753;
+    r[0][2] = 0;
+    v[0][0] = 0.466203685;
+    v[0][1] = 0.43236573;
+    v[0][2] = 0;
 
-    log_base = '../log/'
-    cap = cv2.VideoCapture(devid)
+    r[1][0] = -r[0][0];
+    r[1][1] = -r[0][1];
+    r[1][2] = -r[0][2];
+    v[1][0] = v[0][0];
+    v[1][1] = v[0][1];
+    v[1][2] = v[0][2];
 
-    cap_width  = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
-    cap_height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
-    cap_fps    = cap.get(cv2.CAP_PROP_FPS)
+    r[2][0] = 0;
+    r[2][1] = 0;
+    r[2][2] = 0;
+    v[2][0] = -2 * v[0][0];
+    v[2][1] = -2 * v[0][1];
+    v[2][2] = -2 * v[0][2];
 
-    print(cap_width, "x", cap_height, ":", cap_fps)
+    cout.precision(16);
 
-
-    while(cap.isOpened()):
-        ret, frame = cap.read()
-        cv2.imshow('camera: %d'%(devid), frame)
-
-        tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S_%f')
-        if(state.is_record):
-            basedir = '../log.%d/'% (devid)
-            ofname = mkdir.get_filename_frame(basedir, tnow)
-            cv2.imwrite(ofname, frame)
-            print(ofname, "devid = %d"%devid)
-            tnow0 = tnow
-
-        key = cv2.waitKey(1) & 0xFF
-        if key == ord('q'): break
-        if key == ord(' '): state.is_record = not (state.is_record)
-
-
-    cap.release()
-    cv2.destroyAllWindows()
-
-    print("Done.")
+    cout << n << endl;                      // first output line:  N
+    cout << t << endl;                      // second output line:  time
+    for (int i = 0; i < n; i++){
+        cout << m[i];                       // each next output line:
+        for (int k = 0; k < NDIM; k++)      //   m r_x r_y r_z v_x v_y v_z
+            cout << ' ' << r[i][k];
+        for (int k = 0; k < NDIM; k++)
+            cout << ' ' << v[i][k];
+        cout << endl;
+    }
+}
+//-----------------------------------------------------------------------------

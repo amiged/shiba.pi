@@ -1,24 +1,5 @@
-Wed Feb 19 19:27:12 JST 2020
-vhdl work ../clk_muldiv.vhd
-vhdl work ../dmaw.vhd
-vhdl work ../dmaw_state.vhd
-vhdl work ../dmar_state.vhd
-vhdl work ../dmaw_start_adr.vhd
-vhdl work ../dmar_start_adr.vhd
-vhdl work ../dmaw_mem_adr.vhd
-vhdl work ../dmar_mem_adr.vhd
-vhdl work ../dmaw_mem_we.vhd
-vhdl work ../dmar_mem_re.vhd
-vhdl work ../dmar_dbus_hiz.vhd
-vhdl work ../dmar.vhd
-vhdl work ../pgpg_mem/adr_dec.vhd
-vhdl work ../pgpg_mem/pg_module.vhd
-vhdl work ../pgpg_mem/pg_pipe.vhd
-vhdl work ../pgpg_mem/calc.vhd
-vhdl work ../pgpg_mem/pipe_sts.vhd
-vhdl work ../pgpg_mem/setn.vhd
-vhdl work ../pgpg_mem/dpram.vhd
-vhdl work ../pgpg_mem/jmem.vhd
-vhdl work ../pgpg_mem/pgpg_mem.vhd
-vhdl work ../user.vhd
-vhdl work ../top.vhd
+Wed Feb 26 19:28:21 JST 2020
+-- ProjNav VHDL simulation template: sim_local_io.udo
+-- You may edit this file after the line that starts with
+-- '-- START' to customize your simulation
+-- START user-defined simulation commands

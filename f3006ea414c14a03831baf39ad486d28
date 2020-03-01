@@ -1,41 +1,102 @@
-Wed Feb 19 19:34:41 JST 2020
-Release 6.2.03i - ngdbuild G.31a
-Copyright (c) 1995-2004 Xilinx, Inc.  All rights reserved.
+Sun Mar  1 19:28:38 JST 2020
+#!/usr/bin/env python3
+#Time-stamp: <2017-06-03 03:06:20 hamada>
+import argparse
+import numpy as np
+import cv2
+from datetime import datetime
+import mkdir
+import aieye_find
+import time
+import sys
 
-Command Line: ngdbuild -intstyle ise -dd ./_ngo -uc ../top.ucf -p
-xc2vp70-ff1517-5 top.ngc top.ngd 
 
-Reading NGO file
-"/home/hamada/pgr/Demos/PairWiseErr/pgr/ISE_PROJECT/proj/top.ngc" ...
-Reading component libraries for design expansion...
+if (__name__ == '__main__'):
+    basedir = '../log/'
+    if (len(sys.argv) > 1 ):
+        basedir = sys.argv[1]
+    
+    iflist = [] 
+    for fname in aieye_find.find(basedir, '*.jpg'):
+        iflist.append(fname)
 
-Annotating constraints to design from file "../top.ucf" ...
+    iflist.sort()
+    ni = len(iflist)
+    i = 0
+    i_fp = 0.0
+    i_delta = 1
+    i_scale = 60.0
+    speed_state = 0
 
-Checking timing specifications ...
-WARNING:XdmHelpers:793 - The TNM "CLK66" drives the CLKIN pin of DCM
-   "dcm0_dcm0". This TNM cannot be traced through the DCM because it is not used
-   in exactly one PERIOD specification. This TNM is used in the following user
-   groups and/or specifications:
-   <none>
-WARNING:XdmHelpers:625 - No instances driven from signal "CK66" are valid for
-   inclusion in TNM group "CLK66". A TNM property on a pin or signal marks only
-   the flip-flops, latches and/or RAMs which are directly or indirectly driven
-   by that pin or signal.
-INFO:XdmHelpers:851 - TNM "CK66", used in period specification "TS_CK66", was
-   traced into DCM instance "dcm0_dcm0". The following new TNM groups and period
-   specifications were generated at the DCM output(s):
-   CLK0: TS_dcm0_dcm_out=PERIOD dcm0_dcm_out TS_CK66*1.000000 HIGH 50.000000%
-   CLKFX: TS_dcm0_dcm_fx=PERIOD dcm0_dcm_fx TS_CK66*1.000000 HIGH 50.000000%
-WARNING:XdmHelpers:644 - No appropriate elements were found for the TNM group
-   "CLK66". This group has been removed from the design.
-Checking expanded design ...
+    #    for i, fname in enumerate(iflist):
+    while( i < ni) :
+        fname = iflist[i]
 
-NGDBUILD Design Results Summary:
-  Number of errors:     0
-  Number of warnings:   3
+        #print (fname, i, ni, i/ni)
+        image = cv2.imread(fname)
+        cv2.imshow("play.py", image)
 
-Total memory usage is 67920 kilobytes
+        key = cv2.waitKey(1) & 0xFF
+        if key != 255:  print (key, "%d/%d"% (i, ni))
 
-Writing NGD file "top.ngd" ...
+        if key  == 114:           i_fp = 0.  # r
 
-Writing NGDBUILD log file "top.bld"...
+        if key  == ord('q'): break
+        if key  == 97:            i_fp -= 1.  # d
+        if key  == 100:           i_fp += 1.  # a
+        if key  == 81:            i_fp -= 5.  # <-
+        if key  == 83:            i_fp += 5.  # ->
+        if key  == 86:            i_fp += 30. # Up
+        if key  == 85:            i_fp -= 30. # Down
+        if key  == 82:            i_fp += 300. # PgDn
+        if key  == 84:            i_fp -= 300. # PgUp
+
+        if key  == ord(' '): 
+            if 0 != speed_state: 
+                i_delta = 0
+                speed_state = 0
+            else:
+                i_delta = 1
+                speed_state = 1
+            print ("i_delta:", i_delta)
+            print ("speed_state:", speed_state)
+
+
+        if key  == 226: # R_SHIFT
+            if 0 == speed_state:
+                i_delta = int(i_scale/10.)
+                speed_state = 1
+            elif 1 == speed_state:
+                i_delta = int(i_scale)
+                speed_state = 2
+            elif 2 == speed_state:
+                i_delta = int(i_scale*10.)
+                speed_state = 3
+            elif 3 == speed_state:
+                i_delta = int(i_scale*100.)
+                speed_state = 4
+            elif 4 == speed_state:
+                i_delta = 1
+                speed_state = 0
+            else:
+                i_delta = 1
+                speed_state = 0
+            print ("i_delta:", i_delta)
+            print ("speed_state:", speed_state)
+
+        if key  == ord('+'): 
+            i_delta *= 2
+            print ("i_delta:", i_delta)
+
+        if key  == ord('-'): 
+            i_delta = int(i_delta / 2)
+            if i_delta < 1: i_delta = 1 
+            print ("i_delta:", i_delta)
+
+        #----------------------------------
+        i_fp += i_delta/i_scale
+        if i_fp < 0.0 :  i_fp = 0.0
+        if i_fp >= float(ni): i_fp = float(ni) -1.0
+        i = int(i_fp)
+
+    cv2.destroyAllWindows()

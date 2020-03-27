@@ -1,85 +1,131 @@
-Wed Mar 25 19:37:27 JST 2020
-#!/usr/bin/env python3
-#Time-stamp: <2017-05-30 09:51:10 hamada>
-import argparse
-import numpy as np
-import cv2
-from datetime import datetime
-import mkdir
+Fri Mar 27 19:55:45 JST 2020
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
 
-def put_text(image, text):
-    font_size = 1.0
-    font_type = cv2.FONT_HERSHEY_PLAIN
-    font_color = (0xaf, 0xdf, 0xf)
-    #    cv2.putText(image, text, (460, 15), font_type, font_size, font_color)
-    cv2.putText(image, text, (10, 15), font_type, font_size, font_color)
-
-if (__name__ == '__main__'):
-    parser = argparse.ArgumentParser(description = "description goes here")
-    parser.add_argument("--devid", type=int, help = "set device id", required=False)
-    args = parser.parse_args()
-    devid = 0
-    if args.devid:
-        devid = int(args.devid)
-        print ("set devid = ", devid)
-
-    log_base = '../log/'
-    cap = []
-    for i in range(3):
-        cap.append(cv2.VideoCapture(i))
-
-    # -- swap cap --
-    if True:
-        cap_tmp = cap[0]
-        cap[0] = cap[2]
-        cap[2] = cap_tmp
+entity USER is
+  port (
+    RST         : in  std_logic;                     -- PCI Bus Reset
+    CLK         : in  std_logic;                     -- PCI bus Clock
+    PSW_IN      : in  std_logic_vector( 1 downto 0); -- Push SW Input
+    DIPSW       : out  std_logic_vector( 3 downto 0);-- DIPSW Signal
+    PSW_ON0     : out  std_logic;                    -- User Interrupt 0 On Request
+    PSW_ON1     : out  std_logic;                    -- User Interrupt 1 On Request
+    USERINT2_ON : out  std_logic                     -- User Interrupt 2 On Request
+    );
+end USER;
 
 
-    cap_width  = cap[0].get(cv2.CAP_PROP_FRAME_WIDTH)
-    cap_height = cap[0].get(cv2.CAP_PROP_FRAME_HEIGHT)
-    cap_fps    = cap[0].get(cv2.CAP_PROP_FPS)
+architecture USER_rtl of USER is
 
-    print(cap_width, "x", cap_height, ":", cap_fps)
-    size = (int(cap_width/2), int(cap_height/2))
+--------------------------------------------------
+-- signals
+--------------------------------------------------
 
-    tnow0 = datetime.now().strftime('%Y%m%d_%H_%M_%S') # ('%Y%m%d_%H_%M_%S_%f')
+  signal DIPSWi      : std_logic_vector( 3 downto 0);          ------ Internal DIPSW Data
+  signal SWCHK_CUNT  : std_logic_vector( 7 downto 0);          ------ Push SW Check Counter
+  signal PSWCHK_CNT0 : std_logic_vector( 2 downto 0);          ------ Push SW 0 Check
+  signal PSWCHK_CNT1 : std_logic_vector( 2 downto 0);          ------ Push SW 1 Check
+  signal PSW_ON0i    : std_logic;                      ------ User Interrupt 0 On Request
+  signal PSW_ON1i    : std_logic;                      ------ User Interrupt 1 On Request
 
-    while(cap[0].isOpened() and cap[1].isOpened() and cap[2].isOpened()):
-        frame = [0,0,0]
-        for (i, fm) in enumerate(frame):
-            ret, fm = cap[i].read()
-            smallimg = cv2.resize(fm, size)
-            if False: cv2.imshow('camera: %d'%(i), smallimg)
-            frame[i] = smallimg
+begin
 
-        # ----------------------------------------------------------------
-        frame_height, frame_width = frame[0].shape[:2]
-        image = np.zeros((frame_height, frame_width*3, 3), dtype=np.uint8)
 
-        for (i, fm) in enumerate(frame):
-            sx = frame_width * i
-            sy = 0
-            ex = frame_width * (i+1)
-            ey = frame_height
-            image[sy:ey,sx:ex] = fm
+--------------------------------------------------------------------------------
+-- DIPSW Input Signal Output Control Process
+--------------------------------------------------------------------------------
+    DIPSWi <= (others=>'0');  -- 2004/11/11 by T.Hamada
+    DIPSW <= DIPSWi;
 
-        cv2.imshow('pycam', image)
+--------------------------------------------------------------------------------
+-- Push SW Check Counter Control Process
+--------------------------------------------------------------------------------
 
-        tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S')
-        if(tnow != tnow0):
-            put_text(image, tnow)
-            basedir = '../log/'
-            ofname = mkdir.get_filename_frame(basedir, tnow)
-            cv2.imwrite(ofname, image)
-            print(ofname)
-            tnow0 = tnow
+  process (RST,CLK) begin
+    if (RST='1') then
+       SWCHK_CUNT <= (others=>'0');
+    elsif (CLK'event and CLK='1') then
+       SWCHK_CUNT <= SWCHK_CUNT+1;                  ------ Counter Increment
+    end if;
+  end process;
 
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
+--------------------------------------------------------------------------------
+-- Push SW 0 Check Control Process
+--------------------------------------------------------------------------------
 
-    for (i, fm) in enumerate(frame):
-        cap[i].release()
+  process (RST,CLK) begin
+    if (RST='1') then
+       PSWCHK_CNT0 <= (others=>'1');
+    elsif (CLK'event and CLK='1') then
+      if (SWCHK_CUNT="11111111") then
+         PSWCHK_CNT0 <= PSWCHK_CNT0(1 downto 0) & PSW_IN(0);    ------ PSW_IN(0) Sampling
+      end if;
+    end if;
+  end process;
 
-    cv2.destroyAllWindows()
+--------------------------------------------------------------------------------
+-- Push SW 0 On Signal Output Control Process
+--------------------------------------------------------------------------------
 
-    print("Done.")
+  process (RST,CLK) begin
+    if (RST='1') then
+       PSW_ON0i <= '0';
+    elsif (CLK'event and CLK='1') then
+      if (SWCHK_CUNT="11111111") then
+        PSW_ON0i <= PSWCHK_CNT0(2) and (not PSWCHK_CNT0(1));    ------ SW Check Signal Set
+      else
+        PSW_ON0i <= '0';
+      end if;
+    end if;
+  end process;
+
+    PSW_ON0 <= PSW_ON0i;
+
+--------------------------------------------------------------------------------
+-- Push SW 1 Check Control Process
+--------------------------------------------------------------------------------
+
+  process (RST,CLK) begin
+    if (RST='1') then
+       PSWCHK_CNT1 <= (others=>'1');
+    elsif (CLK'event and CLK='1') then
+      if (SWCHK_CUNT="11111111") then
+         PSWCHK_CNT1 <= PSWCHK_CNT1(1 downto 0) & PSW_IN(1);    ------ PSW_IN(1) Sampling
+      end if;
+    end if;
+  end process;
+
+--------------------------------------------------------------------------------
+-- Push SW 1 On Signal Output Control Process
+--------------------------------------------------------------------------------
+
+  process (RST,CLK) begin
+    if (RST='1') then
+       PSW_ON1i <= '0';
+    elsif (CLK'event and CLK='1') then
+      if (SWCHK_CUNT="11111111") then
+        PSW_ON1i <= PSWCHK_CNT1(2) and (not PSWCHK_CNT1(1));    ------ SW Check Signal Set
+      else
+        PSW_ON1i <= '0';
+      end if;
+    end if;
+  end process;
+
+    PSW_ON1 <= PSW_ON1i;
+
+--------------------------------------------------------------------------------
+-- User Interrupt 2 Signal Output Control Process
+--------------------------------------------------------------------------------
+
+  process (RST,CLK) begin
+    if (RST='1') then
+      USERINT2_ON <= '0';
+    elsif (CLK'event and CLK='1') then
+      USERINT2_ON <=  RST and DIPSWi(0) and (not PSWCHK_CNT1(2))
+                            and PSWCHK_CNT1(1);
+    end if;
+  end process;
+
+end USER_rtl;

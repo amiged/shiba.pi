@@ -1,50 +1,19 @@
-Fri May  8 19:29:13 JST 2020
-#include <math.h>
-#define DIM (3)              /* éüå≥êî */
-#define NMAX (65536)         /* ç≈ëÂó±éqêî */
-//#define NTOTAL 1000      /* ó±éqêî (NTOTAL <= NMAX) */
+Sat May 30 19:28:44 JST 2020
+#!Time-stamp: <2007-01-22 04:30:32 hamada>
 
-//b3_force_sepaj4.c
-void b3_force_sepaj4(double x[][3],
-		     double m[],
-		     double eps2,
-		     double a[][3],
-		     int n);
+Linux device driver for the PROGRAPE-4 board,
 
-//pg_pipe.c
-void force_gravity_on_emulator(double x[][3],
-			       double m[],
-			       double eps2,
-			       double a[][3],
-			       int n);
+including runtime libraries and HDL source for interface FPGA.
 
-//force_gravity_on_b3.c
-void force(double x[][3],
-	   double m[],
-	   double eps2,
-	   double a[][3],
-	   int n);
+- Linux kernel release 2.6.x
+
+- Xilinx XC3S5000-5-FG900 FPGAs
+
+- Xilinx ISE 8.1i
+-- Release 8.1.03i xst I.27
+-- Release 8.1.03i par I.27
+-- Release 8.1.03i Trace I.27
+-- Release 8.1.03i Bitgen I.27
 
 
-//check_pg2emu.c
-void check_pg2emu(long long int a[][3],long long int a_pg2[3],int n);
-
-
-//
-void force_on_host(double x[][DIM], double m[], double eps2, double a[][DIM], int n);
-
-double energy(double m[], double x[][DIM], double v[][DIM], double eps2, int n);
-
-void leapflog(double dt,double x[][DIM],double v[][DIM],int n);
-void leapflog_half(double dt,double x[][DIM],double v[][DIM],int n);
-
-void debug_func_force(double x[][DIM],double m[], double eps2,double a[][DIM],int n);
-void debug_position(double x[][DIM], double dt, int n);
-
-void writelog(double m[], double x[][DIM], double v[][DIM], double eps2, int n);
-
-void init_particles(char* fname,
-		    int* npar,
-		    double mass[],
-		    double posi[][DIM],
-		    double veloc[][DIM]);
+![PROGRAPE-4](http://www.ipa.go.jp/jinzai/esp/2005mito1/mdata/images/clip_image002_006.jpg)

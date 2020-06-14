@@ -1,50 +1,28 @@
-Fri Jun  5 19:47:02 JST 2020
--- Copyright 2004 Tsuyoshi Hamada
---
---
---clk         __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __
---[DMAR_ENABLE] _____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
---en0                _____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
---en1                     _____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
---en2                          _____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
---en3                               _____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
---DBUS_HiZ            ~~~~~~~~~~~~~~\_________________________________________________/~~~~
+Sun Jun 14 19:48:18 JST 2020
+#define NFLO 26
+#define NMAN 16
+#define NFIX 57
+#define NACC 64
+#define NEXAD 31
+#define FSHIFT pow(2.0,(double)NEXAD)
 
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
+/JPSET xj[3],  x[][],  float, NFLO, NMAN;
+/JPSET mj,     m[],    float, NFLO, NMAN;
+/IPSET xi[3],  x[][],  float, NFLO, NMAN;
+/IPSET ieps2,  eps2,   float, NFLO, NMAN;
+/FOSET sx[3],  a[][],  fix,   NACC, (-1.0/FSHIFT);
+/NVMP 1;
+/NPIPE 1;
 
-entity dmar_dbus_hiz is
-  port (
-    RST       : in std_logic;
-    CLK       : in std_logic;
-    ENABLE    : in std_logic;
-    DBUS_HiZ  : out std_logic :='1');
-end dmar_dbus_hiz;
-
-architecture rtl of dmar_dbus_hiz is
-signal en0,en1,en2,en3 : std_logic :='0';
-begin
-
-  process(CLK) begin
-    if(CLK'event and CLK = '1') then
-      en3 <= en2;
-      en2 <= en1;
-      en1 <= en0;
-      en0 <= ENABLE;
-    end if;
-  end process;
-
-
-  process(RST,CLK,en2,en3) begin
-    if(RST='1') then
-      DBUS_HiZ <= '1';
-    elsif(CLK'event and CLK = '1') then
-     if( (en1='1') AND (en2='0') ) then
-       DBUS_HiZ <= '0';
-     elsif( (en2='0') AND (en3='1') ) then
-       DBUS_HiZ <= '1';
-     end if;
-    end if;
-  end process;
-
-end rtl;
+pg_float_sub      (xi,xj, dx,              NFLO,NMAN, 4);
+pg_float_mult     (dx,dx, dx2,             NFLO,NMAN, 2);
+pg_float_unsigned_add(dx2[0],dx2[1], x2y2, NFLO,NMAN, 4);
+pg_float_unsigned_add(dx2[2],ieps2,  z2e2, NFLO,NMAN, 4);
+pg_float_unsigned_add(x2y2,z2e2,r2,        NFLO,NMAN, 4);
+pg_float_sqrt     (r2,r1,                  NFLO,NMAN, 3);
+pg_float_mult     (r2,r1,r3,               NFLO,NMAN, 2);
+pg_float_recipro  (r3,r3i,                 NFLO,NMAN, 2);
+pg_float_mult     (r3i,mj,mf,              NFLO,NMAN, 2);
+pg_float_expadd   (mf,fs,                  NEXAD,NFLO,NMAN,1);
+pg_float_mult     (fs,dx,fx,               NFLO,NMAN, 2);
+pg_float_fixaccum (fx,sx,                  NFLO,NMAN, NFIX, NACC, 4);

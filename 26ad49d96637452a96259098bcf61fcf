@@ -1,91 +1,41 @@
-Sat Aug  8 19:26:39 JST 2020
-//-----------------------------------------------------------------------------
-// Output Pair-Wise Error
-// Modify: Tsuyoshi Hamada, Nov, 2006
-//-----------------------------------------------------------------------------
-#include  <iostream>
-#include  <cmath>
-#include  <cstdlib>
-#include  <iomanip> // cout << setw() << setprecision() 
-using namespace std;
+Sun Sep 13 19:31:11 JST 2020
+Release 6.2.03i - ngdbuild G.31a
+Copyright (c) 1995-2004 Xilinx, Inc.  All rights reserved.
 
-extern "C" void  force(double x[][3], double v[][3], double m[], double p[], double a[][3], double j[][3], int n);
-extern "C" void _force(double x[][3], double v[][3], double m[], double p[], double a[][3], double j[][3], int n);
+Command Line: ngdbuild -intstyle ise -dd ./_ngo -uc ../top.ucf -p
+xc2vp70-ff1517-5 top.ngc top.ngd 
 
-extern "C" void debug_position_snap(double x[][3], double Gflops, int n, int nstep);
+Reading NGO file
+"/home/hamada/pgr/Demos/PairWiseErr/pgr/ISE_PROJECT/proj/top.ngc" ...
+Reading component libraries for design expansion...
 
-#define NMAX 1024
+Annotating constraints to design from file "../top.ucf" ...
 
-double rsv[65536][3];
+Checking timing specifications ...
+WARNING:XdmHelpers:793 - The TNM "CLK66" drives the CLKIN pin of DCM
+   "dcm0_dcm0". This TNM cannot be traced through the DCM because it is not used
+   in exactly one PERIOD specification. This TNM is used in the following user
+   groups and/or specifications:
+   <none>
+WARNING:XdmHelpers:625 - No instances driven from signal "CK66" are valid for
+   inclusion in TNM group "CLK66". A TNM property on a pin or signal marks only
+   the flip-flops, latches and/or RAMs which are directly or indirectly driven
+   by that pin or signal.
+INFO:XdmHelpers:851 - TNM "CK66", used in period specification "TS_CK66", was
+   traced into DCM instance "dcm0_dcm0". The following new TNM groups and period
+   specifications were generated at the DCM output(s):
+   CLK0: TS_dcm0_dcm_out=PERIOD dcm0_dcm_out TS_CK66*1.000000 HIGH 50.000000%
+   CLKFX: TS_dcm0_dcm_fx=PERIOD dcm0_dcm_fx TS_CK66*1.000000 HIGH 50.000000%
+WARNING:XdmHelpers:644 - No appropriate elements were found for the TNM group
+   "CLK66". This group has been removed from the design.
+Checking expanded design ...
 
-int main(int argc, char *argv[]) {
-  int index;
-  int n = 2;
+NGDBUILD Design Results Summary:
+  Number of errors:     0
+  Number of warnings:   3
 
-  double m[NMAX];
-  double r[NMAX][3];
-  double v[NMAX][3];
+Total memory usage is 67920 kilobytes
 
-  double p[NMAX];
-  double a[NMAX][3];
-  double jk[NMAX][3];
+Writing NGD file "top.ngd" ...
 
-  double _p[NMAX];
-  double _a[NMAX][3];
-  double _jk[NMAX][3];
-
-  m[0] = m[1] = 1.0;
-
-  for (int i = 0; i < 3 ; i++) r[i][0] = 0.0;
-  for (int i = 0; i < 3 ; i++) v[i][0] = 0.0;
-  for (int i = 0; i < 3 ; i++) v[i][1] = 0.0;
-
-  index=0;
-  srand(0x12345);
-
-  for (int t = 0; t < 1000 ; t++){
-    
-
-    //    for (int i = 0; i < 3 ; i++) r[1][i] = pow(10.0, 2.0*rand()/(RAND_MAX+1.0));
-
-
-
-    for (int i = 0; i < 3 ; i++) r[1][i] = 1.0*rand()/(RAND_MAX+1.0);
-
-    for (int i = 0; i < 3 ; i++)  rsv[index][i] = r[1][i];
-    index++;
-
-
-    _force(r, v, m, _p, _a, _jk, n);
-     force(r, v, m,  p,  a,  jk, n);
-
-     double err_p, err_a[3], err_jk[3];
-     double rad;
-     rad = sqrt(r[1][0]*r[1][0]+r[1][1]*r[1][1]+r[1][2]*r[1][2]);
-     err_p = fabs(p[0]-_p[0])/_p[0];
-
-    
-     for (int k = 0; k < 3; k++){
-       double host  = _a[0][k];
-       double pipe  =  a[0][k];
-       double err = sqrt((host - pipe)*(host - pipe))/host;
-
-       cout << setw(8);
-       cout.precision(6);
-       cout << rad  << "\t";
-       cout.precision(6);
-       cout << err  << "\t";
-       cout.precision(6);
-       cout << host << "\t";
-       cout.precision(6);
-       cout << pipe << endl;
-
-     }
-
-  }
-  
-
-  debug_position_snap(rsv, 123.456, index, 10);
-
-  return 0;
-}
+Writing NGDBUILD log file "top.bld"...

@@ -1,5 +1,30 @@
-Fri Jul 10 19:48:51 JST 2020
--- ProjNav VHDL simulation template: sim_local_read_if.udo
--- You may edit this file after the line that starts with
--- '-- START' to customize your simulation
--- START user-defined simulation commands
+Thu Sep 17 19:34:10 JST 2020
+#!/usr/bin/perl
+
+
+my $is_stop = 0;
+my $nboard = 0;
+
+if($ARGV[0]){
+    $nboard = $ARGV[0];
+}
+
+my $kbuf_dir = "/sys/class/fpga/fpga". sprintf("%d",$nboard);
+my $cmd ="cat ". $kbuf_dir ."/kbuffers";
+my $exe = `$cmd`;
+print $exe;
+
+my $nbuf = `$cmd | wc -l`;
+chomp($nbuf);
+$nbuf--;
+
+print $nbuf ." buffers exists\n";
+
+for(my $i=0;$i<$nbuf;$i++){
+    $cmd = "echo $i > ". $kbuf_dir. "/kmem_free";
+    print $cmd ."\n";
+    $exe = `$cmd`;
+    print $exe;
+}
+
+1;

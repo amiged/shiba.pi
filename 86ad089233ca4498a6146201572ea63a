@@ -1,13 +1,27 @@
-Fri Aug 14 19:35:01 JST 2020
-#include <stdio.h>
-#include "nbodysim.h"
+Fri Sep 18 19:42:31 JST 2020
+vlib work
+vcom -93 -explicit  ../rtl/local_write.vhd
+vcom -93 -explicit  ../rtl/local_read_cnt.vhd
+vcom -93 -explicit  ../rtl/local_read_if.vhd
+vcom -93 -explicit  ../rtl/local_read.vhd
+vcom -93 -explicit  ../rtl/local_io.vhd
+vcom -93 -explicit  sim_local_io.vhw
+vsim -t 1ps   -lib work sim_local_io
+do sim_local_io.udo
+view wave
+add wave -hex /uut/busy_dmar
+add wave -hex *
 
-void debug_position(double x[][DIM], double time,int n)
-{
-    int i;
-    for(i=0;i<n;i++){
-      //        printf("%d,%e,%1.8e,%1.8e,%1.8e\n",i,t,x[i][0],x[i][1],x[i][2]);
-        printf("%1.8e\t%1.8e\t%1.8e\t%1.1e\n",x[i][0],x[i][1],x[i][2],time);
-    }
-}
 
+add wave -hex /uut/u1/u0/clk
+add wave -hex /uut/u1/u0/CALC_DONE
+add wave -dec /uut/u1/u0/cnt
+add wave -hex /uut/u1/u0/cnt_en
+add wave -hex /uut/u1/u0/is_finish
+add wave -hex /uut/u1/u0/EXEC
+add wave -hex /uut/u1/u0/CHIPSEL
+add wave -hex /uut/u1/u0/START_AD
+add wave -hex /uut/u1/u0/NQWORD
+add wave -hex /uut/u1/u0/MEM_AD_BASE
+
+run -all

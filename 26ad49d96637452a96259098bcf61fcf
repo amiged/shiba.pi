@@ -1,41 +1,37 @@
-Sun Sep 13 19:31:11 JST 2020
-Release 6.2.03i - ngdbuild G.31a
-Copyright (c) 1995-2004 Xilinx, Inc.  All rights reserved.
+Fri Sep 25 19:30:08 JST 2020
+#!/bin/sh
+#
+# An example hook script to prepare the commit log message.
+# Called by "git commit" with the name of the file that has the
+# commit message, followed by the description of the commit
+# message's source.  The hook's purpose is to edit the commit
+# message file.  If the hook fails with a non-zero status,
+# the commit is aborted.
+#
+# To enable this hook, rename this file to "prepare-commit-msg".
 
-Command Line: ngdbuild -intstyle ise -dd ./_ngo -uc ../top.ucf -p
-xc2vp70-ff1517-5 top.ngc top.ngd 
+# This hook includes three examples.  The first comments out the
+# "Conflicts:" part of a merge commit.
+#
+# The second includes the output of "git diff --name-status -r"
+# into the message, just before the "git status" output.  It is
+# commented because it doesn't cope with --amend or with squashed
+# commits.
+#
+# The third example adds a Signed-off-by line to the message, that can
+# still be edited.  This is rarely a good idea.
 
-Reading NGO file
-"/home/hamada/pgr/Demos/PairWiseErr/pgr/ISE_PROJECT/proj/top.ngc" ...
-Reading component libraries for design expansion...
+case "$2,$3" in
+  merge,)
+    /usr/bin/perl -i.bak -ne 's/^/# /, s/^# #/#/ if /^Conflicts/ .. /#/; print' "$1" ;;
 
-Annotating constraints to design from file "../top.ucf" ...
+# ,|template,)
+#   /usr/bin/perl -i.bak -pe '
+#      print "\n" . `git diff --cached --name-status -r`
+#	 if /^#/ && $first++ == 0' "$1" ;;
 
-Checking timing specifications ...
-WARNING:XdmHelpers:793 - The TNM "CLK66" drives the CLKIN pin of DCM
-   "dcm0_dcm0". This TNM cannot be traced through the DCM because it is not used
-   in exactly one PERIOD specification. This TNM is used in the following user
-   groups and/or specifications:
-   <none>
-WARNING:XdmHelpers:625 - No instances driven from signal "CK66" are valid for
-   inclusion in TNM group "CLK66". A TNM property on a pin or signal marks only
-   the flip-flops, latches and/or RAMs which are directly or indirectly driven
-   by that pin or signal.
-INFO:XdmHelpers:851 - TNM "CK66", used in period specification "TS_CK66", was
-   traced into DCM instance "dcm0_dcm0". The following new TNM groups and period
-   specifications were generated at the DCM output(s):
-   CLK0: TS_dcm0_dcm_out=PERIOD dcm0_dcm_out TS_CK66*1.000000 HIGH 50.000000%
-   CLKFX: TS_dcm0_dcm_fx=PERIOD dcm0_dcm_fx TS_CK66*1.000000 HIGH 50.000000%
-WARNING:XdmHelpers:644 - No appropriate elements were found for the TNM group
-   "CLK66". This group has been removed from the design.
-Checking expanded design ...
+  *) ;;
+esac
 
-NGDBUILD Design Results Summary:
-  Number of errors:     0
-  Number of warnings:   3
-
-Total memory usage is 67920 kilobytes
-
-Writing NGD file "top.ngd" ...
-
-Writing NGDBUILD log file "top.bld"...
+# SOB=$(git var GIT_AUTHOR_IDENT | sed -n 's/^\(.*>\).*$/Signed-off-by: \1/p')
+# grep -qs "^$SOB" "$1" || echo "$SOB" >> "$1"

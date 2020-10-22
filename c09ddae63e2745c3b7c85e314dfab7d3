@@ -1,4 +1,4 @@
-Sun Oct 18 19:47:56 JST 2020
+Thu Oct 22 19:42:47 JST 2020
 #include<stdio.h>
 #define LONG long long int 
 // bit level check between emulator and hardware(pg2)

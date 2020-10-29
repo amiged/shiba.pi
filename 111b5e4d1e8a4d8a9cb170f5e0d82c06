@@ -1,91 +1,94 @@
-Sat Oct 10 19:27:39 JST 2020
-#include <stdio.h>
-#include <math.h>
-#ifndef LONG
-#define LONG unsigned long long int
-#endif
-#ifndef PGINT
-#define PGINT unsigned long long int
-#endif
+Thu Oct 29 19:26:28 JST 2020
+-- LOCAL READ CONTROLLER ( ifpga <- pfpga )
+-- by Tsuyoshi Hamada
+--
+-- CLK            __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~
+-- CALC_DONE      ___/~~~~\____
+-- BUSY               ___/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\_______________
+-- hit1               ___/~~~~\____
+-- c_nchip               < NC                >< NC -1                           >< negativ value
+-- next_chip                          ___/~~~~\____                      ___/~~~~\____
+--==================================================
+-- CLK            __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~
+-- CALC_DONE      ___/~~~~\____
+-- c_npipe               < NP                >< NP -1                           >< negativ value
+-- next_pipe
 
 
-void
-force_double(double x[][3], double m[], double eps2, double a[][3], int n)
-{
-    int             i, j;
-    double          sx_0;
-    double          sx_1;
-    double          sx_2;
-    double          xi_0;
-    double          xj_0;
-    double          xi_1;
-    double          xj_1;
-    double          xi_2;
-    double          xj_2;
-    double          dx2_0;
-    double          dx2_1;
-    double          dx2_2;
-    double          ieps2;
-    double          x2y2;
-    double          z2e2;
-    double          r2;
-    double          r1;
-    double          r3;
-    double          r3i;
-    double          mj;
-    double          mf;
-    double          dx_0;
-    double          dx_1;
-    double          fs;
-    double          dx_2;
-    double          fx_0;
-    double          fx_1;
-    double          fx_2;
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
+
+entity local_read_cnt is
+  port (
+    -- from PGPG_REG3
+    NCHIP : in std_logic_vector(1 downto 0);     -- (number of chips) - 1
+    NPIPE : in std_logic_vector(7 downto 0);     -- (number of pipelines) - 1
+    NFI   : in std_logic_vector(7 downto 0);     -- (number of fi registers in a pipe) - 1
+    CALC_DONE : in std_logic;   -- pulse
+    -- to GPREG0
+    BUSY  : out std_logic;
+
+    -- to LOCAL_READ_IF
+    EXEC     : out std_logic;                     -- pulse
+    START_AD : out std_logic_vector(18 downto 0); -- 19 bit
+    NQWORD   : out std_logic_vector( 8 downto 0); --  9 bit
+    CHIPSEL  : out std_logic_vector( 3 downto 0); --  4 bit
+    MEM_AD_BASE : out std_logic_vector(12 downto 0);
+    -- from LOCAL_READ_IF
+    BUSY_IF : in std_logic;
+ 
+    RST : in  std_logic;
+    CLK : in  std_logic
+    );
+end local_read;
+
+architecture rtl of local_read is
+
+signal hit0,hit1,hit2 : std_logic :='0';
+signal c_nchip,c_nchipr  : std_logic_vector(2 downto 0) := (others=>'0');
+signal c_npipe,c_npiper  : std_logic_vector(7 downto 0) := (others=>'0');
+signal c_nfi  ,c_nfir    : std_logic_vector(7 downto 0) := (others=>'0');
+signal next_chip, next_pipe : std_logic :='0';
+
+begin
+
+  hit0 <= CALC_DONE;
+  process (CLK) begin
+    if (CLK'event and CLK='1') then
+      hit2 <= hit1;
+      hit1 <= hit0;
+    end if;
+  end process;
+
+  -- BUSY
+  process (RST,CLK,c_nchip) begin
+    if (RST = '1') then
+      BUSY <= '0';
+    elsif (CLK'event and CLK='1') then
+      if((hit0 = '1') AND (hit1 = '0')) then
+        BUSY <= '1';
+      elsif(c_nchip(2) = '1') then
+        BUSY <= '0';
+      end if;
+    end if;
+  end process;
 
 
-    for (i = 0; i < n; i++) {
-	xi_0 = x[i][0];
-	xi_1 = x[i][1];
-	xi_2 = x[i][2];
-	ieps2 = eps2;
+  -- NCHIP COUNTER
+  c_nchipr <= c_nchip - "01";
+  process (RST,CLK,next_chip) begin
+    if (RST = '1') then
+      c_nchip <= (others=>'0');
+    elsif (CLK'event and CLK='1') then
+      if((hit0 = '1') AND (hit1 = '0')) then
+        c_nchip <= "0" & NCHIP;              -- SIGNED VALUE
+      elsif (next_chip='1') then
+        c_nchip <= c_nchipr;
+      end if;
+    end if;
+  end process;
 
-	sx_0 = 0.0;
-	sx_1 = 0.0;
-	sx_2 = 0.0;
+  
 
-	for (j = n - 1; j >= 0; j--) {
-	    xj_0 = x[j][0];
-	    xj_1 = x[j][1];
-	    xj_2 = x[j][2];
-	    mj = m[j];
-
-	    dx_0 = xi_0 - xj_0;
-	    dx_1 = xi_1 - xj_1;
-	    dx_2 = xi_2 - xj_2;
-	    dx2_0 = dx_0 * dx_0;
-	    dx2_1 = dx_1 * dx_1;
-	    dx2_2 = dx_2 * dx_2;
-	    x2y2 = dx2_0 + dx2_1;
-	    z2e2 = dx2_2 + ieps2;
-	    r2 = x2y2 + z2e2;
-	    r1 = sqrt(r2);
-	    r3 = r2 * r1;
-	    if (r3 != 0.0) {
-		r3i = 1.0 / r3;
-	    } else {
-		r3i = 0.0;
-	    }
-	    mf = r3i * mj;
-	    fs = mf * pow(2.0, (double) 31);
-	    fx_0 = fs * dx_0;
-	    fx_1 = fs * dx_1;
-	    fx_2 = fs * dx_2;
-	    sx_0 += fx_0;
-	    sx_1 += fx_1;
-	    sx_2 += fx_2;
-	}
-	a[i][0] = sx_0 * (-1.0 / pow(2.0, (double) 31));
-	a[i][1] = sx_1 * (-1.0 / pow(2.0, (double) 31));
-	a[i][2] = sx_2 * (-1.0 / pow(2.0, (double) 31));
-    }
-}

@@ -1,344 +1,102 @@
-Fri Nov  6 19:29:50 JST 2020
-/***************************************************
- * The lowest level library for PROGRAPE-4
- *
- * Copyright(c) by Tsuyoshi Hamada.
- * All rights reserved.
- *
- * PLEASE DO NOT BRANCH !!
- *
- * 20060916.rev1 : Development start
- ***************************************************/
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#include <unistd.h>
-#include <sys/ioctl.h> // ioctl()
-#include <sys/mman.h>  // mmap()
-#include <sys/types.h> // open()
-#include <sys/stat.h>  // open()
-#include <sys/fcntl.h> // open()
-
-#undef CERR
-#define CERR(fmt, args...) fprintf(stderr, fmt, ## args)
-
-#undef _CERR
-#define _CERR(fmt, args...) 
-
-#define MAX_NBOARD 8
-unsigned int* bar0[MAX_NBOARD];
-unsigned int* bar1[MAX_NBOARD];
-
-//---------------------------------------
-#include "progrape.h"
-
-static char *devname[] = {
-  "/dev/progrape0",
-  "/dev/progrape1",
-  "/dev/progrape2",
-  "/dev/progrape3",
-  "/dev/progrape4",
-  "/dev/progrape5",
-  "/dev/progrape6",
-  "/dev/progrape7",
-  "/dev/progrape8",
-};
-
-static int pg4_dev[] = {
-  -1,-1,-1,-1,-1,-1,-1,-1,
-};
-
-unsigned int *dmar_buf[MAX_NBOARD];
-unsigned int *dmaw_buf[MAX_NBOARD];
-
-unsigned int* pg4_get_bar0ptr(int devid){ return bar0[devid]; }
-unsigned int* pg4_get_bar1ptr(int devid){ return bar1[devid]; }
-
-#define DMA_BSIZE (0x1<<10) // 4KB
-
-static void * __mmap_bar     (int devid, int bar);
-//    static int __pg4_DMA         (int devid, unsigned int size, unsigned int offset, unsigned int dir);
-//    static int __pg4_DMA_noInterrupt(int devid, unsigned int size, unsigned int offset, unsigned int dir);
-//    static int __pg4_DMA_with_retry(int devid, unsigned int size, unsigned int offset, unsigned int dir);
-int           pg4_DMAget     (int devid, unsigned int size);
-int           pg4_DMAput     (int devid, unsigned int size);
-int           pg4_DMAput_offset (int devid, unsigned int size, unsigned offset);
-int           pg4_DMAget_offset (int devid, unsigned int size, unsigned offset);
-void          pg4_wait       (int devid, int n);
-void          pg4_DMAcheck   (int devid);
-int           pg4_DMAretry   (int devid);
-unsigned long pg4_getbaseaddr(int devid, int j);
-unsigned long pg4_getbaseaddr_size(int devid, int bar);
-unsigned long pg4_read_pciconfig_dword(int devid, int adr);
-void pg4_get_pfpga_info(int devid, char *info);
-void pg4_set_pfpga_info(int devid, char *info);
-
-
-static void * __mmap_dmabuf(int id, int is_wbuf)
-{
-  unsigned long size;
-  void *mapped_ptr;
-
-  switch (is_wbuf) {
-  case 0:
-    {
-      if (ioctl(pg4_dev[id], IOC_SV_MMAPMODE, MMAP_BUF_DMAR)) {
-	CERR("mmap dmar buf failed | %s:%d\n", __FILE__, __LINE__);
-	exit (-1);
-      }
-      size = ioctl(pg4_dev[id], IOC_GV_DMA_SIZE);
-
-    }
-    break;
-  case 1:
-    {
-      if (ioctl(pg4_dev[id], IOC_SV_MMAPMODE, MMAP_BUF_DMAW)) {
-	CERR("mmap dmaw buf failed | %s:%d\n", __FILE__, __LINE__);
-	exit (-1);
-      }
-      size = ioctl(pg4_dev[id], IOC_GV_DMA_SIZE);
-    }
-    break;
-  default :
-    CERR("mmap dmabuf %d invalid | %s:%d\n", is_wbuf, __FILE__, __LINE__);
-    exit (-1);
-  }
-
-  mapped_ptr = mmap(NULL,
-		    size,
-		    (PROT_READ| PROT_WRITE),
-		    MAP_SHARED,
-		    pg4_dev[id],
-		    0);
-  _CERR("mmap_ptr called\n");
-
-  return (mapped_ptr);
-}
-
-
-static void * __mmap_bar(int id, int bar)
-{
-  unsigned long size;
-  unsigned long pagesize = getpagesize();
-  void *mapped_ptr;
-
-  switch (bar) {
-  case 0:
-    {
-      if (ioctl(pg4_dev[id], IOC_SV_MMAPMODE, MMAP_REG_PIORW)) {
-	CERR("mmap bar%d failed | %s:%d\n",bar,__FILE__,__LINE__);
-	exit (-1);
-      }
-      size = ioctl(pg4_dev[id], IOC_GV_REG_SIZE);
-    }
-    break;
-  case 1:
-    {
-      if (ioctl(pg4_dev[id], IOC_SV_MMAPMODE, MMAP_MEM_PIORW)) {
-	CERR("mmap bar%d failed | %s:%d\n",bar,__FILE__,__LINE__);
-	exit (-1);
-      }
-      size = ioctl(pg4_dev[id], IOC_GV_MEM_SIZE);
-    }
-    break;
-  default :
-    CERR("mmap bar%d invalid | %s:%d\n",bar,__FILE__,__LINE__);
-    exit (-1);
-  }
-
-  mapped_ptr = mmap(NULL,
-		    (size/pagesize+1)*pagesize,
-		    (PROT_READ| PROT_WRITE),
-		    MAP_SHARED,
-		    pg4_dev[id],
-		    0);
-
-  return (mapped_ptr);
-}
-
-
-int pg4_open(int id)
-{
-  pg4_dev[id] = open(devname[id], O_RDWR);
-  if(pg4_dev[id] == -1) {
-    CERR("open failed %s | %s:%d\n",devname[id] ,__FILE__,__LINE__);
-    return -1;
-  }
-
-  bar0[id] = (unsigned int *) __mmap_bar(id, 0); // mmap BAR0
-  bar1[id] = (unsigned int *) __mmap_bar(id, 1); // mmap BAR1
-
-  dmaw_buf[id] = (unsigned int *) __mmap_dmabuf(id, 1); // mmap DMAW buf
-  dmar_buf[id] = (unsigned int *) __mmap_dmabuf(id, 0); // mmap DMAR buf
-
-  if(dmaw_buf[id] == NULL){
-    CERR("mmap dmaw_buf failed %s | %s:%d\n",devname[id] ,__FILE__,__LINE__);
-    return (-1);
-  }
-
-  if(dmar_buf[id] == NULL){
-    CERR("mmap dmar_buf failed %s | %s:%d\n",devname[id] ,__FILE__,__LINE__);
-    return (-1);
-  }
-
-  _CERR("DMAW Buff at 0x%x\n",(unsigned int)dmaw_buf[id]);
-  _CERR("DMAR Buff at 0x%x\n",(unsigned int)dmar_buf[id]);
-
-  return 1;
-}
-
-
-void pg4_close(int id){
-  close(pg4_dev[id]);
-  pg4_dev[id] = -1;
-}
-
-
-void pg4_close_and_exit(int id){
-  //  pg4_DMAcheck(id);
-  pg4_close(id);
-  exit(1);
-}
-
-
-inline unsigned int pg4_readbase0(int id, unsigned int index){ return *(bar0[id] + index); }
-inline void         pg4_writebase0(int id, unsigned int index, unsigned int val){ *(bar0[id] + index) = val; }
-inline unsigned int pg4_readbase1(int id, unsigned int index){ return *(bar1[id] + index); }
-inline void         pg4_writebase1(int id, unsigned int index, unsigned int val){ *(bar1[id] + index) = val; }
-inline unsigned int ReadBase0(int id, unsigned int addr){return pg4_readbase0(id, addr>>2);}
-inline unsigned int ReadBase1(int id, unsigned int addr){return pg4_readbase1(id, addr>>2);}
-inline void         WriteBase0(int id, unsigned int addr, unsigned int val){pg4_writebase0(id, addr>>2, val);}
-inline void         WriteBase1(int id, unsigned int addr, unsigned int val){pg4_writebase1(id, addr>>2, val);}
-
-
-unsigned int pg4_get_dma_size(int id) {
-  return ( (unsigned int)ioctl(pg4_dev[id], IOC_GV_DMA_SIZE) );
-}
-
-
-unsigned int* pg4_get_dmawptr(int id) {
-  return ( (unsigned int*)dmaw_buf[id] );
-}
-
-
-unsigned int* pg4_get_dmarptr(int id) {
-  return ( (unsigned int*)dmar_buf[id] );
-}
-
-
-int pg4_DMAput(int id, unsigned int size)
-{
-  int ret = ioctl(pg4_dev[id], IOC_SV_DMAW, size);
-  if(ret){
-    CERR("DMAW failed %d| %s:%d\n",ret ,__FILE__, __LINE__);
-    exit (-1);
-  }
-  return (0);
-}
-
-
-int pg4_DMAget(int id, unsigned int size)
-{
-  int ret = ioctl(pg4_dev[id], IOC_SV_DMAR, size);
-  if(ret){
-    CERR("DMAR failed %d| %s:%d\n",ret ,__FILE__, __LINE__);
-    exit (-1);
-  }
-  return (0);
-}
-
-
-void pg4_DMAcheck(int devid)
-{
-  unsigned int flag, retry;
-  fprintf(stderr,"\t INT_STAT       (0x%X) : %x\n", REG_INT_STAT,       ReadBase0(devid, REG_INT_STAT));
-  fprintf(stderr,"\t INT_MASK       (0x%X) : %x\n", REG_INT_MASK,       ReadBase0(devid, REG_INT_MASK));
-  fprintf(stderr,"\t DMA_PCI_ADRS   (0x%X) : %x\n", REG_DMA_PCI_ADRS,   ReadBase0(devid, REG_DMA_PCI_ADRS));
-  fprintf(stderr,"\t DMA_LOCAL_ADRS (0x%X) : %x\n", REG_DMA_LOCAL_ADRS, ReadBase0(devid, REG_DMA_LOCAL_ADRS));
-  fprintf(stderr,"\t DMA_COUNT      (0x%X) : %x\n", REG_DMA_COUNT,      ReadBase0(devid, REG_DMA_COUNT));
-  fprintf(stderr,"\t DMA_CTRL       (0x%X) : %x\n", REG_DMA_CTRL,       ReadBase0(devid, REG_DMA_CTRL));
-  fprintf(stderr,"\t DMA_INTERVAL   (0x%X) : %x\n", REG_DMA_INTERVAL,   ReadBase0(devid, REG_DMA_INTERVAL));
-  fprintf(stderr,"\t DMA_STAT       (0x%X) : %x\n", REG_DMA_STAT,       ReadBase0(devid, REG_DMA_STAT));
-
-  flag = ReadBase0(devid, REG_DMA_STAT);
-
-  retry = ((0x1<<16)-1)&flag;
-  fprintf(stderr,"\t DMA dissconnect count %i\n", (flag>>16));
-  fprintf(stderr,"\t DMA retry count       %i\n", retry);
-  fprintf(stderr,"\n");
-  fflush(NULL);
-}
-
-int pg4_DMAretry(int devid)
-{
-  unsigned int flag, retry;
-  flag = ReadBase0(devid, REG_DMA_STAT);
-  retry = ((0x1<<16)-1)&flag;
-  return retry;
-}
-
-int pg4_DMAput_offset(int devid, unsigned int size, unsigned offset)
-{
-  CERR("REMOVED, %s:%d\n", __FILE__, __LINE__);exit(-1);
-  return -1;
-}
-
-int pg4_DMAget_offset(int devid, unsigned int size, unsigned offset)
-{
-  CERR("REMOVED, %s:%d\n", __FILE__, __LINE__);exit(-1);
-  return -1;
-}
-
-void pg4_wait(int devid, int n)
-{
-  CERR("REMOVED, %s:%d\n", __FILE__, __LINE__);exit(-1);
-}
-
-unsigned long pg4_getbaseaddr(int id, int bar)
-{
-  unsigned long ret;
-  if( (bar==0) || (bar==1)){
-    int bar0_dword_adr = 0x4;
-    ret = pg4_read_pciconfig_dword(id, bar0_dword_adr + bar);
-  }else{
-    CERR("bar %d invalid | %s:%d\n",bar ,__FILE__ ,__LINE__);
-    exit(-1);
-  }
-  return ret;
-}
-
-unsigned long pg4_getbaseaddr_size(int id, int bar)
-{
-  unsigned long size;
-  switch (bar) {
-  case 0:
-    size = ioctl(pg4_dev[id], IOC_GV_REG_SIZE);
-    break;
-  case 1:
-    size = ioctl(pg4_dev[id], IOC_GV_MEM_SIZE);
-    break;
-  default :
-    CERR("bar%d invalid | %s:%d\n",bar,__FILE__,__LINE__);
-    exit (-1);
-  }
-
-  return (size); // [Bytes]
-}
-
-unsigned long pg4_read_pciconfig_dword(int id, int adr)
-{
-  // note : 'adr' uses dword address (not byte address).
-  return (unsigned long) ioctl(pg4_dev[id], IOC_GV_PCICFG, adr);
-}
-
-void pg4_get_pfpga_info(int id, char* ret){
-  char info[NB_FPGA_INFO];
-  ioctl(pg4_dev[id], IOC_GP_FPGA_INFO, info);
-  strcpy(ret, info);
-}
-
-void pg4_set_pfpga_info(int id, char* info){
-  ioctl(pg4_dev[id], IOC_SP_FPGA_INFO, info);
-}
+Sun Dec 13 19:52:32 JST 2020
+100
+-2.746715e-01	4.191831e-01
+-2.931587e-01	2.247797e-01
+2.321991e-01	4.064824e-01
+-1.520429e-01	3.578809e-01
+-8.481506e-02	-3.058323e-01
+1.856104e-01	2.437552e-02
+-3.403643e-01	4.547575e-01
+-3.730157e-01	-4.956605e-01
+-1.173085e-01	-2.492071e-01
+1.552879e-01	3.449078e-02
+1.099664e-01	-2.121421e-01
+4.092620e-01	2.361288e-01
+-3.788992e-01	1.148062e-01
+-2.340848e-01	4.453564e-01
+-7.531051e-02	-2.516460e-01
+1.772955e-01	-4.287967e-01
+-4.426001e-02	-3.237644e-04
+-4.797312e-01	3.861750e-01
+1.545830e-01	5.970007e-02
+4.850480e-01	-1.605443e-01
+-4.632017e-01	-2.009751e-01
+4.881687e-01	-5.634217e-02
+-3.708808e-01	4.150378e-01
+-1.135756e-01	-4.695678e-01
+-3.155564e-01	4.356883e-01
+-1.920876e-02	9.783734e-02
+-6.385236e-02	-3.949834e-01
+2.275205e-01	-3.768423e-01
+1.721155e-01	-4.660092e-01
+4.644338e-01	-4.804784e-01
+-4.553355e-01	-7.876486e-02
+2.642185e-01	4.444889e-01
+5.434882e-02	1.171663e-01
+1.465040e-01	-1.143288e-01
+4.021194e-01	-1.771178e-01
+-7.684997e-02	-4.504972e-02
+7.223762e-02	-4.515364e-01
+-2.392842e-02	-3.878574e-01
+3.425949e-01	-1.136164e-01
+-4.632521e-01	2.447992e-01
+2.661087e-03	-2.676771e-01
+-2.328564e-01	-3.223420e-01
+-4.466751e-01	-1.286633e-01
+-4.479510e-01	-6.189542e-02
+-4.433532e-01	1.711145e-01
+-2.251056e-01	-4.814771e-01
+1.644014e-01	3.307433e-01
+-4.618902e-01	1.489123e-01
+7.775744e-02	3.332788e-01
+3.334003e-01	-1.894713e-01
+-2.498460e-01	-4.304763e-01
+-2.016626e-01	-3.888901e-01
+3.431431e-01	-6.968799e-02
+9.800158e-02	3.226420e-01
+1.605654e-01	-8.747274e-02
+-4.682621e-01	-3.876081e-01
+2.279104e-01	1.228907e-01
+2.623244e-02	-7.350670e-02
+-3.627764e-01	1.817259e-01
+2.810276e-01	4.027677e-01
+-1.422834e-01	3.805313e-01
+4.783312e-01	2.763473e-01
+-3.893109e-01	2.006641e-03
+3.557465e-01	-1.806598e-01
+1.450046e-01	-2.954686e-01
+-2.783369e-01	-3.638557e-01
+-7.520648e-02	5.595485e-02
+2.496197e-02	-2.837536e-02
+2.810538e-01	1.905431e-01
+-3.170416e-01	-1.766273e-01
+4.882654e-01	-3.097528e-01
+-4.631571e-01	-3.453426e-02
+-1.609725e-01	4.549768e-01
+8.088132e-03	2.639415e-01
+-4.847877e-01	3.397484e-01
+4.413317e-01	-1.913503e-01
+-3.675422e-01	2.785392e-01
+3.611714e-01	-2.921098e-01
+-4.166281e-01	8.013365e-02
+2.673365e-01	-1.624028e-01
+3.691146e-01	-6.944182e-02
+4.231276e-01	2.426829e-01
+-2.873224e-01	2.458353e-01
+3.373099e-01	2.320625e-01
+4.419646e-01	2.934974e-02
+2.343567e-01	-1.409978e-01
+-4.534335e-01	4.573376e-01
+3.897785e-01	4.435523e-01
+-9.306764e-02	4.667342e-01
+3.670526e-01	-2.663117e-02
+-4.954102e-01	-4.096787e-01
+-2.756701e-01	-3.467814e-01
+-1.885635e-01	-1.210909e-01
+-9.027580e-02	-7.420788e-03
+4.672701e-01	1.888859e-01
+-2.162385e-01	-3.037337e-01
+-4.418227e-01	3.812396e-01
+3.998173e-01	2.168659e-01
+1.527816e-01	-4.239467e-01
+4.445392e-01	2.424582e-01

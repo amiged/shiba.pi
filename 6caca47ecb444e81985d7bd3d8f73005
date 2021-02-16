@@ -1,24 +1,23 @@
-Mon Feb 15 19:33:53 JST 2021
-vhdl work ../clk_muldiv.vhd
-vhdl work ../dmaw.vhd
-vhdl work ../dmaw_state.vhd
-vhdl work ../dmar_state.vhd
-vhdl work ../dmaw_start_adr.vhd
-vhdl work ../dmar_start_adr.vhd
-vhdl work ../dmaw_mem_adr.vhd
-vhdl work ../dmar_mem_adr.vhd
-vhdl work ../dmaw_mem_we.vhd
-vhdl work ../dmar_mem_re.vhd
-vhdl work ../dmar_dbus_hiz.vhd
-vhdl work ../dmar.vhd
-vhdl work ../pgpg_mem/adr_dec.vhd
-vhdl work ../pgpg_mem/pg_module.vhd
-vhdl work ../pgpg_mem/pg_pipe.vhd
-vhdl work ../pgpg_mem/calc.vhd
-vhdl work ../pgpg_mem/pipe_sts.vhd
-vhdl work ../pgpg_mem/setn.vhd
-vhdl work ../pgpg_mem/dpram.vhd
-vhdl work ../pgpg_mem/jmem.vhd
-vhdl work ../pgpg_mem/pgpg_mem.vhd
-vhdl work ../user.vhd
-vhdl work ../top.vhd
+Tue Feb 16 19:41:57 JST 2021
+#include <stdio.h>
+#include "nbodysim.h"
+
+void debug_func_force(double x[][DIM],double m[], double eps2,double a[][DIM],int n)
+{
+    int i,j;
+
+    printf("-------------------------------\n");
+    printf("The debuging routine is called.\n");
+    printf("-------------------------------\n");
+    printf("n = %d\n",n);
+    printf("eps2 = %e\n",eps2);
+
+    for(i=0;i<n;i++){
+        printf("---\n");
+        printf("particle %d\n",i);
+        printf("m[%d] = %e\n",i,m[i]);
+        for(j=0;j<3;j++) printf("x[%d][%d] = %e\n",i,j,x[i][j]);
+        for(j=0;j<3;j++) printf("a[%d][%d] = %e\n",i,j,a[i][j]);
+    }
+}
+

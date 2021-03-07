@@ -1,42 +1,40 @@
-Wed Aug  5 19:26:34 JST 2020
-/**
-   # ハードウェア化する部分 
-   #     1.加速度a[][]の初期化
-   #     2.加速度a[][]の計算
-*/
-
-#include <stdio.h>
-#include <math.h>
-#include "nbodysim.h"
-
-void force_on_host(double x[][DIM],
-	   double m[],
-	   double eps2,
-	   double a[][DIM],
-	   int n)
-{
-  int i,j,d;
-  double dx[3];
-
-  /* a[][]の初期化 */
-  for(i=0;i<n;i++) for(d=0;d<3;d++) a[i][d] = 0.0;
-
-  /* 相互作用の計算  */
-  for(i=0;i<n-1;i++){
-    for(j=i+1;j<n;j++){
-      double r2,r3;
-      r2 = eps2;
-      for(d=0;d<3;d++){
-	dx[d] = x[j][d] - x[i][d];
-	r2 += dx[d] * dx[d];
-      }
-      r3 = sqrt(r2)*r2;
-      for(d=0;d<3;d++){
-	a[i][d] +=  m[j]*dx[d]/r3;
-	a[j][d] += -m[i]*dx[d]/r3;
-      }
-    }
-  }
+Sun Mar  7 19:42:59 JST 2021
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
 
 
-}
+entity WRITECOMB_CHECK is
+  port (
+    MEM_WEHA : in std_logic;
+    MEM_WELA : in std_logic;
+    IS_ERR : out std_logic_vector(25 downto 0);
+    RST : in  std_logic;
+    CLK : in  std_logic
+    );
+end WRITECOMB_CHECK;
+
+architecture rtl of WRITECOMB_CHECK is
+
+signal cnt,cntr : std_logic_vector(25 downto 0) := (others=>'0');
+
+begin
+
+  IS_ERR <= cnt;
+
+  cntr <= cnt;
+
+  process(CLK, RST, MEM_WEHA, MEM_WELA) begin
+    if(RST = '1') then
+      cnt <= (others=>'0');
+    elsif(CLK'event and CLK='1') then
+      if(MEM_WEHA='1' AND MEM_WELA='0') then
+        cnt <= cntr + "00000000000000000000000001";
+      elsif(MEM_WEHA='0' AND MEM_WELA='1') then
+        cnt <= cntr + "00000000000000000000000001";
+      end if;
+    end if;
+  end process;
+
+end rtl;

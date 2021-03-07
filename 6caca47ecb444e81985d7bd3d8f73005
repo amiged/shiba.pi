@@ -1,45 +1,113 @@
-Tue Mar  2 19:27:10 JST 2021
-#include "cutil.h"
+Sun Mar  7 19:35:45 JST 2021
+-- LOCAL WRITE ( ifpga -> pfpga )
+-- by Tsuyoshi Hamada
+--
+-- CLK     __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ 
+-- MEM_WE            __/~~~~~~~~~~\_____ 
+-- MEM_AD              < a0 >< a1 >
+-- MEM_DTI             < d0 >< d1 >
+-- DMAW_ENABLE                      __/~~~~~~~~~~\___  
+-- DBUS_Port                     < a0 >< d0 >< d1 >
 
-__device__ float4
-inter(float4 xj,  float4 xi,  float4 apot)
-{
-  float mj    = xj.w;        // Mass Mj
-  float ieps2 = xi.w;        // epsilon^2
-  float dx = xj.x - xi.x;    // Coordinates Xj - Xi
-  float dy = xj.y - xi.y;    // Coordinates Yj - Yi
-  float dz = xj.z - xi.z;    // Coordinates Zj - Zi
-  float r2 = dx*dx+dy*dy+dz*dz+ieps2;
-  float r1i = 1/sqrt(r2);
-  float r2i = r1i * r1i;
-  float mr3i = mj * r2i * r1i;
-  apot.x += dx * mr3i;       // Accel AXi
-  apot.y += dy * mr3i;       // Accel AYi
-  apot.z += dz * mr3i;       // Accel AZi
-  return (apot);
-}
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
 
-__global__ void
-kernel(float4* g_xj,
-       float* g_xi,
-       float* g_fi,
-       int ni,
-       int nj)
-{
-  int i = blockIdx.x*blockDim.x+threadIdx.x;
-  float4 ai = make_float4(0.0, 0.0, 0.0, 0.0);
-  float4 xi;
-  xi.x = g_xi[i];       // Coordinates Xi
-  xi.y = g_xi[i+ni];    // Coordinates Yi
-  xi.z = g_xi[i+ni*2];  // Coordinates Zi
-  xi.w = g_xi[i+ni*3];  // epsilon ^ 2
-  for(int j = 0; j<nj; j++)  ai = inter(g_xj[j], xi, ai);
-  if(i<ni) {
-    g_fi[i]      = ai.x;
-    g_fi[i+ni]   = ai.y;
-    g_fi[i+ni*2] = ai.z;
-  }
-}
+entity LOCAL_WRITE is
+  port (
+    -- pcicnt input
+    MEM_AD  : in std_logic_vector(19 downto 0);
+    MEM_WE  : in std_logic;
+    MEM_DTI : in std_logic_vector(63 downto 0);
 
-#define NTHRE (128)
-#include "api.h"
+    -- CBUS/DBUS
+    DMAW_ENABLE : out std_logic_vector(3 downto 0); -- for 4 pfpga chip
+    DBUS_Port : out std_logic_vector(63 downto 0);  -- outside of this module, 1 delay is inserted.
+    RST : in  std_logic;
+    CLK : in  std_logic
+    );
+end LOCAL_WRITE;
+
+architecture rtl of LOCAL_WRITE is
+
+  signal we0  : std_logic := '0';
+  signal we1  : std_logic := '0';
+  signal adr          : std_logic_vector(63 downto 0) := (others=>'0');
+  signal data0,data1 : std_logic_vector(63 downto 0) := (others=>'0');
+  signal dbus_o       : std_logic_vector(63 downto 0) := (others=>'0');
+
+begin
+  ------------------------------
+  --- we0,1                  ---
+  ------------------------------
+  process (RST,CLK) begin
+    if(RST='1') then
+      we0 <= '0';
+    elsif(CLK'event and CLK='1') then
+      we0 <= MEM_WE;
+    end if;
+  end process;
+
+  process (CLK) begin
+    if(CLK'event and CLK='1') then
+      we1 <= we0;
+    end if;
+  end process;
+  
+  ------------------------------
+  --- adr                    ---
+  ------------------------------
+  process (RST,CLK,MEM_WE,we0) begin
+    if(RST='1') then
+      adr <= (others=>'0');
+    elsif(CLK'event and CLK='1') then
+      if((MEM_WE = '1') and (we0 = '0')) then
+        adr(18 downto 0) <= MEM_AD(19 downto 1);
+      end if;
+      adr(63 downto 19) <= (others=>'0');
+    end if;
+  end process;
+
+  ------------------------------
+  --- data delay             ---
+  ------------------------------
+  process (RST,CLK) begin
+    if(RST='1') then
+      data1 <= (others=>'0');
+      data0 <= (others=>'0');
+    elsif(CLK'event and CLK='1') then
+      data1 <= data0;
+      data0 <= MEM_DTI;
+    end if;
+  end process;
+
+  ------------------------------
+  --- DBUS_Port              ---
+  ------------------------------
+  process (RST,CLK,we0,we1) begin
+    if(RST='1') then
+      DBUS_Port <= (others=>'0');
+    elsif(CLK'event and CLK='1') then
+      if(we0 = '1' and we1 = '0') then
+        DBUS_Port <= adr;
+      else
+        DBUS_Port <= data1;
+      end if;
+    end if;
+  end process;
+
+  --- DMAW_ENABLE
+  process (RST,CLK) begin
+    if(RST='1') then
+      DMAW_ENABLE    <= (others=>'0');
+    elsif(CLK'event and CLK='1') then
+      DMAW_ENABLE(0) <= we1;
+      DMAW_ENABLE(1) <= we1;
+      DMAW_ENABLE(2) <= we1;
+      DMAW_ENABLE(3) <= we1;
+    end if;
+  end process;
+
+
+end rtl;

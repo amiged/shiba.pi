@@ -1,25 +1,19 @@
-Tue Feb 16 19:50:07 JST 2021
-JDF G
-// Created by Project Navigator ver 1.0
-PROJECT tmp2
-DESIGN tmp2
-DEVFAM virtex2
-DEVFAMTIME 0
-DEVICE xc2v1000
-DEVICETIME 0
-DEVPKG fg456
-DEVPKGTIME 0
-DEVSPEED -5
-DEVSPEEDTIME 0
-DEVTOPLEVELMODULETYPE HDL
-TOPLEVELMODULETYPETIME 0
-DEVSYNTHESISTOOL XST (VHDL/Verilog)
-SYNTHESISTOOLTIME 0
-DEVSIMULATOR Modelsim
-SIMULATORTIME 0
-DEVGENERATEDSIMULATIONMODEL VHDL
-GENERATEDSIMULATIONMODELTIME 0
-SOURCE pfpga_config.vhd
-STIMULUS sim.tbw
-[STRATEGY-LIST]
-Normal=True
+Wed Mar 24 19:47:13 JST 2021
+//============================================================================
+struct flops_member {
+  double Gflops;
+  double start_time;
+  double force_time;
+  int nbody;
+  int times;
+  int nstep;
+  int nskip;
+};
+
+void flops_initialize(struct flops_member *fm, int n, int nskip);
+void flops_check(struct flops_member *fm);
+
+void flops_ftime_init(struct flops_member *fm);
+void flops_ftime_save(struct flops_member *fm);
+
+

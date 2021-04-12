@@ -1,24 +1,29 @@
-Sun Mar 28 19:39:18 JST 2021
-vhdl work ../clk_muldiv.vhd
-vhdl work ../dmaw.vhd
-vhdl work ../dmaw_state.vhd
-vhdl work ../dmar_state.vhd
-vhdl work ../dmaw_start_adr.vhd
-vhdl work ../dmar_start_adr.vhd
-vhdl work ../dmaw_mem_adr.vhd
-vhdl work ../dmar_mem_adr.vhd
-vhdl work ../dmaw_mem_we.vhd
-vhdl work ../dmar_mem_re.vhd
-vhdl work ../dmar_dbus_hiz.vhd
-vhdl work ../dmar.vhd
-vhdl work ../pgpg_mem/adr_dec.vhd
-vhdl work ../pgpg_mem/pg_module.vhd
-vhdl work ../pgpg_mem/pg_pipe.vhd
-vhdl work ../pgpg_mem/calc.vhd
-vhdl work ../pgpg_mem/pipe_sts.vhd
-vhdl work ../pgpg_mem/setn.vhd
-vhdl work ../pgpg_mem/dpram.vhd
-vhdl work ../pgpg_mem/jmem.vhd
-vhdl work ../pgpg_mem/pgpg_mem.vhd
-vhdl work ../user.vhd
-vhdl work ../top.vhd
+Mon Apr 12 19:35:56 JST 2021
+#!/usr/bin/env python3
+#Time-stamp: <>
+import fnmatch
+import functools
+import os
+import re
+
+def find(path, pattern):
+
+    if isinstance(pattern, str): 
+        match = functools.partial(fnmatch.fnmatch, pat=pattern)
+    elif isinstance(pattern, re._pattern_type):
+        match = pattern.match
+    elif callable(pattern):
+        match = pattern
+    else:
+        raise TypeError
+
+    for root, dirs, files in os.walk(path):
+        for file_ in files:
+            if match(file_):
+                yield os.path.join(root, file_)
+
+
+if __name__ == '__main__':
+    for i in find('../log/', '*.jpg'):
+        print (i)
+

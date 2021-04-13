@@ -1,59 +1,134 @@
-Wed Jan 13 19:46:30 JST 2021
-//-----------------------------------------------------------------------------
-// mk_eight.C:  prints initial conditions for the figure eight
-//              of the three-body problem
-//-----------------------------------------------------------------------------
-#include  <iostream>
-using namespace std;
+Tue Apr 13 19:27:17 JST 2021
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <math.h>
+#include "pg_util.h"
 
-typedef double  real;                      // "real" as a general name for the
-                                           // standard floating-point data type
-#define  NDIM     3                        // number of spatial dimensions
+#include "pgrapi.h"
 
-int main()
+// #define DEBUG
+
+#define   MAX(x,y)     (((x) > (y)) ?  (x) : (y))
+#define   MIN(x,y)     (((x) < (y)) ?  (x) : (y))
+
+#define NJMAX 16384
+
+#define NPIPE_PER_CHIP  1
+#define NCHIP_PER_BOARD 4
+
+#define NFLO 26
+#define NMAN 16
+#define RMODE 6
+
+static int      devid = 0;
+static int      __first = 0;
+
+static unsigned long long int fdata[NJMAX][FDIM];
+
+void
+force(double x[][3], double m[], double eps2, double a[][3], int n)
 {
-    const int n = 3;           // number of particles
-    const real t = 0;          // time
-    real r[n][NDIM];           // r[i][k] : position component k for particle i
-    real v[n][NDIM];           // v[i][k] : velocity component k for particle i
-    real m[n];                 // m[i] : mass for particle i
-
-    m[0] = 1;
-    m[1] = 1;
-    m[2] = 1;
-
-    r[0][0] = 0.9700436;
-    r[0][1] = -0.24308753;
-    r[0][2] = 0;
-    v[0][0] = 0.466203685;
-    v[0][1] = 0.43236573;
-    v[0][2] = 0;
-
-    r[1][0] = -r[0][0];
-    r[1][1] = -r[0][1];
-    r[1][2] = -r[0][2];
-    v[1][0] = v[0][0];
-    v[1][1] = v[0][1];
-    v[1][2] = v[0][2];
-
-    r[2][0] = 0;
-    r[2][1] = 0;
-    r[2][2] = 0;
-    v[2][0] = -2 * v[0][0];
-    v[2][1] = -2 * v[0][1];
-    v[2][2] = -2 * v[0][2];
-
-    cout.precision(16);
-
-    cout << n << endl;                      // first output line:  N
-    cout << t << endl;                      // second output line:  time
-    for (int i = 0; i < n; i++){
-        cout << m[i];                       // each next output line:
-        for (int k = 0; k < NDIM; k++)      //   m r_x r_y r_z v_x v_y v_z
-            cout << ' ' << r[i][k];
-        for (int k = 0; k < NDIM; k++)
-            cout << ' ' << v[i][k];
-        cout << endl;
+    double          log2(double);
+    int             i, j;
+    unsigned int    npipe, npipe_per_chip;
+    unsigned int    nchip;
+    unsigned int    jdata[JDIM];
+    if (__first == 0) {
+	b3open(devid);
+	pgr_reset(devid);
+	pgr_set_npipe_per_chip(devid, NPIPE_PER_CHIP);
+	pgr_set_jwidth(devid, 16);	// change manually 4 if grape
+	pgr_set_nchip(NCHIP_PER_BOARD);
+	__first = 1;
     }
+
+    npipe_per_chip = NPIPE_PER_CHIP;
+    nchip = NCHIP_PER_BOARD;
+    npipe = nchip * npipe_per_chip;
+
+    for (j = 0; j < n; j++) {
+	unsigned int    xj[4];
+	xj[0] = (unsigned int) (double2pgpgfloat_r(x[j][0], 26, 16, 6));
+	xj[1] = (unsigned int) (double2pgpgfloat_r(x[j][1], 26, 16, 6));
+	xj[2] = (unsigned int) (double2pgpgfloat_r(x[j][2], 26, 16, 6));
+	xj[3] = (unsigned int) (double2pgpgfloat_r(m[j], 26, 16, 6));
+	for (i = 0; i < JDIM; i++)   jdata[i] = 0x0;
+	jdata[0] |= (0x3ffffff & xj[0]) << 0;	// mask(26)
+	jdata[0] |= (0x3f & xj[1]) << 26;	// mask(6)
+	jdata[1] |= (0xfffff & (xj[1] >> 6));	// mask(20)
+	jdata[1] |= (0xfff & xj[2]) << 20;	// mask(12)
+	jdata[2] |= (0x3fff & (xj[2] >> 12));	// mask(14)
+	jdata[2] |= (0x3ffff & xj[3]) << 14;	// mask(18)
+	jdata[3] |= (0xff & (xj[3] >> 18));	// mask(8)
+	pgr_setjpset_one(devid, j, jdata);
+    }
+
+    for (i = 0; i < n; i += npipe) {
+	int             nn, ii, ichip;
+	nn = MIN(npipe, n - i);
+
+#ifdef DEBUG
+	dum = e_time();
+#endif
+
+	for (ii = 0; ii < nn; ii += npipe_per_chip) {
+	    int             nnn, iii;
+	    ichip = ii / npipe_per_chip;
+
+	    nnn = MIN(npipe_per_chip, nn - ii);
+	    for (iii = 0; iii < nnn; iii++) {
+		unsigned int    idata[4];
+		idata[0] =
+		    (unsigned
+		     int) (double2pgpgfloat_r(x[i + ii + iii][0], 26, 16,
+					      6));
+		idata[1] =
+		    (unsigned
+		     int) (double2pgpgfloat_r(x[i + ii + iii][1], 26, 16,
+					      6));
+		idata[2] =
+		    (unsigned
+		     int) (double2pgpgfloat_r(x[i + ii + iii][2], 26, 16,
+					      6));
+		idata[3] =
+		    (unsigned int) (double2pgpgfloat_r(eps2, 26, 16, 6));
+		pgr_setipset_one(devid, ichip, iii, idata, 4);
+	    }
+	}
+#ifdef DEBUG
+	_t[2] += e_time() - dum;
+	dum = e_time();
+#endif
+
+	pgr_start_calc(devid, n);
+#ifdef DEBUG
+	_t[3] += e_time() - dum;
+	dum = e_time();
+#endif
+
+	pgr_getfoset(devid, fdata);
+	for (ii = 0; ii < nn; ii++) {
+	    a[i + ii][0] =
+		((double) ((long long int) fdata[ii][0] << 0)) *
+		((-1.0 / pow(2.0, (double) 31))) / pow(2.0, 0.0);
+	    a[i + ii][1] =
+		((double) ((long long int) fdata[ii][1] << 0)) *
+		((-1.0 / pow(2.0, (double) 31))) / pow(2.0, 0.0);
+	    a[i + ii][2] =
+		((double) ((long long int) fdata[ii][2] << 0)) *
+		((-1.0 / pow(2.0, (double) 31))) / pow(2.0, 0.0);
+	}
+#ifdef DEBUG
+	_t[4] += e_time() - dum;
+#endif
+
+    }
+#ifdef DEBUG
+    _t[0] = e_time() - _t[0];
+    fprintf(stderr, "total %g sec (jp %g, ip %g, c %g, fo %g %%)\n", _t[0],
+	    100.0 * _t[1] / _t[0], 100.0 * _t[2] / _t[0],
+	    100.0 * _t[3] / _t[0], 100.0 * _t[4] / _t[0]);
+#endif
 }
-//-----------------------------------------------------------------------------

@@ -1,28 +1,24 @@
-Sun May 30 19:51:05 JST 2021
--- LOCAL READ INTERFACE ( ifpga <- pfpga )
+Thu Jun  3 19:51:15 JST 2021
+-- Copyright 2004,2005,2006 by Tsuyoshi Hamada
+-- 2006/06/22 : add some comments (T.H)
+-- 2006/02/08 : Fixed (T.H)
+
+-- LOCAL READ ( ifpga <- pfpga )
 -- by Tsuyoshi Hamada
---
--- CLK            __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ 
--- EXEC           __/~~~~~\_____
--- BUSY           ________/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\_______
--- DMAR_ENABLE                   __/~~~~~~~~~~~~~~~\___ { (Ndata+1) clock }
--- DBUS_Port                       < adr ><XXXX
--- DBUS_idata                                          < d0 >< d1 >
--- DBUS                                  <adr><XXXXXXX>< d0 >< d1 >
+-- (※) l_adroのビット幅(NBIT_L_ADRO)を変えた場合はpromを焼きなおす必要があることに注意.(直すのは上のモジュール)
+-- (※) そもそもの前提：LOCAL_READはPFPGA0からのPIPE_STS信号(CBUS0(7))をトランザクション開始信号としています。
+
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.STD_LOGIC_UNSIGNED.ALL;
 use IEEE.STD_LOGIC_ARITH.ALL;
 
-entity LOCAL_READ_IF is
+entity LOCAL_READ is
+  generic ( NBIT_L_ADRO : integer := 3);
   port (
-    -- PGPG REG input
-    EXEC : in std_logic;                         -- Execution Pulse
-    START_AD : in std_logic_vector(18 downto 0); -- 19 bit  -- constant in transaction
-    NQWORD   : in std_logic_vector( 8 downto 0); --  9 bit  -- constant in transaction : (NQWORD + 1) words transfer
-    CHIPSEL  : in std_logic_vector( 3 downto 0); --  4 bit  -- constant in transaction
-    MEM_AD_BASE : in std_logic_vector(12 downto 0);         -- constant in transaction
-    BUSY : out std_logic;  -- to GPREG0
+    NPIPE : in std_logic_vector(7 downto 0); -- from PGPG_REG3
+    CALC_STS : in std_logic;    -- from PFPGA
+    BUSY : out std_logic :='1'; -- to GPREG0 (default '1'!! => Waiting until pipe calc end)
 
     -- CBUS/DBUS
     DMAR_ENABLE : out std_logic_vector(3 downto 0); -- for 4 pfpga chip
@@ -39,218 +35,129 @@ entity LOCAL_READ_IF is
     RST : in  std_logic;
     CLK : in  std_logic
     );
-end LOCAL_READ_IF;
+end LOCAL_READ;
 
-architecture rtl of LOCAL_READ_IF is
+architecture rtl of LOCAL_READ is
 
------------------------------------------------------------------
--- DMAW/R
-  signal hit,hitr : std_logic;
-  signal csel    : std_logic_vector(3 downto 0);
-  signal s_adr : std_logic_vector(18 downto 0);
+component LOCAL_READ_CNT
+  generic (CNT_WIDTH     : integer := 16;      -- program counter bit-width
+           FO_BASE       : integer := 24576;   -- = 0x6000
+           NBIT_L_ADRO   : integer := 3;       -- Bit-Length of l_ado(pgpg_mem.vhd)
+           INTF_LAT      : integer := 8);      -- LOCAL_READ_IF latency (clock)
+  port (
+    NPIPE : in std_logic_vector(7 downto 0);   -- number of pipelines per chip
+    CALC_DONE  : in std_logic;                 -- pulse
+    FETCH_DONE : out std_logic;
+    EXEC     : out std_logic;                     -- pulse
+    START_AD : out std_logic_vector(18 downto 0); -- 19 bit
+    NQWORD   : out std_logic_vector( 8 downto 0); --  9 bit
+    CHIPSEL  : out std_logic_vector( 3 downto 0); --  4 bit
+    MEM_AD_BASE : out std_logic_vector(12 downto 0);
+    RST : in  std_logic;
+    CLK : in  std_logic
+    );
+end component;
 
--- DMAR
-  signal en_cnt0   : std_logic_vector(12 downto 0) :=(others=>'0');
-  signal en_cnt0_r : std_logic_vector(12 downto 0) :=(others=>'0');
-  signal en0,en1,en2,en3,en4,en5,en6,en7 : std_logic :='0';
-  signal lo_mem_wad, lo_mem_wad_z : std_logic_vector(12 downto 0) :=(others=>'0');
-  signal mem_ad_offset : std_logic_vector(12 downto 0) :=(others=>'0');
+component LOCAL_READ_IF
+  port (
+    EXEC : in std_logic;
+    START_AD : in std_logic_vector(18 downto 0);
+    NQWORD   : in std_logic_vector( 8 downto 0);
+    CHIPSEL  : in std_logic_vector( 3 downto 0);
+    MEM_AD_BASE : in std_logic_vector(12 downto 0);
+    BUSY : out std_logic;  -- to GPREG0
+    DMAR_ENABLE : out std_logic_vector(3 downto 0);
+    DBUS_Port : out std_logic_vector(63 downto 0);
+    DBUS_idata: in std_logic_vector(63 downto 0);
+    DBUS_HiZ  : out std_logic;
+    MEM_ADB     : out std_logic_vector(12 downto 0);
+    MEM_WEHB    : out std_logic;
+    MEM_WELB    : out std_logic;
+    MEM_DTIB    : out std_logic_vector(63 downto 0);
+    RST : in  std_logic;
+    CLK : in  std_logic
+    );
+end component;
+
+signal calc_done : std_logic :='0';   -- to cnt
+signal csts0,csts1 : std_logic :='0'; -- from pfpga
+
+-- CNT
+signal fetch_done : std_logic :='0';
+signal exec : std_logic;                          -- cnt -> if
+signal start_ad : std_logic_vector(18 downto 0);  -- cnt -> if
+signal nqword   : std_logic_vector( 8 downto 0);  -- cnt -> if
+signal chipsel  : std_logic_vector( 3 downto 0);  -- cnt -> if
+signal mem_base : std_logic_vector(12 downto 0);  -- cnt -> if
+-- IF
+signal ignore_busy : std_logic; 
+
 begin
 
-  -- DMA BUSY or IDLE
-  BUSY  <= hit or hitr or en0 or en1 or en2 or en3 or en4 or en5 or en6 or en7;
-  hit <= EXEC;
+  -- CALC STATUS
+  csts0 <= CALC_STS;
   process (CLK) begin
     if (CLK'event and CLK='1') then
-      hitr <= hit;
+      csts1 <= csts0;
     end if;
   end process;
 
-  ----------------------------
-  --- DMAR START ADR       ---
-  ----------------------------
-  process (CLK,hit,hitr) begin
+  -- CALC DONE
+  process (RST,CLK,csts0,csts1) begin
     if(RST='1') then
-      s_adr <= (others=>'0');
-    elsif(CLK'event and CLK='1') then
-      if((hit = '0') AND (hitr = '1')) then
-        s_adr <= START_AD(18 downto 0);
-      end if;
-    end if;
-  end process;
-
-  ----------------------------
-  --- DMAR START ADR       ---
-  ----------------------------
-  process (CLK,hit,hitr) begin
-    if(RST='1') then
-      mem_ad_offset <= (others=>'0');
-    elsif(CLK'event and CLK='1') then
-      if((hit = '0') AND (hitr = '1')) then
-        mem_ad_offset <= MEM_AD_BASE;
-      end if;
-    end if;
-  end process;
-
-
-  ----------------------------
-  --- CHIP SEL             ---
-  ----------------------------
-  process (CLK,hit,hitr) begin
-    if(RST='1') then
-      csel <= (others=>'0');
-    elsif(CLK'event and CLK='1') then
-      if((hit = '0') AND (hitr = '1')) then
-        if    (CHIPSEL(0) = '1') then
-          csel <= "0001";
-        elsif (CHIPSEL(1) = '1') then
-          csel <= "0010";
-        elsif (CHIPSEL(2) = '1') then
-          csel <= "0100";
-        else
-          csel <= "1000";
-        end if;
-      end if;
-    end if;
-  end process;
-
-  ------------------------------
-  --- MEM_ADB                ---
-  ------------------------------
-  process (CLK) begin
-    if(CLK'event and CLK='1') then
-      MEM_ADB <= lo_mem_wad + mem_ad_offset;
-    end if;
-  end process;
-
-  ----------------------------
-  -- DMAR EN COUNT     ---
-  ----------------------------
-  en_cnt0_r <= en_cnt0;
-  process (RST,CLK,hit,hitr,en_cnt0_r) begin
-    if(RST='1') then
-      en_cnt0 <= (others=>'0');
-    elsif(CLK'event and CLK='1') then
-      if((hit = '0') AND (hitr = '1'))then
-        en_cnt0 <= "0000" & NQWORD(8 downto 0);   -- SET NQWORD
-      elsif(en_cnt0_r /= "000000000000") then
-        en_cnt0 <= en_cnt0_r - "000000000001";
-      end if;
-    end if;
-  end process;
-
-  ----------------------------
-  -- DMAR EN 0         ---
-  ----------------------------
-  process (RST,CLK,hit,hitr,en_cnt0) begin
-    if(RST='1') then
-      en0 <= '0';
-    elsif(CLK'event and CLK='1') then
-      if((hit = '0') AND (hitr = '1'))then
-        en0 <= '1';
-      elsif(en_cnt0 = "000000000000") then
-        en0 <= '0';
-      end if;
-    end if;
-  end process;
-
-  process (CLK) begin
-    if(CLK'event and CLK='1') then
-      en7 <= en6;
-      en6 <= en5;
-      en5 <= en4;
-      en4 <= en3;
-      en3 <= en2;
-      en2 <= en1;
-      en1 <= en0;
-    end if;
-  end process;
-
-
-  ------------------------------
-  --- DMAR ENABLE            ---
-  ------------------------------
-  process (CLK,en1,en2)  begin
-    if(CLK'event and CLK='1') then
-      if((en0 = '1') OR (en1 = '1')) then
-        DMAR_ENABLE(0) <= '1' AND csel(0);
-        DMAR_ENABLE(1) <= '1' AND csel(1);
-        DMAR_ENABLE(2) <= '1' AND csel(2);
-        DMAR_ENABLE(3) <= '1' AND csel(3);
+      calc_done <= '0';
+    elsif (CLK'event and CLK='1') then
+      if((csts0='1') AND (csts1='0')) then
+        calc_done <= '1';
       else
-        DMAR_ENABLE <= (others=>'0');
+        calc_done <= '0';
       end if;
     end if;
   end process;
 
-  ------------------------------
-  --- DBUS_PORT            ---
-  ------------------------------
-  process (RST,CLK,en0,en1,en2,en3)  begin
-    if(RST='1') then
-      DBUS_Port <= (others=>'0');
-    elsif(CLK'event and CLK='1') then
-      if(    (en0 = '1') AND (en1 = '0') ) then
-        DBUS_Port <= ("000000000000000000000000000000000000000000000" & s_adr);
-      elsif( (en1 = '1') AND (en2 = '0') ) then
---        DBUS_Port <= X"FFFFFFFFFFFFFFFF";
-        NULL;
-      elsif( (en2 = '1') AND (en3 = '0') ) then
-        DBUS_Port <= (others=>'0');
+  -- BUSY
+  process (RST,CLK,csts0,csts1,fetch_done) begin
+    if (RST='1') then
+      BUSY <='1';
+    elsif (CLK'event and CLK='1') then
+      if((csts0='1') AND (csts1='0')) then
+        BUSY <= '1';
+      elsif(fetch_done='1') then
+        BUSY <= '0';
       end if;
     end if;
   end process;
 
-  ------------------------------
-  --- DBUS_HiZ               ---
-  ------------------------------
-  process (RST,CLK,en2,en3,en4,en5)  begin
-    if(RST='1') then
-      DBUS_HiZ <= '0';
-    elsif(CLK'event and CLK='1') then
-      if((en2 = '1') OR (en3 = '1') OR (en4 = '1') OR (en5 = '1') ) then
-        DBUS_HiZ <= '1';
-      else
-        DBUS_HiZ <= '0';
-      end if;
-    end if;
-  end process;
+  -- =================================================== SUBMODULE INSTANCES
+  u0: LOCAL_READ_CNT 
+    generic map(NBIT_L_ADRO => NBIT_L_ADRO)
+    port map(NPIPE => NPIPE,
+             CALC_DONE => calc_done,
+             FETCH_DONE => fetch_done,
+             EXEC       => exec,
+             START_AD   => start_ad,
+             NQWORD     => nqword,
+             CHIPSEL    => chipsel,
+             MEM_AD_BASE => mem_base,
+             RST => RST, CLK=>CLK);
 
-  ------------------------------
-  --- MEM_DTIB               ---
-  ------------------------------
-  process (CLK)  begin
-    if(CLK'event and CLK='1') then
-      MEM_DTIB <= DBUS_idata;
-    end if;
-  end process;
 
-  ------------------------------
-  --- MEM_WEHB, MEM_WELB     ---
-  ------------------------------
-  process (CLK)  begin
-    if(CLK'event and CLK='1') then
-      MEM_WEHB <= en6;
-      MEM_WELB <= en6;
-    end if;
-  end process;
+  u1: LOCAL_READ_IF
+    port map(EXEC        => exec,     -- from cnt
+             START_AD    => start_ad, -- from cnt
+             NQWORD      => nqword,   -- from cnt
+             CHIPSEL     => chipsel,  -- from cnt
+             MEM_AD_BASE => mem_base, -- from cnt
+             BUSY => ignore_busy,
+             DMAR_ENABLE => DMAR_ENABLE, -- output directly
+             DBUS_Port   => DBUS_Port,   -- output directly
+             DBUS_idata  => DBUS_idata,  -- output directly
+             DBUS_HiZ    => DBUS_HiZ,    -- output directly
+             MEM_ADB  => MEM_ADB,        -- output directly
+             MEM_WEHB => MEM_WEHB,       -- output directly
+             MEM_WELB => MEM_WELB,       -- output directly
+             MEM_DTIB => MEM_DTIB,       -- output directly
+             RST=>RST,CLK=>CLK);
 
-  ------------------------------
-  --- lo_mem_wad             ---
-  ------------------------------
-  lo_mem_wad_z <= lo_mem_wad;
-  process (RST,CLK,en5,en6)  begin
-    if(RST='1') then
-      lo_mem_wad <= "0000000000000";
-    elsif(CLK'event and CLK='1') then
-      if((en5 = '1') AND (en6 = '0')) then
-        lo_mem_wad <= "0000000000000";
-      elsif((en5 = '1') AND (en6 = '1')) then
-        lo_mem_wad <= lo_mem_wad_z + "0000000000001";
-      elsif((en5 = '0') AND (en6 = '1')) then
-        lo_mem_wad <= "0000000000000";
-      end if;
-    end if;
-  end process;
 
 end rtl;

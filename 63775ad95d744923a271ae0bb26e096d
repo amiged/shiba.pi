@@ -1,94 +1,59 @@
-Sat Apr 17 19:30:00 JST 2021
--- LOCAL READ CONTROLLER ( ifpga <- pfpga )
--- by Tsuyoshi Hamada
---
--- CLK            __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~
--- CALC_DONE      ___/~~~~\____
--- BUSY               ___/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\_______________
--- hit1               ___/~~~~\____
--- c_nchip               < NC                >< NC -1                           >< negativ value
--- next_chip                          ___/~~~~\____                      ___/~~~~\____
---==================================================
--- CLK            __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~
--- CALC_DONE      ___/~~~~\____
--- c_npipe               < NP                >< NP -1                           >< negativ value
--- next_pipe
+Tue Jun 29 19:31:02 JST 2021
+//-----------------------------------------------------------------------------
+// mk_eight.C:  prints initial conditions for the figure eight
+//              of the three-body problem
+//-----------------------------------------------------------------------------
+#include  <iostream>
+using namespace std;
 
+typedef double  real;                      // "real" as a general name for the
+                                           // standard floating-point data type
+#define  NDIM     3                        // number of spatial dimensions
 
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL;
-use IEEE.STD_LOGIC_ARITH.ALL;
+int main()
+{
+    const int n = 3;           // number of particles
+    const real t = 0;          // time
+    real r[n][NDIM];           // r[i][k] : position component k for particle i
+    real v[n][NDIM];           // v[i][k] : velocity component k for particle i
+    real m[n];                 // m[i] : mass for particle i
 
-entity local_read_cnt is
-  port (
-    -- from PGPG_REG3
-    NCHIP : in std_logic_vector(1 downto 0);     -- (number of chips) - 1
-    NPIPE : in std_logic_vector(7 downto 0);     -- (number of pipelines) - 1
-    NFI   : in std_logic_vector(7 downto 0);     -- (number of fi registers in a pipe) - 1
-    CALC_DONE : in std_logic;   -- pulse
-    -- to GPREG0
-    BUSY  : out std_logic;
+    m[0] = 1;
+    m[1] = 1;
+    m[2] = 1;
 
-    -- to LOCAL_READ_IF
-    EXEC     : out std_logic;                     -- pulse
-    START_AD : out std_logic_vector(18 downto 0); -- 19 bit
-    NQWORD   : out std_logic_vector( 8 downto 0); --  9 bit
-    CHIPSEL  : out std_logic_vector( 3 downto 0); --  4 bit
-    MEM_AD_BASE : out std_logic_vector(12 downto 0);
-    -- from LOCAL_READ_IF
-    BUSY_IF : in std_logic;
- 
-    RST : in  std_logic;
-    CLK : in  std_logic
-    );
-end local_read;
+    r[0][0] = 0.9700436;
+    r[0][1] = -0.24308753;
+    r[0][2] = 0;
+    v[0][0] = 0.466203685;
+    v[0][1] = 0.43236573;
+    v[0][2] = 0;
 
-architecture rtl of local_read is
+    r[1][0] = -r[0][0];
+    r[1][1] = -r[0][1];
+    r[1][2] = -r[0][2];
+    v[1][0] = v[0][0];
+    v[1][1] = v[0][1];
+    v[1][2] = v[0][2];
 
-signal hit0,hit1,hit2 : std_logic :='0';
-signal c_nchip,c_nchipr  : std_logic_vector(2 downto 0) := (others=>'0');
-signal c_npipe,c_npiper  : std_logic_vector(7 downto 0) := (others=>'0');
-signal c_nfi  ,c_nfir    : std_logic_vector(7 downto 0) := (others=>'0');
-signal next_chip, next_pipe : std_logic :='0';
+    r[2][0] = 0;
+    r[2][1] = 0;
+    r[2][2] = 0;
+    v[2][0] = -2 * v[0][0];
+    v[2][1] = -2 * v[0][1];
+    v[2][2] = -2 * v[0][2];
 
-begin
+    cout.precision(16);
 
-  hit0 <= CALC_DONE;
-  process (CLK) begin
-    if (CLK'event and CLK='1') then
-      hit2 <= hit1;
-      hit1 <= hit0;
-    end if;
-  end process;
-
-  -- BUSY
-  process (RST,CLK,c_nchip) begin
-    if (RST = '1') then
-      BUSY <= '0';
-    elsif (CLK'event and CLK='1') then
-      if((hit0 = '1') AND (hit1 = '0')) then
-        BUSY <= '1';
-      elsif(c_nchip(2) = '1') then
-        BUSY <= '0';
-      end if;
-    end if;
-  end process;
-
-
-  -- NCHIP COUNTER
-  c_nchipr <= c_nchip - "01";
-  process (RST,CLK,next_chip) begin
-    if (RST = '1') then
-      c_nchip <= (others=>'0');
-    elsif (CLK'event and CLK='1') then
-      if((hit0 = '1') AND (hit1 = '0')) then
-        c_nchip <= "0" & NCHIP;              -- SIGNED VALUE
-      elsif (next_chip='1') then
-        c_nchip <= c_nchipr;
-      end if;
-    end if;
-  end process;
-
-  
-
+    cout << n << endl;                      // first output line:  N
+    cout << t << endl;                      // second output line:  time
+    for (int i = 0; i < n; i++){
+        cout << m[i];                       // each next output line:
+        for (int k = 0; k < NDIM; k++)      //   m r_x r_y r_z v_x v_y v_z
+            cout << ' ' << r[i][k];
+        for (int k = 0; k < NDIM; k++)
+            cout << ' ' << v[i][k];
+        cout << endl;
+    }
+}
+//-----------------------------------------------------------------------------

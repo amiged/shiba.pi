@@ -1,50 +1,129 @@
-Sun Apr 25 19:52:14 JST 2021
-/EQNINJ
-/IPSET xi_0,x[][0],fix,32,(pow(2.0,(double)32)/(2.0))
-/IPSET xi_1,x[][1],fix,32,(pow(2.0,(double)32)/(2.0))
-/IPSET xi_2,x[][2],fix,32,(pow(2.0,(double)32)/(2.0))
-/IPSET ieps2,eps2,log,17,8,((pow(2.0,(double)32)/(2.0))*(pow(2.0,(double)32)/(2.0)))
-/JPSET xj_0,0,0,31,x[][0],fix,32,(pow(2.0,(double)32)/(2.0))
-/JPSET xj_1,0,32,63,x[][1],fix,32,(pow(2.0,(double)32)/(2.0))
-/JPSET xj_2,0,64,95,x[][2],fix,32,(pow(2.0,(double)32)/(2.0))
-/JPSET mj,0,96,112,m[],log,17,8,(pow(2.0,95.38)/(1.0e-2))
-/FOSET sx_0,a[][0],fix,64,(-(pow(2.0,(double)32)/(2.0))*(pow(2.0,(double)32)/(2.0))*pow(2.0,-1.0*(double)-31)/(pow(2.0,95.38)/(1.0e-2)))
-/FOSET sx_1,a[][1],fix,64,(-(pow(2.0,(double)32)/(2.0))*(pow(2.0,(double)32)/(2.0))*pow(2.0,-1.0*(double)-31)/(pow(2.0,95.38)/(1.0e-2)))
-/FOSET sx_2,a[][2],fix,64,(-(pow(2.0,(double)32)/(2.0))*(pow(2.0,(double)32)/(2.0))*pow(2.0,-1.0*(double)-31)/(pow(2.0,95.38)/(1.0e-2)))
-/NPIPE 1
-/NVMP 1
-void force(double x[][3], double m[], double eps2, double a[][3], int n){
-  pg_fix_addsub(SUB,xi_0,xj_0,xij_0,32,3)
-  pg_fix_addsub(SUB,xi_1,xj_1,xij_1,32,3)
-  pg_fix_addsub(SUB,xi_2,xj_2,xij_2,32,3)
-  pg_conv_ftol(xij_0,dx_0,32,17,8,4)
-  pg_conv_ftol(xij_1,dx_1,32,17,8,4)
-  pg_conv_ftol(xij_2,dx_2,32,17,8,4)
-  pg_log_shift(1,dx_0,x2_0,17)
-  pg_log_shift(1,dx_1,x2_1,17)
-  pg_log_shift(1,dx_2,x2_2,17)
-  pg_log_unsigned_add_itp(x2_0,x2_1,x2y2,17,8,9,6)
-  pg_log_unsigned_add_itp(x2_2,ieps2r,z2e2,17,8,9,6)
-  pg_log_unsigned_add_itp(x2y2,z2e2,r2,17,8,9,6)
-  pg_log_shift(-1,r2,r1,17)
-  pg_log_muldiv(MUL,r2,r1,r3,17,2)
-  pg_log_muldiv(SDIV,mjr,r3,mf,17,2)
-  pg_log_muldiv(MUL,mf,dx_0r,fx_0,17,2)
-  pg_log_muldiv(MUL,mf,dx_1r,fx_1,17,2)
-  pg_log_muldiv(MUL,mf,dx_2r,fx_2,17,2)
-  pg_log_expadd(fx_0,fxs_0,-31,17,8,1)
-  pg_log_expadd(fx_1,fxs_1,-31,17,8,1)
-  pg_log_expadd(fx_2,fxs_2,-31,17,8,1)
-  pg_conv_ltof(fxs_0,ffx_0,17,8,57,5)
-  pg_conv_ltof(fxs_1,ffx_1,17,8,57,5)
-  pg_conv_ltof(fxs_2,ffx_2,17,8,57,5)
-  pg_fix_smaccum(ffx_0,sx_0,57,64,4,37)
-  pg_fix_smaccum(ffx_1,sx_1,57,64,4,37)
-  pg_fix_smaccum(ffx_2,sx_2,57,64,4,37)
-  pg_pdelay(ieps2,ieps2r,17,7)
-  pg_pdelay(mj,mjr,17,27)
-  pg_pdelay(dx_0,dx_0r,17,22)
-  pg_pdelay(dx_1,dx_1r,17,22)
-  pg_pdelay(dx_2,dx_2r,17,22)
-  pg_rundelay(41)
-}
+Wed Jun 30 19:27:43 JST 2021
+#!/bin/sh
+#
+# An example hook script to blocks unannotated tags from entering.
+# Called by "git receive-pack" with arguments: refname sha1-old sha1-new
+#
+# To enable this hook, rename this file to "update".
+#
+# Config
+# ------
+# hooks.allowunannotated
+#   This boolean sets whether unannotated tags will be allowed into the
+#   repository.  By default they won't be.
+# hooks.allowdeletetag
+#   This boolean sets whether deleting tags will be allowed in the
+#   repository.  By default they won't be.
+# hooks.allowmodifytag
+#   This boolean sets whether a tag may be modified after creation. By default
+#   it won't be.
+# hooks.allowdeletebranch
+#   This boolean sets whether deleting branches will be allowed in the
+#   repository.  By default they won't be.
+# hooks.denycreatebranch
+#   This boolean sets whether remotely creating branches will be denied
+#   in the repository.  By default this is allowed.
+#
+
+# --- Command line
+refname="$1"
+oldrev="$2"
+newrev="$3"
+
+# --- Safety check
+if [ -z "$GIT_DIR" ]; then
+	echo "Don't run this script from the command line." >&2
+	echo " (if you want, you could supply GIT_DIR then run" >&2
+	echo "  $0 <ref> <oldrev> <newrev>)" >&2
+	exit 1
+fi
+
+if [ -z "$refname" -o -z "$oldrev" -o -z "$newrev" ]; then
+	echo "usage: $0 <ref> <oldrev> <newrev>" >&2
+	exit 1
+fi
+
+# --- Config
+allowunannotated=$(git config --bool hooks.allowunannotated)
+allowdeletebranch=$(git config --bool hooks.allowdeletebranch)
+denycreatebranch=$(git config --bool hooks.denycreatebranch)
+allowdeletetag=$(git config --bool hooks.allowdeletetag)
+allowmodifytag=$(git config --bool hooks.allowmodifytag)
+
+# check for no description
+projectdesc=$(sed -e '1q' "$GIT_DIR/description")
+case "$projectdesc" in
+"Unnamed repository"* | "")
+	echo "*** Project description file hasn't been set" >&2
+	exit 1
+	;;
+esac
+
+# --- Check types
+# if $newrev is 0000...0000, it's a commit to delete a ref.
+zero="0000000000000000000000000000000000000000"
+if [ "$newrev" = "$zero" ]; then
+	newrev_type=delete
+else
+	newrev_type=$(git cat-file -t $newrev)
+fi
+
+case "$refname","$newrev_type" in
+	refs/tags/*,commit)
+		# un-annotated tag
+		short_refname=${refname##refs/tags/}
+		if [ "$allowunannotated" != "true" ]; then
+			echo "*** The un-annotated tag, $short_refname, is not allowed in this repository" >&2
+			echo "*** Use 'git tag [ -a | -s ]' for tags you want to propagate." >&2
+			exit 1
+		fi
+		;;
+	refs/tags/*,delete)
+		# delete tag
+		if [ "$allowdeletetag" != "true" ]; then
+			echo "*** Deleting a tag is not allowed in this repository" >&2
+			exit 1
+		fi
+		;;
+	refs/tags/*,tag)
+		# annotated tag
+		if [ "$allowmodifytag" != "true" ] && git rev-parse $refname > /dev/null 2>&1
+		then
+			echo "*** Tag '$refname' already exists." >&2
+			echo "*** Modifying a tag is not allowed in this repository." >&2
+			exit 1
+		fi
+		;;
+	refs/heads/*,commit)
+		# branch
+		if [ "$oldrev" = "$zero" -a "$denycreatebranch" = "true" ]; then
+			echo "*** Creating a branch is not allowed in this repository" >&2
+			exit 1
+		fi
+		;;
+	refs/heads/*,delete)
+		# delete branch
+		if [ "$allowdeletebranch" != "true" ]; then
+			echo "*** Deleting a branch is not allowed in this repository" >&2
+			exit 1
+		fi
+		;;
+	refs/remotes/*,commit)
+		# tracking branch
+		;;
+	refs/remotes/*,delete)
+		# delete tracking branch
+		if [ "$allowdeletebranch" != "true" ]; then
+			echo "*** Deleting a tracking branch is not allowed in this repository" >&2
+			exit 1
+		fi
+		;;
+	*)
+		# Anything else (is there anything else?)
+		echo "*** Update hook: unknown type of update to ref $refname of type $newrev_type" >&2
+		exit 1
+		;;
+esac
+
+# --- Finished
+exit 0

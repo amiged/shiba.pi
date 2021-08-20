@@ -1,144 +1,74 @@
-Thu Jul 29 19:38:32 JST 2021
--- C:\CYGWIN\HOME\ADMINISTRATOR\FKIT\PCI64\PROJ
--- VHDL Annotation Test Bench created by
--- HDL Bencher 6.1i
--- Sun Jan 02 23:10:52 2005
+Fri Aug 20 19:29:51 JST 2021
+// gravity3.pgdl
+// Calculate Potential, Acceleration and Jerk
+// Author: Andreas Ernst, August 18, 2006
 
-LIBRARY IEEE;
-USE IEEE.STD_LOGIC_1164.ALL;
-USE IEEE.STD_LOGIC_UNSIGNED.ALL;
-USE IEEE.STD_LOGIC_ARITH.ALL;
-USE IEEE.STD_LOGIC_TEXTIO.ALL;
-USE STD.TEXTIO.ALL;
+#define NFLO 26
+#define NMAN 16
+#define NFIX 57
+#define NACC 64
+#define NEXAD 31
+#define NEXAD2 1
+#define FSHIFT pow(2.0,(double)NEXAD)
 
-ENTITY local_write IS
-END local_write;
+/MEM xj[3] <= x[][]  : float(NFLO, NMAN);
+/MEM vj[3] <= v[][]  : float(NFLO, NMAN);
+/MEM mj    <= m[]    : float(NFLO, NMAN);
+/REG xi[3] <= x[][]  : float(NFLO, NMAN);
+/REG vi[3] <= v[][]  : float(NFLO, NMAN);
+/REG rx    => p[]    : fix(NACC);
+/REG sx[3] => a[][]  : fix(NACC);
+/REG tx[3] => jk[][] : fix(NACC);
 
-ARCHITECTURE testbench_arch OF local_write IS
--- If you get a compiler error on the following line,
--- from the menu do Options->Configuration select VHDL 87
-FILE RESULTS: TEXT OPEN WRITE_MODE IS "c:\cygwin\home\administrator\fkit\pci64\proj\local_write.ano";
-	COMPONENT local_write
-		PORT (
-			MEM_AD : In  std_logic_vector (16 DOWNTO 0);
-			MEM_WE : In  std_logic;
-			MEM_DTI : In  std_logic_vector (63 DOWNTO 0);
-			DMAW_ENABLE : Out  std_logic_vector (3 DOWNTO 0);
-			DBUS_Port : Out  std_logic_vector (63 DOWNTO 0);
-			RST : In  std_logic;
-			CLK : In  std_logic
-		);
-	END COMPONENT;
+/SCALE rx    : (1.0/FSHIFT);
+/SCALE sx[3] : (1.0/FSHIFT);
+/SCALE tx[3] : (1.0/FSHIFT);
 
-	SIGNAL MEM_AD : std_logic_vector (16 DOWNTO 0);
-	SIGNAL MEM_WE : std_logic;
-	SIGNAL MEM_DTI : std_logic_vector (63 DOWNTO 0);
-	SIGNAL DMAW_ENABLE : std_logic_vector (3 DOWNTO 0);
-	SIGNAL DBUS_Port : std_logic_vector (63 DOWNTO 0);
-	SIGNAL RST : std_logic;
-	SIGNAL CLK : std_logic;
+/NVMP 1;
+/NPIPE 1;
 
-BEGIN
-	UUT : local_write
-	PORT MAP (
-		MEM_AD => MEM_AD,
-		MEM_WE => MEM_WE,
-		MEM_DTI => MEM_DTI,
-		DMAW_ENABLE => DMAW_ENABLE,
-		DBUS_Port => DBUS_Port,
-		RST => RST,
-		CLK => CLK
-	);
+// Acceleration, 1st part
 
-	PROCESS -- clock process for CLK,
-		VARIABLE TX_TIME : INTEGER :=0;
+pg_float_sub           (xj,xi,dx,              NFLO,NMAN, 4);     // (1)
+pg_float_mult          (dx,dx,dx2,             NFLO,NMAN, 2);     // (2)
+pg_float_unsigned_add  (dx2[0],dx2[1],x2y2,    NFLO,NMAN, 4);     // (3)
+pg_float_unsigned_add  (dx2[2],x2y2,r2,        NFLO,NMAN, 4);     // (4)
+pg_float_sqrt          (r2,r1,                 NFLO,NMAN, 3);     // (5)
+pg_float_mult          (r2,r1,r3,              NFLO,NMAN, 2);     // (6)
+pg_float_mult          (r3,r2,r5,              NFLO,NMAN, 2);     // (7)
+pg_float_recipro       (r5,r5i,                NFLO,NMAN, 2);     // (8)
+pg_float_mult          (r5i,mj,mr5i,           NFLO,NMAN, 2);     // (9)
+pg_float_mult          (mr5i,r2,mf,            NFLO,NMAN, 2);     // (10)
 
-		PROCEDURE ANNOTATE_DMAW_ENABLE(
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
-			STD.TEXTIO.write(TX_LOC, TX_TIME);
-			STD.TEXTIO.write(TX_LOC,string'(",DMAW_ENABLE,"));
-			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, DMAW_ENABLE);
-			STD.TEXTIO.write(TX_LOC, string'("]"));
-			TX_STR(TX_LOC.all'range) := TX_LOC.all;
-			STD.TEXTIO.writeline(results, TX_LOC);
-			STD.TEXTIO.Deallocate(TX_LOC);
-		END;
+// Potential
 
-		PROCEDURE ANNOTATE_DBUS_Port(
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
-			STD.TEXTIO.write(TX_LOC, TX_TIME);
-			STD.TEXTIO.write(TX_LOC,string'(",DBUS_Port,"));
-			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, DBUS_Port);
-			STD.TEXTIO.write(TX_LOC, string'("]"));
-			TX_STR(TX_LOC.all'range) := TX_LOC.all;
-			STD.TEXTIO.writeline(results, TX_LOC);
-			STD.TEXTIO.Deallocate(TX_LOC);
-		END;
+pg_float_mult          (mf,r2,mp,              NFLO,NMAN, 2);      // (11)
+pg_float_expadd        (mp,ps,                 NEXAD,NFLO,NMAN,1); // (12)
+pg_float_fixaccum      (ps,rx,                 NFLO,NMAN, NFIX, NACC, 2);  // (13)
 
-	BEGIN
-		CLOCK_LOOP : LOOP
-		CLK <= transport '0';
-		WAIT FOR 5 ns;
-		TX_TIME := TX_TIME + 5;
-		CLK <= transport '1';
-		WAIT FOR 50 ns;
-		TX_TIME := TX_TIME + 50;
-		CLK <= transport '0';
-		WAIT FOR 35 ns;
-		TX_TIME := TX_TIME + 35;
-		ANNOTATE_DMAW_ENABLE(TX_TIME);
-		ANNOTATE_DBUS_Port(TX_TIME);
-		WAIT FOR 10 ns;
-		TX_TIME := TX_TIME + 10;
-		END LOOP CLOCK_LOOP;
-	END PROCESS;
+// Acceleration, 2nd part
 
-	PROCESS   -- Process for CLK
-		VARIABLE TX_OUT : LINE;
+pg_float_expadd        (mf,fs,                 NEXAD,NFLO,NMAN,1);// (14)
+pg_float_mult          (fs,dx,fx,              NFLO,NMAN, 2);     // (15)
+pg_float_fixaccum      (fx,sx,                 NFLO,NMAN, NFIX, NACC, 2);  // (16)
 
-		BEGIN
-		-- --------------------
-		MEM_AD <= transport std_logic_vector'("00000000000000000"); --0
-		MEM_WE <= transport '0';
-		MEM_DTI <= transport std_logic_vector'("0000000000000000000000000000000000000000000000000000000000000000"); --0
-		RST <= transport '0';
-		-- --------------------
-		WAIT FOR 300 ns; -- Time=300 ns
-		MEM_AD <= transport std_logic_vector'("00000010100000000"); --500
-		MEM_WE <= transport '1';
-		MEM_DTI <= transport std_logic_vector'("0000000000000000000000000000000000000000000000000001000100010001"); --1111
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=400 ns
-		MEM_DTI <= transport std_logic_vector'("0000000000000000000000000000000000000000000000000010001000100010"); --2222
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=500 ns
-		MEM_DTI <= transport std_logic_vector'("0000000000000000000000000000000000000000000000000011001100110011"); --3333
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=600 ns
-		MEM_WE <= transport '0';
-		-- --------------------
-		WAIT FOR 3505 ns; -- Time=4105 ns
-		-- --------------------
+// Jerk, 1st term
 
-		STD.TEXTIO.write(TX_OUT, string'("Total[]"));
-		STD.TEXTIO.writeline(results, TX_OUT);
-		ASSERT (FALSE) REPORT
-			"Success! Simulation for annotation completed"
-			SEVERITY FAILURE;
-	END PROCESS;
-END testbench_arch;
+pg_float_sub           (vj,vi,dv,              NFLO,NMAN, 4);     // (17)
+pg_float_mult          (fs,dv,jk1,             NFLO,NMAN, 2);     // (18)
 
-CONFIGURATION local_write_cfg OF local_write IS
-	FOR testbench_arch
-	END FOR;
-END local_write_cfg;
+// Jerk, 2nd term
+
+pg_float_mult          (dx,dv,xv,              NFLO,NMAN, 2);      // (19)
+pg_float_unsigned_add  (xv[0],xv[1],xv1,       NFLO,NMAN, 4);      // (20)
+pg_float_unsigned_add  (xv[2],xv1,xv2,         NFLO,NMAN, 4);      // (21)
+pg_float_expadd        (xv2,xv2x2,             NEXAD2,NFLO,NMAN,1);// (22)
+pg_float_unsigned_add  (xv2x2,xv2,xv2x3,       NFLO,NMAN, 4);      // (23)
+pg_float_mult          (mr5i,xv2x3,jk2a,       NFLO,NMAN, 2);      // (24)
+pg_float_expadd        (jk2a,jk2s,             NEXAD,NFLO,NMAN,1); // (25)
+pg_float_mult          (jk2s,dx,jk2,           NFLO,NMAN, 2);      // (26)
+
+// Jerk, 1st - 2nd term
+
+pg_float_sub           (jk1,jk2,jk0,           NFLO,NMAN, 4);      // (27)
+pg_float_fixaccum      (jk0,tx,                NFLO,NMAN, NFIX, NACC, 2);  // (28)

@@ -1,74 +1,50 @@
-Fri Aug 20 19:29:51 JST 2021
-// gravity3.pgdl
-// Calculate Potential, Acceleration and Jerk
-// Author: Andreas Ernst, August 18, 2006
-
-#define NFLO 26
-#define NMAN 16
-#define NFIX 57
-#define NACC 64
-#define NEXAD 31
-#define NEXAD2 1
-#define FSHIFT pow(2.0,(double)NEXAD)
-
-/MEM xj[3] <= x[][]  : float(NFLO, NMAN);
-/MEM vj[3] <= v[][]  : float(NFLO, NMAN);
-/MEM mj    <= m[]    : float(NFLO, NMAN);
-/REG xi[3] <= x[][]  : float(NFLO, NMAN);
-/REG vi[3] <= v[][]  : float(NFLO, NMAN);
-/REG rx    => p[]    : fix(NACC);
-/REG sx[3] => a[][]  : fix(NACC);
-/REG tx[3] => jk[][] : fix(NACC);
-
-/SCALE rx    : (1.0/FSHIFT);
-/SCALE sx[3] : (1.0/FSHIFT);
-/SCALE tx[3] : (1.0/FSHIFT);
-
-/NVMP 1;
-/NPIPE 1;
-
-// Acceleration, 1st part
-
-pg_float_sub           (xj,xi,dx,              NFLO,NMAN, 4);     // (1)
-pg_float_mult          (dx,dx,dx2,             NFLO,NMAN, 2);     // (2)
-pg_float_unsigned_add  (dx2[0],dx2[1],x2y2,    NFLO,NMAN, 4);     // (3)
-pg_float_unsigned_add  (dx2[2],x2y2,r2,        NFLO,NMAN, 4);     // (4)
-pg_float_sqrt          (r2,r1,                 NFLO,NMAN, 3);     // (5)
-pg_float_mult          (r2,r1,r3,              NFLO,NMAN, 2);     // (6)
-pg_float_mult          (r3,r2,r5,              NFLO,NMAN, 2);     // (7)
-pg_float_recipro       (r5,r5i,                NFLO,NMAN, 2);     // (8)
-pg_float_mult          (r5i,mj,mr5i,           NFLO,NMAN, 2);     // (9)
-pg_float_mult          (mr5i,r2,mf,            NFLO,NMAN, 2);     // (10)
-
-// Potential
-
-pg_float_mult          (mf,r2,mp,              NFLO,NMAN, 2);      // (11)
-pg_float_expadd        (mp,ps,                 NEXAD,NFLO,NMAN,1); // (12)
-pg_float_fixaccum      (ps,rx,                 NFLO,NMAN, NFIX, NACC, 2);  // (13)
-
-// Acceleration, 2nd part
-
-pg_float_expadd        (mf,fs,                 NEXAD,NFLO,NMAN,1);// (14)
-pg_float_mult          (fs,dx,fx,              NFLO,NMAN, 2);     // (15)
-pg_float_fixaccum      (fx,sx,                 NFLO,NMAN, NFIX, NACC, 2);  // (16)
-
-// Jerk, 1st term
-
-pg_float_sub           (vj,vi,dv,              NFLO,NMAN, 4);     // (17)
-pg_float_mult          (fs,dv,jk1,             NFLO,NMAN, 2);     // (18)
-
-// Jerk, 2nd term
-
-pg_float_mult          (dx,dv,xv,              NFLO,NMAN, 2);      // (19)
-pg_float_unsigned_add  (xv[0],xv[1],xv1,       NFLO,NMAN, 4);      // (20)
-pg_float_unsigned_add  (xv[2],xv1,xv2,         NFLO,NMAN, 4);      // (21)
-pg_float_expadd        (xv2,xv2x2,             NEXAD2,NFLO,NMAN,1);// (22)
-pg_float_unsigned_add  (xv2x2,xv2,xv2x3,       NFLO,NMAN, 4);      // (23)
-pg_float_mult          (mr5i,xv2x3,jk2a,       NFLO,NMAN, 2);      // (24)
-pg_float_expadd        (jk2a,jk2s,             NEXAD,NFLO,NMAN,1); // (25)
-pg_float_mult          (jk2s,dx,jk2,           NFLO,NMAN, 2);      // (26)
-
-// Jerk, 1st - 2nd term
-
-pg_float_sub           (jk1,jk2,jk0,           NFLO,NMAN, 4);      // (27)
-pg_float_fixaccum      (jk0,tx,                NFLO,NMAN, NFIX, NACC, 2);  // (28)
+Mon Aug 30 19:35:52 JST 2021
+/EQNINJ
+/IPSET xi_0,x[][0],fix,32,(pow(2.0,(double)32)/(2.0))
+/IPSET xi_1,x[][1],fix,32,(pow(2.0,(double)32)/(2.0))
+/IPSET xi_2,x[][2],fix,32,(pow(2.0,(double)32)/(2.0))
+/IPSET ieps2,eps2,log,17,8,((pow(2.0,(double)32)/(2.0))*(pow(2.0,(double)32)/(2.0)))
+/JPSET xj_0,0,0,31,x[][0],fix,32,(pow(2.0,(double)32)/(2.0))
+/JPSET xj_1,0,32,63,x[][1],fix,32,(pow(2.0,(double)32)/(2.0))
+/JPSET xj_2,0,64,95,x[][2],fix,32,(pow(2.0,(double)32)/(2.0))
+/JPSET mj,0,96,112,m[],log,17,8,(pow(2.0,95.38)/(1.0e-2))
+/FOSET sx_0,a[][0],fix,64,(-(pow(2.0,(double)32)/(2.0))*(pow(2.0,(double)32)/(2.0))*pow(2.0,-1.0*(double)-31)/(pow(2.0,95.38)/(1.0e-2)))
+/FOSET sx_1,a[][1],fix,64,(-(pow(2.0,(double)32)/(2.0))*(pow(2.0,(double)32)/(2.0))*pow(2.0,-1.0*(double)-31)/(pow(2.0,95.38)/(1.0e-2)))
+/FOSET sx_2,a[][2],fix,64,(-(pow(2.0,(double)32)/(2.0))*(pow(2.0,(double)32)/(2.0))*pow(2.0,-1.0*(double)-31)/(pow(2.0,95.38)/(1.0e-2)))
+/NPIPE 1
+/NVMP 1
+void force(double x[][3], double m[], double eps2, double a[][3], int n){
+  pg_fix_addsub(SUB,xi_0,xj_0,xij_0,32,3)
+  pg_fix_addsub(SUB,xi_1,xj_1,xij_1,32,3)
+  pg_fix_addsub(SUB,xi_2,xj_2,xij_2,32,3)
+  pg_conv_ftol(xij_0,dx_0,32,17,8,4)
+  pg_conv_ftol(xij_1,dx_1,32,17,8,4)
+  pg_conv_ftol(xij_2,dx_2,32,17,8,4)
+  pg_log_shift(1,dx_0,x2_0,17)
+  pg_log_shift(1,dx_1,x2_1,17)
+  pg_log_shift(1,dx_2,x2_2,17)
+  pg_log_unsigned_add_itp(x2_0,x2_1,x2y2,17,8,9,6)
+  pg_log_unsigned_add_itp(x2_2,ieps2r,z2e2,17,8,9,6)
+  pg_log_unsigned_add_itp(x2y2,z2e2,r2,17,8,9,6)
+  pg_log_shift(-1,r2,r1,17)
+  pg_log_muldiv(MUL,r2,r1,r3,17,2)
+  pg_log_muldiv(SDIV,mjr,r3,mf,17,2)
+  pg_log_muldiv(MUL,mf,dx_0r,fx_0,17,2)
+  pg_log_muldiv(MUL,mf,dx_1r,fx_1,17,2)
+  pg_log_muldiv(MUL,mf,dx_2r,fx_2,17,2)
+  pg_log_expadd(fx_0,fxs_0,-31,17,8,1)
+  pg_log_expadd(fx_1,fxs_1,-31,17,8,1)
+  pg_log_expadd(fx_2,fxs_2,-31,17,8,1)
+  pg_conv_ltof(fxs_0,ffx_0,17,8,57,5)
+  pg_conv_ltof(fxs_1,ffx_1,17,8,57,5)
+  pg_conv_ltof(fxs_2,ffx_2,17,8,57,5)
+  pg_fix_smaccum(ffx_0,sx_0,57,64,4,37)
+  pg_fix_smaccum(ffx_1,sx_1,57,64,4,37)
+  pg_fix_smaccum(ffx_2,sx_2,57,64,4,37)
+  pg_pdelay(ieps2,ieps2r,17,7)
+  pg_pdelay(mj,mjr,17,27)
+  pg_pdelay(dx_0,dx_0r,17,22)
+  pg_pdelay(dx_1,dx_1r,17,22)
+  pg_pdelay(dx_2,dx_2r,17,22)
+  pg_rundelay(41)
+}

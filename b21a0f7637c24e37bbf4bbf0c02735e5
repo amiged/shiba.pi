@@ -1,27 +1,45 @@
-Wed Sep 15 19:51:21 JST 2021
-#!/usr/bin/env python3
-#Time-stamp: <2017-06-10 01:52:29 hamada>
-import cv2
-import urllib.request
-import numpy as np
+Mon Oct  4 19:28:21 JST 2021
+all:
+	./pycam.py |tee log.txt
 
-#stream=urllib.request.urlopen('http://133.45.9.162:3389/mjpegfeed?640x480')        # for DroidCam
-stream=urllib.request.urlopen('http://192.168.101.160:3389/video?dummy=param.mjpg') # for IP Webcam
 
-bytes = b''
-while True:
-    raw = stream.read(1024)
-    bytes += raw
-    #print (bytes)
-    a = bytes.find(b'\xff\xd8')
-    b = bytes.find(b'\xff\xd9')
-    if a!=-1 and b!=-1:
-        jpg = bytes[a:b+2]
-        bytes= bytes[b+2:]
-        image = cv2.imdecode(np.fromstring(jpg, dtype=np.uint8),cv2.IMREAD_COLOR)
-        cv2.imshow('droidcam',image)
-        key = cv2.waitKey(1) & 0xFF
-        if key == ord('q'): break
+clean:
+	rm -rf ../conv
+	mkdir ../conv
+	rm -f *~ .*~
+	rm -rf __pycache__
 
-cv2.destroyAllWindows()
+c: clean
 
+conv:
+	rm -rf ../conv
+	mkdir ../conv
+	./gen_cmd.py > xxx
+	bash ./xxx
+
+
+mov:
+	./mov.py 1 0
+
+
+0.mov: 
+	rm -f out.mp4
+	ffmpeg -r 1 -start_number 0 -i ../conv/%08d.jpg -vcodec libx264 -pix_fmt yuv420p -r 1 out.mp4
+
+r: run
+
+run:
+	./mpycam.py
+
+run3:
+	./pycam.py --devid=0 &
+	./pycam.py --devid=1 &
+	./pycam.py --devid=2 &
+
+kill:
+	killall python3
+	killall pycam.py
+
+clog: clean
+	rm -rf ../log* ../data4bbox ../data4darknet ../conv
+	rm -rf ./tmp.mp4

@@ -1,45 +1,16 @@
-Mon Oct  4 19:28:21 JST 2021
-all:
-	./pycam.py |tee log.txt
+Sun Oct 17 19:27:53 JST 2021
+/** 
+# xを1ステップ進める
+# x(k+1) = x(k) + v(k+1/2)*dt
+*/
 
+#include <stdio.h>
+#include "nbodysim.h"
 
-clean:
-	rm -rf ../conv
-	mkdir ../conv
-	rm -f *~ .*~
-	rm -rf __pycache__
-
-c: clean
-
-conv:
-	rm -rf ../conv
-	mkdir ../conv
-	./gen_cmd.py > xxx
-	bash ./xxx
-
-
-mov:
-	./mov.py 1 0
-
-
-0.mov: 
-	rm -f out.mp4
-	ffmpeg -r 1 -start_number 0 -i ../conv/%08d.jpg -vcodec libx264 -pix_fmt yuv420p -r 1 out.mp4
-
-r: run
-
-run:
-	./mpycam.py
-
-run3:
-	./pycam.py --devid=0 &
-	./pycam.py --devid=1 &
-	./pycam.py --devid=2 &
-
-kill:
-	killall python3
-	killall pycam.py
-
-clog: clean
-	rm -rf ../log* ../data4bbox ../data4darknet ../conv
-	rm -rf ./tmp.mp4
+void leapflog(double dt,double x[][DIM],double v[][DIM],int n)
+{
+    int i,d;
+    for(i=0;i<n;i++)
+        for(d=0;d<3;d++)
+            x[i][d] = x[i][d]+v[i][d]*dt;
+}

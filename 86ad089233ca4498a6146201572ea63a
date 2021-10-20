@@ -1,2104 +1,1713 @@
-Wed Jul 28 19:36:29 JST 2021
-#ChipScope Pro Analyzer Project File, Version 3.0
-#Thu Nov 18 18:12:55 JST 2004
-deviceChain.deviceName0=XC18V00
-deviceChain.deviceName1=XC2V1000
-deviceChain.iRLength0=8
-deviceChain.iRLength1=6
-deviceChain.name0=
-deviceChain.name1=
-deviceIds=0503609331028093
-mdiAreaHeight=0.8585657370517928
-mdiAreaHeightLast=0.799800796812749
-mdiCount=2
-mdiDevice0=1
-mdiDevice1=1
-mdiType0=1
-mdiType1=0
-mdiUnit0=0
-mdiUnit1=0
-navigatorHeight=0.17928286852589642
-navigatorHeightLast=0.17928286852589642
-navigatorWidth=0.17982799061767005
-navigatorWidthLast=0.17982799061767005
-unit.1.0.0.HEIGHT0=0.19441211
-unit.1.0.0.TriggerRow0=1
-unit.1.0.0.TriggerRow1=1
-unit.1.0.0.TriggerRow2=1
-unit.1.0.0.WIDTH0=1.0
-unit.1.0.0.X0=-9.718173E-4
-unit.1.0.0.Y0=0.0
-unit.1.0.1.HEIGHT1=0.40861467
-unit.1.0.1.WIDTH1=1.0
-unit.1.0.1.X1=0.0
-unit.1.0.1.Y1=0.58323634
-unit.1.0.MFBitsA0=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXRXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-unit.1.0.MFBitsB0=0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-unit.1.0.MFCompareA0=0
-unit.1.0.MFCompareB0=999
-unit.1.0.MFCount=1
-unit.1.0.MFDisplay0=0
-unit.1.0.MFEventType0=0
-unit.1.0.SequencerOn=0
-unit.1.0.TCActive=0
-unit.1.0.TCAdvanced0=0
-unit.1.0.TCCondition0_0=M0
-unit.1.0.TCCondition0_1=
-unit.1.0.TCConditionType0=0
-unit.1.0.TCCount=1
-unit.1.0.TCEventCount0=1
-unit.1.0.TCEventType0=1
-unit.1.0.TCName0=TriggerCondition0
-unit.1.0.TCOutputEnable0=0
-unit.1.0.TCOutputHigh0=1
-unit.1.0.TCOutputMode0=0
-unit.1.0.browser_tree_state<DBUS_idata>=0
-unit.1.0.browser_tree_state<Data\ Port>=1
-unit.1.0.coretype=ILA
-unit.1.0.eventCount0=1
-unit.1.0.port.-1.b.0.alias=DBUS_idata
-unit.1.0.port.-1.b.0.channellist=50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82
-unit.1.0.port.-1.b.0.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.b.0.name=BUS_3
-unit.1.0.port.-1.b.0.orderindex=-1
-unit.1.0.port.-1.b.0.radix=Hex
-unit.1.0.port.-1.b.0.signedOffset=0.0
-unit.1.0.port.-1.b.0.signedPrecision=0
-unit.1.0.port.-1.b.0.signedScaleFactor=1.0
-unit.1.0.port.-1.b.0.tokencount=0
-unit.1.0.port.-1.b.0.unsignedOffset=0.0
-unit.1.0.port.-1.b.0.unsignedPrecision=0
-unit.1.0.port.-1.b.0.unsignedScaleFactor=1.0
-unit.1.0.port.-1.b.0.visible=1
-unit.1.0.port.-1.b.1.alias=DBUS_Port
-unit.1.0.port.-1.b.1.channellist=91 92 93 94 95 96 97 98 99 100 101 102 103 104 105 106 107 108 109 110 111 112 113 114 115 116 117 118 119 120 121 122 123
-unit.1.0.port.-1.b.1.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.b.1.name=BUS_0
-unit.1.0.port.-1.b.1.orderindex=-1
-unit.1.0.port.-1.b.1.radix=Hex
-unit.1.0.port.-1.b.1.signedOffset=0.0
-unit.1.0.port.-1.b.1.signedPrecision=0
-unit.1.0.port.-1.b.1.signedScaleFactor=1.0
-unit.1.0.port.-1.b.1.tokencount=0
-unit.1.0.port.-1.b.1.unsignedOffset=0.0
-unit.1.0.port.-1.b.1.unsignedPrecision=0
-unit.1.0.port.-1.b.1.unsignedScaleFactor=1.0
-unit.1.0.port.-1.b.1.visible=1
-unit.1.0.port.-1.b.2.alias=dmar_state
-unit.1.0.port.-1.b.2.channellist=2 3 4 5 6
-unit.1.0.port.-1.b.2.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.b.2.name=BUS_0
-unit.1.0.port.-1.b.2.orderindex=-1
-unit.1.0.port.-1.b.2.radix=Hex
-unit.1.0.port.-1.b.2.signedOffset=0.0
-unit.1.0.port.-1.b.2.signedPrecision=0
-unit.1.0.port.-1.b.2.signedScaleFactor=1.0
-unit.1.0.port.-1.b.2.tokencount=0
-unit.1.0.port.-1.b.2.unsignedOffset=0.0
-unit.1.0.port.-1.b.2.unsignedPrecision=0
-unit.1.0.port.-1.b.2.unsignedScaleFactor=1.0
-unit.1.0.port.-1.b.2.visible=1
-unit.1.0.port.-1.b.3.alias=dmaw_state
-unit.1.0.port.-1.b.3.channellist=88 89 90
-unit.1.0.port.-1.b.3.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.b.3.name=BUS_4
-unit.1.0.port.-1.b.3.orderindex=-1
-unit.1.0.port.-1.b.3.radix=Hex
-unit.1.0.port.-1.b.3.signedOffset=0.0
-unit.1.0.port.-1.b.3.signedPrecision=0
-unit.1.0.port.-1.b.3.signedScaleFactor=1.0
-unit.1.0.port.-1.b.3.tokencount=0
-unit.1.0.port.-1.b.3.unsignedOffset=0.0
-unit.1.0.port.-1.b.3.unsignedPrecision=0
-unit.1.0.port.-1.b.3.unsignedScaleFactor=1.0
-unit.1.0.port.-1.b.3.visible=1
-unit.1.0.port.-1.b.4.alias=MEM_ADB
-unit.1.0.port.-1.b.4.channellist=8 9 10 11 12 13 14 15 16
-unit.1.0.port.-1.b.4.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.b.4.name=BUS_1
-unit.1.0.port.-1.b.4.orderindex=-1
-unit.1.0.port.-1.b.4.radix=Hex
-unit.1.0.port.-1.b.4.signedOffset=0.0
-unit.1.0.port.-1.b.4.signedPrecision=0
-unit.1.0.port.-1.b.4.signedScaleFactor=1.0
-unit.1.0.port.-1.b.4.tokencount=0
-unit.1.0.port.-1.b.4.unsignedOffset=0.0
-unit.1.0.port.-1.b.4.unsignedPrecision=0
-unit.1.0.port.-1.b.4.unsignedScaleFactor=1.0
-unit.1.0.port.-1.b.4.visible=1
-unit.1.0.port.-1.b.5.alias=MEM_DTIB
-unit.1.0.port.-1.b.5.channellist=17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49
-unit.1.0.port.-1.b.5.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.b.5.name=BUS_2
-unit.1.0.port.-1.b.5.orderindex=-1
-unit.1.0.port.-1.b.5.radix=Hex
-unit.1.0.port.-1.b.5.signedOffset=0.0
-unit.1.0.port.-1.b.5.signedPrecision=0
-unit.1.0.port.-1.b.5.signedScaleFactor=1.0
-unit.1.0.port.-1.b.5.tokencount=0
-unit.1.0.port.-1.b.5.unsignedOffset=0.0
-unit.1.0.port.-1.b.5.unsignedPrecision=0
-unit.1.0.port.-1.b.5.unsignedScaleFactor=1.0
-unit.1.0.port.-1.b.5.visible=1
-unit.1.0.port.-1.b.6.alias=MEM_DTOB
-unit.1.0.port.-1.b.6.channellist=130 131 132 133 134 135 136 137 138 139 140 141 142 143 144 145 146 147 148 149 150 151 152 153 154 155 156 157 158 159 160 161 162
-unit.1.0.port.-1.b.6.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.b.6.name=BUS_0
-unit.1.0.port.-1.b.6.orderindex=-1
-unit.1.0.port.-1.b.6.radix=Hex
-unit.1.0.port.-1.b.6.signedOffset=0.0
-unit.1.0.port.-1.b.6.signedPrecision=0
-unit.1.0.port.-1.b.6.signedScaleFactor=1.0
-unit.1.0.port.-1.b.6.tokencount=0
-unit.1.0.port.-1.b.6.unsignedOffset=0.0
-unit.1.0.port.-1.b.6.unsignedPrecision=0
-unit.1.0.port.-1.b.6.unsignedScaleFactor=1.0
-unit.1.0.port.-1.b.6.visible=1
-unit.1.0.port.-1.buscount=7
-unit.1.0.port.-1.channelcount=163
-unit.1.0.port.-1.s.0.alias=DEBUG_CS_CLK
-unit.1.0.port.-1.s.0.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.0.name=DataPort[0]
-unit.1.0.port.-1.s.0.orderindex=-1
-unit.1.0.port.-1.s.0.visible=1
-unit.1.0.port.-1.s.1.alias=Hit_DMAR
-unit.1.0.port.-1.s.1.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.1.name=DataPort[1]
-unit.1.0.port.-1.s.1.orderindex=-1
-unit.1.0.port.-1.s.1.visible=1
-unit.1.0.port.-1.s.10.alias=
-unit.1.0.port.-1.s.10.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.10.name=DataPort[10]
-unit.1.0.port.-1.s.10.orderindex=-1
-unit.1.0.port.-1.s.10.visible=1
-unit.1.0.port.-1.s.100.alias=
-unit.1.0.port.-1.s.100.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.100.name=DataPort[100]
-unit.1.0.port.-1.s.100.orderindex=-1
-unit.1.0.port.-1.s.100.visible=1
-unit.1.0.port.-1.s.101.alias=
-unit.1.0.port.-1.s.101.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.101.name=DataPort[101]
-unit.1.0.port.-1.s.101.orderindex=-1
-unit.1.0.port.-1.s.101.visible=1
-unit.1.0.port.-1.s.102.alias=
-unit.1.0.port.-1.s.102.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.102.name=DataPort[102]
-unit.1.0.port.-1.s.102.orderindex=-1
-unit.1.0.port.-1.s.102.visible=1
-unit.1.0.port.-1.s.103.alias=
-unit.1.0.port.-1.s.103.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.103.name=DataPort[103]
-unit.1.0.port.-1.s.103.orderindex=-1
-unit.1.0.port.-1.s.103.visible=1
-unit.1.0.port.-1.s.104.alias=
-unit.1.0.port.-1.s.104.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.104.name=DataPort[104]
-unit.1.0.port.-1.s.104.orderindex=-1
-unit.1.0.port.-1.s.104.visible=1
-unit.1.0.port.-1.s.105.alias=
-unit.1.0.port.-1.s.105.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.105.name=DataPort[105]
-unit.1.0.port.-1.s.105.orderindex=-1
-unit.1.0.port.-1.s.105.visible=1
-unit.1.0.port.-1.s.106.alias=
-unit.1.0.port.-1.s.106.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.106.name=DataPort[106]
-unit.1.0.port.-1.s.106.orderindex=-1
-unit.1.0.port.-1.s.106.visible=1
-unit.1.0.port.-1.s.107.alias=
-unit.1.0.port.-1.s.107.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.107.name=DataPort[107]
-unit.1.0.port.-1.s.107.orderindex=-1
-unit.1.0.port.-1.s.107.visible=1
-unit.1.0.port.-1.s.108.alias=
-unit.1.0.port.-1.s.108.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.108.name=DataPort[108]
-unit.1.0.port.-1.s.108.orderindex=-1
-unit.1.0.port.-1.s.108.visible=1
-unit.1.0.port.-1.s.109.alias=
-unit.1.0.port.-1.s.109.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.109.name=DataPort[109]
-unit.1.0.port.-1.s.109.orderindex=-1
-unit.1.0.port.-1.s.109.visible=1
-unit.1.0.port.-1.s.11.alias=
-unit.1.0.port.-1.s.11.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.11.name=DataPort[11]
-unit.1.0.port.-1.s.11.orderindex=-1
-unit.1.0.port.-1.s.11.visible=1
-unit.1.0.port.-1.s.110.alias=
-unit.1.0.port.-1.s.110.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.110.name=DataPort[110]
-unit.1.0.port.-1.s.110.orderindex=-1
-unit.1.0.port.-1.s.110.visible=1
-unit.1.0.port.-1.s.111.alias=
-unit.1.0.port.-1.s.111.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.111.name=DataPort[111]
-unit.1.0.port.-1.s.111.orderindex=-1
-unit.1.0.port.-1.s.111.visible=1
-unit.1.0.port.-1.s.112.alias=
-unit.1.0.port.-1.s.112.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.112.name=DataPort[112]
-unit.1.0.port.-1.s.112.orderindex=-1
-unit.1.0.port.-1.s.112.visible=1
-unit.1.0.port.-1.s.113.alias=
-unit.1.0.port.-1.s.113.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.113.name=DataPort[113]
-unit.1.0.port.-1.s.113.orderindex=-1
-unit.1.0.port.-1.s.113.visible=1
-unit.1.0.port.-1.s.114.alias=
-unit.1.0.port.-1.s.114.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.114.name=DataPort[114]
-unit.1.0.port.-1.s.114.orderindex=-1
-unit.1.0.port.-1.s.114.visible=1
-unit.1.0.port.-1.s.115.alias=
-unit.1.0.port.-1.s.115.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.115.name=DataPort[115]
-unit.1.0.port.-1.s.115.orderindex=-1
-unit.1.0.port.-1.s.115.visible=1
-unit.1.0.port.-1.s.116.alias=
-unit.1.0.port.-1.s.116.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.116.name=DataPort[116]
-unit.1.0.port.-1.s.116.orderindex=-1
-unit.1.0.port.-1.s.116.visible=1
-unit.1.0.port.-1.s.117.alias=
-unit.1.0.port.-1.s.117.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.117.name=DataPort[117]
-unit.1.0.port.-1.s.117.orderindex=-1
-unit.1.0.port.-1.s.117.visible=1
-unit.1.0.port.-1.s.118.alias=
-unit.1.0.port.-1.s.118.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.118.name=DataPort[118]
-unit.1.0.port.-1.s.118.orderindex=-1
-unit.1.0.port.-1.s.118.visible=1
-unit.1.0.port.-1.s.119.alias=
-unit.1.0.port.-1.s.119.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.119.name=DataPort[119]
-unit.1.0.port.-1.s.119.orderindex=-1
-unit.1.0.port.-1.s.119.visible=1
-unit.1.0.port.-1.s.12.alias=
-unit.1.0.port.-1.s.12.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.12.name=DataPort[12]
-unit.1.0.port.-1.s.12.orderindex=-1
-unit.1.0.port.-1.s.12.visible=1
-unit.1.0.port.-1.s.120.alias=
-unit.1.0.port.-1.s.120.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.120.name=DataPort[120]
-unit.1.0.port.-1.s.120.orderindex=-1
-unit.1.0.port.-1.s.120.visible=1
-unit.1.0.port.-1.s.121.alias=
-unit.1.0.port.-1.s.121.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.121.name=DataPort[121]
-unit.1.0.port.-1.s.121.orderindex=-1
-unit.1.0.port.-1.s.121.visible=1
-unit.1.0.port.-1.s.122.alias=
-unit.1.0.port.-1.s.122.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.122.name=DataPort[122]
-unit.1.0.port.-1.s.122.orderindex=-1
-unit.1.0.port.-1.s.122.visible=1
-unit.1.0.port.-1.s.123.alias=
-unit.1.0.port.-1.s.123.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.123.name=DataPort[123]
-unit.1.0.port.-1.s.123.orderindex=-1
-unit.1.0.port.-1.s.123.visible=1
-unit.1.0.port.-1.s.124.alias=PFPGA_RST0
-unit.1.0.port.-1.s.124.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.124.name=DataPort[124]
-unit.1.0.port.-1.s.124.orderindex=-1
-unit.1.0.port.-1.s.124.visible=1
-unit.1.0.port.-1.s.125.alias=DBUS_HiZ
-unit.1.0.port.-1.s.125.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.125.name=DataPort[125]
-unit.1.0.port.-1.s.125.orderindex=-1
-unit.1.0.port.-1.s.125.visible=1
-unit.1.0.port.-1.s.126.alias=DMAW_ENABLE0
-unit.1.0.port.-1.s.126.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.126.name=DataPort[126]
-unit.1.0.port.-1.s.126.orderindex=-1
-unit.1.0.port.-1.s.126.visible=1
-unit.1.0.port.-1.s.127.alias=DMAW_ENABLE1
-unit.1.0.port.-1.s.127.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.127.name=DataPort[127]
-unit.1.0.port.-1.s.127.orderindex=-1
-unit.1.0.port.-1.s.127.visible=1
-unit.1.0.port.-1.s.128.alias=DMAW_ENABLE2
-unit.1.0.port.-1.s.128.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.128.name=DataPort[128]
-unit.1.0.port.-1.s.128.orderindex=-1
-unit.1.0.port.-1.s.128.visible=1
-unit.1.0.port.-1.s.129.alias=DMAW_ENABLE3
-unit.1.0.port.-1.s.129.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.129.name=DataPort[129]
-unit.1.0.port.-1.s.129.orderindex=-1
-unit.1.0.port.-1.s.129.visible=1
-unit.1.0.port.-1.s.13.alias=
-unit.1.0.port.-1.s.13.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.13.name=DataPort[13]
-unit.1.0.port.-1.s.13.orderindex=-1
-unit.1.0.port.-1.s.13.visible=1
-unit.1.0.port.-1.s.130.alias=
-unit.1.0.port.-1.s.130.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.130.name=DataPort[130]
-unit.1.0.port.-1.s.130.orderindex=-1
-unit.1.0.port.-1.s.130.visible=1
-unit.1.0.port.-1.s.131.alias=
-unit.1.0.port.-1.s.131.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.131.name=DataPort[131]
-unit.1.0.port.-1.s.131.orderindex=-1
-unit.1.0.port.-1.s.131.visible=1
-unit.1.0.port.-1.s.132.alias=
-unit.1.0.port.-1.s.132.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.132.name=DataPort[132]
-unit.1.0.port.-1.s.132.orderindex=-1
-unit.1.0.port.-1.s.132.visible=1
-unit.1.0.port.-1.s.133.alias=
-unit.1.0.port.-1.s.133.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.133.name=DataPort[133]
-unit.1.0.port.-1.s.133.orderindex=-1
-unit.1.0.port.-1.s.133.visible=1
-unit.1.0.port.-1.s.134.alias=
-unit.1.0.port.-1.s.134.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.134.name=DataPort[134]
-unit.1.0.port.-1.s.134.orderindex=-1
-unit.1.0.port.-1.s.134.visible=1
-unit.1.0.port.-1.s.135.alias=
-unit.1.0.port.-1.s.135.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.135.name=DataPort[135]
-unit.1.0.port.-1.s.135.orderindex=-1
-unit.1.0.port.-1.s.135.visible=1
-unit.1.0.port.-1.s.136.alias=
-unit.1.0.port.-1.s.136.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.136.name=DataPort[136]
-unit.1.0.port.-1.s.136.orderindex=-1
-unit.1.0.port.-1.s.136.visible=1
-unit.1.0.port.-1.s.137.alias=
-unit.1.0.port.-1.s.137.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.137.name=DataPort[137]
-unit.1.0.port.-1.s.137.orderindex=-1
-unit.1.0.port.-1.s.137.visible=1
-unit.1.0.port.-1.s.138.alias=
-unit.1.0.port.-1.s.138.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.138.name=DataPort[138]
-unit.1.0.port.-1.s.138.orderindex=-1
-unit.1.0.port.-1.s.138.visible=1
-unit.1.0.port.-1.s.139.alias=
-unit.1.0.port.-1.s.139.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.139.name=DataPort[139]
-unit.1.0.port.-1.s.139.orderindex=-1
-unit.1.0.port.-1.s.139.visible=1
-unit.1.0.port.-1.s.14.alias=
-unit.1.0.port.-1.s.14.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.14.name=DataPort[14]
-unit.1.0.port.-1.s.14.orderindex=-1
-unit.1.0.port.-1.s.14.visible=1
-unit.1.0.port.-1.s.140.alias=
-unit.1.0.port.-1.s.140.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.140.name=DataPort[140]
-unit.1.0.port.-1.s.140.orderindex=-1
-unit.1.0.port.-1.s.140.visible=1
-unit.1.0.port.-1.s.141.alias=
-unit.1.0.port.-1.s.141.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.141.name=DataPort[141]
-unit.1.0.port.-1.s.141.orderindex=-1
-unit.1.0.port.-1.s.141.visible=1
-unit.1.0.port.-1.s.142.alias=
-unit.1.0.port.-1.s.142.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.142.name=DataPort[142]
-unit.1.0.port.-1.s.142.orderindex=-1
-unit.1.0.port.-1.s.142.visible=1
-unit.1.0.port.-1.s.143.alias=
-unit.1.0.port.-1.s.143.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.143.name=DataPort[143]
-unit.1.0.port.-1.s.143.orderindex=-1
-unit.1.0.port.-1.s.143.visible=1
-unit.1.0.port.-1.s.144.alias=
-unit.1.0.port.-1.s.144.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.144.name=DataPort[144]
-unit.1.0.port.-1.s.144.orderindex=-1
-unit.1.0.port.-1.s.144.visible=1
-unit.1.0.port.-1.s.145.alias=
-unit.1.0.port.-1.s.145.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.145.name=DataPort[145]
-unit.1.0.port.-1.s.145.orderindex=-1
-unit.1.0.port.-1.s.145.visible=1
-unit.1.0.port.-1.s.146.alias=
-unit.1.0.port.-1.s.146.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.146.name=DataPort[146]
-unit.1.0.port.-1.s.146.orderindex=-1
-unit.1.0.port.-1.s.146.visible=1
-unit.1.0.port.-1.s.147.alias=
-unit.1.0.port.-1.s.147.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.147.name=DataPort[147]
-unit.1.0.port.-1.s.147.orderindex=-1
-unit.1.0.port.-1.s.147.visible=1
-unit.1.0.port.-1.s.148.alias=
-unit.1.0.port.-1.s.148.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.148.name=DataPort[148]
-unit.1.0.port.-1.s.148.orderindex=-1
-unit.1.0.port.-1.s.148.visible=1
-unit.1.0.port.-1.s.149.alias=
-unit.1.0.port.-1.s.149.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.149.name=DataPort[149]
-unit.1.0.port.-1.s.149.orderindex=-1
-unit.1.0.port.-1.s.149.visible=1
-unit.1.0.port.-1.s.15.alias=
-unit.1.0.port.-1.s.15.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.15.name=DataPort[15]
-unit.1.0.port.-1.s.15.orderindex=-1
-unit.1.0.port.-1.s.15.visible=1
-unit.1.0.port.-1.s.150.alias=
-unit.1.0.port.-1.s.150.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.150.name=DataPort[150]
-unit.1.0.port.-1.s.150.orderindex=-1
-unit.1.0.port.-1.s.150.visible=1
-unit.1.0.port.-1.s.151.alias=
-unit.1.0.port.-1.s.151.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.151.name=DataPort[151]
-unit.1.0.port.-1.s.151.orderindex=-1
-unit.1.0.port.-1.s.151.visible=1
-unit.1.0.port.-1.s.152.alias=
-unit.1.0.port.-1.s.152.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.152.name=DataPort[152]
-unit.1.0.port.-1.s.152.orderindex=-1
-unit.1.0.port.-1.s.152.visible=1
-unit.1.0.port.-1.s.153.alias=
-unit.1.0.port.-1.s.153.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.153.name=DataPort[153]
-unit.1.0.port.-1.s.153.orderindex=-1
-unit.1.0.port.-1.s.153.visible=1
-unit.1.0.port.-1.s.154.alias=
-unit.1.0.port.-1.s.154.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.154.name=DataPort[154]
-unit.1.0.port.-1.s.154.orderindex=-1
-unit.1.0.port.-1.s.154.visible=1
-unit.1.0.port.-1.s.155.alias=
-unit.1.0.port.-1.s.155.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.155.name=DataPort[155]
-unit.1.0.port.-1.s.155.orderindex=-1
-unit.1.0.port.-1.s.155.visible=1
-unit.1.0.port.-1.s.156.alias=
-unit.1.0.port.-1.s.156.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.156.name=DataPort[156]
-unit.1.0.port.-1.s.156.orderindex=-1
-unit.1.0.port.-1.s.156.visible=1
-unit.1.0.port.-1.s.157.alias=
-unit.1.0.port.-1.s.157.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.157.name=DataPort[157]
-unit.1.0.port.-1.s.157.orderindex=-1
-unit.1.0.port.-1.s.157.visible=1
-unit.1.0.port.-1.s.158.alias=
-unit.1.0.port.-1.s.158.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.158.name=DataPort[158]
-unit.1.0.port.-1.s.158.orderindex=-1
-unit.1.0.port.-1.s.158.visible=1
-unit.1.0.port.-1.s.159.alias=
-unit.1.0.port.-1.s.159.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.159.name=DataPort[159]
-unit.1.0.port.-1.s.159.orderindex=-1
-unit.1.0.port.-1.s.159.visible=1
-unit.1.0.port.-1.s.16.alias=
-unit.1.0.port.-1.s.16.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.16.name=DataPort[16]
-unit.1.0.port.-1.s.16.orderindex=-1
-unit.1.0.port.-1.s.16.visible=1
-unit.1.0.port.-1.s.160.alias=
-unit.1.0.port.-1.s.160.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.160.name=DataPort[160]
-unit.1.0.port.-1.s.160.orderindex=-1
-unit.1.0.port.-1.s.160.visible=1
-unit.1.0.port.-1.s.161.alias=
-unit.1.0.port.-1.s.161.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.161.name=DataPort[161]
-unit.1.0.port.-1.s.161.orderindex=-1
-unit.1.0.port.-1.s.161.visible=1
-unit.1.0.port.-1.s.162.alias=
-unit.1.0.port.-1.s.162.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.162.name=DataPort[162]
-unit.1.0.port.-1.s.162.orderindex=-1
-unit.1.0.port.-1.s.162.visible=1
-unit.1.0.port.-1.s.17.alias=
-unit.1.0.port.-1.s.17.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.17.name=DataPort[17]
-unit.1.0.port.-1.s.17.orderindex=-1
-unit.1.0.port.-1.s.17.visible=1
-unit.1.0.port.-1.s.18.alias=
-unit.1.0.port.-1.s.18.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.18.name=DataPort[18]
-unit.1.0.port.-1.s.18.orderindex=-1
-unit.1.0.port.-1.s.18.visible=1
-unit.1.0.port.-1.s.19.alias=
-unit.1.0.port.-1.s.19.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.19.name=DataPort[19]
-unit.1.0.port.-1.s.19.orderindex=-1
-unit.1.0.port.-1.s.19.visible=1
-unit.1.0.port.-1.s.2.alias=
-unit.1.0.port.-1.s.2.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.2.name=DataPort[2]
-unit.1.0.port.-1.s.2.orderindex=-1
-unit.1.0.port.-1.s.2.visible=1
-unit.1.0.port.-1.s.20.alias=
-unit.1.0.port.-1.s.20.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.20.name=DataPort[20]
-unit.1.0.port.-1.s.20.orderindex=-1
-unit.1.0.port.-1.s.20.visible=1
-unit.1.0.port.-1.s.21.alias=
-unit.1.0.port.-1.s.21.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.21.name=DataPort[21]
-unit.1.0.port.-1.s.21.orderindex=-1
-unit.1.0.port.-1.s.21.visible=1
-unit.1.0.port.-1.s.22.alias=
-unit.1.0.port.-1.s.22.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.22.name=DataPort[22]
-unit.1.0.port.-1.s.22.orderindex=-1
-unit.1.0.port.-1.s.22.visible=1
-unit.1.0.port.-1.s.23.alias=
-unit.1.0.port.-1.s.23.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.23.name=DataPort[23]
-unit.1.0.port.-1.s.23.orderindex=-1
-unit.1.0.port.-1.s.23.visible=1
-unit.1.0.port.-1.s.24.alias=
-unit.1.0.port.-1.s.24.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.24.name=DataPort[24]
-unit.1.0.port.-1.s.24.orderindex=-1
-unit.1.0.port.-1.s.24.visible=1
-unit.1.0.port.-1.s.25.alias=
-unit.1.0.port.-1.s.25.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.25.name=DataPort[25]
-unit.1.0.port.-1.s.25.orderindex=-1
-unit.1.0.port.-1.s.25.visible=1
-unit.1.0.port.-1.s.26.alias=
-unit.1.0.port.-1.s.26.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.26.name=DataPort[26]
-unit.1.0.port.-1.s.26.orderindex=-1
-unit.1.0.port.-1.s.26.visible=1
-unit.1.0.port.-1.s.27.alias=
-unit.1.0.port.-1.s.27.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.27.name=DataPort[27]
-unit.1.0.port.-1.s.27.orderindex=-1
-unit.1.0.port.-1.s.27.visible=1
-unit.1.0.port.-1.s.28.alias=
-unit.1.0.port.-1.s.28.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.28.name=DataPort[28]
-unit.1.0.port.-1.s.28.orderindex=-1
-unit.1.0.port.-1.s.28.visible=1
-unit.1.0.port.-1.s.29.alias=
-unit.1.0.port.-1.s.29.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.29.name=DataPort[29]
-unit.1.0.port.-1.s.29.orderindex=-1
-unit.1.0.port.-1.s.29.visible=1
-unit.1.0.port.-1.s.3.alias=
-unit.1.0.port.-1.s.3.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.3.name=DataPort[3]
-unit.1.0.port.-1.s.3.orderindex=-1
-unit.1.0.port.-1.s.3.visible=1
-unit.1.0.port.-1.s.30.alias=
-unit.1.0.port.-1.s.30.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.30.name=DataPort[30]
-unit.1.0.port.-1.s.30.orderindex=-1
-unit.1.0.port.-1.s.30.visible=1
-unit.1.0.port.-1.s.31.alias=
-unit.1.0.port.-1.s.31.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.31.name=DataPort[31]
-unit.1.0.port.-1.s.31.orderindex=-1
-unit.1.0.port.-1.s.31.visible=1
-unit.1.0.port.-1.s.32.alias=
-unit.1.0.port.-1.s.32.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.32.name=DataPort[32]
-unit.1.0.port.-1.s.32.orderindex=-1
-unit.1.0.port.-1.s.32.visible=1
-unit.1.0.port.-1.s.33.alias=
-unit.1.0.port.-1.s.33.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.33.name=DataPort[33]
-unit.1.0.port.-1.s.33.orderindex=-1
-unit.1.0.port.-1.s.33.visible=1
-unit.1.0.port.-1.s.34.alias=
-unit.1.0.port.-1.s.34.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.34.name=DataPort[34]
-unit.1.0.port.-1.s.34.orderindex=-1
-unit.1.0.port.-1.s.34.visible=1
-unit.1.0.port.-1.s.35.alias=
-unit.1.0.port.-1.s.35.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.35.name=DataPort[35]
-unit.1.0.port.-1.s.35.orderindex=-1
-unit.1.0.port.-1.s.35.visible=1
-unit.1.0.port.-1.s.36.alias=
-unit.1.0.port.-1.s.36.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.36.name=DataPort[36]
-unit.1.0.port.-1.s.36.orderindex=-1
-unit.1.0.port.-1.s.36.visible=1
-unit.1.0.port.-1.s.37.alias=
-unit.1.0.port.-1.s.37.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.37.name=DataPort[37]
-unit.1.0.port.-1.s.37.orderindex=-1
-unit.1.0.port.-1.s.37.visible=1
-unit.1.0.port.-1.s.38.alias=
-unit.1.0.port.-1.s.38.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.38.name=DataPort[38]
-unit.1.0.port.-1.s.38.orderindex=-1
-unit.1.0.port.-1.s.38.visible=1
-unit.1.0.port.-1.s.39.alias=
-unit.1.0.port.-1.s.39.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.39.name=DataPort[39]
-unit.1.0.port.-1.s.39.orderindex=-1
-unit.1.0.port.-1.s.39.visible=1
-unit.1.0.port.-1.s.4.alias=
-unit.1.0.port.-1.s.4.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.4.name=DataPort[4]
-unit.1.0.port.-1.s.4.orderindex=-1
-unit.1.0.port.-1.s.4.visible=1
-unit.1.0.port.-1.s.40.alias=
-unit.1.0.port.-1.s.40.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.40.name=DataPort[40]
-unit.1.0.port.-1.s.40.orderindex=-1
-unit.1.0.port.-1.s.40.visible=1
-unit.1.0.port.-1.s.41.alias=
-unit.1.0.port.-1.s.41.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.41.name=DataPort[41]
-unit.1.0.port.-1.s.41.orderindex=-1
-unit.1.0.port.-1.s.41.visible=1
-unit.1.0.port.-1.s.42.alias=
-unit.1.0.port.-1.s.42.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.42.name=DataPort[42]
-unit.1.0.port.-1.s.42.orderindex=-1
-unit.1.0.port.-1.s.42.visible=1
-unit.1.0.port.-1.s.43.alias=
-unit.1.0.port.-1.s.43.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.43.name=DataPort[43]
-unit.1.0.port.-1.s.43.orderindex=-1
-unit.1.0.port.-1.s.43.visible=1
-unit.1.0.port.-1.s.44.alias=
-unit.1.0.port.-1.s.44.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.44.name=DataPort[44]
-unit.1.0.port.-1.s.44.orderindex=-1
-unit.1.0.port.-1.s.44.visible=1
-unit.1.0.port.-1.s.45.alias=
-unit.1.0.port.-1.s.45.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.45.name=DataPort[45]
-unit.1.0.port.-1.s.45.orderindex=-1
-unit.1.0.port.-1.s.45.visible=1
-unit.1.0.port.-1.s.46.alias=
-unit.1.0.port.-1.s.46.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.46.name=DataPort[46]
-unit.1.0.port.-1.s.46.orderindex=-1
-unit.1.0.port.-1.s.46.visible=1
-unit.1.0.port.-1.s.47.alias=
-unit.1.0.port.-1.s.47.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.47.name=DataPort[47]
-unit.1.0.port.-1.s.47.orderindex=-1
-unit.1.0.port.-1.s.47.visible=1
-unit.1.0.port.-1.s.48.alias=
-unit.1.0.port.-1.s.48.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.48.name=DataPort[48]
-unit.1.0.port.-1.s.48.orderindex=-1
-unit.1.0.port.-1.s.48.visible=1
-unit.1.0.port.-1.s.49.alias=
-unit.1.0.port.-1.s.49.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.49.name=DataPort[49]
-unit.1.0.port.-1.s.49.orderindex=-1
-unit.1.0.port.-1.s.49.visible=1
-unit.1.0.port.-1.s.5.alias=
-unit.1.0.port.-1.s.5.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.5.name=DataPort[5]
-unit.1.0.port.-1.s.5.orderindex=-1
-unit.1.0.port.-1.s.5.visible=1
-unit.1.0.port.-1.s.50.alias=
-unit.1.0.port.-1.s.50.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.50.name=DataPort[50]
-unit.1.0.port.-1.s.50.orderindex=-1
-unit.1.0.port.-1.s.50.visible=1
-unit.1.0.port.-1.s.51.alias=
-unit.1.0.port.-1.s.51.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.51.name=DataPort[51]
-unit.1.0.port.-1.s.51.orderindex=-1
-unit.1.0.port.-1.s.51.visible=1
-unit.1.0.port.-1.s.52.alias=
-unit.1.0.port.-1.s.52.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.52.name=DataPort[52]
-unit.1.0.port.-1.s.52.orderindex=-1
-unit.1.0.port.-1.s.52.visible=1
-unit.1.0.port.-1.s.53.alias=
-unit.1.0.port.-1.s.53.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.53.name=DataPort[53]
-unit.1.0.port.-1.s.53.orderindex=-1
-unit.1.0.port.-1.s.53.visible=1
-unit.1.0.port.-1.s.54.alias=
-unit.1.0.port.-1.s.54.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.54.name=DataPort[54]
-unit.1.0.port.-1.s.54.orderindex=-1
-unit.1.0.port.-1.s.54.visible=1
-unit.1.0.port.-1.s.55.alias=
-unit.1.0.port.-1.s.55.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.55.name=DataPort[55]
-unit.1.0.port.-1.s.55.orderindex=-1
-unit.1.0.port.-1.s.55.visible=1
-unit.1.0.port.-1.s.56.alias=
-unit.1.0.port.-1.s.56.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.56.name=DataPort[56]
-unit.1.0.port.-1.s.56.orderindex=-1
-unit.1.0.port.-1.s.56.visible=1
-unit.1.0.port.-1.s.57.alias=
-unit.1.0.port.-1.s.57.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.57.name=DataPort[57]
-unit.1.0.port.-1.s.57.orderindex=-1
-unit.1.0.port.-1.s.57.visible=1
-unit.1.0.port.-1.s.58.alias=
-unit.1.0.port.-1.s.58.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.58.name=DataPort[58]
-unit.1.0.port.-1.s.58.orderindex=-1
-unit.1.0.port.-1.s.58.visible=1
-unit.1.0.port.-1.s.59.alias=
-unit.1.0.port.-1.s.59.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.59.name=DataPort[59]
-unit.1.0.port.-1.s.59.orderindex=-1
-unit.1.0.port.-1.s.59.visible=1
-unit.1.0.port.-1.s.6.alias=
-unit.1.0.port.-1.s.6.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.6.name=DataPort[6]
-unit.1.0.port.-1.s.6.orderindex=-1
-unit.1.0.port.-1.s.6.visible=1
-unit.1.0.port.-1.s.60.alias=
-unit.1.0.port.-1.s.60.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.60.name=DataPort[60]
-unit.1.0.port.-1.s.60.orderindex=-1
-unit.1.0.port.-1.s.60.visible=1
-unit.1.0.port.-1.s.61.alias=
-unit.1.0.port.-1.s.61.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.61.name=DataPort[61]
-unit.1.0.port.-1.s.61.orderindex=-1
-unit.1.0.port.-1.s.61.visible=1
-unit.1.0.port.-1.s.62.alias=
-unit.1.0.port.-1.s.62.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.62.name=DataPort[62]
-unit.1.0.port.-1.s.62.orderindex=-1
-unit.1.0.port.-1.s.62.visible=1
-unit.1.0.port.-1.s.63.alias=
-unit.1.0.port.-1.s.63.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.63.name=DataPort[63]
-unit.1.0.port.-1.s.63.orderindex=-1
-unit.1.0.port.-1.s.63.visible=1
-unit.1.0.port.-1.s.64.alias=
-unit.1.0.port.-1.s.64.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.64.name=DataPort[64]
-unit.1.0.port.-1.s.64.orderindex=-1
-unit.1.0.port.-1.s.64.visible=1
-unit.1.0.port.-1.s.65.alias=
-unit.1.0.port.-1.s.65.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.65.name=DataPort[65]
-unit.1.0.port.-1.s.65.orderindex=-1
-unit.1.0.port.-1.s.65.visible=1
-unit.1.0.port.-1.s.66.alias=
-unit.1.0.port.-1.s.66.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.66.name=DataPort[66]
-unit.1.0.port.-1.s.66.orderindex=-1
-unit.1.0.port.-1.s.66.visible=1
-unit.1.0.port.-1.s.67.alias=
-unit.1.0.port.-1.s.67.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.67.name=DataPort[67]
-unit.1.0.port.-1.s.67.orderindex=-1
-unit.1.0.port.-1.s.67.visible=1
-unit.1.0.port.-1.s.68.alias=
-unit.1.0.port.-1.s.68.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.68.name=DataPort[68]
-unit.1.0.port.-1.s.68.orderindex=-1
-unit.1.0.port.-1.s.68.visible=1
-unit.1.0.port.-1.s.69.alias=
-unit.1.0.port.-1.s.69.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.69.name=DataPort[69]
-unit.1.0.port.-1.s.69.orderindex=-1
-unit.1.0.port.-1.s.69.visible=1
-unit.1.0.port.-1.s.7.alias=MEM_WELB
-unit.1.0.port.-1.s.7.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.7.name=DataPort[7]
-unit.1.0.port.-1.s.7.orderindex=-1
-unit.1.0.port.-1.s.7.visible=1
-unit.1.0.port.-1.s.70.alias=
-unit.1.0.port.-1.s.70.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.70.name=DataPort[70]
-unit.1.0.port.-1.s.70.orderindex=-1
-unit.1.0.port.-1.s.70.visible=1
-unit.1.0.port.-1.s.71.alias=
-unit.1.0.port.-1.s.71.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.71.name=DataPort[71]
-unit.1.0.port.-1.s.71.orderindex=-1
-unit.1.0.port.-1.s.71.visible=1
-unit.1.0.port.-1.s.72.alias=
-unit.1.0.port.-1.s.72.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.72.name=DataPort[72]
-unit.1.0.port.-1.s.72.orderindex=-1
-unit.1.0.port.-1.s.72.visible=1
-unit.1.0.port.-1.s.73.alias=
-unit.1.0.port.-1.s.73.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.73.name=DataPort[73]
-unit.1.0.port.-1.s.73.orderindex=-1
-unit.1.0.port.-1.s.73.visible=1
-unit.1.0.port.-1.s.74.alias=
-unit.1.0.port.-1.s.74.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.74.name=DataPort[74]
-unit.1.0.port.-1.s.74.orderindex=-1
-unit.1.0.port.-1.s.74.visible=1
-unit.1.0.port.-1.s.75.alias=
-unit.1.0.port.-1.s.75.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.75.name=DataPort[75]
-unit.1.0.port.-1.s.75.orderindex=-1
-unit.1.0.port.-1.s.75.visible=1
-unit.1.0.port.-1.s.76.alias=
-unit.1.0.port.-1.s.76.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.76.name=DataPort[76]
-unit.1.0.port.-1.s.76.orderindex=-1
-unit.1.0.port.-1.s.76.visible=1
-unit.1.0.port.-1.s.77.alias=
-unit.1.0.port.-1.s.77.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.77.name=DataPort[77]
-unit.1.0.port.-1.s.77.orderindex=-1
-unit.1.0.port.-1.s.77.visible=1
-unit.1.0.port.-1.s.78.alias=
-unit.1.0.port.-1.s.78.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.78.name=DataPort[78]
-unit.1.0.port.-1.s.78.orderindex=-1
-unit.1.0.port.-1.s.78.visible=1
-unit.1.0.port.-1.s.79.alias=
-unit.1.0.port.-1.s.79.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.79.name=DataPort[79]
-unit.1.0.port.-1.s.79.orderindex=-1
-unit.1.0.port.-1.s.79.visible=1
-unit.1.0.port.-1.s.8.alias=
-unit.1.0.port.-1.s.8.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.8.name=DataPort[8]
-unit.1.0.port.-1.s.8.orderindex=-1
-unit.1.0.port.-1.s.8.visible=1
-unit.1.0.port.-1.s.80.alias=
-unit.1.0.port.-1.s.80.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.80.name=DataPort[80]
-unit.1.0.port.-1.s.80.orderindex=-1
-unit.1.0.port.-1.s.80.visible=1
-unit.1.0.port.-1.s.81.alias=
-unit.1.0.port.-1.s.81.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.81.name=DataPort[81]
-unit.1.0.port.-1.s.81.orderindex=-1
-unit.1.0.port.-1.s.81.visible=1
-unit.1.0.port.-1.s.82.alias=
-unit.1.0.port.-1.s.82.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.82.name=DataPort[82]
-unit.1.0.port.-1.s.82.orderindex=-1
-unit.1.0.port.-1.s.82.visible=1
-unit.1.0.port.-1.s.83.alias=DMAR_ENABLE0
-unit.1.0.port.-1.s.83.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.83.name=DataPort[83]
-unit.1.0.port.-1.s.83.orderindex=-1
-unit.1.0.port.-1.s.83.visible=1
-unit.1.0.port.-1.s.84.alias=DMAR_ENABLE1
-unit.1.0.port.-1.s.84.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.84.name=DataPort[84]
-unit.1.0.port.-1.s.84.orderindex=-1
-unit.1.0.port.-1.s.84.visible=1
-unit.1.0.port.-1.s.85.alias=DMAR_ENABLE2
-unit.1.0.port.-1.s.85.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.85.name=DataPort[85]
-unit.1.0.port.-1.s.85.orderindex=-1
-unit.1.0.port.-1.s.85.visible=1
-unit.1.0.port.-1.s.86.alias=DMAR_ENABLE3
-unit.1.0.port.-1.s.86.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.86.name=DataPort[86]
-unit.1.0.port.-1.s.86.orderindex=-1
-unit.1.0.port.-1.s.86.visible=1
-unit.1.0.port.-1.s.87.alias=Hit_DMAW
-unit.1.0.port.-1.s.87.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.87.name=DataPort[87]
-unit.1.0.port.-1.s.87.orderindex=-1
-unit.1.0.port.-1.s.87.visible=1
-unit.1.0.port.-1.s.88.alias=
-unit.1.0.port.-1.s.88.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.88.name=DataPort[88]
-unit.1.0.port.-1.s.88.orderindex=-1
-unit.1.0.port.-1.s.88.visible=1
-unit.1.0.port.-1.s.89.alias=
-unit.1.0.port.-1.s.89.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.89.name=DataPort[89]
-unit.1.0.port.-1.s.89.orderindex=-1
-unit.1.0.port.-1.s.89.visible=1
-unit.1.0.port.-1.s.9.alias=
-unit.1.0.port.-1.s.9.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.9.name=DataPort[9]
-unit.1.0.port.-1.s.9.orderindex=-1
-unit.1.0.port.-1.s.9.visible=1
-unit.1.0.port.-1.s.90.alias=
-unit.1.0.port.-1.s.90.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.90.name=DataPort[90]
-unit.1.0.port.-1.s.90.orderindex=-1
-unit.1.0.port.-1.s.90.visible=1
-unit.1.0.port.-1.s.91.alias=
-unit.1.0.port.-1.s.91.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.91.name=DataPort[91]
-unit.1.0.port.-1.s.91.orderindex=-1
-unit.1.0.port.-1.s.91.visible=1
-unit.1.0.port.-1.s.92.alias=
-unit.1.0.port.-1.s.92.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.92.name=DataPort[92]
-unit.1.0.port.-1.s.92.orderindex=-1
-unit.1.0.port.-1.s.92.visible=1
-unit.1.0.port.-1.s.93.alias=
-unit.1.0.port.-1.s.93.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.93.name=DataPort[93]
-unit.1.0.port.-1.s.93.orderindex=-1
-unit.1.0.port.-1.s.93.visible=1
-unit.1.0.port.-1.s.94.alias=
-unit.1.0.port.-1.s.94.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.94.name=DataPort[94]
-unit.1.0.port.-1.s.94.orderindex=-1
-unit.1.0.port.-1.s.94.visible=1
-unit.1.0.port.-1.s.95.alias=
-unit.1.0.port.-1.s.95.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.95.name=DataPort[95]
-unit.1.0.port.-1.s.95.orderindex=-1
-unit.1.0.port.-1.s.95.visible=1
-unit.1.0.port.-1.s.96.alias=
-unit.1.0.port.-1.s.96.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.96.name=DataPort[96]
-unit.1.0.port.-1.s.96.orderindex=-1
-unit.1.0.port.-1.s.96.visible=1
-unit.1.0.port.-1.s.97.alias=
-unit.1.0.port.-1.s.97.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.97.name=DataPort[97]
-unit.1.0.port.-1.s.97.orderindex=-1
-unit.1.0.port.-1.s.97.visible=1
-unit.1.0.port.-1.s.98.alias=
-unit.1.0.port.-1.s.98.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.98.name=DataPort[98]
-unit.1.0.port.-1.s.98.orderindex=-1
-unit.1.0.port.-1.s.98.visible=1
-unit.1.0.port.-1.s.99.alias=
-unit.1.0.port.-1.s.99.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.-1.s.99.name=DataPort[99]
-unit.1.0.port.-1.s.99.orderindex=-1
-unit.1.0.port.-1.s.99.visible=1
-unit.1.0.port.0.b.0.alias=
-unit.1.0.port.0.b.0.channellist=0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96 97 98 99 100 101 102 103 104 105 106 107 108 109 110 111 112 113 114 115 116 117 118 119 120 121 122 123 124 125 126 127 128 129 130 131 132 133 134 135 136 137 138 139 140 141 142 143 144 145 146 147 148 149 150 151 152 153 154 155 156 157 158 159 160 161 162
-unit.1.0.port.0.b.0.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.b.0.name=TriggerPort0
-unit.1.0.port.0.b.0.orderindex=-1
-unit.1.0.port.0.b.0.radix=Hex
-unit.1.0.port.0.b.0.signedOffset=0.0
-unit.1.0.port.0.b.0.signedPrecision=0
-unit.1.0.port.0.b.0.signedScaleFactor=1.0
-unit.1.0.port.0.b.0.unsignedOffset=0.0
-unit.1.0.port.0.b.0.unsignedPrecision=0
-unit.1.0.port.0.b.0.unsignedScaleFactor=1.0
-unit.1.0.port.0.b.0.visible=1
-unit.1.0.port.0.buscount=1
-unit.1.0.port.0.channelcount=163
-unit.1.0.port.0.s.0.alias=DEBUG_CS_CLK
-unit.1.0.port.0.s.0.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.0.name=TriggerPort0[0]
-unit.1.0.port.0.s.0.orderindex=-1
-unit.1.0.port.0.s.0.visible=1
-unit.1.0.port.0.s.1.alias=Hit_DMAR
-unit.1.0.port.0.s.1.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.1.name=TriggerPort0[1]
-unit.1.0.port.0.s.1.orderindex=-1
-unit.1.0.port.0.s.1.visible=1
-unit.1.0.port.0.s.10.alias=
-unit.1.0.port.0.s.10.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.10.name=TriggerPort0[10]
-unit.1.0.port.0.s.10.orderindex=-1
-unit.1.0.port.0.s.10.visible=1
-unit.1.0.port.0.s.100.alias=
-unit.1.0.port.0.s.100.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.100.name=TriggerPort0[100]
-unit.1.0.port.0.s.100.orderindex=-1
-unit.1.0.port.0.s.100.visible=1
-unit.1.0.port.0.s.101.alias=
-unit.1.0.port.0.s.101.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.101.name=TriggerPort0[101]
-unit.1.0.port.0.s.101.orderindex=-1
-unit.1.0.port.0.s.101.visible=1
-unit.1.0.port.0.s.102.alias=
-unit.1.0.port.0.s.102.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.102.name=TriggerPort0[102]
-unit.1.0.port.0.s.102.orderindex=-1
-unit.1.0.port.0.s.102.visible=1
-unit.1.0.port.0.s.103.alias=
-unit.1.0.port.0.s.103.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.103.name=TriggerPort0[103]
-unit.1.0.port.0.s.103.orderindex=-1
-unit.1.0.port.0.s.103.visible=1
-unit.1.0.port.0.s.104.alias=
-unit.1.0.port.0.s.104.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.104.name=TriggerPort0[104]
-unit.1.0.port.0.s.104.orderindex=-1
-unit.1.0.port.0.s.104.visible=1
-unit.1.0.port.0.s.105.alias=
-unit.1.0.port.0.s.105.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.105.name=TriggerPort0[105]
-unit.1.0.port.0.s.105.orderindex=-1
-unit.1.0.port.0.s.105.visible=1
-unit.1.0.port.0.s.106.alias=
-unit.1.0.port.0.s.106.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.106.name=TriggerPort0[106]
-unit.1.0.port.0.s.106.orderindex=-1
-unit.1.0.port.0.s.106.visible=1
-unit.1.0.port.0.s.107.alias=
-unit.1.0.port.0.s.107.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.107.name=TriggerPort0[107]
-unit.1.0.port.0.s.107.orderindex=-1
-unit.1.0.port.0.s.107.visible=1
-unit.1.0.port.0.s.108.alias=
-unit.1.0.port.0.s.108.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.108.name=TriggerPort0[108]
-unit.1.0.port.0.s.108.orderindex=-1
-unit.1.0.port.0.s.108.visible=1
-unit.1.0.port.0.s.109.alias=
-unit.1.0.port.0.s.109.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.109.name=TriggerPort0[109]
-unit.1.0.port.0.s.109.orderindex=-1
-unit.1.0.port.0.s.109.visible=1
-unit.1.0.port.0.s.11.alias=
-unit.1.0.port.0.s.11.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.11.name=TriggerPort0[11]
-unit.1.0.port.0.s.11.orderindex=-1
-unit.1.0.port.0.s.11.visible=1
-unit.1.0.port.0.s.110.alias=
-unit.1.0.port.0.s.110.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.110.name=TriggerPort0[110]
-unit.1.0.port.0.s.110.orderindex=-1
-unit.1.0.port.0.s.110.visible=1
-unit.1.0.port.0.s.111.alias=
-unit.1.0.port.0.s.111.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.111.name=TriggerPort0[111]
-unit.1.0.port.0.s.111.orderindex=-1
-unit.1.0.port.0.s.111.visible=1
-unit.1.0.port.0.s.112.alias=
-unit.1.0.port.0.s.112.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.112.name=TriggerPort0[112]
-unit.1.0.port.0.s.112.orderindex=-1
-unit.1.0.port.0.s.112.visible=1
-unit.1.0.port.0.s.113.alias=
-unit.1.0.port.0.s.113.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.113.name=TriggerPort0[113]
-unit.1.0.port.0.s.113.orderindex=-1
-unit.1.0.port.0.s.113.visible=1
-unit.1.0.port.0.s.114.alias=
-unit.1.0.port.0.s.114.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.114.name=TriggerPort0[114]
-unit.1.0.port.0.s.114.orderindex=-1
-unit.1.0.port.0.s.114.visible=1
-unit.1.0.port.0.s.115.alias=
-unit.1.0.port.0.s.115.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.115.name=TriggerPort0[115]
-unit.1.0.port.0.s.115.orderindex=-1
-unit.1.0.port.0.s.115.visible=1
-unit.1.0.port.0.s.116.alias=
-unit.1.0.port.0.s.116.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.116.name=TriggerPort0[116]
-unit.1.0.port.0.s.116.orderindex=-1
-unit.1.0.port.0.s.116.visible=1
-unit.1.0.port.0.s.117.alias=
-unit.1.0.port.0.s.117.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.117.name=TriggerPort0[117]
-unit.1.0.port.0.s.117.orderindex=-1
-unit.1.0.port.0.s.117.visible=1
-unit.1.0.port.0.s.118.alias=
-unit.1.0.port.0.s.118.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.118.name=TriggerPort0[118]
-unit.1.0.port.0.s.118.orderindex=-1
-unit.1.0.port.0.s.118.visible=1
-unit.1.0.port.0.s.119.alias=
-unit.1.0.port.0.s.119.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.119.name=TriggerPort0[119]
-unit.1.0.port.0.s.119.orderindex=-1
-unit.1.0.port.0.s.119.visible=1
-unit.1.0.port.0.s.12.alias=
-unit.1.0.port.0.s.12.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.12.name=TriggerPort0[12]
-unit.1.0.port.0.s.12.orderindex=-1
-unit.1.0.port.0.s.12.visible=1
-unit.1.0.port.0.s.120.alias=
-unit.1.0.port.0.s.120.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.120.name=TriggerPort0[120]
-unit.1.0.port.0.s.120.orderindex=-1
-unit.1.0.port.0.s.120.visible=1
-unit.1.0.port.0.s.121.alias=
-unit.1.0.port.0.s.121.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.121.name=TriggerPort0[121]
-unit.1.0.port.0.s.121.orderindex=-1
-unit.1.0.port.0.s.121.visible=1
-unit.1.0.port.0.s.122.alias=
-unit.1.0.port.0.s.122.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.122.name=TriggerPort0[122]
-unit.1.0.port.0.s.122.orderindex=-1
-unit.1.0.port.0.s.122.visible=1
-unit.1.0.port.0.s.123.alias=
-unit.1.0.port.0.s.123.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.123.name=TriggerPort0[123]
-unit.1.0.port.0.s.123.orderindex=-1
-unit.1.0.port.0.s.123.visible=1
-unit.1.0.port.0.s.124.alias=PFPGA_RST0
-unit.1.0.port.0.s.124.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.124.name=TriggerPort0[124]
-unit.1.0.port.0.s.124.orderindex=-1
-unit.1.0.port.0.s.124.visible=1
-unit.1.0.port.0.s.125.alias=DBUS_HiZ
-unit.1.0.port.0.s.125.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.125.name=TriggerPort0[125]
-unit.1.0.port.0.s.125.orderindex=-1
-unit.1.0.port.0.s.125.visible=1
-unit.1.0.port.0.s.126.alias=DMAW_ENABLE0
-unit.1.0.port.0.s.126.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.126.name=TriggerPort0[126]
-unit.1.0.port.0.s.126.orderindex=-1
-unit.1.0.port.0.s.126.visible=1
-unit.1.0.port.0.s.127.alias=DMAW_ENABLE1
-unit.1.0.port.0.s.127.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.127.name=TriggerPort0[127]
-unit.1.0.port.0.s.127.orderindex=-1
-unit.1.0.port.0.s.127.visible=1
-unit.1.0.port.0.s.128.alias=DMAW_ENABLE2
-unit.1.0.port.0.s.128.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.128.name=TriggerPort0[128]
-unit.1.0.port.0.s.128.orderindex=-1
-unit.1.0.port.0.s.128.visible=1
-unit.1.0.port.0.s.129.alias=DMAW_ENABLE3
-unit.1.0.port.0.s.129.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.129.name=TriggerPort0[129]
-unit.1.0.port.0.s.129.orderindex=-1
-unit.1.0.port.0.s.129.visible=1
-unit.1.0.port.0.s.13.alias=
-unit.1.0.port.0.s.13.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.13.name=TriggerPort0[13]
-unit.1.0.port.0.s.13.orderindex=-1
-unit.1.0.port.0.s.13.visible=1
-unit.1.0.port.0.s.130.alias=
-unit.1.0.port.0.s.130.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.130.name=TriggerPort0[130]
-unit.1.0.port.0.s.130.orderindex=-1
-unit.1.0.port.0.s.130.visible=1
-unit.1.0.port.0.s.131.alias=
-unit.1.0.port.0.s.131.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.131.name=TriggerPort0[131]
-unit.1.0.port.0.s.131.orderindex=-1
-unit.1.0.port.0.s.131.visible=1
-unit.1.0.port.0.s.132.alias=
-unit.1.0.port.0.s.132.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.132.name=TriggerPort0[132]
-unit.1.0.port.0.s.132.orderindex=-1
-unit.1.0.port.0.s.132.visible=1
-unit.1.0.port.0.s.133.alias=
-unit.1.0.port.0.s.133.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.133.name=TriggerPort0[133]
-unit.1.0.port.0.s.133.orderindex=-1
-unit.1.0.port.0.s.133.visible=1
-unit.1.0.port.0.s.134.alias=
-unit.1.0.port.0.s.134.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.134.name=TriggerPort0[134]
-unit.1.0.port.0.s.134.orderindex=-1
-unit.1.0.port.0.s.134.visible=1
-unit.1.0.port.0.s.135.alias=
-unit.1.0.port.0.s.135.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.135.name=TriggerPort0[135]
-unit.1.0.port.0.s.135.orderindex=-1
-unit.1.0.port.0.s.135.visible=1
-unit.1.0.port.0.s.136.alias=
-unit.1.0.port.0.s.136.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.136.name=TriggerPort0[136]
-unit.1.0.port.0.s.136.orderindex=-1
-unit.1.0.port.0.s.136.visible=1
-unit.1.0.port.0.s.137.alias=
-unit.1.0.port.0.s.137.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.137.name=TriggerPort0[137]
-unit.1.0.port.0.s.137.orderindex=-1
-unit.1.0.port.0.s.137.visible=1
-unit.1.0.port.0.s.138.alias=
-unit.1.0.port.0.s.138.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.138.name=TriggerPort0[138]
-unit.1.0.port.0.s.138.orderindex=-1
-unit.1.0.port.0.s.138.visible=1
-unit.1.0.port.0.s.139.alias=
-unit.1.0.port.0.s.139.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.139.name=TriggerPort0[139]
-unit.1.0.port.0.s.139.orderindex=-1
-unit.1.0.port.0.s.139.visible=1
-unit.1.0.port.0.s.14.alias=
-unit.1.0.port.0.s.14.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.14.name=TriggerPort0[14]
-unit.1.0.port.0.s.14.orderindex=-1
-unit.1.0.port.0.s.14.visible=1
-unit.1.0.port.0.s.140.alias=
-unit.1.0.port.0.s.140.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.140.name=TriggerPort0[140]
-unit.1.0.port.0.s.140.orderindex=-1
-unit.1.0.port.0.s.140.visible=1
-unit.1.0.port.0.s.141.alias=
-unit.1.0.port.0.s.141.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.141.name=TriggerPort0[141]
-unit.1.0.port.0.s.141.orderindex=-1
-unit.1.0.port.0.s.141.visible=1
-unit.1.0.port.0.s.142.alias=
-unit.1.0.port.0.s.142.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.142.name=TriggerPort0[142]
-unit.1.0.port.0.s.142.orderindex=-1
-unit.1.0.port.0.s.142.visible=1
-unit.1.0.port.0.s.143.alias=
-unit.1.0.port.0.s.143.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.143.name=TriggerPort0[143]
-unit.1.0.port.0.s.143.orderindex=-1
-unit.1.0.port.0.s.143.visible=1
-unit.1.0.port.0.s.144.alias=
-unit.1.0.port.0.s.144.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.144.name=TriggerPort0[144]
-unit.1.0.port.0.s.144.orderindex=-1
-unit.1.0.port.0.s.144.visible=1
-unit.1.0.port.0.s.145.alias=
-unit.1.0.port.0.s.145.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.145.name=TriggerPort0[145]
-unit.1.0.port.0.s.145.orderindex=-1
-unit.1.0.port.0.s.145.visible=1
-unit.1.0.port.0.s.146.alias=
-unit.1.0.port.0.s.146.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.146.name=TriggerPort0[146]
-unit.1.0.port.0.s.146.orderindex=-1
-unit.1.0.port.0.s.146.visible=1
-unit.1.0.port.0.s.147.alias=
-unit.1.0.port.0.s.147.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.147.name=TriggerPort0[147]
-unit.1.0.port.0.s.147.orderindex=-1
-unit.1.0.port.0.s.147.visible=1
-unit.1.0.port.0.s.148.alias=
-unit.1.0.port.0.s.148.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.148.name=TriggerPort0[148]
-unit.1.0.port.0.s.148.orderindex=-1
-unit.1.0.port.0.s.148.visible=1
-unit.1.0.port.0.s.149.alias=
-unit.1.0.port.0.s.149.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.149.name=TriggerPort0[149]
-unit.1.0.port.0.s.149.orderindex=-1
-unit.1.0.port.0.s.149.visible=1
-unit.1.0.port.0.s.15.alias=
-unit.1.0.port.0.s.15.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.15.name=TriggerPort0[15]
-unit.1.0.port.0.s.15.orderindex=-1
-unit.1.0.port.0.s.15.visible=1
-unit.1.0.port.0.s.150.alias=
-unit.1.0.port.0.s.150.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.150.name=TriggerPort0[150]
-unit.1.0.port.0.s.150.orderindex=-1
-unit.1.0.port.0.s.150.visible=1
-unit.1.0.port.0.s.151.alias=
-unit.1.0.port.0.s.151.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.151.name=TriggerPort0[151]
-unit.1.0.port.0.s.151.orderindex=-1
-unit.1.0.port.0.s.151.visible=1
-unit.1.0.port.0.s.152.alias=
-unit.1.0.port.0.s.152.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.152.name=TriggerPort0[152]
-unit.1.0.port.0.s.152.orderindex=-1
-unit.1.0.port.0.s.152.visible=1
-unit.1.0.port.0.s.153.alias=
-unit.1.0.port.0.s.153.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.153.name=TriggerPort0[153]
-unit.1.0.port.0.s.153.orderindex=-1
-unit.1.0.port.0.s.153.visible=1
-unit.1.0.port.0.s.154.alias=
-unit.1.0.port.0.s.154.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.154.name=TriggerPort0[154]
-unit.1.0.port.0.s.154.orderindex=-1
-unit.1.0.port.0.s.154.visible=1
-unit.1.0.port.0.s.155.alias=
-unit.1.0.port.0.s.155.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.155.name=TriggerPort0[155]
-unit.1.0.port.0.s.155.orderindex=-1
-unit.1.0.port.0.s.155.visible=1
-unit.1.0.port.0.s.156.alias=
-unit.1.0.port.0.s.156.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.156.name=TriggerPort0[156]
-unit.1.0.port.0.s.156.orderindex=-1
-unit.1.0.port.0.s.156.visible=1
-unit.1.0.port.0.s.157.alias=
-unit.1.0.port.0.s.157.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.157.name=TriggerPort0[157]
-unit.1.0.port.0.s.157.orderindex=-1
-unit.1.0.port.0.s.157.visible=1
-unit.1.0.port.0.s.158.alias=
-unit.1.0.port.0.s.158.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.158.name=TriggerPort0[158]
-unit.1.0.port.0.s.158.orderindex=-1
-unit.1.0.port.0.s.158.visible=1
-unit.1.0.port.0.s.159.alias=
-unit.1.0.port.0.s.159.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.159.name=TriggerPort0[159]
-unit.1.0.port.0.s.159.orderindex=-1
-unit.1.0.port.0.s.159.visible=1
-unit.1.0.port.0.s.16.alias=
-unit.1.0.port.0.s.16.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.16.name=TriggerPort0[16]
-unit.1.0.port.0.s.16.orderindex=-1
-unit.1.0.port.0.s.16.visible=1
-unit.1.0.port.0.s.160.alias=
-unit.1.0.port.0.s.160.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.160.name=TriggerPort0[160]
-unit.1.0.port.0.s.160.orderindex=-1
-unit.1.0.port.0.s.160.visible=1
-unit.1.0.port.0.s.161.alias=
-unit.1.0.port.0.s.161.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.161.name=TriggerPort0[161]
-unit.1.0.port.0.s.161.orderindex=-1
-unit.1.0.port.0.s.161.visible=1
-unit.1.0.port.0.s.162.alias=
-unit.1.0.port.0.s.162.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.162.name=TriggerPort0[162]
-unit.1.0.port.0.s.162.orderindex=-1
-unit.1.0.port.0.s.162.visible=1
-unit.1.0.port.0.s.17.alias=
-unit.1.0.port.0.s.17.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.17.name=TriggerPort0[17]
-unit.1.0.port.0.s.17.orderindex=-1
-unit.1.0.port.0.s.17.visible=1
-unit.1.0.port.0.s.18.alias=
-unit.1.0.port.0.s.18.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.18.name=TriggerPort0[18]
-unit.1.0.port.0.s.18.orderindex=-1
-unit.1.0.port.0.s.18.visible=1
-unit.1.0.port.0.s.19.alias=
-unit.1.0.port.0.s.19.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.19.name=TriggerPort0[19]
-unit.1.0.port.0.s.19.orderindex=-1
-unit.1.0.port.0.s.19.visible=1
-unit.1.0.port.0.s.2.alias=
-unit.1.0.port.0.s.2.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.2.name=TriggerPort0[2]
-unit.1.0.port.0.s.2.orderindex=-1
-unit.1.0.port.0.s.2.visible=1
-unit.1.0.port.0.s.20.alias=
-unit.1.0.port.0.s.20.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.20.name=TriggerPort0[20]
-unit.1.0.port.0.s.20.orderindex=-1
-unit.1.0.port.0.s.20.visible=1
-unit.1.0.port.0.s.21.alias=
-unit.1.0.port.0.s.21.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.21.name=TriggerPort0[21]
-unit.1.0.port.0.s.21.orderindex=-1
-unit.1.0.port.0.s.21.visible=1
-unit.1.0.port.0.s.22.alias=
-unit.1.0.port.0.s.22.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.22.name=TriggerPort0[22]
-unit.1.0.port.0.s.22.orderindex=-1
-unit.1.0.port.0.s.22.visible=1
-unit.1.0.port.0.s.23.alias=
-unit.1.0.port.0.s.23.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.23.name=TriggerPort0[23]
-unit.1.0.port.0.s.23.orderindex=-1
-unit.1.0.port.0.s.23.visible=1
-unit.1.0.port.0.s.24.alias=
-unit.1.0.port.0.s.24.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.24.name=TriggerPort0[24]
-unit.1.0.port.0.s.24.orderindex=-1
-unit.1.0.port.0.s.24.visible=1
-unit.1.0.port.0.s.25.alias=
-unit.1.0.port.0.s.25.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.25.name=TriggerPort0[25]
-unit.1.0.port.0.s.25.orderindex=-1
-unit.1.0.port.0.s.25.visible=1
-unit.1.0.port.0.s.26.alias=
-unit.1.0.port.0.s.26.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.26.name=TriggerPort0[26]
-unit.1.0.port.0.s.26.orderindex=-1
-unit.1.0.port.0.s.26.visible=1
-unit.1.0.port.0.s.27.alias=
-unit.1.0.port.0.s.27.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.27.name=TriggerPort0[27]
-unit.1.0.port.0.s.27.orderindex=-1
-unit.1.0.port.0.s.27.visible=1
-unit.1.0.port.0.s.28.alias=
-unit.1.0.port.0.s.28.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.28.name=TriggerPort0[28]
-unit.1.0.port.0.s.28.orderindex=-1
-unit.1.0.port.0.s.28.visible=1
-unit.1.0.port.0.s.29.alias=
-unit.1.0.port.0.s.29.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.29.name=TriggerPort0[29]
-unit.1.0.port.0.s.29.orderindex=-1
-unit.1.0.port.0.s.29.visible=1
-unit.1.0.port.0.s.3.alias=
-unit.1.0.port.0.s.3.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.3.name=TriggerPort0[3]
-unit.1.0.port.0.s.3.orderindex=-1
-unit.1.0.port.0.s.3.visible=1
-unit.1.0.port.0.s.30.alias=
-unit.1.0.port.0.s.30.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.30.name=TriggerPort0[30]
-unit.1.0.port.0.s.30.orderindex=-1
-unit.1.0.port.0.s.30.visible=1
-unit.1.0.port.0.s.31.alias=
-unit.1.0.port.0.s.31.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.31.name=TriggerPort0[31]
-unit.1.0.port.0.s.31.orderindex=-1
-unit.1.0.port.0.s.31.visible=1
-unit.1.0.port.0.s.32.alias=
-unit.1.0.port.0.s.32.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.32.name=TriggerPort0[32]
-unit.1.0.port.0.s.32.orderindex=-1
-unit.1.0.port.0.s.32.visible=1
-unit.1.0.port.0.s.33.alias=
-unit.1.0.port.0.s.33.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.33.name=TriggerPort0[33]
-unit.1.0.port.0.s.33.orderindex=-1
-unit.1.0.port.0.s.33.visible=1
-unit.1.0.port.0.s.34.alias=
-unit.1.0.port.0.s.34.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.34.name=TriggerPort0[34]
-unit.1.0.port.0.s.34.orderindex=-1
-unit.1.0.port.0.s.34.visible=1
-unit.1.0.port.0.s.35.alias=
-unit.1.0.port.0.s.35.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.35.name=TriggerPort0[35]
-unit.1.0.port.0.s.35.orderindex=-1
-unit.1.0.port.0.s.35.visible=1
-unit.1.0.port.0.s.36.alias=
-unit.1.0.port.0.s.36.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.36.name=TriggerPort0[36]
-unit.1.0.port.0.s.36.orderindex=-1
-unit.1.0.port.0.s.36.visible=1
-unit.1.0.port.0.s.37.alias=
-unit.1.0.port.0.s.37.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.37.name=TriggerPort0[37]
-unit.1.0.port.0.s.37.orderindex=-1
-unit.1.0.port.0.s.37.visible=1
-unit.1.0.port.0.s.38.alias=
-unit.1.0.port.0.s.38.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.38.name=TriggerPort0[38]
-unit.1.0.port.0.s.38.orderindex=-1
-unit.1.0.port.0.s.38.visible=1
-unit.1.0.port.0.s.39.alias=
-unit.1.0.port.0.s.39.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.39.name=TriggerPort0[39]
-unit.1.0.port.0.s.39.orderindex=-1
-unit.1.0.port.0.s.39.visible=1
-unit.1.0.port.0.s.4.alias=
-unit.1.0.port.0.s.4.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.4.name=TriggerPort0[4]
-unit.1.0.port.0.s.4.orderindex=-1
-unit.1.0.port.0.s.4.visible=1
-unit.1.0.port.0.s.40.alias=
-unit.1.0.port.0.s.40.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.40.name=TriggerPort0[40]
-unit.1.0.port.0.s.40.orderindex=-1
-unit.1.0.port.0.s.40.visible=1
-unit.1.0.port.0.s.41.alias=
-unit.1.0.port.0.s.41.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.41.name=TriggerPort0[41]
-unit.1.0.port.0.s.41.orderindex=-1
-unit.1.0.port.0.s.41.visible=1
-unit.1.0.port.0.s.42.alias=
-unit.1.0.port.0.s.42.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.42.name=TriggerPort0[42]
-unit.1.0.port.0.s.42.orderindex=-1
-unit.1.0.port.0.s.42.visible=1
-unit.1.0.port.0.s.43.alias=
-unit.1.0.port.0.s.43.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.43.name=TriggerPort0[43]
-unit.1.0.port.0.s.43.orderindex=-1
-unit.1.0.port.0.s.43.visible=1
-unit.1.0.port.0.s.44.alias=
-unit.1.0.port.0.s.44.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.44.name=TriggerPort0[44]
-unit.1.0.port.0.s.44.orderindex=-1
-unit.1.0.port.0.s.44.visible=1
-unit.1.0.port.0.s.45.alias=
-unit.1.0.port.0.s.45.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.45.name=TriggerPort0[45]
-unit.1.0.port.0.s.45.orderindex=-1
-unit.1.0.port.0.s.45.visible=1
-unit.1.0.port.0.s.46.alias=
-unit.1.0.port.0.s.46.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.46.name=TriggerPort0[46]
-unit.1.0.port.0.s.46.orderindex=-1
-unit.1.0.port.0.s.46.visible=1
-unit.1.0.port.0.s.47.alias=
-unit.1.0.port.0.s.47.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.47.name=TriggerPort0[47]
-unit.1.0.port.0.s.47.orderindex=-1
-unit.1.0.port.0.s.47.visible=1
-unit.1.0.port.0.s.48.alias=
-unit.1.0.port.0.s.48.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.48.name=TriggerPort0[48]
-unit.1.0.port.0.s.48.orderindex=-1
-unit.1.0.port.0.s.48.visible=1
-unit.1.0.port.0.s.49.alias=
-unit.1.0.port.0.s.49.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.49.name=TriggerPort0[49]
-unit.1.0.port.0.s.49.orderindex=-1
-unit.1.0.port.0.s.49.visible=1
-unit.1.0.port.0.s.5.alias=
-unit.1.0.port.0.s.5.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.5.name=TriggerPort0[5]
-unit.1.0.port.0.s.5.orderindex=-1
-unit.1.0.port.0.s.5.visible=1
-unit.1.0.port.0.s.50.alias=
-unit.1.0.port.0.s.50.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.50.name=TriggerPort0[50]
-unit.1.0.port.0.s.50.orderindex=-1
-unit.1.0.port.0.s.50.visible=1
-unit.1.0.port.0.s.51.alias=
-unit.1.0.port.0.s.51.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.51.name=TriggerPort0[51]
-unit.1.0.port.0.s.51.orderindex=-1
-unit.1.0.port.0.s.51.visible=1
-unit.1.0.port.0.s.52.alias=
-unit.1.0.port.0.s.52.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.52.name=TriggerPort0[52]
-unit.1.0.port.0.s.52.orderindex=-1
-unit.1.0.port.0.s.52.visible=1
-unit.1.0.port.0.s.53.alias=
-unit.1.0.port.0.s.53.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.53.name=TriggerPort0[53]
-unit.1.0.port.0.s.53.orderindex=-1
-unit.1.0.port.0.s.53.visible=1
-unit.1.0.port.0.s.54.alias=
-unit.1.0.port.0.s.54.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.54.name=TriggerPort0[54]
-unit.1.0.port.0.s.54.orderindex=-1
-unit.1.0.port.0.s.54.visible=1
-unit.1.0.port.0.s.55.alias=
-unit.1.0.port.0.s.55.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.55.name=TriggerPort0[55]
-unit.1.0.port.0.s.55.orderindex=-1
-unit.1.0.port.0.s.55.visible=1
-unit.1.0.port.0.s.56.alias=
-unit.1.0.port.0.s.56.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.56.name=TriggerPort0[56]
-unit.1.0.port.0.s.56.orderindex=-1
-unit.1.0.port.0.s.56.visible=1
-unit.1.0.port.0.s.57.alias=
-unit.1.0.port.0.s.57.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.57.name=TriggerPort0[57]
-unit.1.0.port.0.s.57.orderindex=-1
-unit.1.0.port.0.s.57.visible=1
-unit.1.0.port.0.s.58.alias=
-unit.1.0.port.0.s.58.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.58.name=TriggerPort0[58]
-unit.1.0.port.0.s.58.orderindex=-1
-unit.1.0.port.0.s.58.visible=1
-unit.1.0.port.0.s.59.alias=
-unit.1.0.port.0.s.59.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.59.name=TriggerPort0[59]
-unit.1.0.port.0.s.59.orderindex=-1
-unit.1.0.port.0.s.59.visible=1
-unit.1.0.port.0.s.6.alias=
-unit.1.0.port.0.s.6.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.6.name=TriggerPort0[6]
-unit.1.0.port.0.s.6.orderindex=-1
-unit.1.0.port.0.s.6.visible=1
-unit.1.0.port.0.s.60.alias=
-unit.1.0.port.0.s.60.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.60.name=TriggerPort0[60]
-unit.1.0.port.0.s.60.orderindex=-1
-unit.1.0.port.0.s.60.visible=1
-unit.1.0.port.0.s.61.alias=
-unit.1.0.port.0.s.61.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.61.name=TriggerPort0[61]
-unit.1.0.port.0.s.61.orderindex=-1
-unit.1.0.port.0.s.61.visible=1
-unit.1.0.port.0.s.62.alias=
-unit.1.0.port.0.s.62.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.62.name=TriggerPort0[62]
-unit.1.0.port.0.s.62.orderindex=-1
-unit.1.0.port.0.s.62.visible=1
-unit.1.0.port.0.s.63.alias=
-unit.1.0.port.0.s.63.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.63.name=TriggerPort0[63]
-unit.1.0.port.0.s.63.orderindex=-1
-unit.1.0.port.0.s.63.visible=1
-unit.1.0.port.0.s.64.alias=
-unit.1.0.port.0.s.64.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.64.name=TriggerPort0[64]
-unit.1.0.port.0.s.64.orderindex=-1
-unit.1.0.port.0.s.64.visible=1
-unit.1.0.port.0.s.65.alias=
-unit.1.0.port.0.s.65.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.65.name=TriggerPort0[65]
-unit.1.0.port.0.s.65.orderindex=-1
-unit.1.0.port.0.s.65.visible=1
-unit.1.0.port.0.s.66.alias=
-unit.1.0.port.0.s.66.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.66.name=TriggerPort0[66]
-unit.1.0.port.0.s.66.orderindex=-1
-unit.1.0.port.0.s.66.visible=1
-unit.1.0.port.0.s.67.alias=
-unit.1.0.port.0.s.67.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.67.name=TriggerPort0[67]
-unit.1.0.port.0.s.67.orderindex=-1
-unit.1.0.port.0.s.67.visible=1
-unit.1.0.port.0.s.68.alias=
-unit.1.0.port.0.s.68.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.68.name=TriggerPort0[68]
-unit.1.0.port.0.s.68.orderindex=-1
-unit.1.0.port.0.s.68.visible=1
-unit.1.0.port.0.s.69.alias=
-unit.1.0.port.0.s.69.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.69.name=TriggerPort0[69]
-unit.1.0.port.0.s.69.orderindex=-1
-unit.1.0.port.0.s.69.visible=1
-unit.1.0.port.0.s.7.alias=MEM_WELB
-unit.1.0.port.0.s.7.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.7.name=TriggerPort0[7]
-unit.1.0.port.0.s.7.orderindex=-1
-unit.1.0.port.0.s.7.visible=1
-unit.1.0.port.0.s.70.alias=
-unit.1.0.port.0.s.70.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.70.name=TriggerPort0[70]
-unit.1.0.port.0.s.70.orderindex=-1
-unit.1.0.port.0.s.70.visible=1
-unit.1.0.port.0.s.71.alias=
-unit.1.0.port.0.s.71.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.71.name=TriggerPort0[71]
-unit.1.0.port.0.s.71.orderindex=-1
-unit.1.0.port.0.s.71.visible=1
-unit.1.0.port.0.s.72.alias=
-unit.1.0.port.0.s.72.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.72.name=TriggerPort0[72]
-unit.1.0.port.0.s.72.orderindex=-1
-unit.1.0.port.0.s.72.visible=1
-unit.1.0.port.0.s.73.alias=
-unit.1.0.port.0.s.73.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.73.name=TriggerPort0[73]
-unit.1.0.port.0.s.73.orderindex=-1
-unit.1.0.port.0.s.73.visible=1
-unit.1.0.port.0.s.74.alias=
-unit.1.0.port.0.s.74.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.74.name=TriggerPort0[74]
-unit.1.0.port.0.s.74.orderindex=-1
-unit.1.0.port.0.s.74.visible=1
-unit.1.0.port.0.s.75.alias=
-unit.1.0.port.0.s.75.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.75.name=TriggerPort0[75]
-unit.1.0.port.0.s.75.orderindex=-1
-unit.1.0.port.0.s.75.visible=1
-unit.1.0.port.0.s.76.alias=
-unit.1.0.port.0.s.76.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.76.name=TriggerPort0[76]
-unit.1.0.port.0.s.76.orderindex=-1
-unit.1.0.port.0.s.76.visible=1
-unit.1.0.port.0.s.77.alias=
-unit.1.0.port.0.s.77.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.77.name=TriggerPort0[77]
-unit.1.0.port.0.s.77.orderindex=-1
-unit.1.0.port.0.s.77.visible=1
-unit.1.0.port.0.s.78.alias=
-unit.1.0.port.0.s.78.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.78.name=TriggerPort0[78]
-unit.1.0.port.0.s.78.orderindex=-1
-unit.1.0.port.0.s.78.visible=1
-unit.1.0.port.0.s.79.alias=
-unit.1.0.port.0.s.79.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.79.name=TriggerPort0[79]
-unit.1.0.port.0.s.79.orderindex=-1
-unit.1.0.port.0.s.79.visible=1
-unit.1.0.port.0.s.8.alias=
-unit.1.0.port.0.s.8.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.8.name=TriggerPort0[8]
-unit.1.0.port.0.s.8.orderindex=-1
-unit.1.0.port.0.s.8.visible=1
-unit.1.0.port.0.s.80.alias=
-unit.1.0.port.0.s.80.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.80.name=TriggerPort0[80]
-unit.1.0.port.0.s.80.orderindex=-1
-unit.1.0.port.0.s.80.visible=1
-unit.1.0.port.0.s.81.alias=
-unit.1.0.port.0.s.81.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.81.name=TriggerPort0[81]
-unit.1.0.port.0.s.81.orderindex=-1
-unit.1.0.port.0.s.81.visible=1
-unit.1.0.port.0.s.82.alias=
-unit.1.0.port.0.s.82.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.82.name=TriggerPort0[82]
-unit.1.0.port.0.s.82.orderindex=-1
-unit.1.0.port.0.s.82.visible=1
-unit.1.0.port.0.s.83.alias=DMAR_ENABLE0
-unit.1.0.port.0.s.83.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.83.name=TriggerPort0[83]
-unit.1.0.port.0.s.83.orderindex=-1
-unit.1.0.port.0.s.83.visible=1
-unit.1.0.port.0.s.84.alias=DMAR_ENABLE1
-unit.1.0.port.0.s.84.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.84.name=TriggerPort0[84]
-unit.1.0.port.0.s.84.orderindex=-1
-unit.1.0.port.0.s.84.visible=1
-unit.1.0.port.0.s.85.alias=DMAR_ENABLE2
-unit.1.0.port.0.s.85.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.85.name=TriggerPort0[85]
-unit.1.0.port.0.s.85.orderindex=-1
-unit.1.0.port.0.s.85.visible=1
-unit.1.0.port.0.s.86.alias=DMAR_ENABLE3
-unit.1.0.port.0.s.86.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.86.name=TriggerPort0[86]
-unit.1.0.port.0.s.86.orderindex=-1
-unit.1.0.port.0.s.86.visible=1
-unit.1.0.port.0.s.87.alias=Hit_DMAW
-unit.1.0.port.0.s.87.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.87.name=TriggerPort0[87]
-unit.1.0.port.0.s.87.orderindex=-1
-unit.1.0.port.0.s.87.visible=1
-unit.1.0.port.0.s.88.alias=
-unit.1.0.port.0.s.88.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.88.name=TriggerPort0[88]
-unit.1.0.port.0.s.88.orderindex=-1
-unit.1.0.port.0.s.88.visible=1
-unit.1.0.port.0.s.89.alias=
-unit.1.0.port.0.s.89.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.89.name=TriggerPort0[89]
-unit.1.0.port.0.s.89.orderindex=-1
-unit.1.0.port.0.s.89.visible=1
-unit.1.0.port.0.s.9.alias=
-unit.1.0.port.0.s.9.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.9.name=TriggerPort0[9]
-unit.1.0.port.0.s.9.orderindex=-1
-unit.1.0.port.0.s.9.visible=1
-unit.1.0.port.0.s.90.alias=
-unit.1.0.port.0.s.90.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.90.name=TriggerPort0[90]
-unit.1.0.port.0.s.90.orderindex=-1
-unit.1.0.port.0.s.90.visible=1
-unit.1.0.port.0.s.91.alias=
-unit.1.0.port.0.s.91.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.91.name=TriggerPort0[91]
-unit.1.0.port.0.s.91.orderindex=-1
-unit.1.0.port.0.s.91.visible=1
-unit.1.0.port.0.s.92.alias=
-unit.1.0.port.0.s.92.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.92.name=TriggerPort0[92]
-unit.1.0.port.0.s.92.orderindex=-1
-unit.1.0.port.0.s.92.visible=1
-unit.1.0.port.0.s.93.alias=
-unit.1.0.port.0.s.93.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.93.name=TriggerPort0[93]
-unit.1.0.port.0.s.93.orderindex=-1
-unit.1.0.port.0.s.93.visible=1
-unit.1.0.port.0.s.94.alias=
-unit.1.0.port.0.s.94.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.94.name=TriggerPort0[94]
-unit.1.0.port.0.s.94.orderindex=-1
-unit.1.0.port.0.s.94.visible=1
-unit.1.0.port.0.s.95.alias=
-unit.1.0.port.0.s.95.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.95.name=TriggerPort0[95]
-unit.1.0.port.0.s.95.orderindex=-1
-unit.1.0.port.0.s.95.visible=1
-unit.1.0.port.0.s.96.alias=
-unit.1.0.port.0.s.96.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.96.name=TriggerPort0[96]
-unit.1.0.port.0.s.96.orderindex=-1
-unit.1.0.port.0.s.96.visible=1
-unit.1.0.port.0.s.97.alias=
-unit.1.0.port.0.s.97.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.97.name=TriggerPort0[97]
-unit.1.0.port.0.s.97.orderindex=-1
-unit.1.0.port.0.s.97.visible=1
-unit.1.0.port.0.s.98.alias=
-unit.1.0.port.0.s.98.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.98.name=TriggerPort0[98]
-unit.1.0.port.0.s.98.orderindex=-1
-unit.1.0.port.0.s.98.visible=1
-unit.1.0.port.0.s.99.alias=
-unit.1.0.port.0.s.99.color=java.awt.Color[r\=0,g\=0,b\=124]
-unit.1.0.port.0.s.99.name=TriggerPort0[99]
-unit.1.0.port.0.s.99.orderindex=-1
-unit.1.0.port.0.s.99.visible=1
-unit.1.0.portcount=1
-unit.1.0.samplesPerTrigger=1
-unit.1.0.triggerCapture=1
-unit.1.0.triggerNSamplesTS=0
-unit.1.0.triggerPosition=0
-unit.1.0.triggerWindowCount=1
-unit.1.0.triggerWindowDepth=2048
-unit.1.0.triggerWindowTS=0
-unit.1.0.waveform.count=21
-unit.1.0.waveform.posn.0.channel=0
-unit.1.0.waveform.posn.0.name=DEBUG_CS_CLK
-unit.1.0.waveform.posn.0.radix=1
-unit.1.0.waveform.posn.0.type=signal
-unit.1.0.waveform.posn.1.channel=1
-unit.1.0.waveform.posn.1.name=Hit_DMAR
-unit.1.0.waveform.posn.1.type=signal
-unit.1.0.waveform.posn.10.channel=85
-unit.1.0.waveform.posn.10.name=DMAR_ENABLE2
-unit.1.0.waveform.posn.10.type=signal
-unit.1.0.waveform.posn.11.channel=86
-unit.1.0.waveform.posn.11.name=DMAR_ENABLE3
-unit.1.0.waveform.posn.11.type=signal
-unit.1.0.waveform.posn.12.channel=87
-unit.1.0.waveform.posn.12.name=Hit_DMAW
-unit.1.0.waveform.posn.12.radix=1
-unit.1.0.waveform.posn.12.type=signal
-unit.1.0.waveform.posn.13.channel=2147483646
-unit.1.0.waveform.posn.13.name=dmaw_state
-unit.1.0.waveform.posn.13.radix=1
-unit.1.0.waveform.posn.13.type=bus
-unit.1.0.waveform.posn.14.channel=2147483646
-unit.1.0.waveform.posn.14.name=DBUS_Port
-unit.1.0.waveform.posn.14.radix=1
-unit.1.0.waveform.posn.14.type=bus
-unit.1.0.waveform.posn.15.channel=124
-unit.1.0.waveform.posn.15.name=PFPGA_RST0
-unit.1.0.waveform.posn.15.radix=1
-unit.1.0.waveform.posn.15.type=signal
-unit.1.0.waveform.posn.16.channel=125
-unit.1.0.waveform.posn.16.name=DBUS_HiZ
-unit.1.0.waveform.posn.16.type=signal
-unit.1.0.waveform.posn.17.channel=126
-unit.1.0.waveform.posn.17.name=DMAW_ENABLE0
-unit.1.0.waveform.posn.17.type=signal
-unit.1.0.waveform.posn.18.channel=127
-unit.1.0.waveform.posn.18.name=DMAW_ENABLE1
-unit.1.0.waveform.posn.18.radix=1
-unit.1.0.waveform.posn.18.type=signal
-unit.1.0.waveform.posn.19.channel=128
-unit.1.0.waveform.posn.19.name=DMAW_ENABLE2
-unit.1.0.waveform.posn.19.radix=1
-unit.1.0.waveform.posn.19.type=signal
-unit.1.0.waveform.posn.2.channel=2147483646
-unit.1.0.waveform.posn.2.name=dmar_state
-unit.1.0.waveform.posn.2.radix=1
-unit.1.0.waveform.posn.2.type=bus
-unit.1.0.waveform.posn.20.channel=129
-unit.1.0.waveform.posn.20.name=DMAW_ENABLE3
-unit.1.0.waveform.posn.20.radix=1
-unit.1.0.waveform.posn.20.type=signal
-unit.1.0.waveform.posn.21.channel=2147483646
-unit.1.0.waveform.posn.21.name=MEM_DTOB
-unit.1.0.waveform.posn.21.radix=1
-unit.1.0.waveform.posn.21.type=bus
-unit.1.0.waveform.posn.22.channel=162
-unit.1.0.waveform.posn.22.name=DataPort[162]
-unit.1.0.waveform.posn.22.type=signal
-unit.1.0.waveform.posn.23.channel=162
-unit.1.0.waveform.posn.23.name=DataPort[162]
-unit.1.0.waveform.posn.23.type=signal
-unit.1.0.waveform.posn.24.channel=162
-unit.1.0.waveform.posn.24.name=DataPort[162]
-unit.1.0.waveform.posn.24.type=signal
-unit.1.0.waveform.posn.25.channel=162
-unit.1.0.waveform.posn.25.name=DataPort[162]
-unit.1.0.waveform.posn.25.type=signal
-unit.1.0.waveform.posn.26.channel=162
-unit.1.0.waveform.posn.26.name=DataPort[162]
-unit.1.0.waveform.posn.26.type=signal
-unit.1.0.waveform.posn.27.channel=162
-unit.1.0.waveform.posn.27.name=DataPort[162]
-unit.1.0.waveform.posn.27.type=signal
-unit.1.0.waveform.posn.28.channel=162
-unit.1.0.waveform.posn.28.name=DataPort[162]
-unit.1.0.waveform.posn.28.type=signal
-unit.1.0.waveform.posn.29.channel=162
-unit.1.0.waveform.posn.29.name=DataPort[162]
-unit.1.0.waveform.posn.29.type=signal
-unit.1.0.waveform.posn.3.channel=7
-unit.1.0.waveform.posn.3.name=MEM_WELB
-unit.1.0.waveform.posn.3.radix=1
-unit.1.0.waveform.posn.3.type=signal
-unit.1.0.waveform.posn.30.channel=162
-unit.1.0.waveform.posn.30.name=DataPort[162]
-unit.1.0.waveform.posn.30.type=signal
-unit.1.0.waveform.posn.31.channel=162
-unit.1.0.waveform.posn.31.name=DataPort[162]
-unit.1.0.waveform.posn.31.type=signal
-unit.1.0.waveform.posn.32.channel=162
-unit.1.0.waveform.posn.32.name=DataPort[162]
-unit.1.0.waveform.posn.32.type=signal
-unit.1.0.waveform.posn.33.channel=162
-unit.1.0.waveform.posn.33.name=DataPort[162]
-unit.1.0.waveform.posn.33.type=signal
-unit.1.0.waveform.posn.34.channel=162
-unit.1.0.waveform.posn.34.name=DataPort[162]
-unit.1.0.waveform.posn.34.type=signal
-unit.1.0.waveform.posn.35.channel=162
-unit.1.0.waveform.posn.35.name=DataPort[162]
-unit.1.0.waveform.posn.35.type=signal
-unit.1.0.waveform.posn.36.channel=162
-unit.1.0.waveform.posn.36.name=DataPort[162]
-unit.1.0.waveform.posn.36.type=signal
-unit.1.0.waveform.posn.37.channel=162
-unit.1.0.waveform.posn.37.name=DataPort[162]
-unit.1.0.waveform.posn.37.type=signal
-unit.1.0.waveform.posn.38.channel=162
-unit.1.0.waveform.posn.38.name=DataPort[162]
-unit.1.0.waveform.posn.38.type=signal
-unit.1.0.waveform.posn.39.channel=162
-unit.1.0.waveform.posn.39.name=DataPort[162]
-unit.1.0.waveform.posn.39.type=signal
-unit.1.0.waveform.posn.4.channel=2147483646
-unit.1.0.waveform.posn.4.name=MEM_ADB
-unit.1.0.waveform.posn.4.radix=1
-unit.1.0.waveform.posn.4.type=bus
-unit.1.0.waveform.posn.40.channel=162
-unit.1.0.waveform.posn.40.name=DataPort[162]
-unit.1.0.waveform.posn.40.type=signal
-unit.1.0.waveform.posn.41.channel=162
-unit.1.0.waveform.posn.41.name=DataPort[162]
-unit.1.0.waveform.posn.41.type=signal
-unit.1.0.waveform.posn.42.channel=162
-unit.1.0.waveform.posn.42.name=DataPort[162]
-unit.1.0.waveform.posn.42.type=signal
-unit.1.0.waveform.posn.43.channel=162
-unit.1.0.waveform.posn.43.name=DataPort[162]
-unit.1.0.waveform.posn.43.type=signal
-unit.1.0.waveform.posn.44.channel=162
-unit.1.0.waveform.posn.44.name=DataPort[162]
-unit.1.0.waveform.posn.44.type=signal
-unit.1.0.waveform.posn.45.channel=162
-unit.1.0.waveform.posn.45.name=DataPort[162]
-unit.1.0.waveform.posn.45.type=signal
-unit.1.0.waveform.posn.46.channel=162
-unit.1.0.waveform.posn.46.name=DataPort[162]
-unit.1.0.waveform.posn.46.type=signal
-unit.1.0.waveform.posn.47.channel=162
-unit.1.0.waveform.posn.47.name=DataPort[162]
-unit.1.0.waveform.posn.47.type=signal
-unit.1.0.waveform.posn.48.channel=162
-unit.1.0.waveform.posn.48.name=DataPort[162]
-unit.1.0.waveform.posn.48.type=signal
-unit.1.0.waveform.posn.49.channel=162
-unit.1.0.waveform.posn.49.name=DataPort[162]
-unit.1.0.waveform.posn.49.type=signal
-unit.1.0.waveform.posn.5.channel=2147483646
-unit.1.0.waveform.posn.5.name=MEM_DTOB
-unit.1.0.waveform.posn.5.radix=1
-unit.1.0.waveform.posn.5.type=bus
-unit.1.0.waveform.posn.50.channel=162
-unit.1.0.waveform.posn.50.name=DataPort[162]
-unit.1.0.waveform.posn.50.type=signal
-unit.1.0.waveform.posn.51.channel=162
-unit.1.0.waveform.posn.51.name=DataPort[162]
-unit.1.0.waveform.posn.51.type=signal
-unit.1.0.waveform.posn.52.channel=162
-unit.1.0.waveform.posn.52.name=DataPort[162]
-unit.1.0.waveform.posn.52.type=signal
-unit.1.0.waveform.posn.53.channel=162
-unit.1.0.waveform.posn.53.name=DataPort[162]
-unit.1.0.waveform.posn.53.type=signal
-unit.1.0.waveform.posn.54.channel=162
-unit.1.0.waveform.posn.54.name=DataPort[162]
-unit.1.0.waveform.posn.54.type=signal
-unit.1.0.waveform.posn.55.channel=90
-unit.1.0.waveform.posn.55.name=DataPort[90]
-unit.1.0.waveform.posn.55.type=signal
-unit.1.0.waveform.posn.56.channel=90
-unit.1.0.waveform.posn.56.name=DataPort[90]
-unit.1.0.waveform.posn.56.type=signal
-unit.1.0.waveform.posn.57.channel=90
-unit.1.0.waveform.posn.57.name=DataPort[90]
-unit.1.0.waveform.posn.57.type=signal
-unit.1.0.waveform.posn.58.channel=90
-unit.1.0.waveform.posn.58.name=DataPort[90]
-unit.1.0.waveform.posn.58.type=signal
-unit.1.0.waveform.posn.59.channel=90
-unit.1.0.waveform.posn.59.name=DataPort[90]
-unit.1.0.waveform.posn.59.type=signal
-unit.1.0.waveform.posn.6.channel=2147483646
-unit.1.0.waveform.posn.6.name=MEM_DTIB
-unit.1.0.waveform.posn.6.radix=1
-unit.1.0.waveform.posn.6.type=bus
-unit.1.0.waveform.posn.60.channel=90
-unit.1.0.waveform.posn.60.name=DataPort[90]
-unit.1.0.waveform.posn.60.type=signal
-unit.1.0.waveform.posn.61.channel=90
-unit.1.0.waveform.posn.61.name=DataPort[90]
-unit.1.0.waveform.posn.61.type=signal
-unit.1.0.waveform.posn.62.channel=90
-unit.1.0.waveform.posn.62.name=DataPort[90]
-unit.1.0.waveform.posn.62.type=signal
-unit.1.0.waveform.posn.63.channel=90
-unit.1.0.waveform.posn.63.name=DataPort[90]
-unit.1.0.waveform.posn.63.type=signal
-unit.1.0.waveform.posn.64.channel=90
-unit.1.0.waveform.posn.64.name=DataPort[90]
-unit.1.0.waveform.posn.64.type=signal
-unit.1.0.waveform.posn.65.channel=90
-unit.1.0.waveform.posn.65.name=DataPort[90]
-unit.1.0.waveform.posn.65.type=signal
-unit.1.0.waveform.posn.66.channel=90
-unit.1.0.waveform.posn.66.name=DataPort[90]
-unit.1.0.waveform.posn.66.type=signal
-unit.1.0.waveform.posn.67.channel=90
-unit.1.0.waveform.posn.67.name=DataPort[90]
-unit.1.0.waveform.posn.67.type=signal
-unit.1.0.waveform.posn.68.channel=90
-unit.1.0.waveform.posn.68.name=DataPort[90]
-unit.1.0.waveform.posn.68.type=signal
-unit.1.0.waveform.posn.69.channel=90
-unit.1.0.waveform.posn.69.name=DataPort[90]
-unit.1.0.waveform.posn.69.type=signal
-unit.1.0.waveform.posn.7.channel=2147483646
-unit.1.0.waveform.posn.7.name=DBUS_idata
-unit.1.0.waveform.posn.7.radix=1
-unit.1.0.waveform.posn.7.type=bus
-unit.1.0.waveform.posn.70.channel=90
-unit.1.0.waveform.posn.70.name=DataPort[90]
-unit.1.0.waveform.posn.70.type=signal
-unit.1.0.waveform.posn.71.channel=90
-unit.1.0.waveform.posn.71.name=DataPort[90]
-unit.1.0.waveform.posn.71.type=signal
-unit.1.0.waveform.posn.72.channel=90
-unit.1.0.waveform.posn.72.name=DataPort[90]
-unit.1.0.waveform.posn.72.type=signal
-unit.1.0.waveform.posn.73.channel=90
-unit.1.0.waveform.posn.73.name=DataPort[90]
-unit.1.0.waveform.posn.73.type=signal
-unit.1.0.waveform.posn.74.channel=90
-unit.1.0.waveform.posn.74.name=DataPort[90]
-unit.1.0.waveform.posn.74.type=signal
-unit.1.0.waveform.posn.75.channel=90
-unit.1.0.waveform.posn.75.name=DataPort[90]
-unit.1.0.waveform.posn.75.type=signal
-unit.1.0.waveform.posn.76.channel=90
-unit.1.0.waveform.posn.76.name=DataPort[90]
-unit.1.0.waveform.posn.76.type=signal
-unit.1.0.waveform.posn.77.channel=90
-unit.1.0.waveform.posn.77.name=DataPort[90]
-unit.1.0.waveform.posn.77.type=signal
-unit.1.0.waveform.posn.78.channel=90
-unit.1.0.waveform.posn.78.name=DataPort[90]
-unit.1.0.waveform.posn.78.type=signal
-unit.1.0.waveform.posn.79.channel=90
-unit.1.0.waveform.posn.79.name=DataPort[90]
-unit.1.0.waveform.posn.79.type=signal
-unit.1.0.waveform.posn.8.channel=83
-unit.1.0.waveform.posn.8.name=DMAR_ENABLE0
-unit.1.0.waveform.posn.8.radix=1
-unit.1.0.waveform.posn.8.type=signal
-unit.1.0.waveform.posn.80.channel=90
-unit.1.0.waveform.posn.80.name=DataPort[90]
-unit.1.0.waveform.posn.80.type=signal
-unit.1.0.waveform.posn.81.channel=90
-unit.1.0.waveform.posn.81.name=DataPort[90]
-unit.1.0.waveform.posn.81.type=signal
-unit.1.0.waveform.posn.82.channel=90
-unit.1.0.waveform.posn.82.name=DataPort[90]
-unit.1.0.waveform.posn.82.type=signal
-unit.1.0.waveform.posn.83.channel=90
-unit.1.0.waveform.posn.83.name=DataPort[90]
-unit.1.0.waveform.posn.83.type=signal
-unit.1.0.waveform.posn.84.channel=90
-unit.1.0.waveform.posn.84.name=DataPort[90]
-unit.1.0.waveform.posn.84.type=signal
-unit.1.0.waveform.posn.85.channel=90
-unit.1.0.waveform.posn.85.name=DataPort[90]
-unit.1.0.waveform.posn.85.type=signal
-unit.1.0.waveform.posn.86.channel=90
-unit.1.0.waveform.posn.86.name=DataPort[90]
-unit.1.0.waveform.posn.86.type=signal
-unit.1.0.waveform.posn.87.channel=90
-unit.1.0.waveform.posn.87.name=DataPort[90]
-unit.1.0.waveform.posn.87.type=signal
-unit.1.0.waveform.posn.88.channel=90
-unit.1.0.waveform.posn.88.name=DataPort[90]
-unit.1.0.waveform.posn.88.type=signal
-unit.1.0.waveform.posn.89.channel=90
-unit.1.0.waveform.posn.89.name=DataPort[90]
-unit.1.0.waveform.posn.89.type=signal
-unit.1.0.waveform.posn.9.channel=84
-unit.1.0.waveform.posn.9.name=DMAR_ENABLE1
-unit.1.0.waveform.posn.9.type=signal
-unit.1.0.waveform.posn.90.channel=90
-unit.1.0.waveform.posn.90.name=DataPort[90]
-unit.1.0.waveform.posn.90.type=signal
-unit.1.0.waveform.posn.91.channel=90
-unit.1.0.waveform.posn.91.name=DataPort[90]
-unit.1.0.waveform.posn.91.type=signal
+Wed Oct 20 19:50:19 JST 2021
+//Time-stamp: <2010-06-18 11:31:00 hamada>
+// Copyright(C) 2008 by 
+// Tsuyoshi Hamada <hamada@progrape.jp>
+
+#include <iostream>
+#include "cuda.h"
+#include "cutil.h"
+
+namespace libcunbody{
+
+  using namespace std;
+
+  // I want to move these member functions into class cunbody.
+  __device__ float4 dev_inter(float4 xi, float4 xj);
+  __device__ float4 dev_inter_001(float4 xi, float4 xj);
+  __device__ float4 dev_inter_011(float4 xi, float4 xj, float* pot);
+  __device__ float4 dev_apot(float4 xi, float4 xj, float4 apot);
+  __global__ void cunbody_kernel_tree_001(float4 *xilist, float4 *xjlist, float4 *apotlist, unsigned int *ioffset, unsigned int *joffset);
+  __global__ void cunbody_kernel_tree_002(float4 *xilist, float4 *xjlist, float4 *apotlist, unsigned int *ioffset, unsigned int *joffset);
+  __global__ void cunbody_kernel_tree_003(float4 *xilist, float4 *xjlist, float4 *apotlist, unsigned int *ioffset, unsigned int *joffset);
+  __global__ void cunbody_kernel_tree_011(float4 *xilist, float4 *xjlist, float4 *apotlist, unsigned int *ioffset, unsigned int *joffset);
+  __global__ void cunbody_kernel_tree_012(float4 *xilist, float4 *xjlist, float4 *apotlist, unsigned int *ioffset, unsigned int *joffset);
+  __global__ void cunbody_kernel_tree_013(float4 *xilist, float4 *xjlist, float4 *apotlist, unsigned int *ioffset, unsigned int *joffset);
+  __global__ void cunbody_kernel_tree_999(float4 *xilist, float4 *xjlist, float4 *apotlist, unsigned int *ioffset, unsigned int *joffset);
+
+  // -------------------------------------- TUNING PROPERTY
+#define KERNEL_TYPE (0x002)                 // (XXX) = (Jark tyep, Pot type, Acc type), 0: not implement 
+  //#define KERNEL_TYPE (0x013)
+#define ACC_TYPE (1)
+#define MAX_WALK (256)
+#define CUDA_MALLOC_TYPE (0)
+#define CUDA_MALLOC_HOST_TYPE (0)
+#define DEV_OPEN_STRATEGY (1)
+#define NTHRE (128)
+  //----------------------------------------.
+
+  class cunbody
+  {
+  private:
+    bool is_open;
+    int host_pid;      // host process id
+    int host_tid;      // host thread Id
+    float4 *dev_xi;
+    float4 *dev_xj;
+    float4 *dev_apot;
+    unsigned int *dev_ioff;
+    unsigned int *dev_joff;
+    unsigned int isize;
+    unsigned int jsize;
+    unsigned int max_isize;
+    unsigned int max_jsize;
+
+//#define ENABLE_DITAILED_OPENMSG
+
+    void dev_check(){
+      int ndev;
+      CUDA_SAFE_CALL(cudaGetDeviceCount(&ndev));
+      if(ndev == 0){
+	fprintf(stdout, "ndev = %d @ %s|%d\n", ndev, __FILE__, __LINE__);
+	fprintf(stdout, "There is no GPUs.\n");
+	exit(-1);
+      }else{
+	int dev = host_pid % ndev;
+	CUDA_SAFE_CALL(cudaSetDevice(dev));
+	printf("[%d]  : cudaSetDevice to %d-th GPU\n",        host_pid, dev+1);
+	cudaDeviceProp deviceProp;
+	CUDA_SAFE_CALL(cudaGetDeviceProperties(&deviceProp, dev));
+	if (deviceProp.major == 9999 && deviceProp.minor == 9999){
+	  printf("There is no device supporting CUDA.\n");
+	}
+#if defined(ENABLE_DITAILED_OPENMSG)
+	printf("[%d]  : Major revision number:  %d\n",        host_pid, deviceProp.major);
+	printf("[%d]  : Minor revision number:  %d\n",        host_pid, deviceProp.minor);
+        printf("[%d]  : core clock rate:  %.2f GHz\n",        host_pid, deviceProp.clockRate * 1e-6f);
+#  if  (CUDART_VERSION >= 2000)
+	printf("[%d]  : Number of cores:  %d\n",              host_pid, 8 * deviceProp.multiProcessorCount);
+        printf("[%d]  : Concurrent copy and execution: %s\n", host_pid, deviceProp.deviceOverlap ? "Yes" : "No");
+#  endif
+#endif
+
+      }
+    }
+
+    void dev_open(int hpid, int htid) {
+      //      CUT_DEVICE_INIT(, ); // thread safe ?
+      host_pid = hpid;
+      host_tid = htid;
+      fprintf(stdout, "[%d] CUNBODY-1 library: rev.hamada20080920 (^-^)v\n", host_pid);
+#if defined(ENABLE_DITAILED_OPENMSG)
+      fprintf(stdout, "[%d]  open GPU by host thread %d\n", host_pid, host_tid);
+      fprintf(stdout, "[%d]  : KERNEL_TYPE %03x\n",     host_pid, KERNEL_TYPE);
+      fprintf(stdout, "[%d]  : MAX_WALK %d\n",          host_pid, MAX_WALK);
+      fprintf(stdout, "[%d]  : NTHRE    %d\n",          host_pid, NTHRE);
+      fprintf(stdout, "[%d]  : ACC_TYPE %d\n",          host_pid, ACC_TYPE);
+      fprintf(stdout, "[%d]  : CUDA_MALLOC_TYPE %d\n",  host_pid, CUDA_MALLOC_TYPE);
+      fprintf(stdout, "[%d]  : CUDA_MALLOC_HOST_TYPE %d\n", host_pid, CUDA_MALLOC_HOST_TYPE);
+      fprintf(stdout, "[%d]  : DEV_OPEN_STRATEGY %d\n", host_pid, DEV_OPEN_STRATEGY);
+#endif
+      dev_check();
+      //      max_isize = 1500000;
+      //      max_jsize = (this->jsize)*2;
+
+      //      max_isize = (this->isize)*3;
+      //      max_jsize = (this->jsize) + (this->jsize)>>1;
+
+      //theta=0.5
+      //      max_isize = 380000;
+      //      max_jsize = 2100000;
+
+      //theta=0.4
+#if 0
+      max_isize = 380000;
+      max_jsize = 4000000;
+#else
+      max_isize = 520000;
+      max_jsize = 4200000;
+#endif
+
+      CUDA_SAFE_CALL(cudaMalloc((void **)&dev_xi,   (NTHRE + max_isize) * sizeof(float4)));
+      CUDA_SAFE_CALL(cudaMalloc((void **)&dev_apot, max_isize * sizeof(float4)));
+      CUDA_SAFE_CALL(cudaMalloc((void **)&dev_xj,   max_jsize * sizeof(float4)));
+      CUDA_SAFE_CALL(cudaMalloc((void **)&dev_ioff, (MAX_WALK + 1) * sizeof(unsigned int)));
+      CUDA_SAFE_CALL(cudaMalloc((void **)&dev_joff, (MAX_WALK + 1) * sizeof(unsigned int)));
+      printf("[%d-proc, %d-thread] ******** cudaMalloc in total at dev_open() : %d MB (j=%d, i=%d)(j=%d MB, i=%d MB)\n", host_pid, host_tid, 
+	     (
+	      (NTHRE + max_isize) * sizeof(float4) + 
+	      max_isize * sizeof(float4) + 
+	      max_jsize * sizeof(float4) + 
+	      (MAX_WALK + 1) * sizeof(unsigned int) + 
+	      (MAX_WALK + 1) * sizeof(unsigned int)
+	      )/(1024*1024), //                           <----------- total(i, j, offset)
+
+	     max_jsize, max_isize,
+
+	     (max_jsize * sizeof(float4))/(1024*1024), // <----------- only j
+
+	     ((NTHRE + max_isize) * sizeof(float4) +
+	      max_isize * sizeof(float4))/(1024*1024)  // <----------- only i
+	     );
+
+      is_open = true;
+    }
+
+    void dev_close(void) {
+      CUDA_SAFE_CALL(cudaFree(dev_xi));
+      CUDA_SAFE_CALL(cudaFree(dev_xj));
+      CUDA_SAFE_CALL(cudaFree(dev_apot));
+      CUDA_SAFE_CALL(cudaFree(dev_ioff));
+      CUDA_SAFE_CALL(cudaFree(dev_joff));
+    }
+
+  public:
+
+    cunbody() {
+      is_open = false;
+      host_pid = -1;
+      host_tid = -1;
+      max_isize = 0;
+      max_jsize = 0;
+      dev_xi = NULL;
+      dev_xj = NULL;
+      dev_apot = NULL;
+      dev_ioff = NULL;
+      dev_joff = NULL;
+    }
+
+    ~cunbody() {
+      this->dev_close();
+      dev_xi = NULL;
+      dev_xj = NULL;
+      dev_apot = NULL;
+      dev_ioff = NULL;
+      dev_joff = NULL;
+      max_isize = 0;
+      max_jsize = 0;
+      host_tid = -1;
+      host_pid = -1;
+      is_open = false;
+    }
+
+    void vforce_open(int host_pid, int host_tid)
+    {
+      if(is_open == false) this->dev_open(host_pid, host_tid);
+    }
+
+    void vforce_mp(int host_pid,
+		   int host_tid, 
+		float4 xilist[], 
+		float4 xjlist[], 
+		float4 apotlist[], 
+		unsigned int ioff[], 
+		unsigned int joff[], 
+		unsigned int nwalk) 
+    {
+      isize = ioff[nwalk];
+      jsize = joff[nwalk];
+
+      if(is_open == false) this->dev_open(host_pid, host_tid);
+
+#define WARNING_CUDA_MALLOC
+
+      if(isize > max_isize){
+	int isize_bak = isize;
+	isize = (int)(isize*1.1);
+	max_isize = isize_bak;
+#if defined(WARNING_CUDA_MALLOC)
+	int megabyte = ((NTHRE + isize) * sizeof(float4)+isize * sizeof(float4))>>20;
+	printf("[%d @%d]================== cudaMalloc for i : %d MB\n", host_pid, host_tid, megabyte);
+#endif
+	CUDA_SAFE_CALL(cudaFree(dev_xi));
+	CUDA_SAFE_CALL(cudaFree(dev_apot));
+	CUDA_SAFE_CALL(cudaMalloc((void **)&dev_xi,   (NTHRE + isize) * sizeof(float4)));
+	CUDA_SAFE_CALL(cudaMalloc((void **)&dev_apot, isize * sizeof(float4)));
+	isize = isize_bak;
+      }
+
+      if(jsize > max_jsize){
+	max_jsize = jsize;
+#if defined(WARNING_CUDA_MALLOC)
+	int megabyte = (jsize * sizeof(float4))>>20;
+	printf("[%d @%d]------------------ cudaMalloc for j : %d MB\n",  host_pid, host_tid, megabyte);
+#endif
+	CUDA_SAFE_CALL(cudaFree(dev_xj));
+	CUDA_SAFE_CALL(cudaMalloc((void **)&dev_xj,   jsize * sizeof(float4)));
+      }
+
+      CUDA_SAFE_CALL(cudaMemcpy(dev_xi, xilist, isize * sizeof(float4), cudaMemcpyHostToDevice));
+      CUDA_SAFE_CALL(cudaMemcpy(dev_xj, xjlist, jsize * sizeof(float4), cudaMemcpyHostToDevice));
+      CUDA_SAFE_CALL(cudaMemcpy(dev_ioff, ioff, (nwalk + 1) * sizeof(unsigned int), cudaMemcpyHostToDevice));
+      CUDA_SAFE_CALL(cudaMemcpy(dev_joff, joff, (nwalk + 1) * sizeof(unsigned int), cudaMemcpyHostToDevice));
+
+      dim3 grid(nwalk);
+      dim3 threads(NTHRE);
+
+#if   (KERNEL_TYPE == 0x001)
+      cunbody_kernel_tree_001 <<< grid, threads >>> (dev_xi, dev_xj, dev_apot, dev_ioff, dev_joff);
+#elif (KERNEL_TYPE == 0x002)
+      cunbody_kernel_tree_002 <<< grid, threads >>> (dev_xi, dev_xj, dev_apot, dev_ioff, dev_joff);
+#elif (KERNEL_TYPE == 0x011)
+      cunbody_kernel_tree_011 <<< grid, threads >>> (dev_xi, dev_xj, dev_apot, dev_ioff, dev_joff);
+#elif (KERNEL_TYPE == 0x012)
+      cunbody_kernel_tree_012 <<< grid, threads >>> (dev_xi, dev_xj, dev_apot, dev_ioff, dev_joff);
+#elif (KERNEL_TYPE == 0x013)
+      cunbody_kernel_tree_013 <<< grid, threads >>> (dev_xi, dev_xj, dev_apot, dev_ioff, dev_joff);
+#elif (KERNEL_TYPE == 0x003)
+      cunbody_kernel_tree_003 <<< grid, threads >>> (dev_xi, dev_xj, dev_apot, dev_ioff, dev_joff); // has some bug (# of registers overflow ?)
+#elif (KERNEL_TYPE == 0x999)
+      cunbody_kernel_tree_999 <<< grid, threads >>> (dev_xi, dev_xj, dev_apot, dev_ioff, dev_joff); // has some bug
+#else
+      cunbody_kernel_tree_000 <<< grid, threads >>> (dev_xi, dev_xj, dev_apot, dev_ioff, dev_joff);
+#endif
+
+      CUT_CHECK_ERROR("KERNEL EXECUTION FAILED");
+      CUDA_SAFE_CALL(cudaMemcpy(apotlist, dev_apot, isize * sizeof(float4), cudaMemcpyDeviceToHost));
+    }
+
+  }; // class cunbody __END__
+
+}; // namespace libcunbody __END__  ----------------------------------------------------------------------------------
+
+
+
+#define MAX_OMP_THRE (4)
+static libcunbody::cunbody cunObj[MAX_OMP_THRE];
+
+extern "C"
+void vforce(int host_tid, float4 xilist[], float4 xjlist[], float4 apotlist[], unsigned int ioff[], unsigned int joff[], unsigned int nwalk)
+{
+  using namespace std;
+  using namespace libcunbody;
+  cunObj[host_tid].vforce_mp(0, host_tid, xilist, xjlist, apotlist, ioff, joff, nwalk);
+}
+
+extern "C"
+void vforce_mp(int proc_id, int host_tid, float4 xilist[], float4 xjlist[], float4 apotlist[], unsigned int ioff[], unsigned int joff[], unsigned int nwalk)
+{
+  using namespace std;
+  using namespace libcunbody;
+  cunObj[host_tid].vforce_mp(proc_id, host_tid, xilist, xjlist, apotlist, ioff, joff, nwalk);
+}
+
+extern "C"
+void vforce_open(int proc_id, int host_tid)
+{
+  using namespace std;
+  using namespace libcunbody;
+  cunObj[host_tid].vforce_open(proc_id, host_tid);
+}
+
+#if (NTHRE != 128)
+compile-touccha-dame
+#endif
+
+namespace libcunbody{
+
+  using namespace std;
+
+  __device__ float4 dev_inter(float4 xi, float4 xj)
+  {
+    float dx = xj.x - xi.x;
+    float dy = xj.y - xi.y;
+    float dz = xj.z - xi.z;
+    float eps2 = xi.w;
+    float mj   = xj.w;
+
+#if (0)
+    float r2   = (dz*dz +(dy*dy +(dx*dx+eps2)));
+#else
+    float r2   = (dx*dx + eps2) + dy*dy + dz*dz;
+#endif
+
+    float r1i  = 1/sqrt(r2);
+    float r2i  = r1i*r1i;
+    float mr3i = mj * r1i * r2i;
+
+#if (0)  
+    float4 retval = make_float4(dx, dy, dz, mr3i);
+#else
+    float4 retval;
+    retval.x = dx;
+    retval.y = dy;
+    retval.z = dz;
+    retval.w = mr3i;
+#endif
+
+    return retval;
+  }
+
+  __global__ 
+  void cunbody_kernel_tree_999(float4 *xilist,
+				float4 *xjlist,
+				float4 *apotlist,
+				unsigned int *ioffset,
+				unsigned int *joffset)
+  {
+    unsigned int tid = threadIdx.x;
+    unsigned int bid = blockIdx.x;
+    unsigned int ibegin = ioffset[bid];
+    unsigned int iend   = ioffset[bid+1];
+    unsigned int jbegin = joffset[bid];
+    unsigned int jend   = joffset[bid+1];
+    for(unsigned int ibase = ibegin; ibase < iend; ibase += NTHRE){
+      float4 xi = xilist[ibase+tid];
+      float4 apot = make_float4(0,0,0,0);
+      for(unsigned int jbase = jbegin; jbase < jend; jbase += NTHRE){
+	__shared__ float4 sj[NTHRE];
+	sj[tid] = xjlist[jbase + tid];
+	__syncthreads();
+	{
+	  float4 dm0 = dev_inter(xi, sj[0]);
+	  float4 dm1 = dev_inter(xi, sj[1]);
+	  float4 dm2 = dev_inter(xi, sj[2]);
+	  float4 dm3 = dev_inter(xi, sj[3]);
+	  float4 dm4 = dev_inter(xi, sj[4]);
+	  float4 dm5 = dev_inter(xi, sj[5]);
+	  float4 dm6 = dev_inter(xi, sj[6]);
+	  float4 dm7 = dev_inter(xi, sj[7]);
+	  float4 dm8 = dev_inter(xi, sj[8]);
+	  float4 dm9 = dev_inter(xi, sj[9]);
+
+	  float4 dm10 = dev_inter(xi, sj[10]);
+	  float4 dm11 = dev_inter(xi, sj[11]);
+	  float4 dm12 = dev_inter(xi, sj[12]);
+	  float4 dm13 = dev_inter(xi, sj[13]);
+	  float4 dm14 = dev_inter(xi, sj[14]);
+	  float4 dm15 = dev_inter(xi, sj[15]);
+	  float4 dm16 = dev_inter(xi, sj[16]);
+	  float4 dm17 = dev_inter(xi, sj[17]);
+	  float4 dm18 = dev_inter(xi, sj[18]);
+	  float4 dm19 = dev_inter(xi, sj[19]);
+
+	  float4 dm20 = dev_inter(xi, sj[20]);
+	  float4 dm21 = dev_inter(xi, sj[21]);
+	  float4 dm22 = dev_inter(xi, sj[22]);
+	  float4 dm23 = dev_inter(xi, sj[23]);
+	  float4 dm24 = dev_inter(xi, sj[24]);
+	  float4 dm25 = dev_inter(xi, sj[25]);
+	  float4 dm26 = dev_inter(xi, sj[26]);
+	  float4 dm27 = dev_inter(xi, sj[27]);
+	  float4 dm28 = dev_inter(xi, sj[28]);
+	  float4 dm29 = dev_inter(xi, sj[29]);
+
+	  float4 dm30 = dev_inter(xi, sj[30]);
+	  float4 dm31 = dev_inter(xi, sj[31]);
+	  float4 dm32 = dev_inter(xi, sj[32]);
+	  float4 dm33 = dev_inter(xi, sj[33]);
+	  float4 dm34 = dev_inter(xi, sj[34]);
+	  float4 dm35 = dev_inter(xi, sj[35]);
+	  float4 dm36 = dev_inter(xi, sj[36]);
+	  float4 dm37 = dev_inter(xi, sj[37]);
+	  float4 dm38 = dev_inter(xi, sj[38]);
+	  float4 dm39 = dev_inter(xi, sj[39]);
+
+	  float4 dm40 = dev_inter(xi, sj[40]);
+	  float4 dm41 = dev_inter(xi, sj[41]);
+	  float4 dm42 = dev_inter(xi, sj[42]);
+	  float4 dm43 = dev_inter(xi, sj[43]);
+	  float4 dm44 = dev_inter(xi, sj[44]);
+	  float4 dm45 = dev_inter(xi, sj[45]);
+	  float4 dm46 = dev_inter(xi, sj[46]);
+	  float4 dm47 = dev_inter(xi, sj[47]);
+	  float4 dm48 = dev_inter(xi, sj[48]);
+	  float4 dm49 = dev_inter(xi, sj[49]);
+
+	  float4 dm50 = dev_inter(xi, sj[50]);
+	  float4 dm51 = dev_inter(xi, sj[51]);
+	  float4 dm52 = dev_inter(xi, sj[52]);
+	  float4 dm53 = dev_inter(xi, sj[53]);
+	  float4 dm54 = dev_inter(xi, sj[54]);
+	  float4 dm55 = dev_inter(xi, sj[55]);
+	  float4 dm56 = dev_inter(xi, sj[56]);
+	  float4 dm57 = dev_inter(xi, sj[57]);
+	  float4 dm58 = dev_inter(xi, sj[58]);
+	  float4 dm59 = dev_inter(xi, sj[59]);
+
+	  float4 dm60 = dev_inter(xi, sj[60]);
+	  float4 dm61 = dev_inter(xi, sj[61]);
+	  float4 dm62 = dev_inter(xi, sj[62]);
+	  float4 dm63 = dev_inter(xi, sj[63]);
+	  float4 dm64 = dev_inter(xi, sj[64]);
+	  float4 dm65 = dev_inter(xi, sj[65]);
+	  float4 dm66 = dev_inter(xi, sj[66]);
+	  float4 dm67 = dev_inter(xi, sj[67]);
+	  float4 dm68 = dev_inter(xi, sj[68]);
+	  float4 dm69 = dev_inter(xi, sj[69]);
+
+	  float4 dm70 = dev_inter(xi, sj[70]);
+	  float4 dm71 = dev_inter(xi, sj[71]);
+	  float4 dm72 = dev_inter(xi, sj[72]);
+	  float4 dm73 = dev_inter(xi, sj[73]);
+	  float4 dm74 = dev_inter(xi, sj[74]);
+	  float4 dm75 = dev_inter(xi, sj[75]);
+	  float4 dm76 = dev_inter(xi, sj[76]);
+	  float4 dm77 = dev_inter(xi, sj[77]);
+	  float4 dm78 = dev_inter(xi, sj[78]);
+	  float4 dm79 = dev_inter(xi, sj[79]);
+
+	  float4 dm80 = dev_inter(xi, sj[80]);
+	  float4 dm81 = dev_inter(xi, sj[81]);
+	  float4 dm82 = dev_inter(xi, sj[82]);
+	  float4 dm83 = dev_inter(xi, sj[83]);
+	  float4 dm84 = dev_inter(xi, sj[84]);
+	  float4 dm85 = dev_inter(xi, sj[85]);
+	  float4 dm86 = dev_inter(xi, sj[86]);
+	  float4 dm87 = dev_inter(xi, sj[87]);
+	  float4 dm88 = dev_inter(xi, sj[88]);
+	  float4 dm89 = dev_inter(xi, sj[89]);
+
+	  float4 dm90 = dev_inter(xi, sj[90]);
+	  float4 dm91 = dev_inter(xi, sj[91]);
+	  float4 dm92 = dev_inter(xi, sj[92]);
+	  float4 dm93 = dev_inter(xi, sj[93]);
+	  float4 dm94 = dev_inter(xi, sj[94]);
+	  float4 dm95 = dev_inter(xi, sj[95]);
+	  float4 dm96 = dev_inter(xi, sj[96]);
+	  float4 dm97 = dev_inter(xi, sj[97]);
+	  float4 dm98 = dev_inter(xi, sj[98]);
+	  float4 dm99 = dev_inter(xi, sj[99]);
+
+	  float4 dm100 = dev_inter(xi, sj[100]);
+	  float4 dm101 = dev_inter(xi, sj[101]);
+	  float4 dm102 = dev_inter(xi, sj[102]);
+	  float4 dm103 = dev_inter(xi, sj[103]);
+	  float4 dm104 = dev_inter(xi, sj[104]);
+	  float4 dm105 = dev_inter(xi, sj[105]);
+	  float4 dm106 = dev_inter(xi, sj[106]);
+	  float4 dm107 = dev_inter(xi, sj[107]);
+	  float4 dm108 = dev_inter(xi, sj[108]);
+	  float4 dm109 = dev_inter(xi, sj[109]);
+
+	  float4 dm110 = dev_inter(xi, sj[110]);
+	  float4 dm111 = dev_inter(xi, sj[111]);
+	  float4 dm112 = dev_inter(xi, sj[112]);
+	  float4 dm113 = dev_inter(xi, sj[113]);
+	  float4 dm114 = dev_inter(xi, sj[114]);
+	  float4 dm115 = dev_inter(xi, sj[115]);
+	  float4 dm116 = dev_inter(xi, sj[116]);
+	  float4 dm117 = dev_inter(xi, sj[117]);
+	  float4 dm118 = dev_inter(xi, sj[118]);
+	  float4 dm119 = dev_inter(xi, sj[119]);
+
+	  float4 dm120 = dev_inter(xi, sj[120]);
+	  float4 dm121 = dev_inter(xi, sj[121]);
+	  float4 dm122 = dev_inter(xi, sj[122]);
+	  float4 dm123 = dev_inter(xi, sj[123]);
+	  float4 dm124 = dev_inter(xi, sj[124]);
+	  float4 dm125 = dev_inter(xi, sj[125]);
+	  float4 dm126 = dev_inter(xi, sj[126]);
+	  float4 dm127 = dev_inter(xi, sj[127]);
+
+	  apot.x = dm0.x * dm0.w + dm1.x * dm1.w + dm2.x * dm2.w + dm3.x * dm3.w + dm4.x * dm4.w + dm5.x * dm5.w + dm6.x * dm6.w + dm7.x * dm7.w + dm8.x * dm8.w + dm9.x * dm9.w + 
+	    dm10.x * dm10.w + dm11.x * dm11.w + dm12.x * dm12.w + dm13.x * dm13.w + dm14.x * dm14.w + dm15.x * dm15.w + dm16.x * dm16.w + dm17.x * dm17.w + dm18.x * dm18.w + dm19.x * dm19.w + 
+	    dm20.x * dm20.w + dm21.x * dm21.w + dm22.x * dm22.w + dm23.x * dm23.w + dm24.x * dm24.w + dm25.x * dm25.w + dm26.x * dm26.w + dm27.x * dm27.w + dm28.x * dm28.w + dm29.x * dm29.w + 
+	    dm30.x * dm30.w + dm31.x * dm31.w + dm32.x * dm32.w + dm33.x * dm33.w + dm34.x * dm34.w + dm35.x * dm35.w + dm36.x * dm36.w + dm37.x * dm37.w + dm38.x * dm38.w + dm39.x * dm39.w + 
+	    dm40.x * dm40.w + dm41.x * dm41.w + dm42.x * dm42.w + dm43.x * dm43.w + dm44.x * dm44.w + dm45.x * dm45.w + dm46.x * dm46.w + dm47.x * dm47.w + dm48.x * dm48.w + dm49.x * dm49.w + 
+	    dm50.x * dm50.w + dm51.x * dm51.w + dm52.x * dm52.w + dm53.x * dm53.w + dm54.x * dm54.w + dm55.x * dm55.w + dm56.x * dm56.w + dm57.x * dm57.w + dm58.x * dm58.w + dm59.x * dm59.w + 
+	    dm60.x * dm60.w + dm61.x * dm61.w + dm62.x * dm62.w + dm63.x * dm63.w + dm64.x * dm64.w + dm65.x * dm65.w + dm66.x * dm66.w + dm67.x * dm67.w + dm68.x * dm68.w + dm69.x * dm69.w + 
+	    dm70.x * dm70.w + dm71.x * dm71.w + dm72.x * dm72.w + dm73.x * dm73.w + dm74.x * dm74.w + dm75.x * dm75.w + dm76.x * dm76.w + dm77.x * dm77.w + dm78.x * dm78.w + dm79.x * dm79.w + 
+	    dm80.x * dm80.w + dm81.x * dm81.w + dm82.x * dm82.w + dm83.x * dm83.w + dm84.x * dm84.w + dm85.x * dm85.w + dm86.x * dm86.w + dm87.x * dm87.w + dm88.x * dm88.w + dm89.x * dm89.w + 
+	    dm90.x * dm90.w + dm91.x * dm91.w + dm92.x * dm92.w + dm93.x * dm93.w + dm94.x * dm94.w + dm95.x * dm95.w + dm96.x * dm96.w + dm97.x * dm97.w + dm98.x * dm98.w + dm99.x * dm99.w + 
+	    dm100.x * dm100.w + dm101.x * dm101.w + dm102.x * dm102.w + dm103.x * dm103.w + dm104.x * dm104.w + dm105.x * dm105.w + dm106.x * dm106.w + dm107.x * dm107.w + dm108.x * dm108.w + dm109.x * dm109.w + 
+	    dm110.x * dm110.w + dm111.x * dm111.w + dm112.x * dm112.w + dm113.x * dm113.w + dm114.x * dm114.w + dm115.x * dm115.w + dm116.x * dm116.w + dm117.x * dm117.w + dm118.x * dm118.w + dm119.x * dm119.w + 
+	    dm120.x * dm120.w + dm121.x * dm121.w + dm122.x * dm122.w + dm123.x * dm123.w + dm124.x * dm124.w + dm125.x * dm125.w + dm126.x * dm126.w + dm127.x * dm127.w;
+
+	  apot.y = dm0.y * dm0.w + dm1.y * dm1.w + dm2.y * dm2.w + dm3.y * dm3.w + dm4.y * dm4.w + dm5.y * dm5.w + dm6.y * dm6.w + dm7.y * dm7.w + dm8.y * dm8.w + dm9.y * dm9.w + 
+	    dm10.y * dm10.w + dm11.y * dm11.w + dm12.y * dm12.w + dm13.y * dm13.w + dm14.y * dm14.w + dm15.y * dm15.w + dm16.y * dm16.w + dm17.y * dm17.w + dm18.y * dm18.w + dm19.y * dm19.w + 
+	    dm20.y * dm20.w + dm21.y * dm21.w + dm22.y * dm22.w + dm23.y * dm23.w + dm24.y * dm24.w + dm25.y * dm25.w + dm26.y * dm26.w + dm27.y * dm27.w + dm28.y * dm28.w + dm29.y * dm29.w + 
+	    dm30.y * dm30.w + dm31.y * dm31.w + dm32.y * dm32.w + dm33.y * dm33.w + dm34.y * dm34.w + dm35.y * dm35.w + dm36.y * dm36.w + dm37.y * dm37.w + dm38.y * dm38.w + dm39.y * dm39.w + 
+	    dm40.y * dm40.w + dm41.y * dm41.w + dm42.y * dm42.w + dm43.y * dm43.w + dm44.y * dm44.w + dm45.y * dm45.w + dm46.y * dm46.w + dm47.y * dm47.w + dm48.y * dm48.w + dm49.y * dm49.w + 
+	    dm50.y * dm50.w + dm51.y * dm51.w + dm52.y * dm52.w + dm53.y * dm53.w + dm54.y * dm54.w + dm55.y * dm55.w + dm56.y * dm56.w + dm57.y * dm57.w + dm58.y * dm58.w + dm59.y * dm59.w + 
+	    dm60.y * dm60.w + dm61.y * dm61.w + dm62.y * dm62.w + dm63.y * dm63.w + dm64.y * dm64.w + dm65.y * dm65.w + dm66.y * dm66.w + dm67.y * dm67.w + dm68.y * dm68.w + dm69.y * dm69.w + 
+	    dm70.y * dm70.w + dm71.y * dm71.w + dm72.y * dm72.w + dm73.y * dm73.w + dm74.y * dm74.w + dm75.y * dm75.w + dm76.y * dm76.w + dm77.y * dm77.w + dm78.y * dm78.w + dm79.y * dm79.w + 
+	    dm80.y * dm80.w + dm81.y * dm81.w + dm82.y * dm82.w + dm83.y * dm83.w + dm84.y * dm84.w + dm85.y * dm85.w + dm86.y * dm86.w + dm87.y * dm87.w + dm88.y * dm88.w + dm89.y * dm89.w + 
+	    dm90.y * dm90.w + dm91.y * dm91.w + dm92.y * dm92.w + dm93.y * dm93.w + dm94.y * dm94.w + dm95.y * dm95.w + dm96.y * dm96.w + dm97.y * dm97.w + dm98.y * dm98.w + dm99.y * dm99.w + 
+	    dm100.y * dm100.w + dm101.y * dm101.w + dm102.y * dm102.w + dm103.y * dm103.w + dm104.y * dm104.w + dm105.y * dm105.w + dm106.y * dm106.w + dm107.y * dm107.w + dm108.y * dm108.w + dm109.y * dm109.w + 
+	    dm110.y * dm110.w + dm111.y * dm111.w + dm112.y * dm112.w + dm113.y * dm113.w + dm114.y * dm114.w + dm115.y * dm115.w + dm116.y * dm116.w + dm117.y * dm117.w + dm118.y * dm118.w + dm119.y * dm119.w + 
+	    dm120.y * dm120.w + dm121.y * dm121.w + dm122.y * dm122.w + dm123.y * dm123.w + dm124.y * dm124.w + dm125.y * dm125.w + dm126.y * dm126.w + dm127.y * dm127.w;
+
+	  apot.z = dm0.z * dm0.w + dm1.z * dm1.w + dm2.z * dm2.w + dm3.z * dm3.w + dm4.z * dm4.w + dm5.z * dm5.w + dm6.z * dm6.w + dm7.z * dm7.w + dm8.z * dm8.w + dm9.z * dm9.w + 
+	    dm10.z * dm10.w + dm11.z * dm11.w + dm12.z * dm12.w + dm13.z * dm13.w + dm14.z * dm14.w + dm15.z * dm15.w + dm16.z * dm16.w + dm17.z * dm17.w + dm18.z * dm18.w + dm19.z * dm19.w + 
+	    dm20.z * dm20.w + dm21.z * dm21.w + dm22.z * dm22.w + dm23.z * dm23.w + dm24.z * dm24.w + dm25.z * dm25.w + dm26.z * dm26.w + dm27.z * dm27.w + dm28.z * dm28.w + dm29.z * dm29.w + 
+	    dm30.z * dm30.w + dm31.z * dm31.w + dm32.z * dm32.w + dm33.z * dm33.w + dm34.z * dm34.w + dm35.z * dm35.w + dm36.z * dm36.w + dm37.z * dm37.w + dm38.z * dm38.w + dm39.z * dm39.w + 
+	    dm40.z * dm40.w + dm41.z * dm41.w + dm42.z * dm42.w + dm43.z * dm43.w + dm44.z * dm44.w + dm45.z * dm45.w + dm46.z * dm46.w + dm47.z * dm47.w + dm48.z * dm48.w + dm49.z * dm49.w + 
+	    dm50.z * dm50.w + dm51.z * dm51.w + dm52.z * dm52.w + dm53.z * dm53.w + dm54.z * dm54.w + dm55.z * dm55.w + dm56.z * dm56.w + dm57.z * dm57.w + dm58.z * dm58.w + dm59.z * dm59.w + 
+	    dm60.z * dm60.w + dm61.z * dm61.w + dm62.z * dm62.w + dm63.z * dm63.w + dm64.z * dm64.w + dm65.z * dm65.w + dm66.z * dm66.w + dm67.z * dm67.w + dm68.z * dm68.w + dm69.z * dm69.w + 
+	    dm70.z * dm70.w + dm71.z * dm71.w + dm72.z * dm72.w + dm73.z * dm73.w + dm74.z * dm74.w + dm75.z * dm75.w + dm76.z * dm76.w + dm77.z * dm77.w + dm78.z * dm78.w + dm79.z * dm79.w + 
+	    dm80.z * dm80.w + dm81.z * dm81.w + dm82.z * dm82.w + dm83.z * dm83.w + dm84.z * dm84.w + dm85.z * dm85.w + dm86.z * dm86.w + dm87.z * dm87.w + dm88.z * dm88.w + dm89.z * dm89.w + 
+	    dm90.z * dm90.w + dm91.z * dm91.w + dm92.z * dm92.w + dm93.z * dm93.w + dm94.z * dm94.w + dm95.z * dm95.w + dm96.z * dm96.w + dm97.z * dm97.w + dm98.z * dm98.w + dm99.z * dm99.w + 
+	    dm100.z * dm100.w + dm101.z * dm101.w + dm102.z * dm102.w + dm103.z * dm103.w + dm104.z * dm104.w + dm105.z * dm105.w + dm106.z * dm106.w + dm107.z * dm107.w + dm108.z * dm108.w + dm109.z * dm109.w + 
+	    dm110.z * dm110.w + dm111.z * dm111.w + dm112.z * dm112.w + dm113.z * dm113.w + dm114.z * dm114.w + dm115.z * dm115.w + dm116.z * dm116.w + dm117.z * dm117.w + dm118.z * dm118.w + dm119.z * dm119.w + 
+	    dm120.z * dm120.w + dm121.z * dm121.w + dm122.z * dm122.w + dm123.z * dm123.w + dm124.z * dm124.w + dm125.z * dm125.w + dm126.z * dm126.w + dm127.z * dm127.w;
+
+	}
+      }
+      if(ibase+tid < iend){
+	apotlist[ibase+tid] = apot;
+      }
+    }
+  }
+
+
+
+  __device__ 
+  float4 dev_inter_001(float4 xi, float4 xj)
+  {
+    float dx = xj.x - xi.x;
+    float dy = xj.y - xi.y;
+    float dz = xj.z - xi.z;
+    float eps2 = xi.w;
+    float mj   = xj.w;
+#if (0)
+    float r2 = dx*dz + (dy*dy + (dx*dx + eps2));
+#else
+    float r2 = (dx*dx + eps2) + dy*dy + dz*dz;
+#endif
+    //	if(r2 == eps2) return (a,p)
+
+    float r1i = 1/sqrt(r2);
+    //  float r1i = rsqrt(r2);
+
+    float r2i = r1i*r1i;
+    float mr3i = mj * r1i * r2i;
+    float4 retval;
+
+    retval.x = dx; 
+    retval.y = dy; 
+    retval.z = dz;
+    retval.w = mr3i; 
+
+    return (retval);
+  }
+
+
+
+  __global__ 
+  void cunbody_kernel_tree_001(float4 *xilist,
+				float4 *xjlist,
+				float4 *apotlist,
+				unsigned int *ioffset,
+				unsigned int *joffset)
+  {
+    unsigned int tid = threadIdx.x;
+    unsigned int bid = blockIdx.x;
+    unsigned int ibegin = ioffset[bid];
+    unsigned int iend   = ioffset[bid+1];
+    unsigned int jbegin = joffset[bid];
+    unsigned int jend   = joffset[bid+1];
+    for(unsigned int ibase = ibegin; ibase < iend; ibase += NTHRE){
+      float4 xi = xilist[ibase + tid];
+      float4 apot = make_float4(0,0,0,0);
+      for(unsigned int jbase = jbegin; jbase < jend; jbase += NTHRE){
+	__shared__ float4 sj[NTHRE];
+	sj[tid] = xjlist[jbase + tid];
+	__syncthreads();
+	{
+	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9;
+	  dm0 = dev_inter_001(xi, sj[0]);
+	  dm1 = dev_inter_001(xi, sj[1]);
+	  dm2 = dev_inter_001(xi, sj[2]);
+	  dm3 = dev_inter_001(xi, sj[3]);
+	  dm4 = dev_inter_001(xi, sj[4]);
+	  dm5 = dev_inter_001(xi, sj[5]);
+	  dm6 = dev_inter_001(xi, sj[6]);
+	  dm7 = dev_inter_001(xi, sj[7]);
+	  dm8 = dev_inter_001(xi, sj[8]);
+	  dm9 = dev_inter_001(xi, sj[9]);
+	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) + (dm8.x*dm8.w) + (dm9.x*dm9.w);
+	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) + (dm8.y*dm8.w) + (dm9.y*dm9.w);
+	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) + (dm8.z*dm8.w) + (dm9.z*dm9.w);
+	}
+	{
+	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9;
+	  dm0 = dev_inter_001(xi, sj[10]);
+	  dm1 = dev_inter_001(xi, sj[11]);
+	  dm2 = dev_inter_001(xi, sj[12]);
+	  dm3 = dev_inter_001(xi, sj[13]);
+	  dm4 = dev_inter_001(xi, sj[14]);
+	  dm5 = dev_inter_001(xi, sj[15]);
+	  dm6 = dev_inter_001(xi, sj[16]);
+	  dm7 = dev_inter_001(xi, sj[17]);
+	  dm8 = dev_inter_001(xi, sj[18]);
+	  dm9 = dev_inter_001(xi, sj[19]);
+	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) + (dm8.x*dm8.w) + (dm9.x*dm9.w);
+	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) + (dm8.y*dm8.w) + (dm9.y*dm9.w);
+	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) + (dm8.z*dm8.w) + (dm9.z*dm9.w);
+	}
+	{
+	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9;
+	  dm0 = dev_inter_001(xi, sj[20]);
+	  dm1 = dev_inter_001(xi, sj[21]);
+	  dm2 = dev_inter_001(xi, sj[22]);
+	  dm3 = dev_inter_001(xi, sj[23]);
+	  dm4 = dev_inter_001(xi, sj[24]);
+	  dm5 = dev_inter_001(xi, sj[25]);
+	  dm6 = dev_inter_001(xi, sj[26]);
+	  dm7 = dev_inter_001(xi, sj[27]);
+	  dm8 = dev_inter_001(xi, sj[28]);
+	  dm9 = dev_inter_001(xi, sj[29]);
+	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) + (dm8.x*dm8.w) + (dm9.x*dm9.w);
+	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) + (dm8.y*dm8.w) + (dm9.y*dm9.w);
+	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) + (dm8.z*dm8.w) + (dm9.z*dm9.w);
+	}
+	{
+	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9;
+	  dm0 = dev_inter_001(xi, sj[30]);
+	  dm1 = dev_inter_001(xi, sj[31]);
+	  dm2 = dev_inter_001(xi, sj[32]);
+	  dm3 = dev_inter_001(xi, sj[33]);
+	  dm4 = dev_inter_001(xi, sj[34]);
+	  dm5 = dev_inter_001(xi, sj[35]);
+	  dm6 = dev_inter_001(xi, sj[36]);
+	  dm7 = dev_inter_001(xi, sj[37]);
+	  dm8 = dev_inter_001(xi, sj[38]);
+	  dm9 = dev_inter_001(xi, sj[39]);
+	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) + (dm8.x*dm8.w) + (dm9.x*dm9.w);
+	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) + (dm8.y*dm8.w) + (dm9.y*dm9.w);
+	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) + (dm8.z*dm8.w) + (dm9.z*dm9.w);
+	}
+	{
+	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9;
+	  dm0 = dev_inter_001(xi, sj[40]);
+	  dm1 = dev_inter_001(xi, sj[41]);
+	  dm2 = dev_inter_001(xi, sj[42]);
+	  dm3 = dev_inter_001(xi, sj[43]);
+	  dm4 = dev_inter_001(xi, sj[44]);
+	  dm5 = dev_inter_001(xi, sj[45]);
+	  dm6 = dev_inter_001(xi, sj[46]);
+	  dm7 = dev_inter_001(xi, sj[47]);
+	  dm8 = dev_inter_001(xi, sj[48]);
+	  dm9 = dev_inter_001(xi, sj[49]);
+	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) + (dm8.x*dm8.w) + (dm9.x*dm9.w);
+	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) + (dm8.y*dm8.w) + (dm9.y*dm9.w);
+	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) + (dm8.z*dm8.w) + (dm9.z*dm9.w);
+	}
+	{
+	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9;
+	  dm0 = dev_inter_001(xi, sj[50]);
+	  dm1 = dev_inter_001(xi, sj[51]);
+	  dm2 = dev_inter_001(xi, sj[52]);
+	  dm3 = dev_inter_001(xi, sj[53]);
+	  dm4 = dev_inter_001(xi, sj[54]);
+	  dm5 = dev_inter_001(xi, sj[55]);
+	  dm6 = dev_inter_001(xi, sj[56]);
+	  dm7 = dev_inter_001(xi, sj[57]);
+	  dm8 = dev_inter_001(xi, sj[58]);
+	  dm9 = dev_inter_001(xi, sj[59]);
+	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) + (dm8.x*dm8.w) + (dm9.x*dm9.w);
+	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) + (dm8.y*dm8.w) + (dm9.y*dm9.w);
+	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) + (dm8.z*dm8.w) + (dm9.z*dm9.w);
+	}
+	{
+	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9;
+	  dm0 = dev_inter_001(xi, sj[60]);
+	  dm1 = dev_inter_001(xi, sj[61]);
+	  dm2 = dev_inter_001(xi, sj[62]);
+	  dm3 = dev_inter_001(xi, sj[63]);
+	  dm4 = dev_inter_001(xi, sj[64]);
+	  dm5 = dev_inter_001(xi, sj[65]);
+	  dm6 = dev_inter_001(xi, sj[66]);
+	  dm7 = dev_inter_001(xi, sj[67]);
+	  dm8 = dev_inter_001(xi, sj[68]);
+	  dm9 = dev_inter_001(xi, sj[69]);
+	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) + (dm8.x*dm8.w) + (dm9.x*dm9.w);
+	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) + (dm8.y*dm8.w) + (dm9.y*dm9.w);
+	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) + (dm8.z*dm8.w) + (dm9.z*dm9.w);
+	}
+	{
+	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9;
+	  dm0 = dev_inter_001(xi, sj[70]);
+	  dm1 = dev_inter_001(xi, sj[71]);
+	  dm2 = dev_inter_001(xi, sj[72]);
+	  dm3 = dev_inter_001(xi, sj[73]);
+	  dm4 = dev_inter_001(xi, sj[74]);
+	  dm5 = dev_inter_001(xi, sj[75]);
+	  dm6 = dev_inter_001(xi, sj[76]);
+	  dm7 = dev_inter_001(xi, sj[77]);
+	  dm8 = dev_inter_001(xi, sj[78]);
+	  dm9 = dev_inter_001(xi, sj[79]);
+	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) + (dm8.x*dm8.w) + (dm9.x*dm9.w);
+	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) + (dm8.y*dm8.w) + (dm9.y*dm9.w);
+	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) + (dm8.z*dm8.w) + (dm9.z*dm9.w);
+	}
+	{
+	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9;
+	  dm0 = dev_inter_001(xi, sj[80]);
+	  dm1 = dev_inter_001(xi, sj[81]);
+	  dm2 = dev_inter_001(xi, sj[82]);
+	  dm3 = dev_inter_001(xi, sj[83]);
+	  dm4 = dev_inter_001(xi, sj[84]);
+	  dm5 = dev_inter_001(xi, sj[85]);
+	  dm6 = dev_inter_001(xi, sj[86]);
+	  dm7 = dev_inter_001(xi, sj[87]);
+	  dm8 = dev_inter_001(xi, sj[88]);
+	  dm9 = dev_inter_001(xi, sj[89]);
+	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) + (dm8.x*dm8.w) + (dm9.x*dm9.w);
+	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) + (dm8.y*dm8.w) + (dm9.y*dm9.w);
+	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) + (dm8.z*dm8.w) + (dm9.z*dm9.w);
+	}
+	{
+	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9;
+	  dm0 = dev_inter_001(xi, sj[90]);
+	  dm1 = dev_inter_001(xi, sj[91]);
+	  dm2 = dev_inter_001(xi, sj[92]);
+	  dm3 = dev_inter_001(xi, sj[93]);
+	  dm4 = dev_inter_001(xi, sj[94]);
+	  dm5 = dev_inter_001(xi, sj[95]);
+	  dm6 = dev_inter_001(xi, sj[96]);
+	  dm7 = dev_inter_001(xi, sj[97]);
+	  dm8 = dev_inter_001(xi, sj[98]);
+	  dm9 = dev_inter_001(xi, sj[99]);
+	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) + (dm8.x*dm8.w) + (dm9.x*dm9.w);
+	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) + (dm8.y*dm8.w) + (dm9.y*dm9.w);
+	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) + (dm8.z*dm8.w) + (dm9.z*dm9.w);
+	}
+	{
+	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9;
+	  dm0 = dev_inter_001(xi, sj[100]);
+	  dm1 = dev_inter_001(xi, sj[101]);
+	  dm2 = dev_inter_001(xi, sj[102]);
+	  dm3 = dev_inter_001(xi, sj[103]);
+	  dm4 = dev_inter_001(xi, sj[104]);
+	  dm5 = dev_inter_001(xi, sj[105]);
+	  dm6 = dev_inter_001(xi, sj[106]);
+	  dm7 = dev_inter_001(xi, sj[107]);
+	  dm8 = dev_inter_001(xi, sj[108]);
+	  dm9 = dev_inter_001(xi, sj[109]);
+	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) + (dm8.x*dm8.w) + (dm9.x*dm9.w);
+	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) + (dm8.y*dm8.w) + (dm9.y*dm9.w);
+	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) + (dm8.z*dm8.w) + (dm9.z*dm9.w);
+	}
+	{
+	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9;
+	  dm0 = dev_inter_001(xi, sj[110]);
+	  dm1 = dev_inter_001(xi, sj[111]);
+	  dm2 = dev_inter_001(xi, sj[112]);
+	  dm3 = dev_inter_001(xi, sj[113]);
+	  dm4 = dev_inter_001(xi, sj[114]);
+	  dm5 = dev_inter_001(xi, sj[115]);
+	  dm6 = dev_inter_001(xi, sj[116]);
+	  dm7 = dev_inter_001(xi, sj[117]);
+	  dm8 = dev_inter_001(xi, sj[118]);
+	  dm9 = dev_inter_001(xi, sj[119]);
+	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) + (dm8.x*dm8.w) + (dm9.x*dm9.w);
+	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) + (dm8.y*dm8.w) + (dm9.y*dm9.w);
+	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) + (dm8.z*dm8.w) + (dm9.z*dm9.w);
+	}
+	{
+	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7;//, dm8, dm9;
+	  dm0 = dev_inter_001(xi, sj[120]);
+	  dm1 = dev_inter_001(xi, sj[121]);
+	  dm2 = dev_inter_001(xi, sj[122]);
+	  dm3 = dev_inter_001(xi, sj[123]);
+	  dm4 = dev_inter_001(xi, sj[124]);
+	  dm5 = dev_inter_001(xi, sj[125]);
+	  dm6 = dev_inter_001(xi, sj[126]);
+	  dm7 = dev_inter_001(xi, sj[127]);
+	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w);// + (dm8.x*dm8.w) + (dm9.x*dm9.w);
+	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w);// + (dm8.y*dm8.w) + (dm9.y*dm9.w);
+	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w);// + (dm8.z*dm8.w) + (dm9.z*dm9.w);
+	}
+      }
+      if(ibase + tid < iend){
+	apotlist[ibase + tid] = apot;
+      }
+    }
+  }
+
+
+  __global__ 
+  void cunbody_kernel_tree_002(float4 *xilist,
+				float4 *xjlist,
+				float4 *apotlist,
+				unsigned int *ioffset,
+				unsigned int *joffset)
+  {
+    unsigned int tid = threadIdx.x;
+    unsigned int bid = blockIdx.x;
+    unsigned int ibegin = ioffset[bid];
+    unsigned int iend   = ioffset[bid+1];
+    unsigned int jbegin = joffset[bid];
+    unsigned int jend   = joffset[bid+1];
+    for(unsigned int ibase = ibegin; ibase < iend; ibase += NTHRE){
+      float4 xi = xilist[ibase + tid];
+      float4 apot = make_float4(0,0,0,0);
+      for(unsigned int jbase = jbegin; jbase < jend; jbase += NTHRE){
+	__shared__ float4 sj[NTHRE];
+	__syncthreads(); // bugfixed 2008/09/19
+	sj[tid] = xjlist[jbase + tid];
+	__syncthreads();
+	{
+	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9, dm10, dm11, dm12, dm13, dm14, dm15;
+	  dm0 = dev_inter_001(xi, sj[0]);
+	  dm1 = dev_inter_001(xi, sj[1]);
+	  dm2 = dev_inter_001(xi, sj[2]);
+	  dm3 = dev_inter_001(xi, sj[3]);
+	  dm4 = dev_inter_001(xi, sj[4]);
+	  dm5 = dev_inter_001(xi, sj[5]);
+	  dm6 = dev_inter_001(xi, sj[6]);
+	  dm7 = dev_inter_001(xi, sj[7]);
+	  dm8 = dev_inter_001(xi, sj[8]);
+	  dm9 = dev_inter_001(xi, sj[9]);
+	  dm10 = dev_inter_001(xi, sj[10]);
+	  dm11 = dev_inter_001(xi, sj[11]);
+	  dm12 = dev_inter_001(xi, sj[12]);
+	  dm13 = dev_inter_001(xi, sj[13]);
+	  dm14 = dev_inter_001(xi, sj[14]);
+	  dm15 = dev_inter_001(xi, sj[15]);
+	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) \
+	    + (dm8.x*dm8.w) + (dm9.x*dm9.w) + (dm10.x*dm10.w) + (dm11.x*dm11.w) + (dm12.x*dm12.w) + (dm13.x*dm13.w) + (dm14.x*dm14.w) + (dm15.x*dm15.w);
+	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) \
+	    + (dm8.y*dm8.w) + (dm9.y*dm9.w) + (dm10.y*dm10.w) + (dm11.y*dm11.w) + (dm12.y*dm12.w) + (dm13.y*dm13.w) + (dm14.y*dm14.w) + (dm15.y*dm15.w);
+	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) \
+	    + (dm8.z*dm8.w) + (dm9.z*dm9.w) + (dm10.z*dm10.w) + (dm11.z*dm11.w) + (dm12.z*dm12.w) + (dm13.z*dm13.w) + (dm14.z*dm14.w) + (dm15.z*dm15.w);
+	}
+
+	{
+	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9, dm10, dm11, dm12, dm13, dm14, dm15;
+	  dm0 = dev_inter_001(xi, sj[16]);
+	  dm1 = dev_inter_001(xi, sj[17]);
+	  dm2 = dev_inter_001(xi, sj[18]);
+	  dm3 = dev_inter_001(xi, sj[19]);
+	  dm4 = dev_inter_001(xi, sj[20]);
+	  dm5 = dev_inter_001(xi, sj[21]);
+	  dm6 = dev_inter_001(xi, sj[22]);
+	  dm7 = dev_inter_001(xi, sj[23]);
+	  dm8 = dev_inter_001(xi, sj[24]);
+	  dm9 = dev_inter_001(xi, sj[25]);
+	  dm10 = dev_inter_001(xi, sj[26]);
+	  dm11 = dev_inter_001(xi, sj[27]);
+	  dm12 = dev_inter_001(xi, sj[28]);
+	  dm13 = dev_inter_001(xi, sj[29]);
+	  dm14 = dev_inter_001(xi, sj[30]);
+	  dm15 = dev_inter_001(xi, sj[31]);
+	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) \
+	    + (dm8.x*dm8.w) + (dm9.x*dm9.w) + (dm10.x*dm10.w) + (dm11.x*dm11.w) + (dm12.x*dm12.w) + (dm13.x*dm13.w) + (dm14.x*dm14.w) + (dm15.x*dm15.w);
+	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) \
+	    + (dm8.y*dm8.w) + (dm9.y*dm9.w) + (dm10.y*dm10.w) + (dm11.y*dm11.w) + (dm12.y*dm12.w) + (dm13.y*dm13.w) + (dm14.y*dm14.w) + (dm15.y*dm15.w);
+	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) \
+	    + (dm8.z*dm8.w) + (dm9.z*dm9.w) + (dm10.z*dm10.w) + (dm11.z*dm11.w) + (dm12.z*dm12.w) + (dm13.z*dm13.w) + (dm14.z*dm14.w) + (dm15.z*dm15.w);
+	}
+
+	{
+	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9, dm10, dm11, dm12, dm13, dm14, dm15;
+	  dm0 = dev_inter_001(xi, sj[32]);
+	  dm1 = dev_inter_001(xi, sj[33]);
+	  dm2 = dev_inter_001(xi, sj[34]);
+	  dm3 = dev_inter_001(xi, sj[35]);
+	  dm4 = dev_inter_001(xi, sj[36]);
+	  dm5 = dev_inter_001(xi, sj[37]);
+	  dm6 = dev_inter_001(xi, sj[38]);
+	  dm7 = dev_inter_001(xi, sj[39]);
+	  dm8 = dev_inter_001(xi, sj[40]);
+	  dm9 = dev_inter_001(xi, sj[41]);
+	  dm10 = dev_inter_001(xi, sj[42]);
+	  dm11 = dev_inter_001(xi, sj[43]);
+	  dm12 = dev_inter_001(xi, sj[44]);
+	  dm13 = dev_inter_001(xi, sj[45]);
+	  dm14 = dev_inter_001(xi, sj[46]);
+	  dm15 = dev_inter_001(xi, sj[47]);
+	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) \
+	    + (dm8.x*dm8.w) + (dm9.x*dm9.w) + (dm10.x*dm10.w) + (dm11.x*dm11.w) + (dm12.x*dm12.w) + (dm13.x*dm13.w) + (dm14.x*dm14.w) + (dm15.x*dm15.w);
+	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) \
+	    + (dm8.y*dm8.w) + (dm9.y*dm9.w) + (dm10.y*dm10.w) + (dm11.y*dm11.w) + (dm12.y*dm12.w) + (dm13.y*dm13.w) + (dm14.y*dm14.w) + (dm15.y*dm15.w);
+	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) \
+	    + (dm8.z*dm8.w) + (dm9.z*dm9.w) + (dm10.z*dm10.w) + (dm11.z*dm11.w) + (dm12.z*dm12.w) + (dm13.z*dm13.w) + (dm14.z*dm14.w) + (dm15.z*dm15.w);
+	}
+
+	{
+	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9, dm10, dm11, dm12, dm13, dm14, dm15;
+	  dm0 = dev_inter_001(xi, sj[48]);
+	  dm1 = dev_inter_001(xi, sj[49]);
+	  dm2 = dev_inter_001(xi, sj[50]);
+	  dm3 = dev_inter_001(xi, sj[51]);
+	  dm4 = dev_inter_001(xi, sj[52]);
+	  dm5 = dev_inter_001(xi, sj[53]);
+	  dm6 = dev_inter_001(xi, sj[54]);
+	  dm7 = dev_inter_001(xi, sj[55]);
+	  dm8 = dev_inter_001(xi, sj[56]);
+	  dm9 = dev_inter_001(xi, sj[57]);
+	  dm10 = dev_inter_001(xi, sj[58]);
+	  dm11 = dev_inter_001(xi, sj[59]);
+	  dm12 = dev_inter_001(xi, sj[60]);
+	  dm13 = dev_inter_001(xi, sj[61]);
+	  dm14 = dev_inter_001(xi, sj[62]);
+	  dm15 = dev_inter_001(xi, sj[63]);
+	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) \
+	    + (dm8.x*dm8.w) + (dm9.x*dm9.w) + (dm10.x*dm10.w) + (dm11.x*dm11.w) + (dm12.x*dm12.w) + (dm13.x*dm13.w) + (dm14.x*dm14.w) + (dm15.x*dm15.w);
+	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) \
+	    + (dm8.y*dm8.w) + (dm9.y*dm9.w) + (dm10.y*dm10.w) + (dm11.y*dm11.w) + (dm12.y*dm12.w) + (dm13.y*dm13.w) + (dm14.y*dm14.w) + (dm15.y*dm15.w);
+	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) \
+	    + (dm8.z*dm8.w) + (dm9.z*dm9.w) + (dm10.z*dm10.w) + (dm11.z*dm11.w) + (dm12.z*dm12.w) + (dm13.z*dm13.w) + (dm14.z*dm14.w) + (dm15.z*dm15.w);
+	}
+
+	{
+	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9, dm10, dm11, dm12, dm13, dm14, dm15;
+	  dm0 = dev_inter_001(xi, sj[64]);
+	  dm1 = dev_inter_001(xi, sj[65]);
+	  dm2 = dev_inter_001(xi, sj[66]);
+	  dm3 = dev_inter_001(xi, sj[67]);
+	  dm4 = dev_inter_001(xi, sj[68]);
+	  dm5 = dev_inter_001(xi, sj[69]);
+	  dm6 = dev_inter_001(xi, sj[70]);
+	  dm7 = dev_inter_001(xi, sj[71]);
+	  dm8 = dev_inter_001(xi, sj[72]);
+	  dm9 = dev_inter_001(xi, sj[73]);
+	  dm10 = dev_inter_001(xi, sj[74]);
+	  dm11 = dev_inter_001(xi, sj[75]);
+	  dm12 = dev_inter_001(xi, sj[76]);
+	  dm13 = dev_inter_001(xi, sj[77]);
+	  dm14 = dev_inter_001(xi, sj[78]);
+	  dm15 = dev_inter_001(xi, sj[79]);
+	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) \
+	    + (dm8.x*dm8.w) + (dm9.x*dm9.w) + (dm10.x*dm10.w) + (dm11.x*dm11.w) + (dm12.x*dm12.w) + (dm13.x*dm13.w) + (dm14.x*dm14.w) + (dm15.x*dm15.w);
+	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) \
+	    + (dm8.y*dm8.w) + (dm9.y*dm9.w) + (dm10.y*dm10.w) + (dm11.y*dm11.w) + (dm12.y*dm12.w) + (dm13.y*dm13.w) + (dm14.y*dm14.w) + (dm15.y*dm15.w);
+	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) \
+	    + (dm8.z*dm8.w) + (dm9.z*dm9.w) + (dm10.z*dm10.w) + (dm11.z*dm11.w) + (dm12.z*dm12.w) + (dm13.z*dm13.w) + (dm14.z*dm14.w) + (dm15.z*dm15.w);
+	}
+
+	{
+	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9, dm10, dm11, dm12, dm13, dm14, dm15;
+	  dm0 = dev_inter_001(xi, sj[80]);
+	  dm1 = dev_inter_001(xi, sj[81]);
+	  dm2 = dev_inter_001(xi, sj[82]);
+	  dm3 = dev_inter_001(xi, sj[83]);
+	  dm4 = dev_inter_001(xi, sj[84]);
+	  dm5 = dev_inter_001(xi, sj[85]);
+	  dm6 = dev_inter_001(xi, sj[86]);
+	  dm7 = dev_inter_001(xi, sj[87]);
+	  dm8 = dev_inter_001(xi, sj[88]);
+	  dm9 = dev_inter_001(xi, sj[89]);
+	  dm10 = dev_inter_001(xi, sj[90]);
+	  dm11 = dev_inter_001(xi, sj[91]);
+	  dm12 = dev_inter_001(xi, sj[92]);
+	  dm13 = dev_inter_001(xi, sj[93]);
+	  dm14 = dev_inter_001(xi, sj[94]);
+	  dm15 = dev_inter_001(xi, sj[95]);
+	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) \
+	    + (dm8.x*dm8.w) + (dm9.x*dm9.w) + (dm10.x*dm10.w) + (dm11.x*dm11.w) + (dm12.x*dm12.w) + (dm13.x*dm13.w) + (dm14.x*dm14.w) + (dm15.x*dm15.w);
+	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) \
+	    + (dm8.y*dm8.w) + (dm9.y*dm9.w) + (dm10.y*dm10.w) + (dm11.y*dm11.w) + (dm12.y*dm12.w) + (dm13.y*dm13.w) + (dm14.y*dm14.w) + (dm15.y*dm15.w);
+	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) \
+	    + (dm8.z*dm8.w) + (dm9.z*dm9.w) + (dm10.z*dm10.w) + (dm11.z*dm11.w) + (dm12.z*dm12.w) + (dm13.z*dm13.w) + (dm14.z*dm14.w) + (dm15.z*dm15.w);
+	}
+
+	{
+	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9, dm10, dm11, dm12, dm13, dm14, dm15;
+	  dm0 = dev_inter_001(xi, sj[96]);
+	  dm1 = dev_inter_001(xi, sj[97]);
+	  dm2 = dev_inter_001(xi, sj[98]);
+	  dm3 = dev_inter_001(xi, sj[99]);
+	  dm4 = dev_inter_001(xi, sj[100]);
+	  dm5 = dev_inter_001(xi, sj[101]);
+	  dm6 = dev_inter_001(xi, sj[102]);
+	  dm7 = dev_inter_001(xi, sj[103]);
+	  dm8 = dev_inter_001(xi, sj[104]);
+	  dm9 = dev_inter_001(xi, sj[105]);
+	  dm10 = dev_inter_001(xi, sj[106]);
+	  dm11 = dev_inter_001(xi, sj[107]);
+	  dm12 = dev_inter_001(xi, sj[108]);
+	  dm13 = dev_inter_001(xi, sj[109]);
+	  dm14 = dev_inter_001(xi, sj[110]);
+	  dm15 = dev_inter_001(xi, sj[111]);
+	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) \
+	    + (dm8.x*dm8.w) + (dm9.x*dm9.w) + (dm10.x*dm10.w) + (dm11.x*dm11.w) + (dm12.x*dm12.w) + (dm13.x*dm13.w) + (dm14.x*dm14.w) + (dm15.x*dm15.w);
+	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) \
+	    + (dm8.y*dm8.w) + (dm9.y*dm9.w) + (dm10.y*dm10.w) + (dm11.y*dm11.w) + (dm12.y*dm12.w) + (dm13.y*dm13.w) + (dm14.y*dm14.w) + (dm15.y*dm15.w);
+	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) \
+	    + (dm8.z*dm8.w) + (dm9.z*dm9.w) + (dm10.z*dm10.w) + (dm11.z*dm11.w) + (dm12.z*dm12.w) + (dm13.z*dm13.w) + (dm14.z*dm14.w) + (dm15.z*dm15.w);
+	}
+
+	{
+	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9, dm10, dm11, dm12, dm13, dm14, dm15;
+	  dm0 = dev_inter_001(xi, sj[112]);
+	  dm1 = dev_inter_001(xi, sj[113]);
+	  dm2 = dev_inter_001(xi, sj[114]);
+	  dm3 = dev_inter_001(xi, sj[115]);
+	  dm4 = dev_inter_001(xi, sj[116]);
+	  dm5 = dev_inter_001(xi, sj[117]);
+	  dm6 = dev_inter_001(xi, sj[118]);
+	  dm7 = dev_inter_001(xi, sj[119]);
+	  dm8 = dev_inter_001(xi, sj[120]);
+	  dm9 = dev_inter_001(xi, sj[121]);
+	  dm10 = dev_inter_001(xi, sj[122]);
+	  dm11 = dev_inter_001(xi, sj[123]);
+	  dm12 = dev_inter_001(xi, sj[124]);
+	  dm13 = dev_inter_001(xi, sj[125]);
+	  dm14 = dev_inter_001(xi, sj[126]);
+	  dm15 = dev_inter_001(xi, sj[127]);
+	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) \
+	    + (dm8.x*dm8.w) + (dm9.x*dm9.w) + (dm10.x*dm10.w) + (dm11.x*dm11.w) + (dm12.x*dm12.w) + (dm13.x*dm13.w) + (dm14.x*dm14.w) + (dm15.x*dm15.w);
+	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) \
+	    + (dm8.y*dm8.w) + (dm9.y*dm9.w) + (dm10.y*dm10.w) + (dm11.y*dm11.w) + (dm12.y*dm12.w) + (dm13.y*dm13.w) + (dm14.y*dm14.w) + (dm15.y*dm15.w);
+	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) \
+	    + (dm8.z*dm8.w) + (dm9.z*dm9.w) + (dm10.z*dm10.w) + (dm11.z*dm11.w) + (dm12.z*dm12.w) + (dm13.z*dm13.w) + (dm14.z*dm14.w) + (dm15.z*dm15.w);
+	}
+
+      }
+      if(ibase + tid < iend){
+	apotlist[ibase + tid] = apot;
+      }
+    }
+  }
+
+  __global__ 
+  void cunbody_kernel_tree_003(float4 *xilist,
+				float4 *xjlist,
+				float4 *apotlist,
+				unsigned int *ioffset,
+				unsigned int *joffset)
+  {
+    unsigned int tid = threadIdx.x;
+    unsigned int bid = blockIdx.x;
+    unsigned int ibegin = ioffset[bid];
+    unsigned int iend   = ioffset[bid+1];
+    unsigned int jbegin = joffset[bid];
+    unsigned int jend   = joffset[bid+1];
+    for(unsigned int ibase = ibegin; ibase < iend; ibase += NTHRE){
+      float4 xi = xilist[ibase + tid];
+      float4 apot = make_float4(0,0,0,0);
+      for(unsigned int jbase = jbegin; jbase < jend; jbase += NTHRE){
+	__shared__ float4 sj[NTHRE];
+	sj[tid] = xjlist[jbase + tid];
+	__syncthreads();
+	{
+	  float4 dm0 = dev_inter_001(xi, sj[0]);
+	  float4 dm1 = dev_inter_001(xi, sj[1]);
+	  float4 dm2 = dev_inter_001(xi, sj[2]);
+	  float4 dm3 = dev_inter_001(xi, sj[3]);
+	  float4 dm4 = dev_inter_001(xi, sj[4]);
+	  float4 dm5 = dev_inter_001(xi, sj[5]);
+	  float4 dm6 = dev_inter_001(xi, sj[6]);
+	  float4 dm7 = dev_inter_001(xi, sj[7]);
+	  float4 dm8 = dev_inter_001(xi, sj[8]);
+	  float4 dm9 = dev_inter_001(xi, sj[9]);
+
+	  float4 dm10 = dev_inter_001(xi, sj[0]);
+	  float4 dm11 = dev_inter_001(xi, sj[1]);
+	  float4 dm12 = dev_inter_001(xi, sj[2]);
+	  float4 dm13 = dev_inter_001(xi, sj[3]);
+	  float4 dm14 = dev_inter_001(xi, sj[4]);
+	  float4 dm15 = dev_inter_001(xi, sj[5]);
+	  float4 dm16 = dev_inter_001(xi, sj[6]);
+	  float4 dm17 = dev_inter_001(xi, sj[7]);
+	  float4 dm18 = dev_inter_001(xi, sj[8]);
+	  float4 dm19 = dev_inter_001(xi, sj[9]);
+
+	  float4 dm20 = dev_inter_001(xi, sj[0]);
+	  float4 dm21 = dev_inter_001(xi, sj[1]);
+	  float4 dm22 = dev_inter_001(xi, sj[2]);
+	  float4 dm23 = dev_inter_001(xi, sj[3]);
+	  float4 dm24 = dev_inter_001(xi, sj[4]);
+	  float4 dm25 = dev_inter_001(xi, sj[5]);
+	  float4 dm26 = dev_inter_001(xi, sj[6]);
+	  float4 dm27 = dev_inter_001(xi, sj[7]);
+	  float4 dm28 = dev_inter_001(xi, sj[8]);
+	  float4 dm29 = dev_inter_001(xi, sj[9]);
+
+	  float4 dm30 = dev_inter_001(xi, sj[0]);
+	  float4 dm31 = dev_inter_001(xi, sj[1]);
+	  float4 dm32 = dev_inter_001(xi, sj[2]);
+	  float4 dm33 = dev_inter_001(xi, sj[3]);
+	  float4 dm34 = dev_inter_001(xi, sj[4]);
+	  float4 dm35 = dev_inter_001(xi, sj[5]);
+	  float4 dm36 = dev_inter_001(xi, sj[6]);
+	  float4 dm37 = dev_inter_001(xi, sj[7]);
+	  float4 dm38 = dev_inter_001(xi, sj[8]);
+	  float4 dm39 = dev_inter_001(xi, sj[9]);
+
+	  float4 dm40 = dev_inter_001(xi, sj[0]);
+	  float4 dm41 = dev_inter_001(xi, sj[1]);
+	  float4 dm42 = dev_inter_001(xi, sj[2]);
+	  float4 dm43 = dev_inter_001(xi, sj[3]);
+	  float4 dm44 = dev_inter_001(xi, sj[4]);
+	  float4 dm45 = dev_inter_001(xi, sj[5]);
+	  float4 dm46 = dev_inter_001(xi, sj[6]);
+	  float4 dm47 = dev_inter_001(xi, sj[7]);
+	  float4 dm48 = dev_inter_001(xi, sj[8]);
+	  float4 dm49 = dev_inter_001(xi, sj[9]);
+
+	  float4 dm50 = dev_inter_001(xi, sj[0]);
+	  float4 dm51 = dev_inter_001(xi, sj[1]);
+	  float4 dm52 = dev_inter_001(xi, sj[2]);
+	  float4 dm53 = dev_inter_001(xi, sj[3]);
+	  float4 dm54 = dev_inter_001(xi, sj[4]);
+	  float4 dm55 = dev_inter_001(xi, sj[5]);
+	  float4 dm56 = dev_inter_001(xi, sj[6]);
+	  float4 dm57 = dev_inter_001(xi, sj[7]);
+	  float4 dm58 = dev_inter_001(xi, sj[8]);
+	  float4 dm59 = dev_inter_001(xi, sj[9]);
+
+	  float4 dm60 = dev_inter_001(xi, sj[0]);
+	  float4 dm61 = dev_inter_001(xi, sj[1]);
+	  float4 dm62 = dev_inter_001(xi, sj[2]);
+	  float4 dm63 = dev_inter_001(xi, sj[3]);
+	  float4 dm64 = dev_inter_001(xi, sj[4]);
+	  float4 dm65 = dev_inter_001(xi, sj[5]);
+	  float4 dm66 = dev_inter_001(xi, sj[6]);
+	  float4 dm67 = dev_inter_001(xi, sj[7]);
+	  float4 dm68 = dev_inter_001(xi, sj[8]);
+	  float4 dm69 = dev_inter_001(xi, sj[9]);
+
+	  float4 dm70 = dev_inter_001(xi, sj[0]);
+	  float4 dm71 = dev_inter_001(xi, sj[1]);
+	  float4 dm72 = dev_inter_001(xi, sj[2]);
+	  float4 dm73 = dev_inter_001(xi, sj[3]);
+	  float4 dm74 = dev_inter_001(xi, sj[4]);
+	  float4 dm75 = dev_inter_001(xi, sj[5]);
+	  float4 dm76 = dev_inter_001(xi, sj[6]);
+	  float4 dm77 = dev_inter_001(xi, sj[7]);
+	  float4 dm78 = dev_inter_001(xi, sj[8]);
+	  float4 dm79 = dev_inter_001(xi, sj[9]);
+
+	  float4 dm80 = dev_inter_001(xi, sj[0]);
+	  float4 dm81 = dev_inter_001(xi, sj[1]);
+	  float4 dm82 = dev_inter_001(xi, sj[2]);
+	  float4 dm83 = dev_inter_001(xi, sj[3]);
+	  float4 dm84 = dev_inter_001(xi, sj[4]);
+	  float4 dm85 = dev_inter_001(xi, sj[5]);
+	  float4 dm86 = dev_inter_001(xi, sj[6]);
+	  float4 dm87 = dev_inter_001(xi, sj[7]);
+	  float4 dm88 = dev_inter_001(xi, sj[8]);
+	  float4 dm89 = dev_inter_001(xi, sj[9]);
+
+	  float4 dm90 = dev_inter_001(xi, sj[0]);
+	  float4 dm91 = dev_inter_001(xi, sj[1]);
+	  float4 dm92 = dev_inter_001(xi, sj[2]);
+	  float4 dm93 = dev_inter_001(xi, sj[3]);
+	  float4 dm94 = dev_inter_001(xi, sj[4]);
+	  float4 dm95 = dev_inter_001(xi, sj[5]);
+	  float4 dm96 = dev_inter_001(xi, sj[6]);
+	  float4 dm97 = dev_inter_001(xi, sj[7]);
+	  float4 dm98 = dev_inter_001(xi, sj[8]);
+	  float4 dm99 = dev_inter_001(xi, sj[9]);
+
+	  float4 dm100 = dev_inter_001(xi, sj[0]);
+	  float4 dm101 = dev_inter_001(xi, sj[1]);
+	  float4 dm102 = dev_inter_001(xi, sj[2]);
+	  float4 dm103 = dev_inter_001(xi, sj[3]);
+	  float4 dm104 = dev_inter_001(xi, sj[4]);
+	  float4 dm105 = dev_inter_001(xi, sj[5]);
+	  float4 dm106 = dev_inter_001(xi, sj[6]);
+	  float4 dm107 = dev_inter_001(xi, sj[7]);
+	  float4 dm108 = dev_inter_001(xi, sj[8]);
+	  float4 dm109 = dev_inter_001(xi, sj[9]);
+
+	  float4 dm110 = dev_inter_001(xi, sj[0]);
+	  float4 dm111 = dev_inter_001(xi, sj[1]);
+	  float4 dm112 = dev_inter_001(xi, sj[2]);
+	  float4 dm113 = dev_inter_001(xi, sj[3]);
+	  float4 dm114 = dev_inter_001(xi, sj[4]);
+	  float4 dm115 = dev_inter_001(xi, sj[5]);
+	  float4 dm116 = dev_inter_001(xi, sj[6]);
+	  float4 dm117 = dev_inter_001(xi, sj[7]);
+	  float4 dm118 = dev_inter_001(xi, sj[8]);
+	  float4 dm119 = dev_inter_001(xi, sj[9]);
+
+	  float4 dm120 = dev_inter_001(xi, sj[0]);
+	  float4 dm121 = dev_inter_001(xi, sj[1]);
+	  float4 dm122 = dev_inter_001(xi, sj[2]);
+	  float4 dm123 = dev_inter_001(xi, sj[3]);
+	  float4 dm124 = dev_inter_001(xi, sj[4]);
+	  float4 dm125 = dev_inter_001(xi, sj[5]);
+	  float4 dm126 = dev_inter_001(xi, sj[6]);
+	  float4 dm127 = dev_inter_001(xi, sj[7]);
+
+
+#if (ACC_TYPE==1)
+	  apot.x += \
+	    (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) + (dm8.x*dm8.w) + (dm9.x*dm9.w) + \
+	    (dm10.x*dm10.w) + (dm11.x*dm11.w) + (dm12.x*dm12.w) + (dm13.x*dm13.w) + (dm14.x*dm14.w) + (dm15.x*dm15.w) + (dm16.x*dm16.w) + (dm17.x*dm17.w) + (dm18.x*dm18.w) + (dm19.x*dm19.w) + \
+	    (dm20.x*dm20.w) + (dm21.x*dm21.w) + (dm22.x*dm22.w) + (dm23.x*dm23.w) + (dm24.x*dm24.w) + (dm25.x*dm25.w) + (dm26.x*dm26.w) + (dm27.x*dm27.w) + (dm28.x*dm28.w) + (dm29.x*dm29.w) + \
+	    (dm30.x*dm30.w) + (dm31.x*dm31.w) + (dm32.x*dm32.w) + (dm33.x*dm33.w) + (dm34.x*dm34.w) + (dm35.x*dm35.w) + (dm36.x*dm36.w) + (dm37.x*dm37.w) + (dm38.x*dm38.w) + (dm39.x*dm39.w) + \
+	    (dm40.x*dm40.w) + (dm41.x*dm41.w) + (dm42.x*dm42.w) + (dm43.x*dm43.w) + (dm44.x*dm44.w) + (dm45.x*dm45.w) + (dm46.x*dm46.w) + (dm47.x*dm47.w) + (dm48.x*dm48.w) + (dm49.x*dm49.w) + \
+	    (dm50.x*dm50.w) + (dm51.x*dm51.w) + (dm52.x*dm52.w) + (dm53.x*dm53.w) + (dm54.x*dm54.w) + (dm55.x*dm55.w) + (dm56.x*dm56.w) + (dm57.x*dm57.w) + (dm58.x*dm58.w) + (dm59.x*dm59.w) + \
+	    (dm60.x*dm60.w) + (dm61.x*dm61.w) + (dm62.x*dm62.w) + (dm63.x*dm63.w) + (dm64.x*dm64.w) + (dm65.x*dm65.w) + (dm66.x*dm66.w) + (dm67.x*dm67.w) + (dm68.x*dm68.w) + (dm69.x*dm69.w) + \
+	    (dm70.x*dm70.w) + (dm71.x*dm71.w) + (dm72.x*dm72.w) + (dm73.x*dm73.w) + (dm74.x*dm74.w) + (dm75.x*dm75.w) + (dm76.x*dm76.w) + (dm77.x*dm77.w) + (dm78.x*dm78.w) + (dm79.x*dm79.w) + \
+	    (dm80.x*dm80.w) + (dm81.x*dm81.w) + (dm82.x*dm82.w) + (dm83.x*dm83.w) + (dm84.x*dm84.w) + (dm85.x*dm85.w) + (dm86.x*dm86.w) + (dm87.x*dm87.w) + (dm88.x*dm88.w) + (dm89.x*dm89.w) + \
+	    (dm90.x*dm90.w) + (dm91.x*dm91.w) + (dm92.x*dm92.w) + (dm93.x*dm93.w) + (dm94.x*dm94.w) + (dm95.x*dm95.w) + (dm96.x*dm96.w) + (dm97.x*dm97.w) + (dm98.x*dm98.w) + (dm99.x*dm99.w) + \
+	    (dm100.x*dm100.w) + (dm101.x*dm101.w) + (dm102.x*dm102.w) + (dm103.x*dm103.w) + (dm104.x*dm104.w) + (dm105.x*dm105.w) + (dm106.x*dm106.w) + (dm107.x*dm107.w) + (dm108.x*dm108.w) + (dm109.x*dm109.w) + \
+	    (dm110.x*dm110.w) + (dm111.x*dm111.w) + (dm112.x*dm112.w) + (dm113.x*dm113.w) + (dm114.x*dm114.w) + (dm115.x*dm115.w) + (dm116.x*dm116.w) + (dm117.x*dm117.w) + (dm118.x*dm118.w) + (dm119.x*dm119.w) + \
+	    (dm120.x*dm120.w) + (dm121.x*dm121.w) + (dm122.x*dm122.w) + (dm123.x*dm123.w) + (dm124.x*dm124.w) + (dm125.x*dm125.w) + (dm126.x*dm126.w) + (dm127.x*dm127.w);
+
+	  apot.y += \
+	    (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) + (dm8.y*dm8.w) + (dm9.y*dm9.w) + \
+	    (dm10.y*dm10.w) + (dm11.y*dm11.w) + (dm12.y*dm12.w) + (dm13.y*dm13.w) + (dm14.y*dm14.w) + (dm15.y*dm15.w) + (dm16.y*dm16.w) + (dm17.y*dm17.w) + (dm18.y*dm18.w) + (dm19.y*dm19.w) + \
+	    (dm20.y*dm20.w) + (dm21.y*dm21.w) + (dm22.y*dm22.w) + (dm23.y*dm23.w) + (dm24.y*dm24.w) + (dm25.y*dm25.w) + (dm26.y*dm26.w) + (dm27.y*dm27.w) + (dm28.y*dm28.w) + (dm29.y*dm29.w) + \
+	    (dm30.y*dm30.w) + (dm31.y*dm31.w) + (dm32.y*dm32.w) + (dm33.y*dm33.w) + (dm34.y*dm34.w) + (dm35.y*dm35.w) + (dm36.y*dm36.w) + (dm37.y*dm37.w) + (dm38.y*dm38.w) + (dm39.y*dm39.w) + \
+	    (dm40.y*dm40.w) + (dm41.y*dm41.w) + (dm42.y*dm42.w) + (dm43.y*dm43.w) + (dm44.y*dm44.w) + (dm45.y*dm45.w) + (dm46.y*dm46.w) + (dm47.y*dm47.w) + (dm48.y*dm48.w) + (dm49.y*dm49.w) + \
+	    (dm50.y*dm50.w) + (dm51.y*dm51.w) + (dm52.y*dm52.w) + (dm53.y*dm53.w) + (dm54.y*dm54.w) + (dm55.y*dm55.w) + (dm56.y*dm56.w) + (dm57.y*dm57.w) + (dm58.y*dm58.w) + (dm59.y*dm59.w) + \
+	    (dm60.y*dm60.w) + (dm61.y*dm61.w) + (dm62.y*dm62.w) + (dm63.y*dm63.w) + (dm64.y*dm64.w) + (dm65.y*dm65.w) + (dm66.y*dm66.w) + (dm67.y*dm67.w) + (dm68.y*dm68.w) + (dm69.y*dm69.w) + \
+	    (dm70.y*dm70.w) + (dm71.y*dm71.w) + (dm72.y*dm72.w) + (dm73.y*dm73.w) + (dm74.y*dm74.w) + (dm75.y*dm75.w) + (dm76.y*dm76.w) + (dm77.y*dm77.w) + (dm78.y*dm78.w) + (dm79.y*dm79.w) + \
+	    (dm80.y*dm80.w) + (dm81.y*dm81.w) + (dm82.y*dm82.w) + (dm83.y*dm83.w) + (dm84.y*dm84.w) + (dm85.y*dm85.w) + (dm86.y*dm86.w) + (dm87.y*dm87.w) + (dm88.y*dm88.w) + (dm89.y*dm89.w) + \
+	    (dm90.y*dm90.w) + (dm91.y*dm91.w) + (dm92.y*dm92.w) + (dm93.y*dm93.w) + (dm94.y*dm94.w) + (dm95.y*dm95.w) + (dm96.y*dm96.w) + (dm97.y*dm97.w) + (dm98.y*dm98.w) + (dm99.y*dm99.w) + \
+	    (dm100.y*dm100.w) + (dm101.y*dm101.w) + (dm102.y*dm102.w) + (dm103.y*dm103.w) + (dm104.y*dm104.w) + (dm105.y*dm105.w) + (dm106.y*dm106.w) + (dm107.y*dm107.w) + (dm108.y*dm108.w) + (dm109.y*dm109.w) + \
+	    (dm110.y*dm110.w) + (dm111.y*dm111.w) + (dm112.y*dm112.w) + (dm113.y*dm113.w) + (dm114.y*dm114.w) + (dm115.y*dm115.w) + (dm116.y*dm116.w) + (dm117.y*dm117.w) + (dm118.y*dm118.w) + (dm119.y*dm119.w) + \
+	    (dm120.y*dm120.w) + (dm121.y*dm121.w) + (dm122.y*dm122.w) + (dm123.y*dm123.w) + (dm124.y*dm124.w) + (dm125.y*dm125.w) + (dm126.y*dm126.w) + (dm127.y*dm127.w);
+
+	  apot.z += \
+	    (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) + (dm8.z*dm8.w) + (dm9.z*dm9.w) + \
+	    (dm10.z*dm10.w) + (dm11.z*dm11.w) + (dm12.z*dm12.w) + (dm13.z*dm13.w) + (dm14.z*dm14.w) + (dm15.z*dm15.w) + (dm16.z*dm16.w) + (dm17.z*dm17.w) + (dm18.z*dm18.w) + (dm19.z*dm19.w) + \
+	    (dm20.z*dm20.w) + (dm21.z*dm21.w) + (dm22.z*dm22.w) + (dm23.z*dm23.w) + (dm24.z*dm24.w) + (dm25.z*dm25.w) + (dm26.z*dm26.w) + (dm27.z*dm27.w) + (dm28.z*dm28.w) + (dm29.z*dm29.w) + \
+	    (dm30.z*dm30.w) + (dm31.z*dm31.w) + (dm32.z*dm32.w) + (dm33.z*dm33.w) + (dm34.z*dm34.w) + (dm35.z*dm35.w) + (dm36.z*dm36.w) + (dm37.z*dm37.w) + (dm38.z*dm38.w) + (dm39.z*dm39.w) + \
+	    (dm40.z*dm40.w) + (dm41.z*dm41.w) + (dm42.z*dm42.w) + (dm43.z*dm43.w) + (dm44.z*dm44.w) + (dm45.z*dm45.w) + (dm46.z*dm46.w) + (dm47.z*dm47.w) + (dm48.z*dm48.w) + (dm49.z*dm49.w) + \
+	    (dm50.z*dm50.w) + (dm51.z*dm51.w) + (dm52.z*dm52.w) + (dm53.z*dm53.w) + (dm54.z*dm54.w) + (dm55.z*dm55.w) + (dm56.z*dm56.w) + (dm57.z*dm57.w) + (dm58.z*dm58.w) + (dm59.z*dm59.w) + \
+	    (dm60.z*dm60.w) + (dm61.z*dm61.w) + (dm62.z*dm62.w) + (dm63.z*dm63.w) + (dm64.z*dm64.w) + (dm65.z*dm65.w) + (dm66.z*dm66.w) + (dm67.z*dm67.w) + (dm68.z*dm68.w) + (dm69.z*dm69.w) + \
+	    (dm70.z*dm70.w) + (dm71.z*dm71.w) + (dm72.z*dm72.w) + (dm73.z*dm73.w) + (dm74.z*dm74.w) + (dm75.z*dm75.w) + (dm76.z*dm76.w) + (dm77.z*dm77.w) + (dm78.z*dm78.w) + (dm79.z*dm79.w) + \
+	    (dm80.z*dm80.w) + (dm81.z*dm81.w) + (dm82.z*dm82.w) + (dm83.z*dm83.w) + (dm84.z*dm84.w) + (dm85.z*dm85.w) + (dm86.z*dm86.w) + (dm87.z*dm87.w) + (dm88.z*dm88.w) + (dm89.z*dm89.w) + \
+	    (dm90.z*dm90.w) + (dm91.z*dm91.w) + (dm92.z*dm92.w) + (dm93.z*dm93.w) + (dm94.z*dm94.w) + (dm95.z*dm95.w) + (dm96.z*dm96.w) + (dm97.z*dm97.w) + (dm98.z*dm98.w) + (dm99.z*dm99.w) + \
+	    (dm100.z*dm100.w) + (dm101.z*dm101.w) + (dm102.z*dm102.w) + (dm103.z*dm103.w) + (dm104.z*dm104.w) + (dm105.z*dm105.w) + (dm106.z*dm106.w) + (dm107.z*dm107.w) + (dm108.z*dm108.w) + (dm109.z*dm109.w) + \
+	    (dm110.z*dm110.w) + (dm111.z*dm111.w) + (dm112.z*dm112.w) + (dm113.z*dm113.w) + (dm114.z*dm114.w) + (dm115.z*dm115.w) + (dm116.z*dm116.w) + (dm117.z*dm117.w) + (dm118.z*dm118.w) + (dm119.z*dm119.w) + \
+	    (dm120.z*dm120.w) + (dm121.z*dm121.w) + (dm122.z*dm122.w) + (dm123.z*dm123.w) + (dm124.z*dm124.w) + (dm125.z*dm125.w) + (dm126.z*dm126.w) + (dm127.z*dm127.w);
+
+#else 
+	  apot.x += \
+	    (dm0.x*dm0.w + dm1.x*dm1.w + dm2.x*dm2.w + dm3.x*dm3.w + dm4.x*dm4.w + dm5.x*dm5.w + dm6.x*dm6.w + dm7.x*dm7.w + dm8.x*dm8.w + dm9.x*dm9.w + \
+	     dm10.x*dm10.w + dm11.x*dm11.w + dm12.x*dm12.w + dm13.x*dm13.w + dm14.x*dm14.w + dm15.x*dm15.w + dm16.x*dm16.w + dm17.x*dm17.w + dm18.x*dm18.w + dm19.x*dm19.w + \
+	     dm20.x*dm20.w + dm21.x*dm21.w + dm22.x*dm22.w + dm23.x*dm23.w + dm24.x*dm24.w + dm25.x*dm25.w + dm26.x*dm26.w + dm27.x*dm27.w + dm28.x*dm28.w + dm29.x*dm29.w + \
+	     dm30.x*dm30.w + dm31.x*dm31.w + dm32.x*dm32.w + dm33.x*dm33.w + dm34.x*dm34.w + dm35.x*dm35.w + dm36.x*dm36.w + dm37.x*dm37.w + dm38.x*dm38.w + dm39.x*dm39.w + \
+	     dm40.x*dm40.w + dm41.x*dm41.w + dm42.x*dm42.w + dm43.x*dm43.w + dm44.x*dm44.w + dm45.x*dm45.w + dm46.x*dm46.w + dm47.x*dm47.w + dm48.x*dm48.w + dm49.x*dm49.w + \
+	     dm50.x*dm50.w + dm51.x*dm51.w + dm52.x*dm52.w + dm53.x*dm53.w + dm54.x*dm54.w + dm55.x*dm55.w + dm56.x*dm56.w + dm57.x*dm57.w + dm58.x*dm58.w + dm59.x*dm59.w + \
+	     dm60.x*dm60.w + dm61.x*dm61.w + dm62.x*dm62.w + dm63.x*dm63.w) +\
+	    (dm64.x*dm64.w + dm65.x*dm65.w + dm66.x*dm66.w + dm67.x*dm67.w + dm68.x*dm68.w + dm69.x*dm69.w + \
+	     dm70.x*dm70.w + dm71.x*dm71.w + dm72.x*dm72.w + dm73.x*dm73.w + dm74.x*dm74.w + dm75.x*dm75.w + dm76.x*dm76.w + dm77.x*dm77.w + dm78.x*dm78.w + dm79.x*dm79.w + \
+	     dm80.x*dm80.w + dm81.x*dm81.w + dm82.x*dm82.w + dm83.x*dm83.w + dm84.x*dm84.w + dm85.x*dm85.w + dm86.x*dm86.w + dm87.x*dm87.w + dm88.x*dm88.w + dm89.x*dm89.w + \
+	     dm90.x*dm90.w + dm91.x*dm91.w + dm92.x*dm92.w + dm93.x*dm93.w + dm94.x*dm94.w + dm95.x*dm95.w + dm96.x*dm96.w + dm97.x*dm97.w + dm98.x*dm98.w + dm99.x*dm99.w + \
+	     dm100.x*dm100.w + dm101.x*dm101.w + dm102.x*dm102.w + dm103.x*dm103.w + dm104.x*dm104.w + dm105.x*dm105.w + dm106.x*dm106.w + dm107.x*dm107.w + dm108.x*dm108.w + dm109.x*dm109.w + \
+	     dm110.x*dm110.w + dm111.x*dm111.w + dm112.x*dm112.w + dm113.x*dm113.w + dm114.x*dm114.w + dm115.x*dm115.w + dm116.x*dm116.w + dm117.x*dm117.w + dm118.x*dm118.w + dm119.x*dm119.w + \
+	     dm120.x*dm120.w + dm121.x*dm121.w + dm122.x*dm122.w + dm123.x*dm123.w + dm124.x*dm124.w + dm125.x*dm125.w + dm126.x*dm126.w + dm127.x*dm127.w);
+
+	  apot.y += \
+	    (dm0.y*dm0.w + dm1.y*dm1.w + dm2.y*dm2.w + dm3.y*dm3.w + dm4.y*dm4.w + dm5.y*dm5.w + dm6.y*dm6.w + dm7.y*dm7.w + dm8.y*dm8.w + dm9.y*dm9.w + \
+	     dm10.y*dm10.w + dm11.y*dm11.w + dm12.y*dm12.w + dm13.y*dm13.w + dm14.y*dm14.w + dm15.y*dm15.w + dm16.y*dm16.w + dm17.y*dm17.w + dm18.y*dm18.w + dm19.y*dm19.w + \
+	     dm20.y*dm20.w + dm21.y*dm21.w + dm22.y*dm22.w + dm23.y*dm23.w + dm24.y*dm24.w + dm25.y*dm25.w + dm26.y*dm26.w + dm27.y*dm27.w + dm28.y*dm28.w + dm29.y*dm29.w + \
+	     dm30.y*dm30.w + dm31.y*dm31.w + dm32.y*dm32.w + dm33.y*dm33.w + dm34.y*dm34.w + dm35.y*dm35.w + dm36.y*dm36.w + dm37.y*dm37.w + dm38.y*dm38.w + dm39.y*dm39.w + \
+	     dm40.y*dm40.w + dm41.y*dm41.w + dm42.y*dm42.w + dm43.y*dm43.w + dm44.y*dm44.w + dm45.y*dm45.w + dm46.y*dm46.w + dm47.y*dm47.w + dm48.y*dm48.w + dm49.y*dm49.w + \
+	     dm50.y*dm50.w + dm51.y*dm51.w + dm52.y*dm52.w + dm53.y*dm53.w + dm54.y*dm54.w + dm55.y*dm55.w + dm56.y*dm56.w + dm57.y*dm57.w + dm58.y*dm58.w + dm59.y*dm59.w + \
+	     dm60.y*dm60.w + dm61.y*dm61.w + dm62.y*dm62.w + dm63.y*dm63.w) +\
+	    (dm64.x*dm64.w + dm65.x*dm65.w + dm66.x*dm66.w + dm67.x*dm67.w + dm68.x*dm68.w + dm69.x*dm69.w + \
+	     dm70.y*dm70.w + dm71.y*dm71.w + dm72.y*dm72.w + dm73.y*dm73.w + dm74.y*dm74.w + dm75.y*dm75.w + dm76.y*dm76.w + dm77.y*dm77.w + dm78.y*dm78.w + dm79.y*dm79.w + \
+	     dm80.y*dm80.w + dm81.y*dm81.w + dm82.y*dm82.w + dm83.y*dm83.w + dm84.y*dm84.w + dm85.y*dm85.w + dm86.y*dm86.w + dm87.y*dm87.w + dm88.y*dm88.w + dm89.y*dm89.w + \
+	     dm90.y*dm90.w + dm91.y*dm91.w + dm92.y*dm92.w + dm93.y*dm93.w + dm94.y*dm94.w + dm95.y*dm95.w + dm96.y*dm96.w + dm97.y*dm97.w + dm98.y*dm98.w + dm99.y*dm99.w + \
+	     dm100.y*dm100.w + dm101.y*dm101.w + dm102.y*dm102.w + dm103.y*dm103.w + dm104.y*dm104.w + dm105.y*dm105.w + dm106.y*dm106.w + dm107.y*dm107.w + dm108.y*dm108.w + dm109.y*dm109.w + \
+	     dm110.y*dm110.w + dm111.y*dm111.w + dm112.y*dm112.w + dm113.y*dm113.w + dm114.y*dm114.w + dm115.y*dm115.w + dm116.y*dm116.w + dm117.y*dm117.w + dm118.y*dm118.w + dm119.y*dm119.w + \
+	     dm120.y*dm120.w + dm121.y*dm121.w + dm122.y*dm122.w + dm123.y*dm123.w + dm124.y*dm124.w + dm125.y*dm125.w + dm126.y*dm126.w + dm127.y*dm127.w);
+
+	  apot.z += \
+	    (dm0.z*dm0.w + dm1.z*dm1.w + dm2.z*dm2.w + dm3.z*dm3.w + dm4.z*dm4.w + dm5.z*dm5.w + dm6.z*dm6.w + dm7.z*dm7.w + dm8.z*dm8.w + dm9.z*dm9.w + \
+	     dm10.z*dm10.w + dm11.z*dm11.w + dm12.z*dm12.w + dm13.z*dm13.w + dm14.z*dm14.w + dm15.z*dm15.w + dm16.z*dm16.w + dm17.z*dm17.w + dm18.z*dm18.w + dm19.z*dm19.w + \
+	     dm20.z*dm20.w + dm21.z*dm21.w + dm22.z*dm22.w + dm23.z*dm23.w + dm24.z*dm24.w + dm25.z*dm25.w + dm26.z*dm26.w + dm27.z*dm27.w + dm28.z*dm28.w + dm29.z*dm29.w + \
+	     dm30.z*dm30.w + dm31.z*dm31.w + dm32.z*dm32.w + dm33.z*dm33.w + dm34.z*dm34.w + dm35.z*dm35.w + dm36.z*dm36.w + dm37.z*dm37.w + dm38.z*dm38.w + dm39.z*dm39.w + \
+	     dm40.z*dm40.w + dm41.z*dm41.w + dm42.z*dm42.w + dm43.z*dm43.w + dm44.z*dm44.w + dm45.z*dm45.w + dm46.z*dm46.w + dm47.z*dm47.w + dm48.z*dm48.w + dm49.z*dm49.w + \
+	     dm50.z*dm50.w + dm51.z*dm51.w + dm52.z*dm52.w + dm53.z*dm53.w + dm54.z*dm54.w + dm55.z*dm55.w + dm56.z*dm56.w + dm57.z*dm57.w + dm58.z*dm58.w + dm59.z*dm59.w + \
+	     dm60.z*dm60.w + dm61.z*dm61.w + dm62.z*dm62.w + dm63.z*dm63.w) +\
+	    (dm64.z*dm64.w + dm65.z*dm65.w + dm66.z*dm66.w + dm67.z*dm67.w + dm68.z*dm68.w + dm69.z*dm69.w + \
+	     dm70.z*dm70.w + dm71.z*dm71.w + dm72.z*dm72.w + dm73.z*dm73.w + dm74.z*dm74.w + dm75.z*dm75.w + dm76.z*dm76.w + dm77.z*dm77.w + dm78.z*dm78.w + dm79.z*dm79.w + \
+	     dm80.z*dm80.w + dm81.z*dm81.w + dm82.z*dm82.w + dm83.z*dm83.w + dm84.z*dm84.w + dm85.z*dm85.w + dm86.z*dm86.w + dm87.z*dm87.w + dm88.z*dm88.w + dm89.z*dm89.w + \
+	     dm90.z*dm90.w + dm91.z*dm91.w + dm92.z*dm92.w + dm93.z*dm93.w + dm94.z*dm94.w + dm95.z*dm95.w + dm96.z*dm96.w + dm97.z*dm97.w + dm98.z*dm98.w + dm99.z*dm99.w + \
+	     dm100.z*dm100.w + dm101.z*dm101.w + dm102.z*dm102.w + dm103.z*dm103.w + dm104.z*dm104.w + dm105.z*dm105.w + dm106.z*dm106.w + dm107.z*dm107.w + dm108.z*dm108.w + dm109.z*dm109.w + \
+	     dm110.z*dm110.w + dm111.z*dm111.w + dm112.z*dm112.w + dm113.z*dm113.w + dm114.z*dm114.w + dm115.z*dm115.w + dm116.z*dm116.w + dm117.z*dm117.w + dm118.z*dm118.w + dm119.z*dm119.w + \
+	     dm120.z*dm120.w + dm121.z*dm121.w + dm122.z*dm122.w + dm123.z*dm123.w + dm124.z*dm124.w + dm125.z*dm125.w + dm126.z*dm126.w + dm127.z*dm127.w);
+#endif
+
+	}
+      }
+      if(ibase + tid < iend){
+	apotlist[ibase + tid] = apot;
+      }
+    }
+  }
+
+
+
+  __device__
+  float4 dev_inter_011(float4 xi, float4 xj, float* pot)
+  {
+    float dx = xj.x - xi.x;
+    float dy = xj.y - xi.y;
+    float dz = xj.z - xi.z;
+    float eps2 = xi.w;
+    float mj   = xj.w;
+    float r2 = (dx*dx + eps2) + dy*dy + dz*dz;
+    float r1i  = 1/sqrt(r2);
+
+    if(r2 == eps2) mj = 0.0;
+    float r2i = r1i*r1i;
+    float mr3i = mj * r1i * r2i;
+    float4 retval;
+
+    retval.x = dx; 
+    retval.y = dy; 
+    retval.z = dz;
+    retval.w = mr3i; 
+    (*pot) -= mj * r1i;
+
+    return (retval);
+  }
+
+
+  __global__ 
+  void cunbody_kernel_tree_011(float4 *xilist,
+				float4 *xjlist,
+				float4 *apotlist,
+				unsigned int *ioffset,
+				unsigned int *joffset)
+  {
+    unsigned int tid = threadIdx.x;
+    unsigned int bid = blockIdx.x;
+    unsigned int ibegin = ioffset[bid];
+    unsigned int iend   = ioffset[bid+1];
+    unsigned int jbegin = joffset[bid];
+    unsigned int jend   = joffset[bid+1];
+    for(unsigned int ibase = ibegin; ibase < iend; ibase += NTHRE){
+      float4 xi = xilist[ibase + tid];
+      float4 apot = make_float4(0,0,0,0);
+      float pot0 = 0.0;
+      float pot1 = 0.0;
+      float pot2 = 0.0;
+      float pot3 = 0.0;
+      float pot4 = 0.0;
+      float pot5 = 0.0;
+      float pot6 = 0.0;
+      float pot7 = 0.0;
+
+      for(unsigned int jbase = jbegin; jbase < jend; jbase += NTHRE){
+	__shared__ float4 sj[NTHRE];
+	sj[tid] = xjlist[jbase + tid];
+	__syncthreads();
+	{
+	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9, dm10, dm11, dm12, dm13, dm14, dm15;
+	  dm0 = dev_inter_011(xi, sj[0], &pot0);
+	  dm1 = dev_inter_011(xi, sj[1], &pot0);
+	  dm2 = dev_inter_011(xi, sj[2], &pot0);
+	  dm3 = dev_inter_011(xi, sj[3], &pot0);
+	  dm4 = dev_inter_011(xi, sj[4], &pot0);
+	  dm5 = dev_inter_011(xi, sj[5], &pot0);
+	  dm6 = dev_inter_011(xi, sj[6], &pot0);
+	  dm7 = dev_inter_011(xi, sj[7], &pot0);
+	  dm8 = dev_inter_011(xi, sj[8], &pot0);
+	  dm9 = dev_inter_011(xi, sj[9], &pot0);
+	  dm10 = dev_inter_011(xi, sj[10], &pot0);
+	  dm11 = dev_inter_011(xi, sj[11], &pot0);
+	  dm12 = dev_inter_011(xi, sj[12], &pot0);
+	  dm13 = dev_inter_011(xi, sj[13], &pot0);
+	  dm14 = dev_inter_011(xi, sj[14], &pot0);
+	  dm15 = dev_inter_011(xi, sj[15], &pot0);
+	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) \
+	    + (dm8.x*dm8.w) + (dm9.x*dm9.w) + (dm10.x*dm10.w) + (dm11.x*dm11.w) + (dm12.x*dm12.w) + (dm13.x*dm13.w) + (dm14.x*dm14.w) + (dm15.x*dm15.w);
+	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) \
+	    + (dm8.y*dm8.w) + (dm9.y*dm9.w) + (dm10.y*dm10.w) + (dm11.y*dm11.w) + (dm12.y*dm12.w) + (dm13.y*dm13.w) + (dm14.y*dm14.w) + (dm15.y*dm15.w);
+	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) \
+	    + (dm8.z*dm8.w) + (dm9.z*dm9.w) + (dm10.z*dm10.w) + (dm11.z*dm11.w) + (dm12.z*dm12.w) + (dm13.z*dm13.w) + (dm14.z*dm14.w) + (dm15.z*dm15.w);
+	}
+
+	{
+	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9, dm10, dm11, dm12, dm13, dm14, dm15;
+	  dm0 = dev_inter_011(xi, sj[16], &pot1);
+	  dm1 = dev_inter_011(xi, sj[17], &pot1);
+	  dm2 = dev_inter_011(xi, sj[18], &pot1);
+	  dm3 = dev_inter_011(xi, sj[19], &pot1);
+	  dm4 = dev_inter_011(xi, sj[20], &pot1);
+	  dm5 = dev_inter_011(xi, sj[21], &pot1);
+	  dm6 = dev_inter_011(xi, sj[22], &pot1);
+	  dm7 = dev_inter_011(xi, sj[23], &pot1);
+	  dm8 = dev_inter_011(xi, sj[24], &pot1);
+	  dm9 = dev_inter_011(xi, sj[25], &pot1);
+	  dm10 = dev_inter_011(xi, sj[26], &pot1);
+	  dm11 = dev_inter_011(xi, sj[27], &pot1);
+	  dm12 = dev_inter_011(xi, sj[28], &pot1);
+	  dm13 = dev_inter_011(xi, sj[29], &pot1);
+	  dm14 = dev_inter_011(xi, sj[30], &pot1);
+	  dm15 = dev_inter_011(xi, sj[31], &pot1);
+	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) \
+	    + (dm8.x*dm8.w) + (dm9.x*dm9.w) + (dm10.x*dm10.w) + (dm11.x*dm11.w) + (dm12.x*dm12.w) + (dm13.x*dm13.w) + (dm14.x*dm14.w) + (dm15.x*dm15.w);
+	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) \
+	    + (dm8.y*dm8.w) + (dm9.y*dm9.w) + (dm10.y*dm10.w) + (dm11.y*dm11.w) + (dm12.y*dm12.w) + (dm13.y*dm13.w) + (dm14.y*dm14.w) + (dm15.y*dm15.w);
+	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) \
+	    + (dm8.z*dm8.w) + (dm9.z*dm9.w) + (dm10.z*dm10.w) + (dm11.z*dm11.w) + (dm12.z*dm12.w) + (dm13.z*dm13.w) + (dm14.z*dm14.w) + (dm15.z*dm15.w);
+	}
+
+	{
+	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9, dm10, dm11, dm12, dm13, dm14, dm15;
+	  dm0 = dev_inter_011(xi, sj[32], &pot2);
+	  dm1 = dev_inter_011(xi, sj[33], &pot2);
+	  dm2 = dev_inter_011(xi, sj[34], &pot2);
+	  dm3 = dev_inter_011(xi, sj[35], &pot2);
+	  dm4 = dev_inter_011(xi, sj[36], &pot2);
+	  dm5 = dev_inter_011(xi, sj[37], &pot2);
+	  dm6 = dev_inter_011(xi, sj[38], &pot2);
+	  dm7 = dev_inter_011(xi, sj[39], &pot2);
+	  dm8 = dev_inter_011(xi, sj[40], &pot2);
+	  dm9 = dev_inter_011(xi, sj[41], &pot2);
+	  dm10 = dev_inter_011(xi, sj[42], &pot2);
+	  dm11 = dev_inter_011(xi, sj[43], &pot2);
+	  dm12 = dev_inter_011(xi, sj[44], &pot2);
+	  dm13 = dev_inter_011(xi, sj[45], &pot2);
+	  dm14 = dev_inter_011(xi, sj[46], &pot2);
+	  dm15 = dev_inter_011(xi, sj[47], &pot2);
+	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) \
+	    + (dm8.x*dm8.w) + (dm9.x*dm9.w) + (dm10.x*dm10.w) + (dm11.x*dm11.w) + (dm12.x*dm12.w) + (dm13.x*dm13.w) + (dm14.x*dm14.w) + (dm15.x*dm15.w);
+	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) \
+	    + (dm8.y*dm8.w) + (dm9.y*dm9.w) + (dm10.y*dm10.w) + (dm11.y*dm11.w) + (dm12.y*dm12.w) + (dm13.y*dm13.w) + (dm14.y*dm14.w) + (dm15.y*dm15.w);
+	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) \
+	    + (dm8.z*dm8.w) + (dm9.z*dm9.w) + (dm10.z*dm10.w) + (dm11.z*dm11.w) + (dm12.z*dm12.w) + (dm13.z*dm13.w) + (dm14.z*dm14.w) + (dm15.z*dm15.w);
+	}
+
+	{
+	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9, dm10, dm11, dm12, dm13, dm14, dm15;
+	  dm0 = dev_inter_011(xi, sj[48], &pot3);
+	  dm1 = dev_inter_011(xi, sj[49], &pot3);
+	  dm2 = dev_inter_011(xi, sj[50], &pot3);
+	  dm3 = dev_inter_011(xi, sj[51], &pot3);
+	  dm4 = dev_inter_011(xi, sj[52], &pot3);
+	  dm5 = dev_inter_011(xi, sj[53], &pot3);
+	  dm6 = dev_inter_011(xi, sj[54], &pot3);
+	  dm7 = dev_inter_011(xi, sj[55], &pot3);
+	  dm8 = dev_inter_011(xi, sj[56], &pot3);
+	  dm9 = dev_inter_011(xi, sj[57], &pot3);
+	  dm10 = dev_inter_011(xi, sj[58], &pot3);
+	  dm11 = dev_inter_011(xi, sj[59], &pot3);
+	  dm12 = dev_inter_011(xi, sj[60], &pot3);
+	  dm13 = dev_inter_011(xi, sj[61], &pot3);
+	  dm14 = dev_inter_011(xi, sj[62], &pot3);
+	  dm15 = dev_inter_011(xi, sj[63], &pot3);
+	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) \
+	    + (dm8.x*dm8.w) + (dm9.x*dm9.w) + (dm10.x*dm10.w) + (dm11.x*dm11.w) + (dm12.x*dm12.w) + (dm13.x*dm13.w) + (dm14.x*dm14.w) + (dm15.x*dm15.w);
+	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) \
+	    + (dm8.y*dm8.w) + (dm9.y*dm9.w) + (dm10.y*dm10.w) + (dm11.y*dm11.w) + (dm12.y*dm12.w) + (dm13.y*dm13.w) + (dm14.y*dm14.w) + (dm15.y*dm15.w);
+	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) \
+	    + (dm8.z*dm8.w) + (dm9.z*dm9.w) + (dm10.z*dm10.w) + (dm11.z*dm11.w) + (dm12.z*dm12.w) + (dm13.z*dm13.w) + (dm14.z*dm14.w) + (dm15.z*dm15.w);
+	}
+
+	{
+	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9, dm10, dm11, dm12, dm13, dm14, dm15;
+	  dm0 = dev_inter_011(xi, sj[64], &pot4);
+	  dm1 = dev_inter_011(xi, sj[65], &pot4);
+	  dm2 = dev_inter_011(xi, sj[66], &pot4);
+	  dm3 = dev_inter_011(xi, sj[67], &pot4);
+	  dm4 = dev_inter_011(xi, sj[68], &pot4);
+	  dm5 = dev_inter_011(xi, sj[69], &pot4);
+	  dm6 = dev_inter_011(xi, sj[70], &pot4);
+	  dm7 = dev_inter_011(xi, sj[71], &pot4);
+	  dm8 = dev_inter_011(xi, sj[72], &pot4);
+	  dm9 = dev_inter_011(xi, sj[73], &pot4);
+	  dm10 = dev_inter_011(xi, sj[74], &pot4);
+	  dm11 = dev_inter_011(xi, sj[75], &pot4);
+	  dm12 = dev_inter_011(xi, sj[76], &pot4);
+	  dm13 = dev_inter_011(xi, sj[77], &pot4);
+	  dm14 = dev_inter_011(xi, sj[78], &pot4);
+	  dm15 = dev_inter_011(xi, sj[79], &pot4);
+	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) \
+	    + (dm8.x*dm8.w) + (dm9.x*dm9.w) + (dm10.x*dm10.w) + (dm11.x*dm11.w) + (dm12.x*dm12.w) + (dm13.x*dm13.w) + (dm14.x*dm14.w) + (dm15.x*dm15.w);
+	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) \
+	    + (dm8.y*dm8.w) + (dm9.y*dm9.w) + (dm10.y*dm10.w) + (dm11.y*dm11.w) + (dm12.y*dm12.w) + (dm13.y*dm13.w) + (dm14.y*dm14.w) + (dm15.y*dm15.w);
+	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) \
+	    + (dm8.z*dm8.w) + (dm9.z*dm9.w) + (dm10.z*dm10.w) + (dm11.z*dm11.w) + (dm12.z*dm12.w) + (dm13.z*dm13.w) + (dm14.z*dm14.w) + (dm15.z*dm15.w);
+	}
+
+	{
+	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9, dm10, dm11, dm12, dm13, dm14, dm15;
+	  dm0 = dev_inter_011(xi, sj[80], &pot5);
+	  dm1 = dev_inter_011(xi, sj[81], &pot5);
+	  dm2 = dev_inter_011(xi, sj[82], &pot5);
+	  dm3 = dev_inter_011(xi, sj[83], &pot5);
+	  dm4 = dev_inter_011(xi, sj[84], &pot5);
+	  dm5 = dev_inter_011(xi, sj[85], &pot5);
+	  dm6 = dev_inter_011(xi, sj[86], &pot5);
+	  dm7 = dev_inter_011(xi, sj[87], &pot5);
+	  dm8 = dev_inter_011(xi, sj[88], &pot5);
+	  dm9 = dev_inter_011(xi, sj[89], &pot5);
+	  dm10 = dev_inter_011(xi, sj[90], &pot5);
+	  dm11 = dev_inter_011(xi, sj[91], &pot5);
+	  dm12 = dev_inter_011(xi, sj[92], &pot5);
+	  dm13 = dev_inter_011(xi, sj[93], &pot5);
+	  dm14 = dev_inter_011(xi, sj[94], &pot5);
+	  dm15 = dev_inter_011(xi, sj[95], &pot5);
+	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) \
+	    + (dm8.x*dm8.w) + (dm9.x*dm9.w) + (dm10.x*dm10.w) + (dm11.x*dm11.w) + (dm12.x*dm12.w) + (dm13.x*dm13.w) + (dm14.x*dm14.w) + (dm15.x*dm15.w);
+	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) \
+	    + (dm8.y*dm8.w) + (dm9.y*dm9.w) + (dm10.y*dm10.w) + (dm11.y*dm11.w) + (dm12.y*dm12.w) + (dm13.y*dm13.w) + (dm14.y*dm14.w) + (dm15.y*dm15.w);
+	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) \
+	    + (dm8.z*dm8.w) + (dm9.z*dm9.w) + (dm10.z*dm10.w) + (dm11.z*dm11.w) + (dm12.z*dm12.w) + (dm13.z*dm13.w) + (dm14.z*dm14.w) + (dm15.z*dm15.w);
+	}
+
+	{
+	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9, dm10, dm11, dm12, dm13, dm14, dm15;
+	  dm0 = dev_inter_011(xi, sj[96], &pot6);
+	  dm1 = dev_inter_011(xi, sj[97], &pot6);
+	  dm2 = dev_inter_011(xi, sj[98], &pot6);
+	  dm3 = dev_inter_011(xi, sj[99], &pot6);
+	  dm4 = dev_inter_011(xi, sj[100], &pot6);
+	  dm5 = dev_inter_011(xi, sj[101], &pot6);
+	  dm6 = dev_inter_011(xi, sj[102], &pot6);
+	  dm7 = dev_inter_011(xi, sj[103], &pot6);
+	  dm8 = dev_inter_011(xi, sj[104], &pot6);
+	  dm9 = dev_inter_011(xi, sj[105], &pot6);
+	  dm10 = dev_inter_011(xi, sj[106], &pot6);
+	  dm11 = dev_inter_011(xi, sj[107], &pot6);
+	  dm12 = dev_inter_011(xi, sj[108], &pot6);
+	  dm13 = dev_inter_011(xi, sj[109], &pot6);
+	  dm14 = dev_inter_011(xi, sj[110], &pot6);
+	  dm15 = dev_inter_011(xi, sj[111], &pot6);
+	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) \
+	    + (dm8.x*dm8.w) + (dm9.x*dm9.w) + (dm10.x*dm10.w) + (dm11.x*dm11.w) + (dm12.x*dm12.w) + (dm13.x*dm13.w) + (dm14.x*dm14.w) + (dm15.x*dm15.w);
+	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) \
+	    + (dm8.y*dm8.w) + (dm9.y*dm9.w) + (dm10.y*dm10.w) + (dm11.y*dm11.w) + (dm12.y*dm12.w) + (dm13.y*dm13.w) + (dm14.y*dm14.w) + (dm15.y*dm15.w);
+	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) \
+	    + (dm8.z*dm8.w) + (dm9.z*dm9.w) + (dm10.z*dm10.w) + (dm11.z*dm11.w) + (dm12.z*dm12.w) + (dm13.z*dm13.w) + (dm14.z*dm14.w) + (dm15.z*dm15.w);
+	}
+
+	{
+	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9, dm10, dm11, dm12, dm13, dm14, dm15;
+	  dm0 = dev_inter_011(xi, sj[112], &pot7);
+	  dm1 = dev_inter_011(xi, sj[113], &pot7);
+	  dm2 = dev_inter_011(xi, sj[114], &pot7);
+	  dm3 = dev_inter_011(xi, sj[115], &pot7);
+	  dm4 = dev_inter_011(xi, sj[116], &pot7);
+	  dm5 = dev_inter_011(xi, sj[117], &pot7);
+	  dm6 = dev_inter_011(xi, sj[118], &pot7);
+	  dm7 = dev_inter_011(xi, sj[119], &pot7);
+	  dm8 = dev_inter_011(xi, sj[120], &pot7);
+	  dm9 = dev_inter_011(xi, sj[121], &pot7);
+	  dm10 = dev_inter_011(xi, sj[122], &pot7);
+	  dm11 = dev_inter_011(xi, sj[123], &pot7);
+	  dm12 = dev_inter_011(xi, sj[124], &pot7);
+	  dm13 = dev_inter_011(xi, sj[125], &pot7);
+	  dm14 = dev_inter_011(xi, sj[126], &pot7);
+	  dm15 = dev_inter_011(xi, sj[127], &pot7);
+	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) \
+	    + (dm8.x*dm8.w) + (dm9.x*dm9.w) + (dm10.x*dm10.w) + (dm11.x*dm11.w) + (dm12.x*dm12.w) + (dm13.x*dm13.w) + (dm14.x*dm14.w) + (dm15.x*dm15.w);
+	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) \
+	    + (dm8.y*dm8.w) + (dm9.y*dm9.w) + (dm10.y*dm10.w) + (dm11.y*dm11.w) + (dm12.y*dm12.w) + (dm13.y*dm13.w) + (dm14.y*dm14.w) + (dm15.y*dm15.w);
+	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) \
+	    + (dm8.z*dm8.w) + (dm9.z*dm9.w) + (dm10.z*dm10.w) + (dm11.z*dm11.w) + (dm12.z*dm12.w) + (dm13.z*dm13.w) + (dm14.z*dm14.w) + (dm15.z*dm15.w);
+	}
+
+      }
+
+      apot.w -= pot0+pot1+pot2+pot3+pot4+pot5+pot6+pot7;
+
+      if(ibase + tid < iend){
+	apotlist[ibase + tid] = apot;
+      }
+    }
+  }
+
+
+  // 2008/04/23
+  __device__ float4 dev_apot(float4 xi, float4 xj, float4 apot)
+  {
+    float dx = xj.x - xi.x;
+    float dy = xj.y - xi.y;
+    float dz = xj.z - xi.z;
+    float eps2 = xi.w;
+    float mj   = xj.w;
+    float r2   = (dx*dx + eps2) + dy*dy + dz*dz;
+    float r1i  = rsqrt(r2);
+    float r2i  = r1i*r1i;
+    float mr1i = mj * r1i;
+    float mr3i = mr1i * r2i;
+    apot.x += dx * mr3i;
+    apot.y += dy * mr3i;
+    apot.z += dz * mr3i;
+    apot.w -= mr1i;
+    return (apot);
+  }
+
+  // 2008/04/23
+  __global__ 
+  void cunbody_kernel_tree_012(float4 *xilist,
+			       float4 *xjlist,
+			       float4 *apotlist,
+			       unsigned int *ioffset,
+			       unsigned int *joffset)
+  {
+    unsigned int tid = threadIdx.x;
+    unsigned int bid = blockIdx.x;
+    unsigned int ibegin = ioffset[bid];
+    unsigned int iend   = ioffset[bid+1];
+    unsigned int jbegin = joffset[bid];
+    unsigned int jend   = joffset[bid+1];
+    for(unsigned int ibase = ibegin; ibase < iend; ibase += NTHRE){
+      float4 xi = xilist[ibase + tid];
+      float4 apot = make_float4(0.0f, 0.0f, 0.0f, 0.0f);
+
+      for(unsigned int jbase = jbegin; jbase < jend; jbase += NTHRE){
+	__shared__ float4 sj[NTHRE];
+	sj[tid] = xjlist[jbase + tid];
+	__syncthreads();
+	apot = dev_apot(xi, sj[0], apot); apot = dev_apot(xi, sj[1], apot); apot = dev_apot(xi, sj[2], apot); apot = dev_apot(xi, sj[3], apot);	apot = dev_apot(xi, sj[4], apot);
+	apot = dev_apot(xi, sj[5], apot); apot = dev_apot(xi, sj[6], apot); apot = dev_apot(xi, sj[7], apot); apot = dev_apot(xi, sj[8], apot); apot = dev_apot(xi, sj[9], apot);
+	apot = dev_apot(xi, sj[10], apot); apot = dev_apot(xi, sj[11], apot); apot = dev_apot(xi, sj[12], apot); apot = dev_apot(xi, sj[13], apot); apot = dev_apot(xi, sj[14], apot);
+	apot = dev_apot(xi, sj[15], apot); apot = dev_apot(xi, sj[16], apot); apot = dev_apot(xi, sj[17], apot); apot = dev_apot(xi, sj[18], apot); apot = dev_apot(xi, sj[19], apot);
+	apot = dev_apot(xi, sj[20], apot); apot = dev_apot(xi, sj[21], apot); apot = dev_apot(xi, sj[22], apot); apot = dev_apot(xi, sj[23], apot); apot = dev_apot(xi, sj[24], apot);
+	apot = dev_apot(xi, sj[25], apot); apot = dev_apot(xi, sj[26], apot); apot = dev_apot(xi, sj[27], apot); apot = dev_apot(xi, sj[28], apot); apot = dev_apot(xi, sj[29], apot);
+	apot = dev_apot(xi, sj[30], apot); apot = dev_apot(xi, sj[31], apot); apot = dev_apot(xi, sj[32], apot); apot = dev_apot(xi, sj[33], apot); apot = dev_apot(xi, sj[34], apot);
+	apot = dev_apot(xi, sj[35], apot); apot = dev_apot(xi, sj[36], apot); apot = dev_apot(xi, sj[37], apot); apot = dev_apot(xi, sj[38], apot); apot = dev_apot(xi, sj[39], apot);
+	apot = dev_apot(xi, sj[40], apot); apot = dev_apot(xi, sj[41], apot); apot = dev_apot(xi, sj[42], apot); apot = dev_apot(xi, sj[43], apot); apot = dev_apot(xi, sj[44], apot);
+	apot = dev_apot(xi, sj[45], apot); apot = dev_apot(xi, sj[46], apot); apot = dev_apot(xi, sj[47], apot); apot = dev_apot(xi, sj[48], apot); apot = dev_apot(xi, sj[49], apot);
+	apot = dev_apot(xi, sj[50], apot); apot = dev_apot(xi, sj[51], apot); apot = dev_apot(xi, sj[52], apot); apot = dev_apot(xi, sj[53], apot); apot = dev_apot(xi, sj[54], apot);
+	apot = dev_apot(xi, sj[55], apot); apot = dev_apot(xi, sj[56], apot); apot = dev_apot(xi, sj[57], apot); apot = dev_apot(xi, sj[58], apot); apot = dev_apot(xi, sj[59], apot);
+	apot = dev_apot(xi, sj[60], apot); apot = dev_apot(xi, sj[61], apot); apot = dev_apot(xi, sj[62], apot); apot = dev_apot(xi, sj[63], apot); apot = dev_apot(xi, sj[64], apot);
+	apot = dev_apot(xi, sj[65], apot); apot = dev_apot(xi, sj[66], apot); apot = dev_apot(xi, sj[67], apot); apot = dev_apot(xi, sj[68], apot); apot = dev_apot(xi, sj[69], apot);
+	apot = dev_apot(xi, sj[70], apot); apot = dev_apot(xi, sj[71], apot); apot = dev_apot(xi, sj[72], apot); apot = dev_apot(xi, sj[73], apot); apot = dev_apot(xi, sj[74], apot);
+	apot = dev_apot(xi, sj[75], apot); apot = dev_apot(xi, sj[76], apot); apot = dev_apot(xi, sj[77], apot); apot = dev_apot(xi, sj[78], apot); apot = dev_apot(xi, sj[79], apot);
+	apot = dev_apot(xi, sj[80], apot); apot = dev_apot(xi, sj[81], apot); apot = dev_apot(xi, sj[82], apot); apot = dev_apot(xi, sj[83], apot); apot = dev_apot(xi, sj[84], apot);
+	apot = dev_apot(xi, sj[85], apot); apot = dev_apot(xi, sj[86], apot); apot = dev_apot(xi, sj[87], apot); apot = dev_apot(xi, sj[88], apot); apot = dev_apot(xi, sj[89], apot);
+	apot = dev_apot(xi, sj[90], apot); apot = dev_apot(xi, sj[91], apot); apot = dev_apot(xi, sj[92], apot); apot = dev_apot(xi, sj[93], apot); apot = dev_apot(xi, sj[94], apot);
+	apot = dev_apot(xi, sj[95], apot); apot = dev_apot(xi, sj[96], apot); apot = dev_apot(xi, sj[97], apot); apot = dev_apot(xi, sj[98], apot); apot = dev_apot(xi, sj[99], apot);
+	apot = dev_apot(xi, sj[100], apot); apot = dev_apot(xi, sj[101], apot); apot = dev_apot(xi, sj[102], apot); apot = dev_apot(xi, sj[103], apot); apot = dev_apot(xi, sj[104], apot);
+	apot = dev_apot(xi, sj[105], apot); apot = dev_apot(xi, sj[106], apot); apot = dev_apot(xi, sj[107], apot); apot = dev_apot(xi, sj[108], apot); apot = dev_apot(xi, sj[109], apot);
+	apot = dev_apot(xi, sj[110], apot); apot = dev_apot(xi, sj[111], apot); apot = dev_apot(xi, sj[112], apot); apot = dev_apot(xi, sj[113], apot); apot = dev_apot(xi, sj[114], apot);
+	apot = dev_apot(xi, sj[115], apot); apot = dev_apot(xi, sj[116], apot); apot = dev_apot(xi, sj[117], apot); apot = dev_apot(xi, sj[118], apot); apot = dev_apot(xi, sj[119], apot);
+	apot = dev_apot(xi, sj[120], apot); apot = dev_apot(xi, sj[121], apot); apot = dev_apot(xi, sj[122], apot); apot = dev_apot(xi, sj[123], apot); apot = dev_apot(xi, sj[124], apot);
+	apot = dev_apot(xi, sj[125], apot); apot = dev_apot(xi, sj[126], apot); apot = dev_apot(xi, sj[127], apot);
+	__syncthreads();
+      }
+
+      if(ibase + tid < iend){
+	apotlist[ibase + tid] = apot;
+      }
+    }
+  }
+
+  // 2008/04/24
+  __global__ 
+  void cunbody_kernel_tree_013(float4 *xilist,
+			       float4 *xjlist,
+			       float4 *apotlist,
+			       unsigned int *ioffset,
+			       unsigned int *joffset)
+  {
+    __syncthreads(); // iranai
+
+    int tid = threadIdx.x;
+    int bid = blockIdx.x;
+    int ibegin = ioffset[bid];
+    int iend   = ioffset[bid+1];
+    int jbegin = joffset[bid];
+    int jend   = joffset[bid+1];
+
+    __syncthreads(); // iranai
+    for(int ibase = ibegin; ibase < iend; ibase += NTHRE){
+
+      __syncthreads(); // iranai
+      float4 xi = xilist[ibase + tid];
+      float4 apot = make_float4(0.0f, 0.0f, 0.0f, 0.0f);
+      __syncthreads(); // iranai
+      __shared__ float4 sj[NTHRE];
+      __syncthreads(); // iranai
+
+      for(int jbase = jbegin; jbase < jend; jbase += NTHRE){
+	sj[tid] = xjlist[jbase + tid];
+	__syncthreads();
+	for(int j=0; j<128; j++){ apot = dev_apot(xi, sj[j], apot); }
+	__syncthreads();
+      }
+
+      __syncthreads(); // iranai
+      if(ibase + tid < iend){
+	apotlist[ibase + tid] = apot;
+      }
+      __syncthreads(); // iranai
+    }
+
+    __syncthreads(); // irania
+  }
+
+
+}; // namespace libcunbody __END__
+
+

@@ -1,129 +1,59 @@
-Wed Nov 24 19:28:36 JST 2021
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-import argparse
-import numpy as np
-import cv2
-from datetime import datetime
-import mkdir
-import aieye_find
-import time
-import sys
+Mon Dec 13 19:26:41 JST 2021
+//-----------------------------------------------------------------------------
+// mk_eight.C:  prints initial conditions for the figure eight
+//              of the three-body problem
+//-----------------------------------------------------------------------------
+#include  <iostream>
+using namespace std;
 
-class_num = 1 # annotate number for class: 001: hamada
-drawing = False
-posi0 = [-1,-1]
-posi1 = [-1,-1]
-image_size = [-1, -1] # [height, width]
+typedef double  real;                      // "real" as a general name for the
+                                           // standard floating-point data type
+#define  NDIM     3                        // number of spatial dimensions
 
-def mouse_event(event,x,y,flags,param):
-    global posi0, posi1, drawing
+int main()
+{
+    const int n = 3;           // number of particles
+    const real t = 0;          // time
+    real r[n][NDIM];           // r[i][k] : position component k for particle i
+    real v[n][NDIM];           // v[i][k] : velocity component k for particle i
+    real m[n];                 // m[i] : mass for particle i
 
-    if x < 0: x = 0 
-    if y < 0: y = 0 
-    if x >= image_size[1]: x = image_size[1] - 1
-    if y >= image_size[0]: y = image_size[0] - 1
+    m[0] = 1;
+    m[1] = 1;
+    m[2] = 1;
 
+    r[0][0] = 0.9700436;
+    r[0][1] = -0.24308753;
+    r[0][2] = 0;
+    v[0][0] = 0.466203685;
+    v[0][1] = 0.43236573;
+    v[0][2] = 0;
 
-    if event == cv2.EVENT_LBUTTONDOWN:
-        print ('Push')
-        drawing = True
-        posi0[0] = x
-        posi0[1] = y
+    r[1][0] = -r[0][0];
+    r[1][1] = -r[0][1];
+    r[1][2] = -r[0][2];
+    v[1][0] = v[0][0];
+    v[1][1] = v[0][1];
+    v[1][2] = v[0][2];
 
+    r[2][0] = 0;
+    r[2][1] = 0;
+    r[2][2] = 0;
+    v[2][0] = -2 * v[0][0];
+    v[2][1] = -2 * v[0][1];
+    v[2][2] = -2 * v[0][2];
 
-    elif event == cv2.EVENT_MOUSEMOVE:
-        if drawing == True:
-            print ("Drawing... (%d, %d)" % (x, y))
-        else:
-            pass
-    elif event == cv2.EVENT_LBUTTONUP:
-        print ('Up')
-        drawing = False
-        cv2.rectangle(image, (posi0[0],posi0[1]), (x,y), (0,255,0), 1)
-        posi1[0] = x
-        posi1[1] = y
+    cout.precision(16);
 
-def save_data(image_dbg, image_orig, fnum):
-    global class_num, posi0, posi1
-    basedir = '../data4bbox/'
-    fname_body = "image_%04d" % fnum
-
-    # save image_orig (for Images/)
-    fname = fname_body + ".jpg"
-    basedir_images = basedir+"Images/%03d/"%(class_num)
-    ofname_images = mkdir.get_filename_frame_simple(basedir_images , fname)
-    print (ofname_images)
-    cv2.imwrite(ofname_images, image_orig)
-
-    # save image_dbg (for Debug/)
-    fname = fname_body + ".jpg"
-    basedir_dbg = basedir+"Debug/%03d/"%(class_num)
-    ofname_dbg  = mkdir.get_filename_frame_simple(basedir_dbg , fname)
-    print (ofname_dbg)
-    cv2.imwrite(ofname_dbg, image_dbg)
-
-    # save labes
-    fname = fname_body + ".txt"
-    basedir_labels = basedir+"Labels/%03d/"%(class_num)
-    ofname_labels  = mkdir.get_filename_frame_simple(basedir_labels , fname)
-    print (ofname_labels)
-    bbox_posi = []
-    bbox_posi.append(min(posi0[0], posi1[0]))
-    bbox_posi.append(min(posi0[1], posi1[1]))
-    bbox_posi.append(max(posi0[0], posi1[0]))
-    bbox_posi.append(max(posi0[1], posi1[1]))
-    with open(ofname_labels, "w") as file:
-        file.write("1\n")
-        file.write("%d %d %d %d\n" % (tuple(bbox_posi)))
-
-if '__main__' == __name__:
-    basedir = '../log/'
-    if (len(sys.argv) > 1 ):
-        basedir = sys.argv[1]
-    
-    iflist = [] 
-    for fname in aieye_find.find(basedir, '*.jpg'):
-        iflist.append(fname)
-
-    iflist.sort()
-    ni = len(iflist)
-    i = 0
-
-    #    for i, fname in enumerate(iflist):
-    while( i < ni) :
-        fname = iflist[i]
-        print (fname, "%d/%d (%1.3f)"%(i, ni, i/ni))
-
-        image_orig = cv2.imread(fname, cv2.IMREAD_COLOR)
-        image = image_orig.copy()
-        image_size[0], image_size[1] = image.shape[:2]
-        is_next = False
-        while (not is_next):
-            cv2.imshow("THBox-annon.py", image)
-            cv2.namedWindow("THBox-annon.py", cv2.WINDOW_NORMAL)
-            cv2.setMouseCallback("THBox-annon.py", mouse_event)
-            key = cv2.waitKey(1) & 0xFF
-            if key == ord(' '):
-                save_data(image, image_orig, i)
-                is_next = True
-            if key  == 83:  # ->
-                is_next = True
-            if key  == 81:  # <-
-                i = i - 2
-                is_next = True
-            if key == ord('r'): # Reset
-                i = i - 1
-                is_next = True
-            if key  == ord('q'): 
-                i = ni
-                break
-        i = i+1
-
-    cv2.destroyAllWindows()
-
-
-
-
-
-    
+    cout << n << endl;                      // first output line:  N
+    cout << t << endl;                      // second output line:  time
+    for (int i = 0; i < n; i++){
+        cout << m[i];                       // each next output line:
+        for (int k = 0; k < NDIM; k++)      //   m r_x r_y r_z v_x v_y v_z
+            cout << ' ' << r[i][k];
+        for (int k = 0; k < NDIM; k++)
+            cout << ' ' << v[i][k];
+        cout << endl;
+    }
+}
+//-----------------------------------------------------------------------------

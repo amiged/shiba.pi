@@ -1,147 +1,48 @@
-Mon Oct 11 19:27:16 JST 2021
-Release 6.2.03i - Bitgen G.31a
-Copyright (c) 1995-2004 Xilinx, Inc.  All rights reserved.
+Thu Dec 16 19:31:02 JST 2021
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+import numpy as np
+import cv2
 
-Loading device database for application Bitgen from file "top.ncd".
-   "top" is an NCD, version 2.38, device xc2vp70, package ff1517, speed -5
-Loading device for application Bitgen from file '2vp70.nph' in environment
-/export/home/opt/xilinx.
-Opened constraints file top.pcf.
+drawing = False
+mode = True
+ix,iy = -1,-1
 
-Mon Jun 13 23:42:26 2005
+def draw_circle(event,x,y,flags,param):
+    global ix,iy,drawing,mode
+    if event == cv2.EVENT_LBUTTONDOWN:
+        print ('Push')
+        drawing = True
+        ix,iy = x,y
 
-bitgen -intstyle ise -w -g DebugBitstream:No -g Binary:no -g CRC:Enable -g ConfigRate:4 -g CclkPin:PullUp -g M0Pin:PullUp -g M1Pin:PullUp -g M2Pin:PullUp -g ProgPin:PullUp -g DonePin:PullUp -g PowerdownPin:PullUp -g TckPin:PullUp -g TdiPin:PullUp -g TdoPin:PullUp -g TmsPin:PullUp -g UnusedPin:PullDown -g UserID:0xFFFFFFFF -g DCMShutDown:Disable -g DisableBandgap:No -g DCIUpdateMode:AsRequired -g StartUpClk:CClk -g DONE_cycle:4 -g GTS_cycle:5 -g GWE_cycle:6 -g LCK_cycle:NoWait -g Match_cycle:Auto -g Security:None -g DonePipe:No -g DriveDone:No -g Encrypt:No top.ncd 
+    elif event == cv2.EVENT_MOUSEMOVE:
+        if drawing == True:
+            print ('Drawing...')
+            if mode == True:
+                pass
+            else:
+                cv2.circle(img,(x,y),5,(0,0,255),-1)
+        else:
+            pass
+    elif event == cv2.EVENT_LBUTTONUP:
+        print ('Up')
+        drawing = False
+        if mode == True:
+            cv2.rectangle(img,(ix,iy),(x,y),(0,255,0),2)
+        else:
+            cv2.circle(img,(x,y),5,(0,0,255),-1)
 
-Summary of Bitgen Options:
-+----------------------+----------------------+
-| Option Name          | Current Setting      |
-+----------------------+----------------------+
-| Compress             | (Not Specified)*     |
-+----------------------+----------------------+
-| Readback             | (Not Specified)*     |
-+----------------------+----------------------+
-| CRC                  | Enable**             |
-+----------------------+----------------------+
-| DebugBitstream       | No**                 |
-+----------------------+----------------------+
-| ConfigRate           | 4**                  |
-+----------------------+----------------------+
-| StartupClk           | Cclk**               |
-+----------------------+----------------------+
-| DCMShutdown          | Disable**            |
-+----------------------+----------------------+
-| DisableBandgap       | No**                 |
-+----------------------+----------------------+
-| CclkPin              | Pullup**             |
-+----------------------+----------------------+
-| DonePin              | Pullup**             |
-+----------------------+----------------------+
-| HswapenPin           | Pullup*              |
-+----------------------+----------------------+
-| M0Pin                | Pullup**             |
-+----------------------+----------------------+
-| M1Pin                | Pullup**             |
-+----------------------+----------------------+
-| M2Pin                | Pullup**             |
-+----------------------+----------------------+
-| PowerdownPin         | Pullup**             |
-+----------------------+----------------------+
-| ProgPin              | Pullup**             |
-+----------------------+----------------------+
-| TckPin               | Pullup**             |
-+----------------------+----------------------+
-| TdiPin               | Pullup**             |
-+----------------------+----------------------+
-| TdoPin               | Pullup**             |
-+----------------------+----------------------+
-| TmsPin               | Pullup**             |
-+----------------------+----------------------+
-| UnusedPin            | Pulldown**           |
-+----------------------+----------------------+
-| GWE_cycle            | 6**                  |
-+----------------------+----------------------+
-| GTS_cycle            | 5**                  |
-+----------------------+----------------------+
-| LCK_cycle            | NoWait**             |
-+----------------------+----------------------+
-| Match_cycle          | Auto**               |
-+----------------------+----------------------+
-| DONE_cycle           | 4**                  |
-+----------------------+----------------------+
-| Persist              | No*                  |
-+----------------------+----------------------+
-| DriveDone            | No**                 |
-+----------------------+----------------------+
-| DonePipe             | No**                 |
-+----------------------+----------------------+
-| Security             | None**               |
-+----------------------+----------------------+
-| UserID               | 0xFFFFFFFF**         |
-+----------------------+----------------------+
-| ActivateGclk         | No*                  |
-+----------------------+----------------------+
-| ActiveReconfig       | No*                  |
-+----------------------+----------------------+
-| PartialMask0         | (Not Specified)*     |
-+----------------------+----------------------+
-| PartialMask1         | (Not Specified)*     |
-+----------------------+----------------------+
-| PartialMask2         | (Not Specified)*     |
-+----------------------+----------------------+
-| PartialGclk          | (Not Specified)*     |
-+----------------------+----------------------+
-| PartialLeft          | (Not Specified)*     |
-+----------------------+----------------------+
-| PartialRight         | (Not Specified)*     |
-+----------------------+----------------------+
-| Encrypt              | No**                 |
-+----------------------+----------------------+
-| Key0                 | pick*                |
-+----------------------+----------------------+
-| Key1                 | pick*                |
-+----------------------+----------------------+
-| Key2                 | pick*                |
-+----------------------+----------------------+
-| Key3                 | pick*                |
-+----------------------+----------------------+
-| Key4                 | pick*                |
-+----------------------+----------------------+
-| Key5                 | pick*                |
-+----------------------+----------------------+
-| Keyseq0              | M*                   |
-+----------------------+----------------------+
-| Keyseq1              | M*                   |
-+----------------------+----------------------+
-| Keyseq2              | M*                   |
-+----------------------+----------------------+
-| Keyseq3              | M*                   |
-+----------------------+----------------------+
-| Keyseq4              | M*                   |
-+----------------------+----------------------+
-| Keyseq5              | M*                   |
-+----------------------+----------------------+
-| KeyFile              | (Not Specified)*     |
-+----------------------+----------------------+
-| StartKey             | 0*                   |
-+----------------------+----------------------+
-| StartCBC             | pick*                |
-+----------------------+----------------------+
-| FreezeDCI            | No*                  |
-+----------------------+----------------------+
-| DCIUpdateMode        | AsRequired**         |
-+----------------------+----------------------+
-| IEEE1532             | No*                  |
-+----------------------+----------------------+
-| Binary               | No**                 |
-+----------------------+----------------------+
- *  Default setting.
- ** The specified setting matches the default setting.
+if '__main__' == __name__ :
+    img = np.zeros((512,512,3), np.uint8)
+    cv2.namedWindow('image')
+    cv2.setMouseCallback('image',draw_circle)
+    
+    while(1):
+        cv2.imshow('image',img)
+        k = cv2.waitKey(1) & 0xFF
+        if k == ord('m'):
+            mode = not mode
+        elif k == 27:
+            break
 
-Running DRC.
-INFO:DesignRules:547 - Blockcheck: To achieve optimal frequency synthesis
-   performance with the CLKFX and CLKFX180 outputs of the DCM comp dcm0_dcm0,
-   consult the Virtex-II Interactive Data Sheet.
-DRC detected 0 errors and 0 warnings.
-Creating bit map...
-Saving bit stream in "top.bit".
-Bitstream generation is complete.
+    cv2.destroyAllWindows()

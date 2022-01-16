@@ -1,22 +1,27 @@
-Fri Dec 17 19:41:17 JST 2021
+Sun Jan 16 19:30:31 JST 2022
 #!/usr/bin/env python3
+#Time-stamp: <2017-06-11 19:17:43 hamada>
+import argparse
 import numpy as np
 import cv2
 from datetime import datetime
 import mkdir
-import sys
 
 def put_text(image, text):
     font_size = 1.0
     font_type = cv2.FONT_HERSHEY_PLAIN
     font_color = (0xf, 0xf, 0xff)
-    cv2.putText(image, text, (460, 15), font_type, font_size, font_color)
-    
-
+    cv2.putText(image, text, (440, 15), font_type, font_size, font_color)
 
 if (__name__ == '__main__'):
-    argv = sys.argv
-    devid = int(argv[1])
+    parser = argparse.ArgumentParser(description = "description goes here")
+    parser.add_argument("--devid", type=int, help = "set device id", required=False)
+    args = parser.parse_args()
+    devid = 0
+    if args.devid:
+        devid = int(args.devid)
+        print ("set devid = ", devid)
+
     log_base = '../log/'
     cap = cv2.VideoCapture(devid)
 
@@ -30,16 +35,17 @@ if (__name__ == '__main__'):
 
     while(cap.isOpened()):
         ret, frame = cap.read()
-        cv2.imshow('frame', frame)
+        cv2.imshow('camera: %d'%(devid), frame)
 
-        tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S')
+        #tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S')
+        tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S_%f')
         if(tnow != tnow0):
             put_text(frame, tnow)
-            ofname = mkdir.get_filename_frame('../log/', tnow)
-#            cv2.imwrite(ofname, frame)
-            print(ofname, ": TEST on devid=%d"%devid)
+            basedir = '../log.%d/'% (devid)
+            ofname = mkdir.get_filename_frame(basedir, tnow)
+            cv2.imwrite(ofname, frame)
+            print(ofname, "devid = %d"%devid)
             tnow0 = tnow
- 
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break

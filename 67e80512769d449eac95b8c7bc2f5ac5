@@ -1,51 +1,12 @@
-Wed Jan 19 19:35:29 JST 2022
--- Copyright 2004 Tsuyoshi Hamada
---
---
---clk         __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __
---[dma_we]    _______/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
---state_dmaw          0  >< 1 >< 2                                    >< 3 >< 0 
+Sat Jan 22 19:29:18 JST 2022
 
--- 0->1 : if((state==0)&&(dma_we==1))
--- 1->2 : if (state==1)
--- 2->3 : if((state==2) &&(dma_we==0))
--- 3->0 : if (state==3)
+all:
+	cp top.ucf.ISE6.3i_Synplify top.ucf
+	rm -rf proj
+	tar xvf proj.synplify.tar
+	cd proj;ngdbuild -intstyle ise -dd /home/hamada/VHDL/proj/_ngo -uc ../top.ucf  -p xc2vp70-ff1517-5 top.edn top.ngd
+	cd proj;map -intstyle ise -p xc2vp70-ff1517-5 -cm area -pr b -k 4 -c 100 -tx off -o top_map.ncd top.ngd top.pcf
+	cd proj;par -w -intstyle ise -ol std -t 1 top_map.ncd top.ncd top.pcf
+	cd proj;trce -intstyle ise -e 3 -l 3 -xml top top.ncd -o top.twr top.pcf
+	cd proj;bitgen -intstyle ise -f top.ut top.ncd
 
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL;
-
-entity dmaw_state is
-  port (
-    RST      : in std_logic;
-    CLK      : in std_logic;
-    ENABLE   : in std_logic;
-    STATE    : out std_logic_vector(1 downto 0) );
-end dmaw_state;
-
-architecture rtl of dmaw_state is
-
-signal state_ff : std_logic_vector(1 downto 0);
-begin
-
-  STATE <= state_ff;
-
-  process (RST,CLK,ENABLE,state_ff) begin
-    if(RST='1') then
-      state_ff <= (others=>'0');
-    elsif(CLK'event and CLK = '1') then
-      if((state_ff="00") AND (ENABLE='1')) then
-        state_ff <= "01";
-      elsif(state_ff = "01") then
-        state_ff <= "10";
-      elsif((state_ff = "10") AND (ENABLE='0')) then
-        state_ff <= "11";
-      elsif((state_ff = "10") AND (ENABLE='1')) then
-        state_ff <= "10";
-      else -- if(state_ff = "11") then
-        state_ff <= "00";
-      end if;
-    end if;
-  end process;
-
-end rtl;

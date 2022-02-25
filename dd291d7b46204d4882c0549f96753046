@@ -1,48 +1,32 @@
-Mon Jan  3 19:29:03 JST 2022
+Fri Feb 25 19:33:05 JST 2022
+/*
+ * pfpga_info.c
+ *
+ * Copyright (C) 2006-2007 Tsuyoshi Hamada
+ *                                All rights reserved.
+ * 
+ * No warranty is attached; 
+ * I cannot take responsibility for errors or fitness for use.
+ *
+ */
+
 #include <stdio.h>
-#include <math.h>
-#include "nbodysim.h"
+#include <stdlib.h>
+#include <string.h>
 
-double energy(double m[], double x[][DIM], double v[][DIM], double eps2 , int n)
+#define MAXBD 8
+#include "pg4.h"
+
+int main(int argc, char* argv[])
 {
-    int i,j,d;
-    double v2,r2;
-    double dx[3];
-    double Ep;  /* 系の位置エネルギー */
-    double Em;  /* 系の運動エネルギー */
-    double Ea;  /* 系の全力学的エネルギー */
+  int devid=0;
+  char info[1024];
 
+  pg4_open(devid);
+  pg4_get_pfpga_info(devid, info);
+  pg4_close(devid);
 
-    /* 系の位置エネルギー Ep を計算する。 */ 
-    Ep=0.0;
-    for(i=0;i<n-1;i++){
-        for(j=i+1;j<n;j++){
-            r2 = eps2;           /* 相対距離初期化 */
-            for(d=0;d<3;d++){
-                dx[d] = x[j][d] - x[i][d];
-                r2 += dx[d] * dx[d];
-            }
-            Ep -= m[i] * m[j] * ( 1/sqrt(r2)  );
-        }
-    }
+  printf("%s\n", info);
 
-
-    /* 系の運動エネルギー Em を計算する。 */ 
-    Em=0.0;
-    for(i=0;i<n;i++){
-        v2=0.0;    /* 絶対速度2乗値初期化 */
-        for(d=0;d<3;d++){
-            v2 += v[i][d]*v[i][d];
-        }
-        Em += 0.5 * m[i] * v2;
-    }
-
-    /* 系の全力学的エネルギー Ea を計算する。 */ 
-    Ea=0.0;
-    Ea = Em + Ep;
-
-/*    printf("Emove=%1.6e,   Epot=%1.3e,   Eall=%1.25e\n",Em,Ep,Ea);*/
-/*    printf("%e\n",Ea);*/
-
-    return Ea;
+  return 1;
 }

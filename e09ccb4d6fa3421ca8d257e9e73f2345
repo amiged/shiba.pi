@@ -1,102 +1,192 @@
-Mon Feb 28 19:30:36 JST 2022
-100
--2.746715e-01	4.191831e-01
--2.931587e-01	2.247797e-01
-2.321991e-01	4.064824e-01
--1.520429e-01	3.578809e-01
--8.481506e-02	-3.058323e-01
-1.856104e-01	2.437552e-02
--3.403643e-01	4.547575e-01
--3.730157e-01	-4.956605e-01
--1.173085e-01	-2.492071e-01
-1.552879e-01	3.449078e-02
-1.099664e-01	-2.121421e-01
-4.092620e-01	2.361288e-01
--3.788992e-01	1.148062e-01
--2.340848e-01	4.453564e-01
--7.531051e-02	-2.516460e-01
-1.772955e-01	-4.287967e-01
--4.426001e-02	-3.237644e-04
--4.797312e-01	3.861750e-01
-1.545830e-01	5.970007e-02
-4.850480e-01	-1.605443e-01
--4.632017e-01	-2.009751e-01
-4.881687e-01	-5.634217e-02
--3.708808e-01	4.150378e-01
--1.135756e-01	-4.695678e-01
--3.155564e-01	4.356883e-01
--1.920876e-02	9.783734e-02
--6.385236e-02	-3.949834e-01
-2.275205e-01	-3.768423e-01
-1.721155e-01	-4.660092e-01
-4.644338e-01	-4.804784e-01
--4.553355e-01	-7.876486e-02
-2.642185e-01	4.444889e-01
-5.434882e-02	1.171663e-01
-1.465040e-01	-1.143288e-01
-4.021194e-01	-1.771178e-01
--7.684997e-02	-4.504972e-02
-7.223762e-02	-4.515364e-01
--2.392842e-02	-3.878574e-01
-3.425949e-01	-1.136164e-01
--4.632521e-01	2.447992e-01
-2.661087e-03	-2.676771e-01
--2.328564e-01	-3.223420e-01
--4.466751e-01	-1.286633e-01
--4.479510e-01	-6.189542e-02
--4.433532e-01	1.711145e-01
--2.251056e-01	-4.814771e-01
-1.644014e-01	3.307433e-01
--4.618902e-01	1.489123e-01
-7.775744e-02	3.332788e-01
-3.334003e-01	-1.894713e-01
--2.498460e-01	-4.304763e-01
--2.016626e-01	-3.888901e-01
-3.431431e-01	-6.968799e-02
-9.800158e-02	3.226420e-01
-1.605654e-01	-8.747274e-02
--4.682621e-01	-3.876081e-01
-2.279104e-01	1.228907e-01
-2.623244e-02	-7.350670e-02
--3.627764e-01	1.817259e-01
-2.810276e-01	4.027677e-01
--1.422834e-01	3.805313e-01
-4.783312e-01	2.763473e-01
--3.893109e-01	2.006641e-03
-3.557465e-01	-1.806598e-01
-1.450046e-01	-2.954686e-01
--2.783369e-01	-3.638557e-01
--7.520648e-02	5.595485e-02
-2.496197e-02	-2.837536e-02
-2.810538e-01	1.905431e-01
--3.170416e-01	-1.766273e-01
-4.882654e-01	-3.097528e-01
--4.631571e-01	-3.453426e-02
--1.609725e-01	4.549768e-01
-8.088132e-03	2.639415e-01
--4.847877e-01	3.397484e-01
-4.413317e-01	-1.913503e-01
--3.675422e-01	2.785392e-01
-3.611714e-01	-2.921098e-01
--4.166281e-01	8.013365e-02
-2.673365e-01	-1.624028e-01
-3.691146e-01	-6.944182e-02
-4.231276e-01	2.426829e-01
--2.873224e-01	2.458353e-01
-3.373099e-01	2.320625e-01
-4.419646e-01	2.934974e-02
-2.343567e-01	-1.409978e-01
--4.534335e-01	4.573376e-01
-3.897785e-01	4.435523e-01
--9.306764e-02	4.667342e-01
-3.670526e-01	-2.663117e-02
--4.954102e-01	-4.096787e-01
--2.756701e-01	-3.467814e-01
--1.885635e-01	-1.210909e-01
--9.027580e-02	-7.420788e-03
-4.672701e-01	1.888859e-01
--2.162385e-01	-3.037337e-01
--4.418227e-01	3.812396e-01
-3.998173e-01	2.168659e-01
-1.527816e-01	-4.239467e-01
-4.445392e-01	2.424582e-01
+Wed Mar  9 19:52:16 JST 2022
+/*
+ * progrape.h -- the device driver header for PROGRAPE-4
+ *
+ * Copyright (C) 2006-2007 Tsuyoshi Hamada.
+ *                                All rights reserved.
+ *
+ * The source code in this file can be freely used, 
+ * so long as an acknowledgment from Tsuyoshi Hamada.
+ * 
+ * The source code in this file can be modified, branched, and
+ * redistributed in source or binary form in the following situation.  
+ * If you want to modify, redistribute or make another version based on
+ * this source code, you should get distinct agreement from Tsuyoshi
+ * Hamada.  The modified, redistributed or branched(another version based
+ * on this source code) source code should include the citation that the
+ * code comes from the "progrape.c by Tsuyoshi Hamada".
+ * 
+ * No warranty is attached; 
+ * I cannot take responsibility for errors or fitness for use.
+ *
+ */
+#ifndef _PROGRAPE_H_
+#define _PROGRAPE_H_
+
+#include <linux/ioctl.h> /* for the _IOW etc */
+
+// -------------------------------------------------------------------- for DEBUG
+/*
+ * Macros to help debugging
+ */
+#undef PDEBUG             /* undef it, just in case */
+#ifdef DEBUG
+#  ifdef __KERNEL__
+     /* This one if debugging is on, and kernel space */
+#    define PDEBUG(fmt, args...) printk( KERN_DEBUG "progrape: " fmt, ## args)
+#  else
+     /* This one for user space */
+#    define PDEBUG(fmt, args...) fprintf(stderr, fmt, ## args)
+#  endif
+#else
+#  define PDEBUG(fmt, args...) /* not debugging: nothing */
+#endif
+
+#undef _PDEBUG
+#define _PDEBUG(fmt, args...) /* nothing: it's a placeholder */
+// -------------------------------------------------------------------- for DEBUG. 
+
+/* 
+ * IOCTL definitions
+ */
+
+#define PG_IOC_MAGIC (7)
+/*
+ * SP : Set by Pointer
+ * SV : Set by Value
+ * GP : Get by Pointer
+ * GV : Get by Value
+ */
+#define IOC_SV_MMAPMODE  _IOW(PG_IOC_MAGIC,  1, unsigned)
+#define IOC_GV_REG_ADR   _IOR(PG_IOC_MAGIC,  2, unsigned long)
+#define IOC_GV_REG_SIZE  _IOR(PG_IOC_MAGIC,  3, unsigned long)
+#define IOC_GV_MEM_ADR   _IOR(PG_IOC_MAGIC,  4, unsigned long)
+#define IOC_GV_MEM_SIZE  _IOR(PG_IOC_MAGIC,  5, unsigned long)
+#define IOC_SP_FPGA_INFO _IOW(PG_IOC_MAGIC,  6, char* )
+#define IOC_GP_FPGA_INFO _IOR(PG_IOC_MAGIC,  7, char* )
+#define IOC_GV_PCICFG    _IOR(PG_IOC_MAGIC,  8, unsigned long)
+#define IOC_SV_DMAW      _IOW(PG_IOC_MAGIC,  9, unsigned long)
+#define IOC_SV_DMAR      _IOW(PG_IOC_MAGIC, 10, unsigned long)
+#define IOC_GV_DMA_SIZE  _IOR(PG_IOC_MAGIC, 11, unsigned long)
+
+#define PG_IOC_MAXNR (11)
+
+/*
+ * modes for pg_mmap
+ * "pcidev->mmap_mode" has one of these mode.
+ */
+enum {
+  MMAP_REG_PIOW = 0,      // bar0 for PG4, 0
+  MMAP_REG_PIOR,          // bar0 for PG4, 1
+  MMAP_REG_PIORW,         // bar0 for PG4, 2
+  MMAP_MEM_PIOW,          // bar1 for PG4, 3
+  MMAP_MEM_PIOR,          // bar1 for PG4, 4
+  MMAP_MEM_PIORW,         // bar1 for PG4, 5
+  MMAP_MEM_PIOW_PREFETCH, // bar1 for PG4, 6
+  MMAP_BUF_DMAW,          // DMABUF for Host->Device direction, 7
+  MMAP_BUF_DMAR,          // DMABUF for Device->Host direction, 8
+};
+
+#define NB_FPGA_INFO (256)  // Length(Bytes) of the FPGA information
+
+
+/* 
+ * IFPGA register definitions
+ */
+#define REG_PFPGA_RST         (0x04)
+#define REG_INT_STAT          (0x10)
+#define REG_INT_MASK          (0x14)
+#define REG_DMA_PCI_ADRS      (0x20)
+#define REG_DMA_LOCAL_ADRS    (0x24)
+#define REG_DMA_COUNT         (0x28)
+#define REG_DMA_CTRL          (0x2C)
+#define REG_DMA_INTERVAL      (0x30)
+#define REG_DMA_STAT          (0x34)
+
+
+#ifdef __KERNEL__
+// -------------------------------------------------------------------- Private Members
+#include <linux/cdev.h>
+#include <asm/semaphore.h> // struct semaphore
+#include <linux/wait.h>    // wait_queue_head_t
+
+struct pg_dev {
+  struct pci_dev *pcidev;  // only for my debugging. Don't use it.
+  unsigned long *buf_dmar; // Kernel logical address     ,also called CPU address
+  unsigned long *buf_dmaw; // Kernel logical address     ,also called CPU address
+  dma_addr_t buf_dmar_pa;  // bus address (type) for DMA ,also called physical address
+  dma_addr_t buf_dmaw_pa;  // bus address (type) for DMA ,also called physical address
+  unsigned long pci_reg_adr;
+  unsigned long pci_reg_size;
+  unsigned long pci_reg_flag;
+  unsigned long pci_mem_adr;
+  unsigned long pci_mem_size;
+  unsigned long pci_mem_flag;  // IORESOURCE_{IO,MEM,PREFETCH,READONLY} @<linux/ioport.h>
+  unsigned long pci_irq_num;
+  unsigned long mmap_mode;
+  wait_queue_head_t wq;        // wait queue for interrupt handler -> tasklet in future
+  unsigned long wq_count;      // wait counter for interrupt handler
+  struct semaphore sem;        // mutual exclusion semaphore
+  struct semaphore sem_open;   // lock device while a person is opening it.
+  unsigned long ntimes_open;   // the number of times for pg_open()
+  struct cdev cdev;	       // Char device structure
+  char fpga_info[NB_FPGA_INFO];// text for FPGA information (for bitfile)
+};
+
+#ifndef PROGRAPE_MAJOR
+#    define PROGRAPE_MAJOR 0  // dynamically allocated if 0
+#endif 
+
+#ifndef PROGRAPE_MAJOR
+#    define PROGRAPE_MAJOR 0  // dynamically allocated if 0
+#endif 
+
+// Number of maximum character device
+#ifndef PROGRAPE_NR_DEVS
+#    define PROGRAPE_NR_DEVS 1
+#endif 
+
+// -------------------------------------------------------------------- Private Members.
+#endif
+
+
+// for the different configurable parameters
+extern int pg_major;
+extern int pg_minor;
+extern int pg_nr_devs;
+
+// Prototyepes for shared functions
+int check_license(void);
+int get_license(void);
+
+
+// --- ISA bridge: Advanced Micro Devices [AMD] AMD-8111 LPC (rev 05)
+#undef PCI_VENDOR_ID_PG
+#undef PCI_DEVICE_ID_PG
+#undef PCI_REVISION_ID_PG
+#define PCI_VENDOR_ID_PG   (0x1022)
+#define PCI_DEVICE_ID_PG   (0x7468)
+#define PCI_REVISION_ID_PG (0x05)
+
+// --- PCI bridge: Advanced Micro Devices [AMD] AMD-8131 PCI-X Bridge (rev 12)
+#undef PCI_VENDOR_ID_PG
+#undef PCI_DEVICE_ID_PG
+#undef PCI_REVISION_ID_PG
+#define PCI_VENDOR_ID_PG   (0x1022)
+#define PCI_DEVICE_ID_PG   (0x7450)
+#define PCI_REVISION_ID_PG (0x12)
+
+// --- PROGRAPE-4 
+#undef PCI_VENDOR_ID_PG
+#undef PCI_DEVICE_ID_PG
+#undef PCI_REVISION_ID_PG
+#define PCI_VENDOR_ID_PG   (0x1679)
+#define PCI_DEVICE_ID_PG   (0x0005)
+#define PCI_REVISION_ID_PG (0x00)
+
+
+#define PG_DMA_BUFSIZE (0x1<<16) // 64 KB : IFPGA Block-RAM size 
+//#define PG_DMA_BUFSIZE (0x1<<12) // 4 KB : IFPGA Block-RAM size 
+#define PG_PCITRANS_64BIT (1)    // 1: 64-bit / 0: 32-bit
+
+#endif // _PROGRAPE_H_

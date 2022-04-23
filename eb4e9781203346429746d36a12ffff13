@@ -1,237 +1,344 @@
-Wed Mar 30 19:29:25 JST 2022
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE twReport [
-<!ELEMENT twReport (twHead, (twWarn | twDebug | twInfo)*, twBody, twSum?, twFoot, twClientInfo?)>
-<!ELEMENT twHead (twExecVer?, twCopyright, twCmdLine?, twDesign?, twPCF?, twDevInfo, twRptInfo, twEnvVar*)>
-<!ELEMENT twExecVer (#PCDATA)>
-<!ELEMENT twCopyright (#PCDATA)>
-<!ELEMENT twCmdLine (#PCDATA)>
-<!ELEMENT twDesign (#PCDATA)>
-<!ELEMENT twPCF (#PCDATA)>
-<!ELEMENT twDevInfo (twDevName, twSpeedGrade, twSpeedVer?)>
-<!ELEMENT twDevName (#PCDATA)>
-<!ATTLIST twDevInfo arch CDATA #IMPLIED>
-<!ELEMENT twSpeedGrade (#PCDATA)>
-<!ELEMENT twSpeedVer (#PCDATA)>
-<!ELEMENT twRptInfo (twItemLimit?, (twUnconst, twUnconstLimit?)?)>
-<!ATTLIST twRptInfo twRptLvl (twErr | twVerbose | twTerseErr | twSum | twTimeGrp) #REQUIRED>
-<!ATTLIST twRptInfo twAdvRpt  (TRUE | FALSE) "FALSE">
-<!ATTLIST twRptInfo twTimeUnits (twPsec | twNsec | twUsec | twMsec | twSec) "twNsec">
-<!ATTLIST twRptInfo twFreqUnits (twGHz | twMHz | twHz) "twMHz">
-<!ELEMENT twItemLimit (#PCDATA)>
-<!ELEMENT twUnconst EMPTY>
-<!ELEMENT twUnconstLimit (#PCDATA)>
-<!ELEMENT twEnvVar EMPTY>
-<!ATTLIST twEnvVar name CDATA #REQUIRED>
-<!ATTLIST twEnvVar description CDATA #REQUIRED>
-<!ELEMENT twWarn (#PCDATA)>
-<!ELEMENT twInfo (#PCDATA)>
-<!ELEMENT twDebug (#PCDATA)>
-<!ELEMENT twBody (twDerating?, (twSumRpt | twVerboseRpt | twErrRpt | twTerseErrRpt | twTimeGrpRpt), twNonDedClks?)>
-<!ATTLIST twBody twFastPaths CDATA #IMPLIED>
-<!ELEMENT twDerating (twProc?, twTemp?, twVolt?)>
-<!ELEMENT twProc (#PCDATA)>
-<!ELEMENT twTemp (#PCDATA)>
-<!ELEMENT twVolt (#PCDATA)>
-<!ELEMENT twSumRpt (twConstList?, twUnmetConstCnt?, twDebug*, twDataSheet?, twClkTbl?)>
-<!ELEMENT twErrRpt (twCycles?, (twConst | twTIG)*, twUnmetConstCnt?, twDataSheet?, twClkTbl?, twTimeGrp*)>
-<!ELEMENT twTerseErrRpt (twConstList, twUnmetConstCnt?, twDataSheet?, twClkTbl?)>
-<!ELEMENT twVerboseRpt (twCycles?, (twConst | twTIG)*, twUnmetConstCnt?, twDataSheet?, twClkTbl?, twTimeGrp*)>
-<!ELEMENT twCycles (twSigConn+)>
-<!ATTLIST twCycles twNum CDATA #REQUIRED>
-<!ELEMENT twSigConn (twSig, twDriver, twLoad)>
-<!ELEMENT twSig (#PCDATA)>
-<!ELEMENT twDriver (#PCDATA)>
-<!ELEMENT twLoad (#PCDATA)> 
-<!ELEMENT twConst (twConstHead, ((twPathRpt*, twPathRptBanner, twPathRpt*) |  (twPathRpt*, twRacePathRpt?) |  (twNetRpt*)))>
-<!ATTLIST twConst twConstType (twPathConst | twNetConst) "twPathConst">
-<!ELEMENT twConstHead (twConstName, twItemCnt, twErrCntSetup, twErrCntHold, twMinPer?, twMaxDel?, twMaxFreq?, twMaxNetDel?, twMaxNetSkew?, twMinOff?, twMaxOff?)>
-<!ELEMENT twConstName (#PCDATA)>
-<!ELEMENT twItemCnt (#PCDATA)>
-<!ELEMENT twErrCnt (#PCDATA)>
-<!ELEMENT twErrCntSetup (#PCDATA)>
-<!ELEMENT twErrCntHold (#PCDATA)>
-<!ATTLIST twErrCntHold twRaceChecked (TRUE | FALSE) "FALSE">
-<!ELEMENT twMinPer (#PCDATA)>
-<!ELEMENT twMaxDel (#PCDATA)>
-<!ELEMENT twMaxFreq (#PCDATA)>
-<!ELEMENT twMinOff (#PCDATA)>
-<!ELEMENT twMaxOff (#PCDATA)>
-<!ELEMENT twTIG (twTIGHead, (twPathRpt*,twRacePathRpt?))>
-<!ELEMENT twTIGHead (twTIGName, twInstantiated, twBlocked)>
-<!ELEMENT twTIGName (#PCDATA)>
-<!ELEMENT twInstantiated (#PCDATA)>
-<!ELEMENT twBlocked (#PCDATA)>
-<!ELEMENT twRacePathRpt (twRacePath+)>
-<!ELEMENT twPathRpt (twUnconstPath | twConstPath | twUnconstOffIn | twConstOffIn | twUnconstOffOut | twConstOffOut | twModOffOut)>
-<!ELEMENT twUnconstPath (twTotDel, twSrc, twDest,  (twDel, twSUTime)?, twTotPathDel?, twClkSkew?, tw2Phase?, twClkUncert?, twDetPath?)>
-<!ELEMENT twTotDel (#PCDATA)>
-<!ELEMENT twSrc (#PCDATA)>
-<!ATTLIST twSrc BELType CDATA #IMPLIED>
-<!ELEMENT twDest (#PCDATA)>
-<!ATTLIST twDest BELType CDATA #IMPLIED>
-<!ELEMENT twDel (#PCDATA)>
-<!ELEMENT twSUTime (#PCDATA)>
-<!ELEMENT twTotPathDel (#PCDATA)>
-<!ELEMENT twClkSkew (#PCDATA)>
-<!ELEMENT twClkSkew (#PCDATA)>
-<!ELEMENT twConstPath (twSlack, twSrc, twDest, twTotPathDel?, twClkSkew?, twDelConst, tw2Phase?, twClkUncert?, twDetPath?)>
-<!ATTLIST twConstPath twDataPathType CDATA "twDataPathMaxDelay">
-<!ATTLIST twConstPath constType (period | fromto | unknown) "unknown">
-<!ELEMENT twSlack (#PCDATA)>
-<!ELEMENT twDelConst (#PCDATA)>
-<!ELEMENT tw2Phase EMPTY>
-<!ELEMENT twRacePath (twSlack, twSrc, twDest, twClkSkew, twDelConst?, twClkUncert?, twDetPath)>
-<!ELEMENT twPathRptBanner (#PCDATA)>
-<!ELEMENT twUnconstOffIn (twOff, twSrc, twDest, twGuaranteed?, twClkUncert?, (twDataPath, twClkPath)?)>
-<!ELEMENT twOff (#PCDATA)>
-<!ELEMENT twGuaranteed EMPTY>
-<!ELEMENT twConstOffIn (twSlack, twSrc, twDest, ((twClkDel, twClkSrc, twClkDest) | twGuarInSetup), twOff, twOffSrc, twOffDest, twClkUncert?, (twDataPath, twClkPath)?)>
-<!ATTLIST twConstOffIn twDataPathType CDATA "twDataPathMaxDelay">
-<!ATTLIST twConstOffIn twDurationNotSpecified CDATA #IMPLIED>
-<!ELEMENT twClkDel (#PCDATA)>
-<!ELEMENT twClkSrc (#PCDATA)>
-<!ELEMENT twClkDest (#PCDATA)>
-<!ELEMENT twGuarInSetup (#PCDATA)>
-<!ELEMENT twOffSrc (#PCDATA)>
-<!ELEMENT twOffDest (#PCDATA)>
-<!ELEMENT twUnconstOffOut (twOff, twSrc, twDest, twClkUncert?, (twClkPath, twDataPath)?)>
-<!ELEMENT twConstOffOut (twSlack, twSrc, twDest, twClkDel, twClkSrc, twClkDest, twDataDel, twDataSrc, twDataDest, twOff, twOffSrc, twOffDest, twClkUncert?, (twClkPath, twDataPath)?)>
-<!ATTLIST twConstOffOut twDataPathType CDATA "twDataPathMaxDelay">
-<!ELEMENT twDataDel (#PCDATA)>
-<!ELEMENT twDataSrc (#PCDATA)>
-<!ELEMENT twDataDest (#PCDATA)>
-<!ELEMENT twModOffOut (twSlack, twDest, twDataDel, twDataSrc, twDataDest, twClkUncert?, twDataPath?)>
-<!ELEMENT twDetPath (twSrc, twDest, twLogLvls, twSrcSite, twSrcClk?, twPathDel*, (twLogDel, twRouteDel, twTotDel)?, twDestClk?, (twPctLog, twPctRoute)?)>
-<!ATTLIST twDetPath maxSiteLen CDATA #IMPLIED>
-<!ELEMENT twDataPath (twSrc, twDest, twLogLvls, twSrcSite, twSrcClk?, twPathDel*, (twLogDel, twRouteDel, twTotDel)?, twDestClk?, (twPctLog, twPctRoute)?)>
-<!ATTLIST twDataPath maxSiteLen CDATA #IMPLIED>
-<!ELEMENT twClkPath (twSrc, twDest, twLogLvls, twSrcSite, twSrcClk?, twPathDel*, (twLogDel, twRouteDel, twTotDel)?, twDestClk?, (twPctLog, twPctRoute)?)>
-<!ATTLIST twClkPath maxSiteLen CDATA #IMPLIED>
-<!ELEMENT twLogLvls (#PCDATA)>
-<!ELEMENT twSrcSite (#PCDATA)>
-<!ELEMENT twSrcClk (#PCDATA)>
-<!ATTLIST twSrcClk twEdge (twRising | twFalling) "twRising">
-<!ATTLIST twSrcClk twArriveTime CDATA #IMPLIED>
-<!ATTLIST twSrcClk twClkRes CDATA #IMPLIED>
-<!ELEMENT twPathDel (twSite, twDelType, twFanCnt?, twDelInfo?, twComp, twNet?, twBEL*)>
-<!ATTLIST twPathDel twHoldTime (TRUE | FALSE) "FALSE">
-<!ELEMENT twDelInfo (#PCDATA)>
-<!ATTLIST twDelInfo twEdge (twRising | twFalling | twIndet) #REQUIRED>
-<!ATTLIST twDelInfo twAcc (twRouted | twEst | twApprox) "twRouted">
-<!ELEMENT twSite (#PCDATA)>
-<!ELEMENT twDelType (#PCDATA)>
-<!ELEMENT twFanCnt (#PCDATA)>
-<!ELEMENT twComp (#PCDATA)>
-<!ELEMENT twNet (#PCDATA)>
-<!ELEMENT twBEL (#PCDATA)>
-<!ELEMENT twLogDel (#PCDATA)>
-<!ELEMENT twRouteDel (#PCDATA)>
-<!ELEMENT twDestClk (#PCDATA)>
-<!ATTLIST twDestClk twEdge (twRising | twFalling) "twRising">
-<!ATTLIST twDestClk twArriveTime CDATA #IMPLIED>
-<!ATTLIST twDestClk twClkRes CDATA #IMPLIED>
-<!ELEMENT twPctLog (#PCDATA)>
-<!ELEMENT twPctRoute (#PCDATA)>
-<!ELEMENT twNetRpt (twDelNet | twSlackNet | twSkewNet)>
-<!ELEMENT twDelNet (twDel, twNet, twDetNet?)>
-<!ELEMENT twSlackNet (twSlack, twNet, twDel, twNotMet?, twTimeConst, twAbsSlack, twDetNet?)>
-<!ELEMENT twTimeConst (#PCDATA)>
-<!ELEMENT twAbsSlack (#PCDATA)>
-<!ELEMENT twSkewNet (twSlack, twNet, twSkew, twNotMet?, twTimeConst, twAbsSlack, twDetSkewNet?)>
-<!ELEMENT twSkew (#PCDATA)>
-<!ELEMENT twDetNet (twNetDel*)>
-<!ELEMENT twNetDel (twSrc, twDest, twNetDelInfo)>
-<!ELEMENT twNetDelInfo (#PCDATA)>
-<!ATTLIST twNetDelInfo twAcc (twRouted | twEst | twApprox) "twRouted">
-<!ELEMENT twDetSkewNet (twNetSkew*)>
-<!ELEMENT twNetSkew (twSrc, twDest, twNetDelInfo, twSkew)>
-<!ELEMENT twConstList (twConstListItem)*>
-<!ELEMENT twConstListItem (twConstName, twNotMet?, twReqVal?, twActVal?, twLogLvls?)> 
-<!ATTLIST twConstListItem twUnits (twTime | twFreq) "twTime">
-<!ELEMENT twNotMet EMPTY>
-<!ELEMENT twReqVal (#PCDATA)>
-<!ELEMENT twActVal (#PCDATA)>
-<!ELEMENT twTimeGrp (twTimeGrpName, twCompList?, twSigList?, twBELList?, twMacList?, twPinList?)>
-<!ELEMENT twTimeGrpName (#PCDATA)>
-<!ELEMENT twCompList (twCompName+)>
-<!ELEMENT twCompName (#PCDATA)>
-<!ELEMENT twSigList (twSigName+)>
-<!ELEMENT twSigName (#PCDATA)>
-<!ELEMENT twBELList (twBELName+)>
-<!ELEMENT twBELName (#PCDATA)>
-<!ELEMENT twMacList (twMacName+)>
-<!ELEMENT twMacName (#PCDATA)>
-<!ELEMENT twPinList (twPinName+)>
-<!ELEMENT twPinName (#PCDATA)>
-<!ELEMENT twUnmetConstCnt (#PCDATA)>
-<!ELEMENT twDataSheet (twSUH2ClkList*, (twClk2PadList|twClk2OutList)*, twClk2SUList*, twPad2PadList?)>
-<!ATTLIST twDataSheet twNameLen CDATA #REQUIRED>
-<!ELEMENT twSUH2ClkList (twDest, twSUH2Clk+)>
-<!ATTLIST twSUH2ClkList twDestWidth CDATA #IMPLIED>
-<!ATTLIST twSUH2ClkList twPhaseWidth CDATA #IMPLIED>
-<!ELEMENT twSUH2Clk (twSrc, twSUHTime, twSUHTime?)>
-<!ELEMENT twSUHTime (twSU2ClkTime?,twH2ClkTime?)>
-<!ATTLIST twSUHTime twInternalClk CDATA #IMPLIED>
-<!ATTLIST twSUHTime twClkPhase CDATA #IMPLIED>
-<!ELEMENT twSU2ClkTime (#PCDATA)>
-<!ATTLIST twSU2ClkTime twEdge (twRising | twFalling | twIndet) #REQUIRED>
-<!ELEMENT twH2ClkTime (#PCDATA)>
-<!ATTLIST twH2ClkTime twEdge (twRising | twFalling | twIndet) #REQUIRED>
-<!ELEMENT twClk2PadList (twSrc, twClk2Pad+)>
-<!ELEMENT twClk2Pad (twDest, twTime)>
-<!ELEMENT twTime (#PCDATA)>
-<!ATTLIST twTime twEdge (twRising | twFalling | twIndet) #REQUIRED>
-<!ELEMENT twClk2OutList (twSrc, twClk2Out+)>
-<!ATTLIST twClk2OutList twDestWidth CDATA #REQUIRED>
-<!ATTLIST twClk2OutList twPhaseWidth CDATA #REQUIRED>
-<!ELEMENT twClk2Out EMPTY>
-<!ATTLIST twClk2Out twOutPad CDATA #REQUIRED>
-<!ATTLIST twClk2Out twMinTime CDATA #REQUIRED>
-<!ATTLIST twClk2Out twMinEdge CDATA #REQUIRED>
-<!ATTLIST twClk2Out twMaxTime CDATA #REQUIRED>
-<!ATTLIST twClk2Out twMaxEdge CDATA #REQUIRED>
-<!ATTLIST twClk2Out twInternalClk CDATA #REQUIRED>
-<!ATTLIST twClk2Out twClkPhase CDATA #REQUIRED>
-<!ELEMENT twClk2SUList (twDest, twClk2SU+)>
-<!ATTLIST twClk2SUList twDestWidth CDATA #IMPLIED>
-<!ELEMENT twClk2SU (twSrc, twRiseRise?, twFallRise?, twRiseFall?, twFallFall?)>
-<!ELEMENT twRiseRise (#PCDATA)>
-<!ELEMENT twFallRise (#PCDATA)>
-<!ELEMENT twRiseFall (#PCDATA)>
-<!ELEMENT twFallFall (#PCDATA)>
-<!ELEMENT twPad2PadList (twPad2Pad+)>
-<!ATTLIST twPad2PadList twSrcWidth CDATA #IMPLIED>
-<!ATTLIST twPad2PadList twDestWidth CDATA #IMPLIED>
-<!ELEMENT twPad2Pad (twSrc, twDest, twDel)>
-<!ELEMENT twNonDedClks ((twWarn | twInfo), twNonDedClk+)>
-<!ELEMENT twNonDedClk (#PCDATA)>
-<!ELEMENT twSum ( twErrCnt, twScore, twConstCov, twStats)>
-<!ELEMENT twScore (#PCDATA)>
-<!ELEMENT twConstCov (twPathCnt, twNetCnt, twConnCnt, twPct?)>
-<!ELEMENT twPathCnt (#PCDATA)>
-<!ELEMENT twNetCnt (#PCDATA)>
-<!ELEMENT twConnCnt (#PCDATA)>
-<!ELEMENT twPct (#PCDATA)>
-<!ELEMENT twStats ( twMinPer?, twMaxFreq?, twMaxCombDel?, twMaxFromToDel?, twMaxNetDel?, twMaxNetSkew?, twMaxInAfterClk?, twMinInBeforeClk?, twMaxOutBeforeClk?, twMinOutAfterClk?, (twInfo | twWarn)*)>
-<!ELEMENT twMaxCombDel (#PCDATA)>
-<!ELEMENT twMaxFromToDel (#PCDATA)>
-<!ELEMENT twMaxNetDel (#PCDATA)>
-<!ELEMENT twMaxNetSkew (#PCDATA)>
-<!ELEMENT twMaxInAfterClk (#PCDATA)>
-<!ELEMENT twMinInBeforeClk (#PCDATA)>
-<!ELEMENT twMaxOutBeforeClk (#PCDATA)>
-<!ELEMENT twMinOutAfterClk (#PCDATA)>
-<!ELEMENT twFoot (twTimestamp)>
-<!ELEMENT twTimestamp (#PCDATA)>
-<!ELEMENT twClientInfo (twClientName, twAttrList?)>
-<!ELEMENT twClientName (#PCDATA)>
-<!ELEMENT twAttrList (twAttrListItem)*>
-<!ELEMENT twAttrListItem (twName, twValue*)>
-<!ELEMENT twName (#PCDATA)>
-<!ELEMENT twValue (#PCDATA)>
-]>
-<twReport><twHead><twExecVer>Release 6.2.03i Trace G.28</twExecVer><twCopyright>Copyright (c) 1995-2004 Xilinx, Inc.  All rights reserved.</twCopyright><twCmdLine>trce -intstyle ise -e 3 -l 3 -xml top top.ncd -o top.twr top.pcf
-
-</twCmdLine><twDesign>top.ncd</twDesign><twPCF>top.pcf</twPCF><twDevInfo arch="virtex2p"><twDevName>xc2vp70</twDevName><twSpeedGrade>-5</twSpeedGrade><twSpeedVer>PRODUCTION 1.86 2004-05-01</twSpeedVer></twDevInfo><twRptInfo twRptLvl="twErr"></twRptInfo><twEnvVar name="NONE" description="No environment variables were set" /></twHead><twInfo>INFO:Timing:2752 - To get complete path coverage, use the unconstrained paths option. All paths that are not constrained will be reported in the unconstrained paths section(s) of the report.</twInfo><twBody><twErrRpt><twConst twConstType="twPathConst"><twConstHead><twConstName>TS_CK66 = PERIOD TIMEGRP &quot;CK66&quot;  20 nS   HIGH 50.000000 % ;</twConstName><twItemCnt>0</twItemCnt><twErrCntSetup>0</twErrCntSetup><twErrCntHold twRaceChecked="FALSE">0</twErrCntHold></twConstHead></twConst><twConst twConstType="twPathConst"><twConstHead><twConstName>TS_dcm0_dcm_out = PERIOD TIMEGRP &quot;dcm0_dcm_out&quot; TS_CK66 * 1.000000  HIGH 50.000 % ;</twConstName><twItemCnt>43997</twItemCnt><twErrCntSetup>0</twErrCntSetup><twErrCntHold twRaceChecked="TRUE">0</twErrCntHold><twMinPer>19.569</twMinPer></twConstHead></twConst><twConst twConstType="twPathConst"><twConstHead><twConstName>TS_dcm0_dcm_fx = PERIOD TIMEGRP &quot;dcm0_dcm_fx&quot; TS_CK66 * 1.000000  HIGH 50.000 % ;</twConstName><twItemCnt>1665654</twItemCnt><twErrCntSetup>0</twErrCntSetup><twErrCntHold twRaceChecked="TRUE">0</twErrCntHold><twMinPer>14.739</twMinPer></twConstHead></twConst><twUnmetConstCnt>0</twUnmetConstCnt><twDataSheet twNameLen="15"><twClk2SUList twDestWidth = "4"><twDest>CK66</twDest><twClk2SU><twSrc>CK66</twSrc><twRiseRise>19.959</twRiseRise></twClk2SU></twClk2SUList></twDataSheet></twErrRpt></twBody><twSum><twErrCnt>0</twErrCnt><twScore>0</twScore><twConstCov><twPathCnt>1709651</twPathCnt><twNetCnt>0</twNetCnt><twConnCnt>63904</twConnCnt></twConstCov><twStats><twMinPer>19.569</twMinPer><twMaxFreq>51.101</twMaxFreq></twStats></twSum><twFoot><twTimestamp>Mon Jun 13 23:42:18 2005</twTimestamp></twFoot><twClientInfo><twClientName>Trace</twClientName><twAttrList><twAttrListItem><twName>Trace Settings</twName><twValue>Peak Memory Usage: 279 MB
-</twValue></twAttrListItem></twAttrList></twClientInfo></twReport>
+Sat Apr 23 19:46:36 JST 2022
+#ChipScope Core Inserter Project File Version 3.0
+#Thu Nov 18 14:25:10 JST 2004
+Project.device.designInputFile=c\:\\cygwin\\home\\administrator\\fkit\\pci64\\proj\\ifpga.ngc
+Project.device.designOutputFile=c\:\\cygwin\\home\\administrator\\fkit\\pci64\\proj\\ifpga.ngc
+Project.device.deviceFamily=2
+Project.device.enableRPMs=true
+Project.device.outputDirectory=c\:\\cygwin\\home\\administrator\\fkit\\pci64\\proj\\_ngo
+Project.device.useSRL16=true
+Project.filter.dimension=19
+Project.filter<0>=*DTO*
+Project.filter<10>=DBUS*
+Project.filter<11>=GPREG*
+Project.filter<12>=dmaw_state*
+Project.filter<13>=dmaw_state
+Project.filter<14>=Hit*PGPG_REG*
+Project.filter<15>=PGPG_REG*
+Project.filter<16>=DMAR_ENABLE*
+Project.filter<17>=DMAR_*
+Project.filter<18>=dmar_*
+Project.filter<1>=DMAW*ENA*
+Project.filter<2>=*ENA*
+Project.filter<3>=DMAW_ENA*
+Project.filter<4>=
+Project.filter<5>=*HiZ*
+Project.filter<6>=DEBUG_CS*
+Project.filter<7>=DBUS_P*
+Project.filter<8>=PFPGA_RS*
+Project.filter<9>=PFPGA_RE*
+Project.icon.boundaryScanChain=0
+Project.icon.disableBUFGInsertion=false
+Project.icon.enableExtTriggerIn=false
+Project.icon.enableExtTriggerOut=false
+Project.icon.triggerInPinName=
+Project.icon.triggerOutPinName=
+Project.unit.dimension=1
+Project.unit<0>.clockChannel=CK66_DCM
+Project.unit<0>.clockEdge=Rising
+Project.unit<0>.dataChannel<0>=DEBUG_CS_CLK0
+Project.unit<0>.dataChannel<100>=DBUS_Port<9>
+Project.unit<0>.dataChannel<101>=DBUS_Port<10>
+Project.unit<0>.dataChannel<102>=DBUS_Port<11>
+Project.unit<0>.dataChannel<103>=DBUS_Port<12>
+Project.unit<0>.dataChannel<104>=DBUS_Port<13>
+Project.unit<0>.dataChannel<105>=DBUS_Port<14>
+Project.unit<0>.dataChannel<106>=DBUS_Port<15>
+Project.unit<0>.dataChannel<107>=DBUS_Port<16>
+Project.unit<0>.dataChannel<108>=DBUS_Port<17>
+Project.unit<0>.dataChannel<109>=DBUS_Port<18>
+Project.unit<0>.dataChannel<10>=pgpg1 MEM_ADB<2>
+Project.unit<0>.dataChannel<110>=DBUS_Port<19>
+Project.unit<0>.dataChannel<111>=DBUS_Port<20>
+Project.unit<0>.dataChannel<112>=DBUS_Port<21>
+Project.unit<0>.dataChannel<113>=DBUS_Port<22>
+Project.unit<0>.dataChannel<114>=DBUS_Port<23>
+Project.unit<0>.dataChannel<115>=DBUS_Port<24>
+Project.unit<0>.dataChannel<116>=DBUS_Port<25>
+Project.unit<0>.dataChannel<117>=DBUS_Port<26>
+Project.unit<0>.dataChannel<118>=DBUS_Port<27>
+Project.unit<0>.dataChannel<119>=DBUS_Port<28>
+Project.unit<0>.dataChannel<11>=pgpg1 MEM_ADB<3>
+Project.unit<0>.dataChannel<120>=DBUS_Port<29>
+Project.unit<0>.dataChannel<121>=DBUS_Port<30>
+Project.unit<0>.dataChannel<122>=DBUS_Port<31>
+Project.unit<0>.dataChannel<123>=DBUS_Port<32>
+Project.unit<0>.dataChannel<124>=PFPGA_RST_0_OBUF
+Project.unit<0>.dataChannel<125>=DBUS_HiZ
+Project.unit<0>.dataChannel<12>=pgpg1 MEM_ADB<4>
+Project.unit<0>.dataChannel<13>=pgpg1 MEM_ADB<5>
+Project.unit<0>.dataChannel<14>=pgpg1 MEM_ADB<6>
+Project.unit<0>.dataChannel<15>=pgpg1 MEM_ADB<7>
+Project.unit<0>.dataChannel<16>=pgpg1 MEM_ADB<8>
+Project.unit<0>.dataChannel<17>=pgpg1 MEM_DTIB<0>
+Project.unit<0>.dataChannel<18>=pgpg1 MEM_DTIB<1>
+Project.unit<0>.dataChannel<19>=pgpg1 MEM_DTIB<2>
+Project.unit<0>.dataChannel<1>=pgpg1 Hit_PGPG_REG3
+Project.unit<0>.dataChannel<20>=pgpg1 MEM_DTIB<3>
+Project.unit<0>.dataChannel<21>=pgpg1 MEM_DTIB<4>
+Project.unit<0>.dataChannel<22>=pgpg1 MEM_DTIB<5>
+Project.unit<0>.dataChannel<23>=pgpg1 MEM_DTIB<6>
+Project.unit<0>.dataChannel<24>=pgpg1 MEM_DTIB<7>
+Project.unit<0>.dataChannel<25>=pgpg1 MEM_DTIB<8>
+Project.unit<0>.dataChannel<26>=pgpg1 MEM_DTIB<9>
+Project.unit<0>.dataChannel<27>=pgpg1 MEM_DTIB<10>
+Project.unit<0>.dataChannel<28>=pgpg1 MEM_DTIB<11>
+Project.unit<0>.dataChannel<29>=pgpg1 MEM_DTIB<12>
+Project.unit<0>.dataChannel<2>=pgpg1 GPREG0<3>
+Project.unit<0>.dataChannel<30>=pgpg1 MEM_DTIB<13>
+Project.unit<0>.dataChannel<31>=pgpg1 MEM_DTIB<14>
+Project.unit<0>.dataChannel<32>=pgpg1 MEM_DTIB<15>
+Project.unit<0>.dataChannel<33>=pgpg1 MEM_DTIB<16>
+Project.unit<0>.dataChannel<34>=pgpg1 MEM_DTIB<17>
+Project.unit<0>.dataChannel<35>=pgpg1 MEM_DTIB<18>
+Project.unit<0>.dataChannel<36>=pgpg1 MEM_DTIB<19>
+Project.unit<0>.dataChannel<37>=pgpg1 MEM_DTIB<20>
+Project.unit<0>.dataChannel<38>=pgpg1 MEM_DTIB<21>
+Project.unit<0>.dataChannel<39>=pgpg1 MEM_DTIB<22>
+Project.unit<0>.dataChannel<3>=pgpg1 GPREG0<4>
+Project.unit<0>.dataChannel<40>=pgpg1 MEM_DTIB<23>
+Project.unit<0>.dataChannel<41>=pgpg1 MEM_DTIB<24>
+Project.unit<0>.dataChannel<42>=pgpg1 MEM_DTIB<25>
+Project.unit<0>.dataChannel<43>=pgpg1 MEM_DTIB<26>
+Project.unit<0>.dataChannel<44>=pgpg1 MEM_DTIB<27>
+Project.unit<0>.dataChannel<45>=pgpg1 MEM_DTIB<28>
+Project.unit<0>.dataChannel<46>=pgpg1 MEM_DTIB<29>
+Project.unit<0>.dataChannel<47>=pgpg1 MEM_DTIB<30>
+Project.unit<0>.dataChannel<48>=pgpg1 MEM_DTIB<31>
+Project.unit<0>.dataChannel<49>=pgpg1 MEM_DTIB<32>
+Project.unit<0>.dataChannel<4>=pgpg1 GPREG0<5>
+Project.unit<0>.dataChannel<50>=pgpg1 DBUS_idata<0>
+Project.unit<0>.dataChannel<51>=pgpg1 DBUS_idata<1>
+Project.unit<0>.dataChannel<52>=pgpg1 DBUS_idata<2>
+Project.unit<0>.dataChannel<53>=pgpg1 DBUS_idata<3>
+Project.unit<0>.dataChannel<54>=pgpg1 DBUS_idata<4>
+Project.unit<0>.dataChannel<55>=pgpg1 DBUS_idata<5>
+Project.unit<0>.dataChannel<56>=pgpg1 DBUS_idata<6>
+Project.unit<0>.dataChannel<57>=pgpg1 DBUS_idata<7>
+Project.unit<0>.dataChannel<58>=pgpg1 DBUS_idata<8>
+Project.unit<0>.dataChannel<59>=pgpg1 DBUS_idata<9>
+Project.unit<0>.dataChannel<5>=pgpg1 GPREG0<6>
+Project.unit<0>.dataChannel<60>=pgpg1 DBUS_idata<10>
+Project.unit<0>.dataChannel<61>=pgpg1 DBUS_idata<11>
+Project.unit<0>.dataChannel<62>=pgpg1 DBUS_idata<12>
+Project.unit<0>.dataChannel<63>=pgpg1 DBUS_idata<13>
+Project.unit<0>.dataChannel<64>=pgpg1 DBUS_idata<14>
+Project.unit<0>.dataChannel<65>=pgpg1 DBUS_idata<15>
+Project.unit<0>.dataChannel<66>=pgpg1 DBUS_idata<16>
+Project.unit<0>.dataChannel<67>=pgpg1 DBUS_idata<17>
+Project.unit<0>.dataChannel<68>=pgpg1 DBUS_idata<18>
+Project.unit<0>.dataChannel<69>=pgpg1 DBUS_idata<19>
+Project.unit<0>.dataChannel<6>=pgpg1 GPREG0<7>
+Project.unit<0>.dataChannel<70>=pgpg1 DBUS_idata<20>
+Project.unit<0>.dataChannel<71>=pgpg1 DBUS_idata<21>
+Project.unit<0>.dataChannel<72>=pgpg1 DBUS_idata<22>
+Project.unit<0>.dataChannel<73>=pgpg1 DBUS_idata<23>
+Project.unit<0>.dataChannel<74>=pgpg1 DBUS_idata<24>
+Project.unit<0>.dataChannel<75>=pgpg1 DBUS_idata<25>
+Project.unit<0>.dataChannel<76>=pgpg1 DBUS_idata<26>
+Project.unit<0>.dataChannel<77>=pgpg1 DBUS_idata<27>
+Project.unit<0>.dataChannel<78>=pgpg1 DBUS_idata<28>
+Project.unit<0>.dataChannel<79>=pgpg1 DBUS_idata<29>
+Project.unit<0>.dataChannel<7>=pgpg1 MEM_WELB
+Project.unit<0>.dataChannel<80>=pgpg1 DBUS_idata<30>
+Project.unit<0>.dataChannel<81>=pgpg1 DBUS_idata<31>
+Project.unit<0>.dataChannel<82>=pgpg1 DBUS_idata<32>
+Project.unit<0>.dataChannel<83>=pgpg1 DMAR_ENABLE<0>
+Project.unit<0>.dataChannel<84>=pgpg1 DMAR_ENABLE<1>
+Project.unit<0>.dataChannel<85>=pgpg1 DMAR_ENABLE<2>
+Project.unit<0>.dataChannel<86>=pgpg1 DMAR_ENABLE<3>
+Project.unit<0>.dataChannel<87>=pgpg1 Hit_PGPG_REG2
+Project.unit<0>.dataChannel<88>=pgpg1 GPREG0<0>
+Project.unit<0>.dataChannel<89>=pgpg1 GPREG0<1>
+Project.unit<0>.dataChannel<8>=pgpg1 MEM_ADB<0>
+Project.unit<0>.dataChannel<90>=pgpg1 GPREG0<2>
+Project.unit<0>.dataChannel<91>=DBUS_Port<0>
+Project.unit<0>.dataChannel<92>=DBUS_Port<1>
+Project.unit<0>.dataChannel<93>=DBUS_Port<2>
+Project.unit<0>.dataChannel<94>=DBUS_Port<3>
+Project.unit<0>.dataChannel<95>=DBUS_Port<4>
+Project.unit<0>.dataChannel<96>=DBUS_Port<5>
+Project.unit<0>.dataChannel<97>=DBUS_Port<6>
+Project.unit<0>.dataChannel<98>=DBUS_Port<7>
+Project.unit<0>.dataChannel<99>=DBUS_Port<8>
+Project.unit<0>.dataChannel<9>=pgpg1 MEM_ADB<1>
+Project.unit<0>.dataDepth=2048
+Project.unit<0>.dataEqualsTrigger=true
+Project.unit<0>.dataPortWidth=126
+Project.unit<0>.enableGaps=false
+Project.unit<0>.enableTimestamps=false
+Project.unit<0>.timestampDepth=0
+Project.unit<0>.timestampWidth=0
+Project.unit<0>.triggerChannel<0><0>=DEBUG_CS_CLK0
+Project.unit<0>.triggerChannel<0><100>=DBUS_Port<9>
+Project.unit<0>.triggerChannel<0><101>=DBUS_Port<10>
+Project.unit<0>.triggerChannel<0><102>=DBUS_Port<11>
+Project.unit<0>.triggerChannel<0><103>=DBUS_Port<12>
+Project.unit<0>.triggerChannel<0><104>=DBUS_Port<13>
+Project.unit<0>.triggerChannel<0><105>=DBUS_Port<14>
+Project.unit<0>.triggerChannel<0><106>=DBUS_Port<15>
+Project.unit<0>.triggerChannel<0><107>=DBUS_Port<16>
+Project.unit<0>.triggerChannel<0><108>=DBUS_Port<17>
+Project.unit<0>.triggerChannel<0><109>=DBUS_Port<18>
+Project.unit<0>.triggerChannel<0><10>=pgpg1 MEM_ADB<2>
+Project.unit<0>.triggerChannel<0><110>=DBUS_Port<19>
+Project.unit<0>.triggerChannel<0><111>=DBUS_Port<20>
+Project.unit<0>.triggerChannel<0><112>=DBUS_Port<21>
+Project.unit<0>.triggerChannel<0><113>=DBUS_Port<22>
+Project.unit<0>.triggerChannel<0><114>=DBUS_Port<23>
+Project.unit<0>.triggerChannel<0><115>=DBUS_Port<24>
+Project.unit<0>.triggerChannel<0><116>=DBUS_Port<25>
+Project.unit<0>.triggerChannel<0><117>=DBUS_Port<26>
+Project.unit<0>.triggerChannel<0><118>=DBUS_Port<27>
+Project.unit<0>.triggerChannel<0><119>=DBUS_Port<28>
+Project.unit<0>.triggerChannel<0><11>=pgpg1 MEM_ADB<3>
+Project.unit<0>.triggerChannel<0><120>=DBUS_Port<29>
+Project.unit<0>.triggerChannel<0><121>=DBUS_Port<30>
+Project.unit<0>.triggerChannel<0><122>=DBUS_Port<31>
+Project.unit<0>.triggerChannel<0><123>=DBUS_Port<32>
+Project.unit<0>.triggerChannel<0><124>=PFPGA_RST_0_OBUF
+Project.unit<0>.triggerChannel<0><125>=DBUS_HiZ
+Project.unit<0>.triggerChannel<0><126>=pgpg1 DMAW_ENABLE<0>
+Project.unit<0>.triggerChannel<0><127>=pgpg1 DMAW_ENABLE<1>
+Project.unit<0>.triggerChannel<0><128>=pgpg1 DMAW_ENABLE<2>
+Project.unit<0>.triggerChannel<0><129>=pgpg1 DMAW_ENABLE<3>
+Project.unit<0>.triggerChannel<0><12>=pgpg1 MEM_ADB<4>
+Project.unit<0>.triggerChannel<0><130>=pgpg1 MEM_DTOB<0>
+Project.unit<0>.triggerChannel<0><131>=pgpg1 MEM_DTOB<1>
+Project.unit<0>.triggerChannel<0><132>=pgpg1 MEM_DTOB<2>
+Project.unit<0>.triggerChannel<0><133>=pgpg1 MEM_DTOB<3>
+Project.unit<0>.triggerChannel<0><134>=pgpg1 MEM_DTOB<4>
+Project.unit<0>.triggerChannel<0><135>=pgpg1 MEM_DTOB<5>
+Project.unit<0>.triggerChannel<0><136>=pgpg1 MEM_DTOB<6>
+Project.unit<0>.triggerChannel<0><137>=pgpg1 MEM_DTOB<7>
+Project.unit<0>.triggerChannel<0><138>=pgpg1 MEM_DTOB<8>
+Project.unit<0>.triggerChannel<0><139>=pgpg1 MEM_DTOB<9>
+Project.unit<0>.triggerChannel<0><13>=pgpg1 MEM_ADB<5>
+Project.unit<0>.triggerChannel<0><140>=pgpg1 MEM_DTOB<10>
+Project.unit<0>.triggerChannel<0><141>=pgpg1 MEM_DTOB<11>
+Project.unit<0>.triggerChannel<0><142>=pgpg1 MEM_DTOB<12>
+Project.unit<0>.triggerChannel<0><143>=pgpg1 MEM_DTOB<13>
+Project.unit<0>.triggerChannel<0><144>=pgpg1 MEM_DTOB<14>
+Project.unit<0>.triggerChannel<0><145>=pgpg1 MEM_DTOB<15>
+Project.unit<0>.triggerChannel<0><146>=pgpg1 MEM_DTOB<16>
+Project.unit<0>.triggerChannel<0><147>=pgpg1 MEM_DTOB<17>
+Project.unit<0>.triggerChannel<0><148>=pgpg1 MEM_DTOB<18>
+Project.unit<0>.triggerChannel<0><149>=pgpg1 MEM_DTOB<19>
+Project.unit<0>.triggerChannel<0><14>=pgpg1 MEM_ADB<6>
+Project.unit<0>.triggerChannel<0><150>=pgpg1 MEM_DTOB<20>
+Project.unit<0>.triggerChannel<0><151>=pgpg1 MEM_DTOB<21>
+Project.unit<0>.triggerChannel<0><152>=pgpg1 MEM_DTOB<22>
+Project.unit<0>.triggerChannel<0><153>=pgpg1 MEM_DTOB<23>
+Project.unit<0>.triggerChannel<0><154>=pgpg1 MEM_DTOB<24>
+Project.unit<0>.triggerChannel<0><155>=pgpg1 MEM_DTOB<25>
+Project.unit<0>.triggerChannel<0><156>=pgpg1 MEM_DTOB<26>
+Project.unit<0>.triggerChannel<0><157>=pgpg1 MEM_DTOB<27>
+Project.unit<0>.triggerChannel<0><158>=pgpg1 MEM_DTOB<28>
+Project.unit<0>.triggerChannel<0><159>=pgpg1 MEM_DTOB<29>
+Project.unit<0>.triggerChannel<0><15>=pgpg1 MEM_ADB<7>
+Project.unit<0>.triggerChannel<0><160>=pgpg1 MEM_DTOB<30>
+Project.unit<0>.triggerChannel<0><161>=pgpg1 MEM_DTOB<31>
+Project.unit<0>.triggerChannel<0><162>=pgpg1 MEM_DTOB<32>
+Project.unit<0>.triggerChannel<0><16>=pgpg1 MEM_ADB<8>
+Project.unit<0>.triggerChannel<0><17>=pgpg1 MEM_DTIB<0>
+Project.unit<0>.triggerChannel<0><18>=pgpg1 MEM_DTIB<1>
+Project.unit<0>.triggerChannel<0><19>=pgpg1 MEM_DTIB<2>
+Project.unit<0>.triggerChannel<0><1>=pgpg1 Hit_PGPG_REG3
+Project.unit<0>.triggerChannel<0><20>=pgpg1 MEM_DTIB<3>
+Project.unit<0>.triggerChannel<0><21>=pgpg1 MEM_DTIB<4>
+Project.unit<0>.triggerChannel<0><22>=pgpg1 MEM_DTIB<5>
+Project.unit<0>.triggerChannel<0><23>=pgpg1 MEM_DTIB<6>
+Project.unit<0>.triggerChannel<0><24>=pgpg1 MEM_DTIB<7>
+Project.unit<0>.triggerChannel<0><25>=pgpg1 MEM_DTIB<8>
+Project.unit<0>.triggerChannel<0><26>=pgpg1 MEM_DTIB<9>
+Project.unit<0>.triggerChannel<0><27>=pgpg1 MEM_DTIB<10>
+Project.unit<0>.triggerChannel<0><28>=pgpg1 MEM_DTIB<11>
+Project.unit<0>.triggerChannel<0><29>=pgpg1 MEM_DTIB<12>
+Project.unit<0>.triggerChannel<0><2>=pgpg1 GPREG0<3>
+Project.unit<0>.triggerChannel<0><30>=pgpg1 MEM_DTIB<13>
+Project.unit<0>.triggerChannel<0><31>=pgpg1 MEM_DTIB<14>
+Project.unit<0>.triggerChannel<0><32>=pgpg1 MEM_DTIB<15>
+Project.unit<0>.triggerChannel<0><33>=pgpg1 MEM_DTIB<16>
+Project.unit<0>.triggerChannel<0><34>=pgpg1 MEM_DTIB<17>
+Project.unit<0>.triggerChannel<0><35>=pgpg1 MEM_DTIB<18>
+Project.unit<0>.triggerChannel<0><36>=pgpg1 MEM_DTIB<19>
+Project.unit<0>.triggerChannel<0><37>=pgpg1 MEM_DTIB<20>
+Project.unit<0>.triggerChannel<0><38>=pgpg1 MEM_DTIB<21>
+Project.unit<0>.triggerChannel<0><39>=pgpg1 MEM_DTIB<22>
+Project.unit<0>.triggerChannel<0><3>=pgpg1 GPREG0<4>
+Project.unit<0>.triggerChannel<0><40>=pgpg1 MEM_DTIB<23>
+Project.unit<0>.triggerChannel<0><41>=pgpg1 MEM_DTIB<24>
+Project.unit<0>.triggerChannel<0><42>=pgpg1 MEM_DTIB<25>
+Project.unit<0>.triggerChannel<0><43>=pgpg1 MEM_DTIB<26>
+Project.unit<0>.triggerChannel<0><44>=pgpg1 MEM_DTIB<27>
+Project.unit<0>.triggerChannel<0><45>=pgpg1 MEM_DTIB<28>
+Project.unit<0>.triggerChannel<0><46>=pgpg1 MEM_DTIB<29>
+Project.unit<0>.triggerChannel<0><47>=pgpg1 MEM_DTIB<30>
+Project.unit<0>.triggerChannel<0><48>=pgpg1 MEM_DTIB<31>
+Project.unit<0>.triggerChannel<0><49>=pgpg1 MEM_DTIB<32>
+Project.unit<0>.triggerChannel<0><4>=pgpg1 GPREG0<5>
+Project.unit<0>.triggerChannel<0><50>=pgpg1 DBUS_idata<0>
+Project.unit<0>.triggerChannel<0><51>=pgpg1 DBUS_idata<1>
+Project.unit<0>.triggerChannel<0><52>=pgpg1 DBUS_idata<2>
+Project.unit<0>.triggerChannel<0><53>=pgpg1 DBUS_idata<3>
+Project.unit<0>.triggerChannel<0><54>=pgpg1 DBUS_idata<4>
+Project.unit<0>.triggerChannel<0><55>=pgpg1 DBUS_idata<5>
+Project.unit<0>.triggerChannel<0><56>=pgpg1 DBUS_idata<6>
+Project.unit<0>.triggerChannel<0><57>=pgpg1 DBUS_idata<7>
+Project.unit<0>.triggerChannel<0><58>=pgpg1 DBUS_idata<8>
+Project.unit<0>.triggerChannel<0><59>=pgpg1 DBUS_idata<9>
+Project.unit<0>.triggerChannel<0><5>=pgpg1 GPREG0<6>
+Project.unit<0>.triggerChannel<0><60>=pgpg1 DBUS_idata<10>
+Project.unit<0>.triggerChannel<0><61>=pgpg1 DBUS_idata<11>
+Project.unit<0>.triggerChannel<0><62>=pgpg1 DBUS_idata<12>
+Project.unit<0>.triggerChannel<0><63>=pgpg1 DBUS_idata<13>
+Project.unit<0>.triggerChannel<0><64>=pgpg1 DBUS_idata<14>
+Project.unit<0>.triggerChannel<0><65>=pgpg1 DBUS_idata<15>
+Project.unit<0>.triggerChannel<0><66>=pgpg1 DBUS_idata<16>
+Project.unit<0>.triggerChannel<0><67>=pgpg1 DBUS_idata<17>
+Project.unit<0>.triggerChannel<0><68>=pgpg1 DBUS_idata<18>
+Project.unit<0>.triggerChannel<0><69>=pgpg1 DBUS_idata<19>
+Project.unit<0>.triggerChannel<0><6>=pgpg1 GPREG0<7>
+Project.unit<0>.triggerChannel<0><70>=pgpg1 DBUS_idata<20>
+Project.unit<0>.triggerChannel<0><71>=pgpg1 DBUS_idata<21>
+Project.unit<0>.triggerChannel<0><72>=pgpg1 DBUS_idata<22>
+Project.unit<0>.triggerChannel<0><73>=pgpg1 DBUS_idata<23>
+Project.unit<0>.triggerChannel<0><74>=pgpg1 DBUS_idata<24>
+Project.unit<0>.triggerChannel<0><75>=pgpg1 DBUS_idata<25>
+Project.unit<0>.triggerChannel<0><76>=pgpg1 DBUS_idata<26>
+Project.unit<0>.triggerChannel<0><77>=pgpg1 DBUS_idata<27>
+Project.unit<0>.triggerChannel<0><78>=pgpg1 DBUS_idata<28>
+Project.unit<0>.triggerChannel<0><79>=pgpg1 DBUS_idata<29>
+Project.unit<0>.triggerChannel<0><7>=pgpg1 MEM_WELB
+Project.unit<0>.triggerChannel<0><80>=pgpg1 DBUS_idata<30>
+Project.unit<0>.triggerChannel<0><81>=pgpg1 DBUS_idata<31>
+Project.unit<0>.triggerChannel<0><82>=pgpg1 DBUS_idata<32>
+Project.unit<0>.triggerChannel<0><83>=pgpg1 DMAR_ENABLE<0>
+Project.unit<0>.triggerChannel<0><84>=pgpg1 DMAR_ENABLE<1>
+Project.unit<0>.triggerChannel<0><85>=pgpg1 DMAR_ENABLE<2>
+Project.unit<0>.triggerChannel<0><86>=pgpg1 DMAR_ENABLE<3>
+Project.unit<0>.triggerChannel<0><87>=pgpg1 Hit_PGPG_REG2
+Project.unit<0>.triggerChannel<0><88>=pgpg1 GPREG0<0>
+Project.unit<0>.triggerChannel<0><89>=pgpg1 GPREG0<1>
+Project.unit<0>.triggerChannel<0><8>=pgpg1 MEM_ADB<0>
+Project.unit<0>.triggerChannel<0><90>=pgpg1 GPREG0<2>
+Project.unit<0>.triggerChannel<0><91>=DBUS_Port<0>
+Project.unit<0>.triggerChannel<0><92>=DBUS_Port<1>
+Project.unit<0>.triggerChannel<0><93>=DBUS_Port<2>
+Project.unit<0>.triggerChannel<0><94>=DBUS_Port<3>
+Project.unit<0>.triggerChannel<0><95>=DBUS_Port<4>
+Project.unit<0>.triggerChannel<0><96>=DBUS_Port<5>
+Project.unit<0>.triggerChannel<0><97>=DBUS_Port<6>
+Project.unit<0>.triggerChannel<0><98>=DBUS_Port<7>
+Project.unit<0>.triggerChannel<0><99>=DBUS_Port<8>
+Project.unit<0>.triggerChannel<0><9>=pgpg1 MEM_ADB<1>
+Project.unit<0>.triggerConditionCountWidth=0
+Project.unit<0>.triggerMatchCount<0>=1
+Project.unit<0>.triggerMatchCountWidth<0><0>=0
+Project.unit<0>.triggerMatchType<0><0>=1
+Project.unit<0>.triggerPortCount=1
+Project.unit<0>.triggerPortIsData<0>=true
+Project.unit<0>.triggerPortWidth<0>=163
+Project.unit<0>.triggerSequencerLevels=16
+Project.unit<0>.triggerSequencerType=1
+Project.unit<0>.type=ilapro

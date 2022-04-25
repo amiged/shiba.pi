@@ -1,172 +1,206 @@
-Fri Mar 18 19:27:30 JST 2022
--- LOCAL READ CONTROLLER ( ifpga <- pfpga )
--- (LOCAL_READ_IF‚ÉŠJŽnM†‚ð‘Sƒ`ƒbƒv‰ñ”•ª‘—‚éƒ‚ƒWƒ…[ƒ‹)
--- by Tsuyoshi Hamada 2005/01/04
--- ƒƒ‚ : 
---   NQWORD‚Æ‚Á‚Ä‚­‚é‚Ì‚É•K—v‚ÈLOCAL_READ_IF‚ÌƒNƒƒbƒN(BUSY) : NQWORD + 8(ƒŒƒCƒeƒ“ƒV:INTF_LAT) ƒNƒƒbƒN
--- 
--- (0) IF‚É START_AD, NQWORD ‚ðƒZƒbƒg     : 1ƒNƒƒbƒN
--- (1) IF‚É CHIPSEL, MEM_AD_BASE ‚ðƒZƒbƒg : 1ƒNƒƒbƒN
--- (2) IF‚Ì EXEC ‚ðã‚°‚é                 : 1ƒNƒƒbƒN
--- (3) IF‚É EXEC ‚ð‰º‚°‚é                 : 1ƒNƒƒbƒN
--- (4) IF‚ª“]‘—‚ðI—¹‚·‚é‚Ü‚Å‘Ò‚Â         : I_NC ƒNƒƒbƒN(I_NC= NPIPE*pow(2,NBIT_L_ADRO)
--- (5) (1)‚©‚ç(4)‚Ü‚Å‚ð4ƒ`ƒbƒv•ªŒJ‚è•Ô‚·.
---
--- (¦) LOCAL_READ_IF‚Ì“]‘—‚É•K—v‚ÈƒNƒƒbƒN‚ÍŒˆ‚Ü‚Á‚Ä‚¢‚é‚Ì‚Å“]‘—I—¹ƒtƒ‰ƒO‚ÍŒ©‚È‚¢.
--- (¦) l_adro‚Ìƒrƒbƒg•(NBIT_L_ADRO)‚ð•Ï‚¦‚½ê‡‚Íprom‚ðÄ‚«‚È‚¨‚·•K—v‚ª‚ ‚é‚±‚Æ‚É’ˆÓ.(’¼‚·‚Ì‚Íã‚Ìƒ‚ƒWƒ…[ƒ‹)
+Mon Apr 25 19:27:32 JST 2022
+#include <stdio.h>
+#include <GL/glut.h>
+#include <string.h> // strtok(),strcpy()
+#include <stdlib.h> // atof()
+#include <math.h>
+#define NMAX 210000
+#define XSCALE 2.0
+#define YSCALE 2.0
+//#define IS_PRESET 0
+#define IS_PRESET 1
+#define PRESET_NBODY 4096
+//#define PRESET_NBODY 16384
+//#define PRESET_NBODY 3
 
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL;
-use IEEE.STD_LOGIC_ARITH.ALL;
+#define PRESET_NWRITE 1
+#define PRESET_NSKIP 1
 
-entity LOCAL_READ_CNT is
-  generic (
-           CNT_WIDTH     : integer := 16;      -- program counter bit-width
-           FO_BASE       : integer := 24576;   -- = 0x6000
-           NBIT_L_ADRO   : integer := 3;       -- Bit-Length of l_ado(pgpg_mem.vhd)
-           INTF_LAT      : integer := 8        -- LOCAL_READ_IF latency (clock)
-  );
-  port (
-    -- from LOCAL_READ
-    NPIPE : in std_logic_vector(7 downto 0);     -- number of pipelines per chip
-    -- from LOCAL_READ_DONE
-    CALC_DONE  : in std_logic;   -- pulse
-    -- to LOCAL_READ_DONE
-    FETCH_DONE : out std_logic;  -- pulse
+static char ifile[256];
+static int istep;
+static FILE *fp;
 
-    -- to LOCAL_READ_IF
-    EXEC     : out std_logic;                     -- pulse
-    START_AD : out std_logic_vector(18 downto 0); -- 19 bit
-    NQWORD   : out std_logic_vector( 8 downto 0); --  9 bit
-    CHIPSEL  : out std_logic_vector( 3 downto 0); --  4 bit
-    MEM_AD_BASE : out std_logic_vector(12 downto 0);
-    -- from LOCAL_READ_IF
---    BUSY_IF : in std_logic;
- 
-    RST : in  std_logic;
-    CLK : in  std_logic
-    );
-end LOCAL_READ_CNT;
+int imax;
+double x[NMAX];
+double y[NMAX];
+int NBODY;
+int SKIP_STEP;
 
-architecture rtl of LOCAL_READ_CNT is
+void reset_fp()
+{
+    printf("restart\n");
+    fclose(fp);
+    fp = fopen(ifile,"r");
+    istep=0;
+}
 
-signal hit0,hit1 : std_logic :='0';
-signal cnt,cntr : std_logic_vector(CNT_WIDTH-1 downto 0) :=(others=>'0');
-signal cnt_en : std_logic :='0';
-signal is_finish,is_finishr : std_logic :='0';
+void skip_step()
+{
+  int i;
+  char line[101];
+  for(i=0;i<NBODY;i++) if(fgets(line,100,fp)==NULL){reset_fp();}
+}
 
-----
-signal c_start_ad   : std_logic_vector(18 downto 0) :=(others=>'0');
-signal c_nqword     : std_logic_vector(18 downto 0) :=(others=>'0');
-signal c_chipsel    : std_logic_vector(18 downto 0) :=(others=>'0');
-signal c_mem_offset : std_logic_vector(18 downto 0) :=(others=>'0');
-begin
+void myidle()
+{
+  istep++;
+  if((istep%SKIP_STEP) != 0){
+    skip_step();
+  }else{
+    glutPostRedisplay();
+  }
+  //  printf("%d step\n",(istep*SKIP_STEP));
+}
 
-  FETCH_DONE <= is_finish; -- transfer done pulse
+void display();
 
-  hit0 <= CALC_DONE;
-  process (CLK) begin
-    if (CLK'event and CLK='1') then
-      is_finishr <= is_finish;
-      hit1 <= hit0;
-    end if;
-  end process;
+void init()
+{
+  glClearColor(0.0, 0.0, 0.0, 0.0);
+  glColor3f(1.0,1.0,1.0);
+}
 
-  -- PROGRAM COUNTER
-  cntr <= cnt + conv_std_logic_vector(1, CNT_WIDTH);
-  process (RST,CLK,hit0,hit1,cnt_en) begin
-    if (RST = '1') then
-      cnt <= (others=>'0');
-    elsif (CLK'event and CLK='1') then
-      if((hit0 = '1') AND (hit1 = '0')) then
-        cnt <= (others=>'0');
-      elsif(cnt_en = '1') then
-        cnt <= cntr;
-      end if;
-    end if;
-  end process;
 
-  -- COUNTER ENABLE (counting up signal)
-  process (RST,CLK,hit0,hit1,is_finish,is_finishr) begin
-    if (RST = '1') then
-      cnt_en <= '0';
-    elsif (CLK'event and CLK='1') then
-      if((hit0 = '1') AND (hit1 = '0')) then
-        cnt_en <= '1';
-      elsif((is_finish = '1') AND (is_finishr = '0')) then
-        cnt_en <= '0';
-      end if;
-    end if;
-  end process;
+int main(int argc, char** argv)
+{
 
-  ------------------------------------------------------------- PROGRAM
-  process (RST,CLK,cnt)
-      variable I_NPIPE : integer;
-      variable I_NFI   : integer;
-      variable I_NC    : integer;
-      variable I_MAB   : integer;
-      variable I_NQW   : integer;
-  begin
-    if (RST='1') then
-      is_finish <= '0';
-    elsif (CLK'event and CLK='1') then
+  if(IS_PRESET){
+    NBODY = PRESET_NBODY*PRESET_NWRITE;
+    SKIP_STEP=PRESET_NSKIP;
+  }else{
+    int nb,nw;
+    printf("enter NBODY:");  scanf("%d",&nb);  //$BN3;R?t$r;XDj(B
+    printf("enter Nwrite:");  scanf("%d",&nw);  //$BO"B3=q9~$_%3%^?t(B
+    //    printf("enter SKIP_STEP:");  scanf("%d",&SKIP_STEP); 
+    NBODY = (int)(nb * nw);
+    SKIP_STEP=1; // Fixed
+  }
+  istep=0;
+  if(argc <2){printf("no inputfile.\n"); exit(0); }
+  strcpy(ifile,argv[1]);
+  fp = fopen(ifile,"r");
 
-      --= = = = = = = = = = = = = = = = = = = = INTEGER VARLUES
-      I_NPIPE := conv_integer(NPIPE);
-      I_NFI   := (2**NBIT_L_ADRO);
---      I_NFI   := (2**2);  -- ƒgƒbƒv‚©‚ç‚ÌƒWƒFƒlƒŠƒbƒN‚Ì“`”d‚ª‚¤‚Ü‚­‚¢‚«‚Ü‚¹‚ñ‚Ì‚Å’ˆÓ
-      I_NC    := I_NPIPE*I_NFI + INTF_LAT;
-      I_MAB   := I_NPIPE*I_NFI;
-      I_NQW   := I_NPIPE*I_NFI - 1;
-      --= = = = = = = = = = = = = = = = = = = = = = = = = = = =
+  glutInit(&argc,argv);
+  glutInitDisplayMode(GLUT_DOUBLE |GLUT_RGB);
+  glutInitWindowSize(400,400);
+  glutInitWindowPosition(600,0);
+  glutCreateWindow("NBODYH-2003/11/08");
+  glutDisplayFunc(display);
+  glutIdleFunc(myidle);
+  init();
+  glutMainLoop();
 
-      if(    cnt = conv_std_logic_vector(0, CNT_WIDTH) ) then
-        is_finish <= '0';
-        NQWORD   <= conv_std_logic_vector(I_NQW, 9);
-        START_AD <= conv_std_logic_vector(FO_BASE, 19);
-      -- ================================================================================ CHIP 0
-      elsif( cnt = conv_std_logic_vector(1, CNT_WIDTH) ) then
-        MEM_AD_BASE <= conv_std_logic_vector(0, 13);
-        CHIPSEL  <= "0001";
-      elsif( cnt = conv_std_logic_vector(2, CNT_WIDTH) ) then
-        EXEC <= '1';
-      elsif( cnt = conv_std_logic_vector(3, CNT_WIDTH) ) then
-        EXEC <= '0';
-      -- ================================================================================ CHIP 1
-      elsif( cnt = conv_std_logic_vector(3 + 1*I_NC, CNT_WIDTH) ) then
-        MEM_AD_BASE <= conv_std_logic_vector(1*I_MAB  , 13);
-        CHIPSEL  <= "0010";
-      elsif( cnt = conv_std_logic_vector(4 + 1*I_NC, CNT_WIDTH) ) then
-        EXEC <= '1';
-      elsif( cnt = conv_std_logic_vector(5 + 1*I_NC, CNT_WIDTH) ) then
-        EXEC <= '0';
-      -- ================================================================================ CHIP 2
-      elsif( cnt = conv_std_logic_vector(5 + 2*I_NC, CNT_WIDTH) ) then
-        MEM_AD_BASE <= conv_std_logic_vector(2*I_MAB, 13);
-        CHIPSEL  <= "0100";
-      elsif( cnt = conv_std_logic_vector(6 + 2*I_NC, CNT_WIDTH) ) then
-        EXEC <= '1';
-      elsif( cnt = conv_std_logic_vector(7 + 2*I_NC, CNT_WIDTH) ) then
-        EXEC <= '0';
-      -- ================================================================================ CHIP 3
-      elsif( cnt = conv_std_logic_vector(7 + 3*I_NC, CNT_WIDTH) ) then
-        MEM_AD_BASE <= conv_std_logic_vector(3*I_MAB, 13);
-        CHIPSEL  <= "1000";
-      elsif( cnt = conv_std_logic_vector(8 + 3*I_NC, CNT_WIDTH) ) then
-        EXEC <= '1';
-      elsif( cnt = conv_std_logic_vector(9 + 3*I_NC, CNT_WIDTH) ) then
-        EXEC <= '0';
-      -- ================================================================================ FINISH
-      elsif( cnt = conv_std_logic_vector(9 + 4*I_NC, CNT_WIDTH) ) then
-        is_finish <= '1';
-      elsif( cnt = conv_std_logic_vector(10 + 4*I_NC, CNT_WIDTH) ) then
-        is_finish <= '0';
-      else
-      end if;
+  fclose(fp);
+  return 0;
+}
 
-    end if;
-  end process;
 
-end rtl;
 
+
+void display()
+{
+  static int flag=0;
+  void display_set_GL_LINES();
+  void display_get_position();
+  glClear(GL_COLOR_BUFFER_BIT);
+  glPointSize(1.0);
+
+  { //--- TIME METER ---
+    char p[10];
+    int i,nketa;
+    nketa = 6;
+    sprintf(p,"%06d",istep);
+    glColor3f(0.1 ,0.2,0.3);
+    for(i=0;i<nketa;i++){
+      glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24,p[nketa-i]);
+      glRasterPos2f(-0.70-0.06*i, -0.95);
+    }
+  }
+
+  display_set_GL_LINES();
+  glBegin(GL_POINTS);
+  //  glColor3f(1.0 ,0.8,0.0);
+  if(flag != 0){
+    int n;
+    display_get_position();
+    for(n=0;n<NBODY;n++){
+      if(n==1)   glColor3f(1.0,0.5,0.0); else   glColor3f(0.0,0.7,0.0);
+      glVertex2f(x[n]/XSCALE, y[n]/YSCALE);
+    }
+  }
+  flag=1;
+  glEnd();
+  glutSwapBuffers();
+}
+
+
+/* display$B4X?tMQ(B */
+void display_set_GL_LINES()
+{ // --- MEMORI ---
+
+  glBegin(GL_LINES);
+
+  glColor3f(0.7,0.0,0.0);
+  glVertex2f(-1.0, 0.0);    glVertex2f(1.0, 0.0);
+  glVertex2f(0.0, -1.0);    glVertex2f(0.0, 1.0);
+
+  glColor3f(0.0,0.2,0.5);
+  glVertex2f(-1.0, 1.0/3.0);    glVertex2f(1.0, 1.0/3.0);
+  glVertex2f(-1.0, 2.0/3.0);    glVertex2f(1.0, 2.0/3.0);
+  glVertex2f(-1.0, -1.0/3.0);    glVertex2f(1.0, -1.0/3.0);
+  glVertex2f(-1.0, -2.0/3.0);    glVertex2f(1.0, -2.0/3.0);
+
+  glVertex2f(1.0/3.0,-1.0);    glVertex2f(1.0/3.0,1.0);
+  glVertex2f(2.0/3.0,-1.0);    glVertex2f(2.0/3.0,1.0);
+  glVertex2f(-1.0/3.0,-1.0);    glVertex2f(-1.0/3.0,1.0);
+  glVertex2f(-2.0/3.0,-1.0);    glVertex2f(-2.0/3.0,1.0);
+
+  {
+    double tiny=0.04;
+    double small=0.04;
+    glColor3f(0.9,0.4,0.8);
+    glVertex2f(-1.0,  0.0);    glVertex2f(-(1.0-small),  0.0);
+    glVertex2f( 1.0,  0.0);    glVertex2f( (1.0-small),  0.0);
+    glVertex2f(  0.0, 1.0);    glVertex2f(  0.0,   1.0-small);
+    glVertex2f(  0.0,-1.0);    glVertex2f(  0.0,  -1.0+small);
+
+    glColor3f(0.38, 0.01, 0.8);
+    glVertex2f(-1.0, 1.0/3.0);    glVertex2f(-(1.0-tiny), 1.0/3.0);
+    glVertex2f( 1.0, 1.0/3.0);    glVertex2f( (1.0-tiny), 1.0/3.0);
+    glVertex2f(-1.0, 2.0/3.0);    glVertex2f(-(1.0-tiny), 2.0/3.0);
+    glVertex2f( 1.0, 2.0/3.0);    glVertex2f( (1.0-tiny), 2.0/3.0);
+    glVertex2f(-1.0, -1.0/3.0);    glVertex2f(-(1.0-tiny), -1.0/3.0);
+    glVertex2f( 1.0, -1.0/3.0);    glVertex2f( (1.0-tiny), -1.0/3.0);
+    glVertex2f(-1.0, -2.0/3.0);    glVertex2f(-(1.0-tiny), -2.0/3.0);
+    glVertex2f( 1.0, -2.0/3.0);    glVertex2f( (1.0-tiny), -2.0/3.0);
+
+    glVertex2f(1.0/3.0,-1.0);    glVertex2f(1.0/3.0,-(1.0-tiny));
+    glVertex2f(1.0/3.0, 1.0);    glVertex2f(1.0/3.0, (1.0-tiny));
+    glVertex2f(2.0/3.0,-1.0);    glVertex2f(2.0/3.0,-(1.0-tiny));
+    glVertex2f(2.0/3.0, 1.0);    glVertex2f(2.0/3.0, (1.0-tiny));
+    glVertex2f(-1.0/3.0,-1.0);    glVertex2f(-1.0/3.0,-(1.0-tiny));
+    glVertex2f(-1.0/3.0, 1.0);    glVertex2f(-1.0/3.0, (1.0-tiny));
+    glVertex2f(-2.0/3.0,-1.0);    glVertex2f(-2.0/3.0,-(1.0-tiny));
+    glVertex2f(-2.0/3.0, 1.0);    glVertex2f(-2.0/3.0, (1.0-tiny));
+  }
+  glEnd(); // --- End GL_LINES;
+}
+
+void display_get_position()
+{
+  int i;
+  char line[1024];
+  char* p;
+  double _x,_y,_z;
+  for(i=0;i<NBODY;i++){
+    if(fgets(line,100,fp)!=NULL){
+      p = (char* )strtok(line,"\t"); _x = atof(p);
+      p = (char* )strtok(NULL,"\t"); _y = atof(p);
+      p = (char* )strtok(NULL,"\t"); _z = atof(p);
+      x[i] = _x;
+      y[i] = _y;
+    }else{
+      reset_fp();
+    }
+  }
+}

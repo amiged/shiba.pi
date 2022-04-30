@@ -1,5 +1,5 @@
-Tue Oct 26 19:26:42 JST 2021
-SETPROJECT .
-SET BusFormat = BusFormatAngleBracketNotRipped
-SETXIPCPORTHOST 1271
-XIPCPJSENDCORES virtex2
+Sat Apr 30 19:48:46 JST 2022
+INFO:DesignRules:547 - Blockcheck: To achieve optimal frequency synthesis
+   performance with the CLKFX and CLKFX180 outputs of the DCM comp dcm0_dcm0,
+   consult the Virtex-II Interactive Data Sheet.
+DRC detected 0 errors and 0 warnings.

@@ -1,190 +1,49 @@
-Fri Apr  1 19:44:14 JST 2022
-#include <math.h>
-#include "pg_util.h"
-
-// Funtion Prototyping
-void            pg_fix_sub_32(int x, int y, int *z);
-void            pg_fix_sub_32(int x, int y, int *z);
-void            pg_fix_sub_32(int x, int y, int *z);
-void            pg_conv_ftol_fix32_log17_man8(int x, int *z);
-void            pg_conv_ftol_fix32_log17_man8(int x, int *z);
-void            pg_conv_ftol_fix32_log17_man8(int x, int *z);
-void            pg_log_shift_log17_1(int x, int *z);
-void            pg_log_shift_log17_1(int x, int *z);
-void            pg_log_shift_log17_1(int x, int *z);
-void            pg_log_unsigned_add_itp_log17_man8_cut6(LONG x, LONG y,
-							LONG * z);
-void            pg_log_unsigned_add_itp_log17_man8_cut6(LONG x, LONG y,
-							LONG * z);
-void            pg_log_unsigned_add_itp_log17_man8_cut6(LONG x, LONG y,
-							LONG * z);
-void            pg_log_shift_log17_m1(int x, int *z);
-void            pg_log_mul_17(int x, int y, int *z);
-void            pg_log_div_17(int x, int y, int *z);
-void            pg_log_mul_17(int x, int y, int *z);
-void            pg_log_mul_17(int x, int y, int *z);
-void            pg_log_mul_17(int x, int y, int *z);
-void            pg_log_sdiv_17(int x, int y, int *z);
-void            pg_log_sdiv_17(int x, int y, int *z);
-void            pg_log_sdiv_17(int x, int y, int *z);
-void            pg_conv_ltof_log17_man8_fix57(int x, int *z);
-void            pg_conv_ltof_log17_man8_fix57(int x, int *z);
-void            pg_conv_ltof_log17_man8_fix57(int x, int *z);
-void            pg_fix_accum_f57_s64(long long int x, long long int *z);
-void            pg_fix_accum_f57_s64(long long int x, long long int *z);
-void            pg_fix_accum_f57_s64(long long int x, long long int *z);
-
-
-#define NJMAX 16384
-static LONG _a[NJMAX][3];
-static unsigned int _xi[NJMAX][3];
-void dump_foset(int n)
-{
-  int i;
-  static int flag=0;
-  static FILE* fp;
-
-  if(flag==0){
-    fp = fopen("xxx.log","w");
-    flag=1;
-  }
-
-  for(i=0;i<n;i++){
-    fprintf(fp,"%08x,",_xi[i][0]);
-    fprintf(fp,"%08x,",_xi[i][1]);
-    fprintf(fp,"%08x,",_xi[i][2]);
-
-    fprintf(fp,"%016llx,",_a[i][0]);
-    fprintf(fp,"%016llx,",_a[i][1]);
-    fprintf(fp,"%016llx,",_a[i][2]);
-
-    fprintf(fp,"\n");
-  }
-  fflush(fp);
-}
-
-
-
-// API
-void
-force(double x[][3], double m[], double eps2, double a[][3], int n)
-{
-    double log2(double);
-    int             i, j;
-    long long int   sx_0;
-    long long int   sx_1;
-    long long int   sx_2;
-    int             xi_0;
-    int             xj_0;
-    int             xi_1;
-    int             xj_1;
-    int             xi_2;
-    int             xj_2;
-    int             xij_0;
-    int             xij_1;
-    int             xij_2;
-    LONG            x2_0;
-    LONG            x2_1;
-    LONG            x2_2;
-    LONG            ieps2;
-    LONG            x2y2;
-    LONG            z2e2;
-    int             r2;
-    int             r1;
-    int             mj;
-    int             r3;
-    int             dx_0;
-    int             dx_1;
-    int             mf;
-    int             dx_2;
-    int             fx_0;
-    int             fx_1;
-    int             fx_2;
-    int             f_shift;
-    int             fxs_0;
-    int             fxs_1;
-    int             fxs_2;
-    long long int   ffx_0;
-    long long int   ffx_1;
-    long long int   ffx_2;
-
-    f_shift = 0x9700;
-
-    for (i = 0; i < n; i++) {
-      xi_0 = ((unsigned int)((x[i][0] + 50.0)*(42949672.96)+0.5))& 0xFFFFFFFF;
-      xi_1 = ((unsigned int)((x[i][1] + 50.0)*(42949672.96)+0.5))& 0xFFFFFFFF;
-      xi_2 = ((unsigned int)((x[i][2] + 50.0)*(42949672.96)+0.5))& 0xFFFFFFFF;
-      ieps2 = (((int)(256.0*log2(eps2*(1.844674407e+15)))) & 0x7FFF) | 0x8000;
-      _xi[i][0] = xi_0;
-      _xi[i][1] = xi_1;
-      _xi[i][2] = xi_2;
-
-	sx_0 = 0;
-	sx_1 = 0;
-	sx_2 = 0;
-
-	for (j = n - 1; j >= 0; j--) {
-	  xj_0 = ((unsigned int) ((x[j][0] + 50.0) * 42949672.96 + 0.5)) & 0xFFFFFFFF;
-	  xj_1 = ((unsigned int) ((x[j][1] + 50.0) * 42949672.96 + 0.5)) & 0xFFFFFFFF;
-	  xj_2 = ((unsigned int) ((x[j][2] + 50.0) * 42949672.96 + 0.5)) & 0xFFFFFFFF;
-
-#define MSCALE (4.223095768e+32)
-
-	  if (m[j] == 0.0) {
-	    mj = 0;
-	  } else if (m[j] > 0.0) {
-	    mj =(((int)(256.0 * log2(m[j] * MSCALE))) & 0x7FFF) | 0x8000;
-	  } else {
-	    mj =(((int)(256.0 * log2(-m[j] * MSCALE))) & 0x7FFF) | 0x18000;
-	  }
-
-	    pg_fix_sub_32(xi_0, xj_0, &xij_0);
-	    pg_fix_sub_32(xi_1, xj_1, &xij_1);
-	    pg_fix_sub_32(xi_2, xj_2, &xij_2);
-	    pg_conv_ftol_fix32_log17_man8(xij_0, &dx_0);
-	    pg_conv_ftol_fix32_log17_man8(xij_1, &dx_1);
-	    pg_conv_ftol_fix32_log17_man8(xij_2, &dx_2);
-	    pg_log_shift_log17_1(dx_0, &x2_0);
-	    pg_log_shift_log17_1(dx_1, &x2_1);
-	    pg_log_shift_log17_1(dx_2, &x2_2);
-	    pg_log_unsigned_add_itp_log17_man8_cut6(x2_0, x2_1, &x2y2);
-	    pg_log_unsigned_add_itp_log17_man8_cut6(x2_2, ieps2, &z2e2);
-	    pg_log_unsigned_add_itp_log17_man8_cut6(x2y2, z2e2, &r2);
-	    pg_log_shift_log17_m1(r2, &r1);
-	    pg_log_mul_17(r2, r1, &r3);
-	    pg_log_div_17(mj, r3, &mf);
-	    pg_log_mul_17(mf, dx_0, &fx_0);
-	    pg_log_mul_17(mf, dx_1, &fx_1);
-	    pg_log_mul_17(mf, dx_2, &fx_2);
-	    pg_log_sdiv_17(fx_0, f_shift, &fxs_0);
-	    pg_log_sdiv_17(fx_1, f_shift, &fxs_1);
-	    pg_log_sdiv_17(fx_2, f_shift, &fxs_2);
-	    pg_conv_ltof_log17_man8_fix57(fxs_0, &ffx_0);
-	    pg_conv_ltof_log17_man8_fix57(fxs_1, &ffx_1);
-	    pg_conv_ltof_log17_man8_fix57(fxs_2, &ffx_2);
-	    pg_fix_accum_f57_s64(ffx_0, &sx_0);
-	    pg_fix_accum_f57_s64(ffx_1, &sx_1);
-	    pg_fix_accum_f57_s64(ffx_2, &sx_2);
-	}
-	_a[i][0] = sx_0;
-	_a[i][1] = sx_1;
-	_a[i][2] = sx_2;
-
-	a[i][0] =
-	    ((double) (sx_0 << 0)) *
-	    ((-(pow(2.0, (double) 32) / (100.0)) *
-	      (pow(2.0, (double) 32) / (100.0)) * 8388608.0 /
-	      (pow(2.0, 95.38) / (1.220703125e-04)))) / pow(2.0, 0.0);
-	a[i][1] =
-	    ((double) (sx_1 << 0)) *
-	    ((-(pow(2.0, (double) 32) / (100.0)) *
-	      (pow(2.0, (double) 32) / (100.0)) * 8388608.0 /
-	      (pow(2.0, 95.38) / (1.220703125e-04)))) / pow(2.0, 0.0);
-	a[i][2] =
-	    ((double) (sx_2 << 0)) *
-	    ((-(pow(2.0, (double) 32) / (100.0)) *
-	      (pow(2.0, (double) 32) / (100.0)) * 8388608.0 /
-	      (pow(2.0, 95.38) / (1.220703125e-04)))) / pow(2.0, 0.0);
-    }
-    dump_foset(n);
-}
+Thu May 19 19:45:01 JST 2022
+info x 44 510 0 0 0 0 0 0 0 0 0 0 0 0 0 0 VHDL
+col x 257 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+radix x 16 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+entity name 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 local_write
+term mark 117 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+vlib save 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
+
+var add 7 0 0 226 21 0 257 100 50 50 5 85 0 0 0 0 CLKInstd_logicRISING_EDGECLK
+var add 1 16 0 164 13 0 257 100 50 50 5 85 0 0 0 0 MEM_ADInstd_logic_vectorRISING_EDGECLK
+var add 2 0 0 162 14 0 257 100 50 50 5 85 0 0 0 0 MEM_WEInstd_logicRISING_EDGECLK
+var add 3 63 0 164 15 0 257 100 50 50 5 85 0 0 0 0 MEM_DTIInstd_logic_vectorRISING_EDGECLK
+var add 6 0 0 162 20 0 257 100 50 50 5 85 0 0 0 0 RSTInstd_logicRISING_EDGECLK
+var add 4 3 0 164 18 0 257 100 50 50 5 85 0 0 0 0 DMAW_ENABLEOutstd_logic_vectorRISING_EDGECLK
+var add 5 63 0 164 19 0 257 100 50 50 5 85 0 0 0 0 DBUS_PortOutstd_logic_vectorRISING_EDGECLK
+vdone xxx 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+npos xxx 179 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+cell fill 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 00000000000000000
+cell fill 2 20 0 0 0 0 0 0 0 0 0 0 0 0 0 0 01100000000000000
+cell fill 2 68 0 0 0 0 0 0 0 0 0 0 0 0 0 0 01000000000000000
+cell fill 2 72 0 0 0 0 0 0 0 0 0 0 0 0 0 0 00000000000000000
+cell fill 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+cell fill 3 20 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
+cell fill 3 36 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+cell fill 3 68 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
+cell fill 3 72 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+cell fill 4 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0000000000000000000000000000000000000000000000000000000000000000
+cell fill 4 20 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0000000000000000000000000000000000000000000000000001000100010001
+cell fill 4 24 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0000000000000000000000000000000000000000000000000010001000100010
+cell fill 4 28 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0000000000000000000000000000000000000000000000000011001100110011
+cell fill 4 32 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0000000000000000000000000000000000000000000000000100010001000100
+cell fill 4 68 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0000000000000000000000000000000000000000101010111100110111101111
+cell fill 4 72 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0000000000000000000000000000000000000000000000000000000000000000
+cell fill 5 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+time info 50 50 5 85 50 50 1 1 0 0 0 0 0 0 0 0 nsCLK
+font save -14 0 400 49 0 0 0 0 0 0 0 0 0 0 0 0 Times New Roman
+src mod 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 c:\cygwin\home\administrator\fkit\pci64\rtl\local_write.vhd
+utd true 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+cellenab on 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+grid on 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+type info 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 std_logicBITDOWNTO
+type info 31 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 std_logic_vectorVECTORDOWNTO
+opt vhdl87 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+NumClocks x 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+clock_1 name 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 CLK
+Zoom_level x 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1.00000000000000

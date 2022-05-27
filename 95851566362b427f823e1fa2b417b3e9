@@ -1,8 +1,8 @@
-Sat Apr  2 19:39:10 JST 2022
+Fri May 27 19:30:20 JST 2022
 -- C:\CYGWIN\HOME\ADMINISTRATOR\FKIT\PCI64\PROJ
 -- VHDL Annotation Test Bench created by
 -- HDL Bencher 6.1i
--- Tue Jan 04 18:45:17 2005
+-- Mon Jan 03 23:23:10 2005
 
 LIBRARY IEEE;
 USE IEEE.STD_LOGIC_1164.ALL;
@@ -11,20 +11,20 @@ USE IEEE.STD_LOGIC_ARITH.ALL;
 USE IEEE.STD_LOGIC_TEXTIO.ALL;
 USE STD.TEXTIO.ALL;
 
-ENTITY sim_local_read IS
-END sim_local_read;
+ENTITY sim_local_read_if IS
+END sim_local_read_if;
 
-ARCHITECTURE testbench_arch OF sim_local_read IS
+ARCHITECTURE testbench_arch OF sim_local_read_if IS
 -- If you get a compiler error on the following line,
 -- from the menu do Options->Configuration select VHDL 87
-FILE RESULTS: TEXT OPEN WRITE_MODE IS "c:\cygwin\home\administrator\fkit\pci64\proj\sim_local_read.ano";
-	COMPONENT local_read
-		GENERIC (
-			NBIT_L_ADRO : INTEGER
-		);
+FILE RESULTS: TEXT OPEN WRITE_MODE IS "c:\cygwin\home\administrator\fkit\pci64\proj\sim_local_read_if.ano";
+	COMPONENT local_read_if
 		PORT (
-			NPIPE : In  std_logic_vector (7 DOWNTO 0);
-			CALC_STS : In  std_logic;
+			EXEC : In  std_logic;
+			START_AD : In  std_logic_vector (18 DOWNTO 0);
+			NQWORD : In  std_logic_vector (8 DOWNTO 0);
+			CHIPSEL : In  std_logic_vector (3 DOWNTO 0);
+			MEM_AD_BASE : In  std_logic_vector (12 DOWNTO 0);
 			BUSY : Out  std_logic;
 			DMAR_ENABLE : Out  std_logic_vector (3 DOWNTO 0);
 			DBUS_Port : Out  std_logic_vector (63 DOWNTO 0);
@@ -39,8 +39,11 @@ FILE RESULTS: TEXT OPEN WRITE_MODE IS "c:\cygwin\home\administrator\fkit\pci64\p
 		);
 	END COMPONENT;
 
-	SIGNAL NPIPE : std_logic_vector (7 DOWNTO 0);
-	SIGNAL CALC_STS : std_logic;
+	SIGNAL EXEC : std_logic;
+	SIGNAL START_AD : std_logic_vector (18 DOWNTO 0);
+	SIGNAL NQWORD : std_logic_vector (8 DOWNTO 0);
+	SIGNAL CHIPSEL : std_logic_vector (3 DOWNTO 0);
+	SIGNAL MEM_AD_BASE : std_logic_vector (12 DOWNTO 0);
 	SIGNAL BUSY : std_logic;
 	SIGNAL DMAR_ENABLE : std_logic_vector (3 DOWNTO 0);
 	SIGNAL DBUS_Port : std_logic_vector (63 DOWNTO 0);
@@ -54,13 +57,13 @@ FILE RESULTS: TEXT OPEN WRITE_MODE IS "c:\cygwin\home\administrator\fkit\pci64\p
 	SIGNAL CLK : std_logic;
 
 BEGIN
-	UUT : local_read
-	GENERIC MAP (
-		NBIT_L_ADRO => 1
-	)
+	UUT : local_read_if
 	PORT MAP (
-		NPIPE => NPIPE,
-		CALC_STS => CALC_STS,
+		EXEC => EXEC,
+		START_AD => START_AD,
+		NQWORD => NQWORD,
+		CHIPSEL => CHIPSEL,
+		MEM_AD_BASE => MEM_AD_BASE,
 		BUSY => BUSY,
 		DMAR_ENABLE => DMAR_ENABLE,
 		DBUS_Port => DBUS_Port,
@@ -234,21 +237,33 @@ BEGIN
 
 		BEGIN
 		-- --------------------
-		CALC_STS <= transport '0';
+		EXEC <= transport '0';
+		START_AD <= transport std_logic_vector'("0000000000000000000"); --0
+		NQWORD <= transport std_logic_vector'("000000000"); --0
+		CHIPSEL <= transport std_logic_vector'("0000"); --0
+		MEM_AD_BASE <= transport std_logic_vector'("0000000000000"); --0
 		DBUS_idata <= transport std_logic_vector'("0000000000000000000000000000000000000000000000000000000000000000"); --0
 		RST <= transport '0';
-		NPIPE <= transport std_logic_vector'("00000000"); --0
 		-- --------------------
-		WAIT FOR 200 ns; -- Time=200 ns
-		NPIPE <= transport std_logic_vector'("00010001"); --11
+		WAIT FOR 400 ns; -- Time=400 ns
+		START_AD <= transport std_logic_vector'("0001000000000000000"); --8000
+		NQWORD <= transport std_logic_vector'("000000111"); --7
+		CHIPSEL <= transport std_logic_vector'("0000"); --0
+		MEM_AD_BASE <= transport std_logic_vector'("0000100000000"); --100
 		-- --------------------
-		WAIT FOR 600 ns; -- Time=800 ns
-		CALC_STS <= transport '1';
+		WAIT FOR 700 ns; -- Time=1100 ns
+		EXEC <= transport '1';
 		-- --------------------
-		WAIT FOR 4400 ns; -- Time=5200 ns
-		CALC_STS <= transport '0';
+		WAIT FOR 100 ns; -- Time=1200 ns
+		EXEC <= transport '0';
 		-- --------------------
-		WAIT FOR 60275 ns; -- Time=65475 ns
+		WAIT FOR 1600 ns; -- Time=2800 ns
+		EXEC <= transport '1';
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=2900 ns
+		EXEC <= transport '0';
+		-- --------------------
+		WAIT FOR 3300 ns; -- Time=6200 ns
 		-- --------------------
 
 		STD.TEXTIO.write(TX_OUT, string'("Total[]"));
@@ -259,7 +274,7 @@ BEGIN
 	END PROCESS;
 END testbench_arch;
 
-CONFIGURATION local_read_cfg OF sim_local_read IS
+CONFIGURATION local_read_if_cfg OF sim_local_read_if IS
 	FOR testbench_arch
 	END FOR;
-END local_read_cfg;
+END local_read_if_cfg;

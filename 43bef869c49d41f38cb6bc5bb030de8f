@@ -1,19 +1,28 @@
-Tue Jun 21 19:26:51 JST 2022
-#!Time-stamp: <2007-01-22 04:30:32 hamada>
-
-Linux device driver for the PROGRAPE-4 board,
-
-including runtime libraries and HDL source for interface FPGA.
-
-- Linux kernel release 2.6.x
-
-- Xilinx XC3S5000-5-FG900 FPGAs
-
-- Xilinx ISE 8.1i
--- Release 8.1.03i xst I.27
--- Release 8.1.03i par I.27
--- Release 8.1.03i Trace I.27
--- Release 8.1.03i Bitgen I.27
+Sat Jul  9 19:36:53 JST 2022
+#!/usr/bin/env python3
+import numpy as np
+import cv2
+from datetime import datetime
 
 
-![PROGRAPE-4](http://www.ipa.go.jp/jinzai/esp/2005mito1/mdata/images/clip_image002_006.jpg)
+def put_text(image, text):
+    font_size = 1.0
+    font_type = cv2.FONT_HERSHEY_PLAIN
+    font_color = (0xff, 0xf, 0xff)
+    cv2.putText(image, text, (460, 15), font_type, font_size, font_color)
+    
+
+image = cv2.imread("/tmp/tmp.jpg")
+
+tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S') # ('%Y%m%d_%H_%M_%S_%f')
+put_text(image, tnow)
+cv2.imshow('test', image)
+
+
+while(True):
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+cv2.destroyAllWindows()
+
+print("Done.")

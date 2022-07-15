@@ -1,220 +1,82 @@
-Sat Jun 25 19:28:23 JST 2022
-/*
- * pfpga_conf.c
- *
- * Copyright (C) 2006-2007 Tsuyoshi Hamada
- *                                All rights reserved.
- * 
- * No warranty is attached; 
- * I cannot take responsibility for errors or fitness for use.
- *
- */
+Fri Jul 15 19:29:03 JST 2022
+-----------------------------------------------
+--  pgpg-b3 dual port RAM module (for IMEM)
+--      32 bits
+--   16384 entries
+--  Copyright(c) 2004- by Tsuyoshi Hamada
+--  2004/12/02 : 64KB version up for imem by Tsuyoshi Hamada 
+--  2004/10/29 : for Jmem by Tsuyoshi Hamada
+-----------------------------------------------
+library ieee;
+use ieee.std_logic_1164.all;
+library UNISIM;
+use UNISIM.VCOMPONENTS.ALL;
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/stat.h>
-#include <unistd.h>     // usleep
-#include "pg4.h"
+entity dp32b8192w is
+  port (
+    clka  : in std_logic;
+    wea   : in std_logic;
+    addra : in std_logic_vector(12 downto 0);
+    dina  : in std_logic_vector(31 downto 0);
+    douta : out std_logic_vector(31 downto 0);
 
-static char pfpga_info[256];
-#define CNF_CMD_ADR 0x80
-#define CNF_DAT_ADR 0x84
+    clkb  : in std_logic;
+    web   : in std_logic;
+    addrb : in std_logic_vector(12 downto 0);
+    dinb  : in std_logic_vector(31 downto 0);
+    doutb : out std_logic_vector(31 downto 0));
 
-static unsigned int *data;
+end dp32b8192w;
 
-void get_header(char* bitfile, char* header)
-{
-  int index=0, x;
-  char buf[128];
-  
-  index += 2 + (((0xff&bitfile[index])<<8) | (0xff&bitfile[index+1]));
-  index += 2 + (((0xff&bitfile[index])<<8)|(0xff&bitfile[index+1]));
+architecture rtl of dp32b8192w is
 
-  // --- NCD file name ---
-  x = ((0xff&bitfile[index])<<8)|(0xff&bitfile[index+1]);
-  //  memcpy(buf, &bitfile[index+2], x);
-  //  sprintf(header, "%s, %s", header, buf);
+component RAMB16_S2_S2
+  generic (
+         INIT_A : bit_vector := X"0";
+         INIT_B : bit_vector := X"0";
+         SRVAL_A : bit_vector := X"0";
+         SRVAL_B : bit_vector := X"0";
+         WRITE_MODE_A : string :="WRITE_FIRST";
+         WRITE_MODE_B : string :="WRITE_FIRST");
+  port ( doa   : out std_logic_vector(1 downto 0);
+         addra : in std_logic_vector(12 downto 0);
+         clka  : in std_logic;
+         dia   : in std_logic_vector(1 downto 0);
+         ena   : in std_logic;
+         ssra  : in std_logic;
+         wea   : in std_logic;
 
-  // --- device ---
-  index += (x+3);
-  x = ((0xff&bitfile[index])<<8)|(0xff&bitfile[index+1]);
-  memcpy(buf, &bitfile[index+2], x);
-  sprintf(header, "%s, %s", header, buf);
+         dob   : out std_logic_vector(1 downto 0);
+         addrb : in std_logic_vector(12 downto 0);
+         clkb  : in std_logic;
+         dib   : in std_logic_vector(1 downto 0);
+         enb   : in std_logic;
+         ssrb  : in std_logic;
+         web   : in std_logic);
+end component;
 
-  // --- data ---
-  index += (x+3);
-  x = ((0xff&bitfile[index])<<8)|(0xff&bitfile[index+1]);
-  memcpy(buf, &bitfile[index+2], x);
-  sprintf(header, "%s, %s", header, buf);
+begin
 
-  // --- time ---
-  index += (x+3);
-  x = ((0xff&bitfile[index])<<8)|(0xff&bitfile[index+1]);
-  memcpy(buf, &bitfile[index+2], x);
-  sprintf(header, "%s, %s", header, buf);
+  forgen1: for i in 0 to 15 generate
+    uraml: RAMB16_S2_S2 -- GENERIC MAP(WRITE_MODE=>"WRITE_FIRST");
+	      PORT MAP(-- FIFO SIDE --
+                       clka=>clka,
+                       addra=>addra,
+                       dia=>dina(((2*i)+1) downto 2*i),
+                       doa=>douta(((2*i)+1) downto 2*i),
+                       ena=>'1',
+                       ssra=>'0',
+                       wea=>wea,
+                       -- LOCAL SIDE --
+                       clkb=>clkb,
+                       addrb=>addrb,
+                       dib=>dinb(((2*i)+1) downto 2*i),
+                       dob=>doutb(((2*i)+1) downto 2*i),
+                       enb=>'1',
+                       ssrb=>'0',
+                       web=>web);
+  end generate forgen1;
 
-  // --- key ---
-  index += (x+3);
-  x = ((0xff&bitfile[index])<<8)|(0xff&bitfile[index+1]);
-  //  memcpy(buf, &bitfile[index+2], x);
-  //  sprintf(header, "%s, %s", header, buf);
 
+end rtl;
 
-}
-
-
-
-int fread_config_data(char* fname, unsigned int *size)
-{
-  // -- Read Config File to 'config_bit_data'---
-  FILE* fin;
-  int ndata;
-  int i;
-
-  struct stat buf;
-  int fsize;
-
-  // read file status
-  if (stat(fname, &buf) == -1) {
-    fprintf(stderr, "fread_config_data: can't open bit file!!! %s\n", fname);
-    exit(-1);
-  }
-
-  fsize = buf.st_size;
-  if (data != NULL) {
-    free(data);
-  }
-  data = (unsigned int*)malloc(fsize);
-  if (data == NULL) {
-    fprintf(stderr, "fread_config_data: memory allocation error!\n");
-    exit(-1);
-  }
-  
-  fin = fopen(fname, "r");
-  if (fin == NULL) {
-    fprintf(stderr, "fread_config_data: cannot open %s!\n", fname);
-    exit(-1);
-  }
-  fread(data,fsize,1,fin);
-  fclose(fin);
-  fprintf(stderr, "fread_config_data: read %i bytes.\n", fsize);
-
-  get_header((char*)data, pfpga_info);
-
-  
-  ndata = fsize/sizeof(unsigned int);
-
-  // CHANGE ENDIAN (LittleEndian -> BigEndian)
-  for(i = 0;i < ndata; i++){
-    unsigned int byte[8];
-    byte[0] = 0xFF&(data[i]>>24);
-    byte[1] = 0xFF&(data[i]>>16);
-    byte[2] = 0xFF&(data[i]>>8);
-    byte[3] = 0xFF&(data[i]);
-    data[i]=0x0;
-    data[i]= (byte[3]<<24)|(byte[2]<<16)|(byte[1]<<8)|byte[0];
-  }
-
-  *size = (unsigned int)ndata;
-
-  return fsize;
-}
-
-void config_onechip(int devid, unsigned int nfp, unsigned int ncfgdata)
-{
-  unsigned int i, d;
-  unsigned int *p;
-
-  if (data == NULL) return;
-  if (nfp > 0x8) {
-    fprintf(stderr, "nfp err\n");
-    exit(-1);
-  } 
-
-  // ---------------------------------------- SETUP CONFIGURATION
-  d = (unsigned int)(0xf0|nfp);
-  WriteBase0(devid, CNF_CMD_ADR, d);
-  d = (unsigned int)(  ((0xF^nfp)<<4)   |nfp);
-  WriteBase0(devid, CNF_CMD_ADR, d);
-  d = (unsigned int)(0xf0|nfp);
-  WriteBase0(devid, CNF_CMD_ADR, d);
-  usleep(15000);
-
-  // ---------------------------------------- SEND CONFIGURATION DATA
-  p = data;
-  for(i = 0; i < ncfgdata; i++){
-    WriteBase0(devid, CNF_DAT_ADR, *(p++));
-    d = (unsigned int)(0x1f0|nfp);
-    WriteBase0(devid, CNF_CMD_ADR,      d);
-    WriteBase0(devid, CNF_CMD_ADR, 0xff&d);
-  }
-
-  // ---------------------------------------- STOP CFG_CCLK
-  d = (unsigned int)(0xf0);
-  WriteBase0(devid, CNF_CMD_ADR,d);
-}
-
-void config_pfpga_all(int devid, char* fname)
-{
-  unsigned int i, nfp, ncfgdata;
-
-  data = NULL;
-  fread_config_data(fname, &ncfgdata);
-
-  for(i = 0; i < 4; i++) {
-    nfp = 0xf&(0x1<<i);
-    fprintf(stderr, "configuring chip%i ...\n", i);
-    config_onechip(devid, nfp, ncfgdata);
-  }
-
-  free(data);
-}
-
-int main(int argc, char* argv[])
-{
-  int devid;
-
-  if (argc < 2) {
-    fprintf(stderr, "%s <bitfile> <devid>\n", argv[0]);
-    exit(-1);
-  }
-  if (argv[2] == NULL) {
-    devid = 0;
-  } else {
-    devid = atoi(argv[2]);
-    if (devid > 2) {
-      fprintf(stderr, "%s : invalid argument <devid>%s:%d\n", argv[0], __FILE__, __LINE__);
-      exit(-1);
-    }
-  }
-  fprintf(stderr, "%s configures all PFPGAs on progrape%i ...\n", argv[0], devid);
-
-  pg4_open(devid);
-
-  {
-    pg4_get_pfpga_info(devid, pfpga_info);
-    printf("----------------------\n");
-    printf("Previous config info: \n");
-    printf("%s\n",pfpga_info);
-    printf("----------------------\n");
-  }
-
-  {
-    sprintf(pfpga_info, "%s",argv[1]);
-    config_pfpga_all(devid, argv[1]);
-    pg4_set_pfpga_info(devid, pfpga_info);
-  }
-
-  {
-    pg4_get_pfpga_info(devid, pfpga_info);
-    printf("----------------------\n");
-    printf("Current config info: \n");
-    printf("%s\n",pfpga_info);
-    printf("----------------------\n");
-  }
-
-  pg4_close(devid);
-
-  return 0;
-}

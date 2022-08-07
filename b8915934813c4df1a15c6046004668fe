@@ -1,23 +1,30 @@
-Sun Jul 31 19:37:10 JST 2022
-#include <stdio.h>
-#include "nbodysim.h"
+Sun Aug  7 19:52:25 JST 2022
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.std_logic_arith.all;                                        
+use ieee.std_logic_unsigned.all;                                    
 
-void debug_func_force(double x[][DIM],double m[], double eps2,double a[][DIM],int n)
-{
-    int i,j;
+entity setn is
+  port (
+    clk       : in std_logic;
+    we        : in std_logic;
+    idata     : in std_logic_vector(31 downto 0);
+    odata     : out std_logic_vector(31 downto 0));
+end setn;
 
-    printf("-------------------------------\n");
-    printf("The debuging routine is called.\n");
-    printf("-------------------------------\n");
-    printf("n = %d\n",n);
-    printf("eps2 = %e\n",eps2);
+architecture rtl of setn is
+signal nreg :  std_logic_vector(31 downto 0) := "00000000000000000000000000000011"; -- default 3
+begin
 
-    for(i=0;i<n;i++){
-        printf("---\n");
-        printf("particle %d\n",i);
-        printf("m[%d] = %e\n",i,m[i]);
-        for(j=0;j<3;j++) printf("x[%d][%d] = %e\n",i,j,x[i][j]);
-        for(j=0;j<3;j++) printf("a[%d][%d] = %e\n",i,j,a[i][j]);
-    }
-}
+odata <= nreg;
+--odata <= "00000000000000000000000000000011";
 
+process (clk) begin
+  if(clk'event and clk='1') then
+    if(we = '1') then
+      nreg <= idata;
+    end if;
+  end if;
+end process;
+
+end rtl;

@@ -1,5 +1,9 @@
-Wed Oct 12 19:26:30 JST 2022
-SETPROJECT .
-SET BusFormat = BusFormatAngleBracketNotRipped
-SETXIPCPORTHOST 1271
-XIPCPJSENDCORES virtex2
+Sun Nov  6 19:30:44 JST 2022
+#!/bin/sh
+#
+# An example hook script to prepare a packed repository for use over
+# dumb transports.
+#
+# To enable this hook, rename this file to "post-update".
+
+exec git update-server-info

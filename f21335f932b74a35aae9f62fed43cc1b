@@ -1,189 +1,346 @@
-Wed Oct 26 19:36:53 JST 2022
--- C:\CYGWIN\HOME\ADMINISTRATOR\FKIT\PCI64\PROJ
--- VHDL Test Bench created by
--- HDL Bencher 6.1i
--- Wed Dec 29 19:47:04 2004
--- 
--- Notes:
--- 1) This testbench has been automatically generated from
---   your Test Bench Waveform
--- 2) To use this as a user modifiable testbench do the following:
---   - Save it as a file with a .vhd extension (i.e. File->Save As...)
---   - Add it to your project as a testbench source (i.e. Project->Add Source...)
--- 
+Sun Nov 27 19:46:31 JST 2022
+--
+-- PGR: Pipeline-processors Generator for Reconfigurable Systems
+-- Copyright(c) 2004 by Tsuyoshi Hamada & Naohito Nakasato.
+-- All rights reserved.
+-- Generated from 'list.g5float.pgpp'
+-- NPIPE : 1
+-- NVMP  : 1
+-- Target Platform : TD-BD-BIOLER3
+--                    - 64/66 PCI DMA : Enable
+--                    - 100MHz Pipe   : Enable
+library ieee;
+use ieee.std_logic_1164.all;
 
-LIBRARY IEEE;
-USE IEEE.STD_LOGIC_1164.ALL;
-USE IEEE.STD_LOGIC_UNSIGNED.ALL;
-USE IEEE.STD_LOGIC_ARITH.ALL;
-USE IEEE.STD_LOGIC_TEXTIO.ALL;
-USE STD.TEXTIO.ALL;
+entity pg_pipe is
+  generic(JDATA_WIDTH : integer := 312;
+          IDATA_WIDTH : integer := 64);
+  port(
+    p_jdata : in std_logic_vector(JDATA_WIDTH-1 downto 0);
+    p_run : in std_logic;
+    p_we :  in std_logic;
+    p_adri : in std_logic_vector(11 downto 0);
+    p_datai : in std_logic_vector(IDATA_WIDTH-1 downto 0);
+    p_adro : in std_logic_vector(11 downto 0);
+    p_datao : out std_logic_vector(IDATA_WIDTH-1 downto 0);
+    p_runret : out std_logic;
+    clk  : in std_logic;
+    pclk : in std_logic;
+    rst  : in std_logic
+  );
+end pg_pipe;
 
-ENTITY sim_writecomb_check IS
-END sim_writecomb_check;
+architecture std of pg_pipe is
 
-ARCHITECTURE testbench_arch OF sim_writecomb_check IS
--- If you get a compiler error on the following line,
--- from the menu do Options->Configuration select VHDL 87
-FILE RESULTS: TEXT OPEN WRITE_MODE IS "results.txt";
-	COMPONENT writecomb_check
-		PORT (
-			MEM_WEHA : In  std_logic;
-			MEM_WELA : In  std_logic;
-			IS_ERR : Out  std_logic_vector (1 DOWNTO 0);
-			RST : In  std_logic;
-			CLK : In  std_logic
-		);
-	END COMPONENT;
+  component pipe
+    generic(JDATA_WIDTH : integer;
+            IDATA_WIDTH : integer);
+    port(
+      p_jdata: in std_logic_vector(JDATA_WIDTH-1 downto 0);
+      p_run : in std_logic;
+      p_we : in std_logic;
+      p_adri : in std_logic_vector(3 downto 0);
+      p_adrivp : in std_logic_vector(3 downto 0);
+      p_datai : in std_logic_vector(IDATA_WIDTH-1 downto 0);
+      p_adro : in std_logic_vector(3 downto 0);
+      p_adrovp : in std_logic_vector(3 downto 0);
+      p_datao : out std_logic_vector(IDATA_WIDTH-1 downto 0);
+      p_runret : out std_logic;
+      rst,pclk,clk : in std_logic );
+  end component;
 
-	SIGNAL MEM_WEHA : std_logic;
-	SIGNAL MEM_WELA : std_logic;
-	SIGNAL IS_ERR : std_logic_vector (1 DOWNTO 0);
-	SIGNAL RST : std_logic;
-	SIGNAL CLK : std_logic;
+  signal u_adri,u_adro: std_logic_vector(7 downto 0);
+  signal adrivp,adrovp: std_logic_vector(3 downto 0);
+  signal we,runret: std_logic_vector(1 downto 0);
+  signal datao: std_logic_vector(63 downto 0);
+  signal l_adro: std_logic_vector(3 downto 0);
 
-BEGIN
-	UUT : writecomb_check
-	PORT MAP (
-		MEM_WEHA => MEM_WEHA,
-		MEM_WELA => MEM_WELA,
-		IS_ERR => IS_ERR,
-		RST => RST,
-		CLK => CLK
-	);
+begin
 
-	PROCESS -- clock process for CLK,
-	BEGIN
-		CLOCK_LOOP : LOOP
-		CLK <= transport '0';
-		WAIT FOR 5 ns;
-		CLK <= transport '1';
-		WAIT FOR 50 ns;
-		CLK <= transport '0';
-		WAIT FOR 35 ns;
-		WAIT FOR 10 ns;
-		END LOOP CLOCK_LOOP;
-	END PROCESS;
+  u_adri <= p_adri(11 downto 4);
 
-	PROCESS   -- Process for CLK
-		VARIABLE TX_OUT : LINE;
-		VARIABLE TX_ERROR : INTEGER := 0;
+  u_adro <= p_adro(11 downto 4);
+  l_adro <= p_adro(3 downto 0);
 
-		PROCEDURE CHECK_IS_ERR(
-			next_IS_ERR : std_logic_vector (1 DOWNTO 0);
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			-- If compiler error ("/=" is ambiguous) occurs in the next line of code
-			-- change compiler settings to use explicit declarations only
-			IF (IS_ERR /= next_IS_ERR) THEN 
-				STD.TEXTIO.write(TX_LOC,string'("Error at time="));
-				STD.TEXTIO.write(TX_LOC, TX_TIME);
-				STD.TEXTIO.write(TX_LOC,string'("ns IS_ERR="));
-				IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, IS_ERR);
-				STD.TEXTIO.write(TX_LOC, string'(", Expected = "));
-				IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, next_IS_ERR);
-				STD.TEXTIO.write(TX_LOC, string'(" "));
-				TX_STR(TX_LOC.all'range) := TX_LOC.all;
-				STD.TEXTIO.writeline(results, TX_LOC);
-				STD.TEXTIO.Deallocate(TX_LOC);
-				ASSERT (FALSE) REPORT TX_STR SEVERITY ERROR;
-				TX_ERROR := TX_ERROR + 1;
-			END IF;
-		END;
+  process(u_adri,p_we) begin
+    if(p_we = '1') then
+     if(u_adri = "00000000" ) then
+        we(0) <= '1';
+      else
+        we(0) <= '0';
+      end if;
+    else
+      we(0) <= '0';
+    end if;
+  end process;
 
-		BEGIN
-		-- --------------------
-		RST <= transport '0';
-		MEM_WEHA <= transport '0';
-		MEM_WELA <= transport '0';
-		-- --------------------
-		WAIT FOR 200 ns; -- Time=200 ns
-		RST <= transport '0';
-		-- --------------------
-		WAIT FOR 500 ns; -- Time=700 ns
-		MEM_WEHA <= transport '0';
-		MEM_WELA <= transport '0';
-		-- --------------------
-		WAIT FOR 200 ns; -- Time=900 ns
-		RST <= transport '1';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=1000 ns
-		RST <= transport '0';
-		-- --------------------
-		WAIT FOR 1900 ns; -- Time=2900 ns
-		MEM_WEHA <= transport '1';
-		MEM_WELA <= transport '1';
-		-- --------------------
-		WAIT FOR 500 ns; -- Time=3400 ns
-		MEM_WEHA <= transport '0';
-		MEM_WELA <= transport '0';
-		-- --------------------
-		WAIT FOR 1100 ns; -- Time=4500 ns
-		MEM_WEHA <= transport '1';
-		MEM_WELA <= transport '1';
-		-- --------------------
-		WAIT FOR 200 ns; -- Time=4700 ns
-		MEM_WEHA <= transport '0';
-		MEM_WELA <= transport '0';
-		-- --------------------
-		WAIT FOR 1300 ns; -- Time=6000 ns
-		MEM_WELA <= transport '1';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=6100 ns
-		MEM_WELA <= transport '0';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=6200 ns
-		MEM_WEHA <= transport '0';
-		-- --------------------
-		WAIT FOR 300 ns; -- Time=6500 ns
-		MEM_WEHA <= transport '1';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=6600 ns
-		MEM_WEHA <= transport '0';
-		-- --------------------
-		WAIT FOR 1300 ns; -- Time=7900 ns
-		MEM_WELA <= transport '1';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=8000 ns
-		MEM_WEHA <= transport '1';
-		MEM_WELA <= transport '0';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=8100 ns
-		MEM_WEHA <= transport '0';
-		MEM_WELA <= transport '1';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=8200 ns
-		MEM_WEHA <= transport '1';
-		MEM_WELA <= transport '0';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=8300 ns
-		MEM_WEHA <= transport '0';
-		-- --------------------
-		WAIT FOR 2005 ns; -- Time=10305 ns
-		-- --------------------
+  with u_adri select
+    adrivp <= "0000" when "00000000", 
+              "0000" when others;
 
-		IF (TX_ERROR = 0) THEN 
-			STD.TEXTIO.write(TX_OUT,string'("No errors or warnings"));
-			STD.TEXTIO.writeline(results, TX_OUT);
-			ASSERT (FALSE) REPORT
-				"Simulation successful (not a failure).  No problems detected. "
-				SEVERITY FAILURE;
-		ELSE
-			STD.TEXTIO.write(TX_OUT, TX_ERROR);
-			STD.TEXTIO.write(TX_OUT, string'(
-				" errors found in simulation"));
-			STD.TEXTIO.writeline(results, TX_OUT);
-			ASSERT (FALSE) REPORT
-				"Errors found during simulation"
-				SEVERITY FAILURE;
-		END IF;
-	END PROCESS;
-END testbench_arch;
+  with u_adro select
+    adrovp <= "0000" when "00000000", 
+              "0000" when others;
 
-CONFIGURATION writecomb_check_cfg OF sim_writecomb_check IS
-	FOR testbench_arch
-	END FOR;
-END writecomb_check_cfg;
+  forgen1: for i in 0 to 0 generate
+    upipe: pipe GENERIC MAP(JDATA_WIDTH=>JDATA_WIDTH,
+                            IDATA_WIDTH=>IDATA_WIDTH)
+	      PORT MAP(p_jdata=>p_jdata, p_run=>p_run,
+                 p_we=>we(i),p_adri=>p_adri(3 downto 0),p_adrivp=>adrivp,
+	               p_datai=>p_datai,p_adro=>l_adro,p_adrovp=>adrovp, 
+	               p_datao=>datao(IDATA_WIDTH*(i+1)-1 downto IDATA_WIDTH*i), p_runret=>runret(i), 
+		       rst=>rst,pclk=>pclk,clk=>clk);
+  end generate forgen1;
+
+  p_runret <= runret(0);
+
+  with u_adro select
+    p_datao <= datao(IDATA_WIDTH-1 downto 0) when "00000000", 
+               datao(IDATA_WIDTH-1 downto 0) when others;
+
+end std;
+
+library ieee;
+use ieee.std_logic_1164.all;
+
+entity pipe is
+  generic(JDATA_WIDTH : integer := 312;
+          IDATA_WIDTH : integer := 64);
+port(p_jdata : in std_logic_vector(JDATA_WIDTH-1 downto 0);
+     p_run : in std_logic;
+     p_we :  in std_logic;
+     p_adri : in std_logic_vector(3 downto 0);
+     p_adrivp : in std_logic_vector(3 downto 0);
+     p_datai : in std_logic_vector(IDATA_WIDTH-1 downto 0);
+     p_adro : in std_logic_vector(3 downto 0);
+     p_adrovp : in std_logic_vector(3 downto 0);
+     p_datao : out std_logic_vector(IDATA_WIDTH-1 downto 0);
+     p_runret : out std_logic;
+     rst,pclk,clk : in std_logic);
+end pipe;
+
+architecture std of pipe is
+
+  component pg_float_sub_26_16_4_6
+    port( clk : in std_logic;
+          x : in std_logic_vector(25 downto 0);
+          y : in std_logic_vector(25 downto 0);
+          z : out std_logic_vector(25 downto 0));
+  end component;
+
+  component pg_float_mult_26_16_2_6
+    port( clk : in std_logic;
+          x : in std_logic_vector(25 downto 0);
+          y : in std_logic_vector(25 downto 0);
+          z : out std_logic_vector(25 downto 0));
+  end component;
+
+  component pg_float_unsigned_add_26_16_4_6
+    port( clk : in std_logic;
+          x : in std_logic_vector(25 downto 0);
+          y : in std_logic_vector(25 downto 0);
+          z : out std_logic_vector(25 downto 0));
+  end component;
+
+  component pg_float_sqrt_26_16_3
+    port( clk : in std_logic;
+          x : in std_logic_vector(25 downto 0);
+          z : out std_logic_vector(25 downto 0));
+  end component;
+
+  component pg_float_recipro_26_16_2
+    port( clk : in std_logic;
+          x : in std_logic_vector(25 downto 0);
+          z : out std_logic_vector(25 downto 0));
+  end component;
+
+  component pg_float_expadd_31_26_16_1
+    port( clk : in std_logic;
+          x : in std_logic_vector(25 downto 0);
+          z : out std_logic_vector(25 downto 0));
+  end component;
+
+  component pg_float_fixaccum_26_16_57_64_4_0
+    port (x: in std_logic_vector(25 downto 0);
+          z: out std_logic_vector(63 downto 0);
+          run: in std_logic;
+          clk: in std_logic);
+  end component;
+
+  component pg_pdelay_26_6
+    port( x : in std_logic_vector(25 downto 0);
+	        y : out std_logic_vector(25 downto 0);
+	       clk: in std_logic);
+  end component;
+
+  component pg_pdelay_26_3
+    port( x : in std_logic_vector(25 downto 0);
+	        y : out std_logic_vector(25 downto 0);
+	       clk: in std_logic);
+  end component;
+
+  component pg_pdelay_26_21
+    port( x : in std_logic_vector(25 downto 0);
+	        y : out std_logic_vector(25 downto 0);
+	       clk: in std_logic);
+  end component;
+
+  component pg_pdelay_26_20
+    port( x : in std_logic_vector(25 downto 0);
+	        y : out std_logic_vector(25 downto 0);
+	       clk: in std_logic);
+  end component;
+
+  signal xi_0: std_logic_vector(25 downto 0);
+  signal xj_0: std_logic_vector(25 downto 0);
+  signal xi_1: std_logic_vector(25 downto 0);
+  signal xj_1: std_logic_vector(25 downto 0);
+  signal xi_2: std_logic_vector(25 downto 0);
+  signal xj_2: std_logic_vector(25 downto 0);
+  signal dx_0: std_logic_vector(25 downto 0);
+  signal dx_1: std_logic_vector(25 downto 0);
+  signal dx_2: std_logic_vector(25 downto 0);
+  signal dx2_0: std_logic_vector(25 downto 0);
+  signal dx2_1: std_logic_vector(25 downto 0);
+  signal dx2_2: std_logic_vector(25 downto 0);
+  signal ieps2r: std_logic_vector(25 downto 0);
+  signal x2y2: std_logic_vector(25 downto 0);
+  signal z2e2: std_logic_vector(25 downto 0);
+  signal r2: std_logic_vector(25 downto 0);
+  signal r2r: std_logic_vector(25 downto 0);
+  signal r1: std_logic_vector(25 downto 0);
+  signal r3: std_logic_vector(25 downto 0);
+  signal r3i: std_logic_vector(25 downto 0);
+  signal mjr: std_logic_vector(25 downto 0);
+  signal mf: std_logic_vector(25 downto 0);
+  signal fs: std_logic_vector(25 downto 0);
+  signal dx_0r: std_logic_vector(25 downto 0);
+  signal dx_1r: std_logic_vector(25 downto 0);
+  signal dx_2r: std_logic_vector(25 downto 0);
+  signal fx_0: std_logic_vector(25 downto 0);
+  signal sx_0: std_logic_vector(63 downto 0);
+  signal fx_1: std_logic_vector(25 downto 0);
+  signal sx_1: std_logic_vector(63 downto 0);
+  signal fx_2: std_logic_vector(25 downto 0);
+  signal sx_2: std_logic_vector(63 downto 0);
+  signal ieps2: std_logic_vector(25 downto 0);
+  signal mj: std_logic_vector(25 downto 0);
+-- pg_rundelay(30)
+  signal run: std_logic_vector(34 downto 0);
+  signal ireg_xi_0: std_logic_vector(25 downto 0);
+  signal ireg_xi_1: std_logic_vector(25 downto 0);
+  signal ireg_xi_2: std_logic_vector(25 downto 0);
+  signal ireg_ieps2: std_logic_vector(25 downto 0);
+
+begin
+
+  xj_0(25 downto 0) <= p_jdata(25 downto 0);
+  xj_1(25 downto 0) <= p_jdata(51 downto 26);
+  xj_2(25 downto 0) <= p_jdata(77 downto 52);
+  mj(25 downto 0) <= p_jdata(103 downto 78);
+
+  process(clk) begin
+    if(clk'event and clk='1') then
+      if(p_we ='1') then
+        if(p_adri = "0000") then
+          ireg_xi_0 <= p_datai(25 downto 0);
+          ireg_xi_1 <= p_datai(57 downto 32);
+        elsif(p_adri = "0001") then
+          ireg_xi_2 <= p_datai(25 downto 0);
+          ireg_ieps2 <= p_datai(57 downto 32);
+        end if;
+      end if;
+    end if;
+  end process;
+
+  process(pclk) begin
+    if(pclk'event and pclk='1') then
+      xi_0 <= ireg_xi_0;
+      xi_1 <= ireg_xi_1;
+      xi_2 <= ireg_xi_2;
+      ieps2 <= ireg_ieps2;
+    end if;
+  end process;
+
+  u0: pg_float_sub_26_16_4_6 port map(x=>xi_0,y=>xj_0,z=>dx_0,clk=>pclk);
+
+  u1: pg_float_sub_26_16_4_6 port map(x=>xi_1,y=>xj_1,z=>dx_1,clk=>pclk);
+
+  u2: pg_float_sub_26_16_4_6 port map(x=>xi_2,y=>xj_2,z=>dx_2,clk=>pclk);
+
+  u3: pg_float_mult_26_16_2_6 port map(x=>dx_0,y=>dx_0,z=>dx2_0,clk=>pclk);
+
+  u4: pg_float_mult_26_16_2_6 port map(x=>dx_1,y=>dx_1,z=>dx2_1,clk=>pclk);
+
+  u5: pg_float_mult_26_16_2_6 port map(x=>dx_2,y=>dx_2,z=>dx2_2,clk=>pclk);
+
+  u6: pg_float_unsigned_add_26_16_4_6 port map(x=>dx2_0,y=>dx2_1,z=>x2y2,clk=>pclk);
+
+  u7: pg_float_unsigned_add_26_16_4_6 port map(x=>dx2_2,y=>ieps2r,z=>z2e2,clk=>pclk);
+
+  u8: pg_float_unsigned_add_26_16_4_6 port map(x=>x2y2,y=>z2e2,z=>r2,clk=>pclk);
+
+  u9: pg_float_sqrt_26_16_3 port map(x=>r2,z=>r1,clk=>pclk);
+
+  u10: pg_float_mult_26_16_2_6 port map(x=>r2r,y=>r1,z=>r3,clk=>pclk);
+
+  u11: pg_float_recipro_26_16_2 port map(x=>r3,z=>r3i,clk=>pclk);
+
+  u12: pg_float_mult_26_16_2_6 port map(x=>r3i,y=>mjr,z=>mf,clk=>pclk);
+
+  u13: pg_float_expadd_31_26_16_1 port map(x=>mf,z=>fs,clk=>pclk);
+
+  u14: pg_float_mult_26_16_2_6 port map(x=>fs,y=>dx_0r,z=>fx_0,clk=>pclk);
+
+  u15: pg_float_mult_26_16_2_6 port map(x=>fs,y=>dx_1r,z=>fx_1,clk=>pclk);
+
+  u16: pg_float_mult_26_16_2_6 port map(x=>fs,y=>dx_2r,z=>fx_2,clk=>pclk);
+
+  u17: pg_float_fixaccum_26_16_57_64_4_0 port map(x=>fx_0, z=>sx_0, clk=>pclk,run=>run(25));
+
+  u18: pg_float_fixaccum_26_16_57_64_4_0 port map(x=>fx_1, z=>sx_1, clk=>pclk,run=>run(25));
+
+  u19: pg_float_fixaccum_26_16_57_64_4_0 port map(x=>fx_2, z=>sx_2, clk=>pclk,run=>run(25));
+
+  u20: pg_pdelay_26_6 port map(x=>ieps2,y=>ieps2r,clk=>pclk);
+
+  u21: pg_pdelay_26_3 port map(x=>r2,y=>r2r,clk=>pclk);
+
+  u22: pg_pdelay_26_21 port map(x=>mj,y=>mjr,clk=>pclk);
+
+  u23: pg_pdelay_26_20 port map(x=>dx_0,y=>dx_0r,clk=>pclk);
+
+  u24: pg_pdelay_26_20 port map(x=>dx_1,y=>dx_1r,clk=>pclk);
+
+  u25: pg_pdelay_26_20 port map(x=>dx_2,y=>dx_2r,clk=>pclk);
+
+  process(pclk) begin
+    if(pclk'event and pclk='1') then
+      run(0) <= p_run;
+      for i in 0 to 33 loop
+        run(i+1) <= run(i);
+      end loop;
+    end if;
+  end process;
+
+  process(pclk) begin
+    if(pclk'event and pclk='1') then
+      p_runret <= run(34) or run(33) or run(32) or run(31);
+    end if;
+  end process;
+
+  process(clk) begin
+    if(clk'event and clk='1') then
+      case (p_adro) is
+      when "0000" => 
+        p_datao <=  sx_0;
+      when "0001" => 
+        p_datao <=  sx_1;
+      when others => 
+        p_datao <=  sx_2;
+      end case;
+    end if;
+  end process;
+
+end std;
+

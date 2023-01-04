@@ -1,45 +1,57 @@
-Sun Dec 25 19:44:11 JST 2022
-#include "cutil.h"
+Wed Jan  4 19:29:23 JST 2023
+-- 2005/06/13
+#define NPOS 32
+#define NLOG 17
+#define NMAN 8
+#define NCUT 6
+#define NFOR 57
+#define NACC 64
+#define D_FSU  1
+#define D_FTL  2
+#define D_LAD  4
+#define D_LMU  1
+#define D_LTF  2
+#define D_FAC  1
 
-__device__ float4
-inter(float4 xj,  float4 xi,  float4 apot)
-{
-  float mj    = xj.w;        // Mass Mj
-  float ieps2 = xi.w;        // epsilon^2
-  float dx = xj.x - xi.x;    // Coordinates Xj - Xi
-  float dy = xj.y - xi.y;    // Coordinates Yj - Yi
-  float dz = xj.z - xi.z;    // Coordinates Zj - Zi
-  float r2 = dx*dx+dy*dy+dz*dz+ieps2;
-  float r1i = 1/sqrt(r2);
-  float r2i = r1i * r1i;
-  float mr3i = mj * r2i * r1i;
-  apot.x += dx * mr3i;       // Accel AXi
-  apot.y += dy * mr3i;       // Accel AYi
-  apot.z += dz * mr3i;       // Accel AZi
-  return (apot);
-}
+// -1 < xbox < 1.0,
+// mmin > 1.0 (1e-2 < m < 1.0 ==> underflow around large R)
+#define xsize (2.0)
+#define mmin  (1.0e-2)
+#define xscale (pow(2.0,(double)NPOS)/xsize)
+//mmin 0xdf61
+#define mscale (pow(2.0,95.38)/mmin)
+#define escale (xscale*xscale)
 
-__global__ void
-kernel(float4* g_xj,
-       float* g_xi,
-       float* g_fi,
-       int ni,
-       int nj)
-{
-  int i = blockIdx.x*blockDim.x+threadIdx.x;
-  float4 ai = make_float4(0.0, 0.0, 0.0, 0.0);
-  float4 xi;
-  xi.x = g_xi[i];       // Coordinates Xi
-  xi.y = g_xi[i+ni];    // Coordinates Yi
-  xi.z = g_xi[i+ni*2];  // Coordinates Zi
-  xi.w = g_xi[i+ni*3];  // epsilon ^ 2
-  for(int j = 0; j<nj; j++)  ai = inter(g_xj[j], xi, ai);
-  if(i<ni) {
-    g_fi[i]      = ai.x;
-    g_fi[i+ni]   = ai.y;
-    g_fi[i+ni*2] = ai.z;
-  }
-}
+#define NEXAD -31
+#define fshift pow(2.0,-1.0*(double)NEXAD)
+#define fscale (-xscale*xscale*fshift/mscale)
 
-#define NTHRE (128)
-#include "api.h"
+/NPIPE 2;
+/NVMP 1;
+
+/JPSET xj[3], x[][], fix,      NPOS,xscale;
+/JPSET mj,    m[],   log,      NLOG,NMAN,mscale;
+/IPSET xi[3], x[][], fix,      NPOS,xscale;
+/IPSET ieps2, eps2,  log,      NLOG,NMAN,escale;
+/FOSET sx[3], a[][], fix,      NACC,fscale;
+
+pg_fix_addsub(SUB,xi,xj,xij,           NPOS,           D_FSU);
+pg_conv_ftol(xij,dx,                   NPOS,NLOG,NMAN, D_FTL);
+pg_log_shift(1,dx,x2,                  NLOG);
+
+--pg_log_unsigned_add_itp(x2[0],x2[1], x2y2,   NLOG,NMAN,  D_LAD,NCUT);
+--pg_log_unsigned_add_itp(x2[2],ieps2, z2e2,   NLOG,NMAN,  D_LAD,NCUT);
+--pg_log_unsigned_add_itp(x2y2,z2e2,   r2,     NLOG,NMAN,  D_LAD,NCUT);
+pg_log_unsigned_add(x2[0],x2[1], x2y2, NLOG,NMAN,      D_LAD);
+pg_log_unsigned_add(x2[2],ieps2, z2e2, NLOG,NMAN,      D_LAD);
+pg_log_unsigned_add(x2y2,z2e2,   r2,   NLOG,NMAN,      D_LAD);
+
+pg_log_shift(-1,r2,       r1,          NLOG);
+pg_log_muldiv(MUL,r2,r1,  r3,          NLOG,           D_LMU);
+pg_log_muldiv(SDIV,mj,r3,  mf,         NLOG,           D_LMU);
+pg_log_muldiv(MUL,mf,dx,  fx,          NLOG,           D_LMU);
+--pg_log_muldiv(SDIV,fx,f_shift, fxs,    NLOG,           D_LMU);
+pg_log_expadd(fx,fxs,                  NEXAD,NLOG,NMAN, D_LMU);
+
+pg_conv_ltof(fxs,  ffx,                NLOG,NMAN,NFOR, D_LTF);
+pg_fix_accum(ffx,  sx,                 NFOR,NACC,      D_FAC);

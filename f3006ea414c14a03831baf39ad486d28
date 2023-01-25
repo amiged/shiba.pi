@@ -1,601 +1,386 @@
-Sun Jan 22 19:49:18 JST 2023
-Release 6.2.03i Map G.31a
-Xilinx Mapping Report File for Design 'top'
+Wed Jan 25 19:29:03 JST 2023
+-- C:\CYGWIN\HOME\ADMINISTRATOR\FKIT\PCI64\PROJ
+-- VHDL Annotation Test Bench created by
+-- HDL Bencher 6.1i
+-- Thu Dec 16 15:39:41 2004
 
-Design Information
-------------------
-Command Line   : map -intstyle ise -p xc2vp70-ff1517-5 -cm area -pr b -k 4 -c
-100 -tx off -o top_map.ncd top.ngd top.pcf 
-Target Device  : x2vp70
-Target Package : ff1517
-Target Speed   : -5
-Mapper Version : virtex2p -- $Revision: 1.16.8.1 $
-Mapped Date    : Mon Jun 13 23:36:50 2005
+LIBRARY IEEE;
+USE IEEE.STD_LOGIC_1164.ALL;
+USE IEEE.STD_LOGIC_UNSIGNED.ALL;
+USE IEEE.STD_LOGIC_ARITH.ALL;
+USE IEEE.STD_LOGIC_TEXTIO.ALL;
+USE STD.TEXTIO.ALL;
 
-Design Summary
---------------
-Number of errors:      0
-Number of warnings:   46
-Logic Utilization:
-  Number of Slice Flip Flops:       7,792 out of  66,176   11%
-  Number of 4 input LUTs:          13,791 out of  66,176   20%
-Logic Distribution:
-  Number of occupied Slices:        9,450 out of  33,088   28%
-  Number of Slices containing only related logic:   9,450 out of   9,450  100%
-  Number of Slices containing unrelated logic:          0 out of   9,450    0%
-        *See NOTES below for an explanation of the effects of unrelated logic
-Total Number 4 input LUTs:         14,706 out of  66,176   22%
-  Number used as logic:            13,791
-  Number used as a route-thru:        484
-  Number used as Shift registers:     431
+ENTITY sim_pfpga_dma IS
+END sim_pfpga_dma;
 
-  Number of bonded IOBs:              107 out of     964   11%
-    IOB Flip Flops:                   161
-  Number of PPC405s:                   0 out of       2    0%
-  Number of Block RAMs:               143 out of     328   43%
-  Number of MULT18X18s:                15 out of     328    4%
-  Number of GCLKs:                      2 out of      16   12%
-  Number of DCMs:                       1 out of       8   12%
-  Number of GTs:                        0 out of      20    0%
-  Number of GT10s:                      0 out of       0    0%
+ARCHITECTURE testbench_arch OF sim_pfpga_dma IS
+-- If you get a compiler error on the following line,
+-- from the menu do Options->Configuration select VHDL 87
+FILE RESULTS: TEXT OPEN WRITE_MODE IS "c:\cygwin\home\administrator\fkit\pci64\proj\sim_pfpga_dma.ano";
+	COMPONENT pfpga_dma
+		PORT (
+			PGPG_REG3 : In  std_logic_vector (31 DOWNTO 0);
+			GPREG0 : Out  std_logic_vector (31 DOWNTO 0);
+			Hit_PGPG_REG3 : In  std_logic;
+			MEM_ADA : In  std_logic_vector (12 DOWNTO 0);
+			MEM_WEHA : In  std_logic;
+			MEM_WELA : In  std_logic;
+			MEM_DTIA : In  std_logic_vector (63 DOWNTO 0);
+			DMAW_ENABLE : Out  std_logic_vector (3 DOWNTO 0);
+			DMAR_ENABLE : Out  std_logic_vector (3 DOWNTO 0);
+			DBUS_Port : Out  std_logic_vector (63 DOWNTO 0);
+			DBUS_idata : In  std_logic_vector (63 DOWNTO 0);
+			DBUS_HiZ : Out  std_logic;
+			MEM_ADB : Out  std_logic_vector (12 DOWNTO 0);
+			MEM_WEHB : Out  std_logic;
+			MEM_WELB : Out  std_logic;
+			MEM_DTIB : Out  std_logic_vector (63 DOWNTO 0);
+			MEM_DTOB : In  std_logic_vector (63 DOWNTO 0);
+			RST : In  std_logic;
+			CLK : In  std_logic
+		);
+	END COMPONENT;
 
-Total equivalent gate count for design:  9,650,171
-Additional JTAG gate count for IOBs:  5,136
-Peak Memory Usage:  316 MB
+	SIGNAL PGPG_REG3 : std_logic_vector (31 DOWNTO 0);
+	SIGNAL GPREG0 : std_logic_vector (31 DOWNTO 0);
+	SIGNAL Hit_PGPG_REG3 : std_logic;
+	SIGNAL MEM_ADA : std_logic_vector (12 DOWNTO 0);
+	SIGNAL MEM_WEHA : std_logic;
+	SIGNAL MEM_WELA : std_logic;
+	SIGNAL MEM_DTIA : std_logic_vector (63 DOWNTO 0);
+	SIGNAL DMAW_ENABLE : std_logic_vector (3 DOWNTO 0);
+	SIGNAL DMAR_ENABLE : std_logic_vector (3 DOWNTO 0);
+	SIGNAL DBUS_Port : std_logic_vector (63 DOWNTO 0);
+	SIGNAL DBUS_idata : std_logic_vector (63 DOWNTO 0);
+	SIGNAL DBUS_HiZ : std_logic;
+	SIGNAL MEM_ADB : std_logic_vector (12 DOWNTO 0);
+	SIGNAL MEM_WEHB : std_logic;
+	SIGNAL MEM_WELB : std_logic;
+	SIGNAL MEM_DTIB : std_logic_vector (63 DOWNTO 0);
+	SIGNAL MEM_DTOB : std_logic_vector (63 DOWNTO 0);
+	SIGNAL RST : std_logic;
+	SIGNAL CLK : std_logic;
 
-NOTES:
+BEGIN
+	UUT : pfpga_dma
+	PORT MAP (
+		PGPG_REG3 => PGPG_REG3,
+		GPREG0 => GPREG0,
+		Hit_PGPG_REG3 => Hit_PGPG_REG3,
+		MEM_ADA => MEM_ADA,
+		MEM_WEHA => MEM_WEHA,
+		MEM_WELA => MEM_WELA,
+		MEM_DTIA => MEM_DTIA,
+		DMAW_ENABLE => DMAW_ENABLE,
+		DMAR_ENABLE => DMAR_ENABLE,
+		DBUS_Port => DBUS_Port,
+		DBUS_idata => DBUS_idata,
+		DBUS_HiZ => DBUS_HiZ,
+		MEM_ADB => MEM_ADB,
+		MEM_WEHB => MEM_WEHB,
+		MEM_WELB => MEM_WELB,
+		MEM_DTIB => MEM_DTIB,
+		MEM_DTOB => MEM_DTOB,
+		RST => RST,
+		CLK => CLK
+	);
 
-   Related logic is defined as being logic that shares connectivity -
-   e.g. two LUTs are "related" if they share common inputs.
-   When assembling slices, Map gives priority to combine logic that
-   is related.  Doing so results in the best timing performance.
+	PROCESS -- clock process for CLK,
+		VARIABLE TX_TIME : INTEGER :=0;
 
-   Unrelated logic shares no connectivity.  Map will only begin
-   packing unrelated logic into a slice once 99% of the slices are
-   occupied through related logic packing.
+		PROCEDURE ANNOTATE_GPREG0(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",GPREG0,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, GPREG0);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
 
-   Note that once logic distribution reaches the 99% level through
-   related logic packing, this does not mean the device is completely
-   utilized.  Unrelated logic packing will then begin, continuing until
-   all usable LUTs and FFs are occupied.  Depending on your timing
-   budget, increased levels of unrelated logic packing may adversely
-   affect the overall timing performance of your design.
+		PROCEDURE ANNOTATE_DMAW_ENABLE(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",DMAW_ENABLE,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, DMAW_ENABLE);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
 
+		PROCEDURE ANNOTATE_DMAR_ENABLE(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",DMAR_ENABLE,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, DMAR_ENABLE);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
 
-Table of Contents
------------------
-Section 1 - Errors
-Section 2 - Warnings
-Section 3 - Informational
-Section 4 - Removed Logic Summary
-Section 5 - Removed Logic
-Section 6 - IOB Properties
-Section 7 - RPMs
-Section 8 - Guide Report
-Section 9 - Area Group Summary
-Section 10 - Modular Design Summary
-Section 11 - Timing Report
-Section 12 - Configuration String Information
-Section 13 - Additional Device Resource Counts
+		PROCEDURE ANNOTATE_DBUS_Port(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",DBUS_Port,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, DBUS_Port);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
 
-Section 1 - Errors
-------------------
+		PROCEDURE ANNOTATE_DBUS_HiZ(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",DBUS_HiZ,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, DBUS_HiZ);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
 
-Section 2 - Warnings
---------------------
-WARNING:LIT:51 - Pin I1 of MUXF6 symbol
-   "u2_u0_unit1_upipe3_u5_u3_Mmux_c0xxxx_inst_mux_f7_10/MUXF6.I0/MUXF6" (output
-   signal=u2_u0_unit1_upipe3_u5_u3_Mmux_c0xxxx_inst_mux_f7_10/F6.I0) is not
-   connected.
-WARNING:LIT:51 - Pin I1 of MUXF6 symbol
-   "u2_u0_unit1_upipe3_u5_u3_Mmux_c0xxxx_inst_mux_f7_11/MUXF6.I0/MUXF6" (output
-   signal=u2_u0_unit1_upipe3_u5_u3_Mmux_c0xxxx_inst_mux_f7_11/F6.I0) is not
-   connected.
-WARNING:LIT:51 - Pin I1 of MUXF6 symbol
-   "u2_u0_unit1_upipe3_u5_u3_Mmux_c0xxxx_inst_mux_f7_12/MUXF6.I0/MUXF6" (output
-   signal=u2_u0_unit1_upipe3_u5_u3_Mmux_c0xxxx_inst_mux_f7_12/F6.I0) is not
-   connected.
-WARNING:LIT:51 - Pin I1 of MUXF6 symbol
-   "u2_u0_unit1_upipe3_u4_u3_Mmux_c0xxxx_inst_mux_f7_10/MUXF6.I0/MUXF6" (output
-   signal=u2_u0_unit1_upipe3_u4_u3_Mmux_c0xxxx_inst_mux_f7_10/F6.I0) is not
-   connected.
-WARNING:LIT:51 - Pin I1 of MUXF6 symbol
-   "u2_u0_unit1_upipe3_u4_u3_Mmux_c0xxxx_inst_mux_f7_11/MUXF6.I0/MUXF6" (output
-   signal=u2_u0_unit1_upipe3_u4_u3_Mmux_c0xxxx_inst_mux_f7_11/F6.I0) is not
-   connected.
-WARNING:LIT:51 - Pin I1 of MUXF6 symbol
-   "u2_u0_unit1_upipe3_u4_u3_Mmux_c0xxxx_inst_mux_f7_12/MUXF6.I0/MUXF6" (output
-   signal=u2_u0_unit1_upipe3_u4_u3_Mmux_c0xxxx_inst_mux_f7_12/F6.I0) is not
-   connected.
-WARNING:LIT:51 - Pin I1 of MUXF6 symbol
-   "u2_u0_unit1_upipe3_u3_u3_Mmux_c0xxxx_inst_mux_f7_10/MUXF6.I0/MUXF6" (output
-   signal=u2_u0_unit1_upipe3_u3_u3_Mmux_c0xxxx_inst_mux_f7_10/F6.I0) is not
-   connected.
-WARNING:LIT:51 - Pin I1 of MUXF6 symbol
-   "u2_u0_unit1_upipe3_u3_u3_Mmux_c0xxxx_inst_mux_f7_11/MUXF6.I0/MUXF6" (output
-   signal=u2_u0_unit1_upipe3_u3_u3_Mmux_c0xxxx_inst_mux_f7_11/F6.I0) is not
-   connected.
-WARNING:LIT:51 - Pin I1 of MUXF6 symbol
-   "u2_u0_unit1_upipe3_u3_u3_Mmux_c0xxxx_inst_mux_f7_12/MUXF6.I0/MUXF6" (output
-   signal=u2_u0_unit1_upipe3_u3_u3_Mmux_c0xxxx_inst_mux_f7_12/F6.I0) is not
-   connected.
-WARNING:LIT:51 - Pin I1 of MUXF6 symbol
-   "u2_u0_unit1_upipe4_u5_u3_Mmux_c0xxxx_inst_mux_f7_12/MUXF6.I0/MUXF6" (output
-   signal=u2_u0_unit1_upipe4_u5_u3_Mmux_c0xxxx_inst_mux_f7_12/F6.I0) is not
-   connected.
-WARNING:LIT:51 - Pin I1 of MUXF6 symbol
-   "u2_u0_unit1_upipe4_u3_u3_Mmux_c0xxxx_inst_mux_f7_10/MUXF6.I0/MUXF6" (output
-   signal=u2_u0_unit1_upipe4_u3_u3_Mmux_c0xxxx_inst_mux_f7_10/F6.I0) is not
-   connected.
-WARNING:LIT:51 - Pin I1 of MUXF6 symbol
-   "u2_u0_unit1_upipe4_u3_u3_Mmux_c0xxxx_inst_mux_f7_11/MUXF6.I0/MUXF6" (output
-   signal=u2_u0_unit1_upipe4_u3_u3_Mmux_c0xxxx_inst_mux_f7_11/F6.I0) is not
-   connected.
-WARNING:LIT:51 - Pin I1 of MUXF6 symbol
-   "u2_u0_unit1_upipe4_u3_u3_Mmux_c0xxxx_inst_mux_f7_12/MUXF6.I0/MUXF6" (output
-   signal=u2_u0_unit1_upipe4_u3_u3_Mmux_c0xxxx_inst_mux_f7_12/F6.I0) is not
-   connected.
-WARNING:LIT:51 - Pin I1 of MUXF6 symbol
-   "u2_u0_unit1_upipe2_u5_u3_Mmux_c0xxxx_inst_mux_f7_10/MUXF6.I0/MUXF6" (output
-   signal=u2_u0_unit1_upipe2_u5_u3_Mmux_c0xxxx_inst_mux_f7_10/F6.I0) is not
-   connected.
-WARNING:LIT:51 - Pin I1 of MUXF6 symbol
-   "u2_u0_unit1_upipe2_u5_u3_Mmux_c0xxxx_inst_mux_f7_11/MUXF6.I0/MUXF6" (output
-   signal=u2_u0_unit1_upipe2_u5_u3_Mmux_c0xxxx_inst_mux_f7_11/F6.I0) is not
-   connected.
-WARNING:LIT:51 - Pin I1 of MUXF6 symbol
-   "u2_u0_unit1_upipe2_u5_u3_Mmux_c0xxxx_inst_mux_f7_12/MUXF6.I0/MUXF6" (output
-   signal=u2_u0_unit1_upipe2_u5_u3_Mmux_c0xxxx_inst_mux_f7_12/F6.I0) is not
-   connected.
-WARNING:LIT:51 - Pin I1 of MUXF6 symbol
-   "u2_u0_unit1_upipe2_u4_u3_Mmux_c0xxxx_inst_mux_f7_10/MUXF6.I0/MUXF6" (output
-   signal=u2_u0_unit1_upipe2_u4_u3_Mmux_c0xxxx_inst_mux_f7_10/F6.I0) is not
-   connected.
-WARNING:LIT:51 - Pin I1 of MUXF6 symbol
-   "u2_u0_unit1_upipe2_u4_u3_Mmux_c0xxxx_inst_mux_f7_11/MUXF6.I0/MUXF6" (output
-   signal=u2_u0_unit1_upipe2_u4_u3_Mmux_c0xxxx_inst_mux_f7_11/F6.I0) is not
-   connected.
-WARNING:LIT:51 - Pin I1 of MUXF6 symbol
-   "u2_u0_unit1_upipe2_u4_u3_Mmux_c0xxxx_inst_mux_f7_12/MUXF6.I0/MUXF6" (output
-   signal=u2_u0_unit1_upipe2_u4_u3_Mmux_c0xxxx_inst_mux_f7_12/F6.I0) is not
-   connected.
-WARNING:LIT:51 - Pin I1 of MUXF6 symbol
-   "u2_u0_unit1_upipe2_u3_u3_Mmux_c0xxxx_inst_mux_f7_10/MUXF6.I0/MUXF6" (output
-   signal=u2_u0_unit1_upipe2_u3_u3_Mmux_c0xxxx_inst_mux_f7_10/F6.I0) is not
-   connected.
-WARNING:LIT:51 - Pin I1 of MUXF6 symbol
-   "u2_u0_unit1_upipe2_u3_u3_Mmux_c0xxxx_inst_mux_f7_11/MUXF6.I0/MUXF6" (output
-   signal=u2_u0_unit1_upipe2_u3_u3_Mmux_c0xxxx_inst_mux_f7_11/F6.I0) is not
-   connected.
-WARNING:LIT:51 - Pin I1 of MUXF6 symbol
-   "u2_u0_unit1_upipe2_u3_u3_Mmux_c0xxxx_inst_mux_f7_12/MUXF6.I0/MUXF6" (output
-   signal=u2_u0_unit1_upipe2_u3_u3_Mmux_c0xxxx_inst_mux_f7_12/F6.I0) is not
-   connected.
-WARNING:LIT:51 - Pin I1 of MUXF6 symbol
-   "u2_u0_unit1_upipe4_u5_u3_Mmux_c0xxxx_inst_mux_f7_10/MUXF6.I0/MUXF6" (output
-   signal=u2_u0_unit1_upipe4_u5_u3_Mmux_c0xxxx_inst_mux_f7_10/F6.I0) is not
-   connected.
-WARNING:LIT:51 - Pin I1 of MUXF6 symbol
-   "u2_u0_unit1_upipe4_u4_u3_Mmux_c0xxxx_inst_mux_f7_12/MUXF6.I0/MUXF6" (output
-   signal=u2_u0_unit1_upipe4_u4_u3_Mmux_c0xxxx_inst_mux_f7_12/F6.I0) is not
-   connected.
-WARNING:LIT:51 - Pin I1 of MUXF6 symbol
-   "u2_u0_unit1_upipe4_u4_u3_Mmux_c0xxxx_inst_mux_f7_11/MUXF6.I0/MUXF6" (output
-   signal=u2_u0_unit1_upipe4_u4_u3_Mmux_c0xxxx_inst_mux_f7_11/F6.I0) is not
-   connected.
-WARNING:LIT:51 - Pin I1 of MUXF6 symbol
-   "u2_u0_unit1_upipe4_u4_u3_Mmux_c0xxxx_inst_mux_f7_10/MUXF6.I0/MUXF6" (output
-   signal=u2_u0_unit1_upipe4_u4_u3_Mmux_c0xxxx_inst_mux_f7_10/F6.I0) is not
-   connected.
-WARNING:LIT:51 - Pin I1 of MUXF6 symbol
-   "u2_u0_unit1_upipe1_u5_u3_Mmux_c0xxxx_inst_mux_f7_10/MUXF6.I0/MUXF6" (output
-   signal=u2_u0_unit1_upipe1_u5_u3_Mmux_c0xxxx_inst_mux_f7_10/F6.I0) is not
-   connected.
-WARNING:LIT:51 - Pin I1 of MUXF6 symbol
-   "u2_u0_unit1_upipe1_u5_u3_Mmux_c0xxxx_inst_mux_f7_11/MUXF6.I0/MUXF6" (output
-   signal=u2_u0_unit1_upipe1_u5_u3_Mmux_c0xxxx_inst_mux_f7_11/F6.I0) is not
-   connected.
-WARNING:LIT:51 - Pin I1 of MUXF6 symbol
-   "u2_u0_unit1_upipe1_u5_u3_Mmux_c0xxxx_inst_mux_f7_12/MUXF6.I0/MUXF6" (output
-   signal=u2_u0_unit1_upipe1_u5_u3_Mmux_c0xxxx_inst_mux_f7_12/F6.I0) is not
-   connected.
-WARNING:LIT:51 - Pin I1 of MUXF6 symbol
-   "u2_u0_unit1_upipe1_u4_u3_Mmux_c0xxxx_inst_mux_f7_10/MUXF6.I0/MUXF6" (output
-   signal=u2_u0_unit1_upipe1_u4_u3_Mmux_c0xxxx_inst_mux_f7_10/F6.I0) is not
-   connected.
-WARNING:LIT:51 - Pin I1 of MUXF6 symbol
-   "u2_u0_unit1_upipe1_u4_u3_Mmux_c0xxxx_inst_mux_f7_11/MUXF6.I0/MUXF6" (output
-   signal=u2_u0_unit1_upipe1_u4_u3_Mmux_c0xxxx_inst_mux_f7_11/F6.I0) is not
-   connected.
-WARNING:LIT:51 - Pin I1 of MUXF6 symbol
-   "u2_u0_unit1_upipe1_u4_u3_Mmux_c0xxxx_inst_mux_f7_12/MUXF6.I0/MUXF6" (output
-   signal=u2_u0_unit1_upipe1_u4_u3_Mmux_c0xxxx_inst_mux_f7_12/F6.I0) is not
-   connected.
-WARNING:LIT:51 - Pin I1 of MUXF6 symbol
-   "u2_u0_unit1_upipe1_u3_u3_Mmux_c0xxxx_inst_mux_f7_10/MUXF6.I0/MUXF6" (output
-   signal=u2_u0_unit1_upipe1_u3_u3_Mmux_c0xxxx_inst_mux_f7_10/F6.I0) is not
-   connected.
-WARNING:LIT:51 - Pin I1 of MUXF6 symbol
-   "u2_u0_unit1_upipe1_u3_u3_Mmux_c0xxxx_inst_mux_f7_11/MUXF6.I0/MUXF6" (output
-   signal=u2_u0_unit1_upipe1_u3_u3_Mmux_c0xxxx_inst_mux_f7_11/F6.I0) is not
-   connected.
-WARNING:LIT:51 - Pin I1 of MUXF6 symbol
-   "u2_u0_unit1_upipe1_u3_u3_Mmux_c0xxxx_inst_mux_f7_12/MUXF6.I0/MUXF6" (output
-   signal=u2_u0_unit1_upipe1_u3_u3_Mmux_c0xxxx_inst_mux_f7_12/F6.I0) is not
-   connected.
-WARNING:LIT:51 - Pin I1 of MUXF6 symbol
-   "u2_u0_unit1_upipe4_u5_u3_Mmux_c0xxxx_inst_mux_f7_11/MUXF6.I0/MUXF6" (output
-   signal=u2_u0_unit1_upipe4_u5_u3_Mmux_c0xxxx_inst_mux_f7_11/F6.I0) is not
-   connected.
-WARNING:LIT:51 - Pin I1 of MUXF6 symbol
-   "u2_u0_unit1_upipe0_u5_u3_Mmux_c0xxxx_inst_mux_f7_10/MUXF6.I0/MUXF6" (output
-   signal=u2_u0_unit1_upipe0_u5_u3_Mmux_c0xxxx_inst_mux_f7_10/F6.I0) is not
-   connected.
-WARNING:LIT:51 - Pin I1 of MUXF6 symbol
-   "u2_u0_unit1_upipe0_u5_u3_Mmux_c0xxxx_inst_mux_f7_11/MUXF6.I0/MUXF6" (output
-   signal=u2_u0_unit1_upipe0_u5_u3_Mmux_c0xxxx_inst_mux_f7_11/F6.I0) is not
-   connected.
-WARNING:LIT:51 - Pin I1 of MUXF6 symbol
-   "u2_u0_unit1_upipe0_u5_u3_Mmux_c0xxxx_inst_mux_f7_12/MUXF6.I0/MUXF6" (output
-   signal=u2_u0_unit1_upipe0_u5_u3_Mmux_c0xxxx_inst_mux_f7_12/F6.I0) is not
-   connected.
-WARNING:LIT:51 - Pin I1 of MUXF6 symbol
-   "u2_u0_unit1_upipe0_u4_u3_Mmux_c0xxxx_inst_mux_f7_10/MUXF6.I0/MUXF6" (output
-   signal=u2_u0_unit1_upipe0_u4_u3_Mmux_c0xxxx_inst_mux_f7_10/F6.I0) is not
-   connected.
-WARNING:LIT:51 - Pin I1 of MUXF6 symbol
-   "u2_u0_unit1_upipe0_u4_u3_Mmux_c0xxxx_inst_mux_f7_11/MUXF6.I0/MUXF6" (output
-   signal=u2_u0_unit1_upipe0_u4_u3_Mmux_c0xxxx_inst_mux_f7_11/F6.I0) is not
-   connected.
-WARNING:LIT:51 - Pin I1 of MUXF6 symbol
-   "u2_u0_unit1_upipe0_u4_u3_Mmux_c0xxxx_inst_mux_f7_12/MUXF6.I0/MUXF6" (output
-   signal=u2_u0_unit1_upipe0_u4_u3_Mmux_c0xxxx_inst_mux_f7_12/F6.I0) is not
-   connected.
-WARNING:LIT:51 - Pin I1 of MUXF6 symbol
-   "u2_u0_unit1_upipe0_u3_u3_Mmux_c0xxxx_inst_mux_f7_10/MUXF6.I0/MUXF6" (output
-   signal=u2_u0_unit1_upipe0_u3_u3_Mmux_c0xxxx_inst_mux_f7_10/F6.I0) is not
-   connected.
-WARNING:LIT:51 - Pin I1 of MUXF6 symbol
-   "u2_u0_unit1_upipe0_u3_u3_Mmux_c0xxxx_inst_mux_f7_11/MUXF6.I0/MUXF6" (output
-   signal=u2_u0_unit1_upipe0_u3_u3_Mmux_c0xxxx_inst_mux_f7_11/F6.I0) is not
-   connected.
-WARNING:LIT:51 - Pin I1 of MUXF6 symbol
-   "u2_u0_unit1_upipe0_u3_u3_Mmux_c0xxxx_inst_mux_f7_12/MUXF6.I0/MUXF6" (output
-   signal=u2_u0_unit1_upipe0_u3_u3_Mmux_c0xxxx_inst_mux_f7_12/F6.I0) is not
-   connected.
-WARNING:LIT:53 - There are 45 pin connection warnings.
+		PROCEDURE ANNOTATE_MEM_ADB(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",MEM_ADB,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, MEM_ADB);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
 
-Section 3 - Informational
--------------------------
-INFO:MapLib:562 - No environment variables are currently set.
-INFO:MapLib:535 - The following Virtex BUFG(s) is/are being retargetted to
-   Virtex2 BUFGMUX(s) with input tied to I0 and Select pin tied to constant 0:
-   BUFG symbol "dcm0_U_BUFG1" (output signal=CLK0),
-   BUFG symbol "dcm0_U_BUFG2" (output signal=CLK1)
-INFO:DesignRules:547 - Blockcheck: To achieve optimal frequency synthesis
-   performance with the CLKFX and CLKFX180 outputs of the DCM comp dcm0_dcm0,
-   consult the Virtex-II Interactive Data Sheet.
+		PROCEDURE ANNOTATE_MEM_WEHB(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",MEM_WEHB,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, MEM_WEHB);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
 
-Section 4 - Removed Logic Summary
----------------------------------
-  19 block(s) removed
-   2 block(s) optimized away
-   2 signal(s) removed
+		PROCEDURE ANNOTATE_MEM_WELB(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",MEM_WELB,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, MEM_WELB);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
 
-Section 5 - Removed Logic
--------------------------
+		PROCEDURE ANNOTATE_MEM_DTIB(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",MEM_DTIB,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, MEM_DTIB);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
 
-The trimmed logic report below shows the logic removed from your design due to
-sourceless or loadless signals, and VCC or ground connections.  If the removal
-of a signal or symbol results in the subsequent removal of an additional signal
-or symbol, the message explaining that second removal will be indented.  This
-indentation will be repeated as a chain of related logic is removed.
+	BEGIN
+		CLOCK_LOOP : LOOP
+		CLK <= transport '0';
+		WAIT FOR 5 ns;
+		TX_TIME := TX_TIME + 5;
+		CLK <= transport '1';
+		WAIT FOR 50 ns;
+		TX_TIME := TX_TIME + 50;
+		CLK <= transport '0';
+		WAIT FOR 35 ns;
+		TX_TIME := TX_TIME + 35;
+		ANNOTATE_GPREG0(TX_TIME);
+		ANNOTATE_DMAW_ENABLE(TX_TIME);
+		ANNOTATE_DMAR_ENABLE(TX_TIME);
+		ANNOTATE_DBUS_Port(TX_TIME);
+		ANNOTATE_DBUS_HiZ(TX_TIME);
+		ANNOTATE_MEM_ADB(TX_TIME);
+		ANNOTATE_MEM_WEHB(TX_TIME);
+		ANNOTATE_MEM_WELB(TX_TIME);
+		ANNOTATE_MEM_DTIB(TX_TIME);
+		WAIT FOR 10 ns;
+		TX_TIME := TX_TIME + 10;
+		END LOOP CLOCK_LOOP;
+	END PROCESS;
 
-To quickly locate the original cause for the removal of a chain of logic, look
-above the place where that logic is listed in the trimming report, then locate
-the lines that are least indented (begin at the leftmost edge).
+	PROCESS   -- Process for CLK
+		VARIABLE TX_OUT : LINE;
 
-Loadless block "u2_u0_unit9_u1_u049" () removed.
-Loadless block "u2_u0_unit9_u1_u050" () removed.
-Loadless block "u2_u0_unit9_u1_u051" () removed.
-Loadless block "u2_u0_unit9_u1_u052" () removed.
-Loadless block "u2_u0_unit9_u1_u053" () removed.
-Loadless block "u2_u0_unit9_u1_u054" () removed.
-Loadless block "u2_u0_unit9_u1_u055" () removed.
-Loadless block "u2_u0_unit9_u1_u056" () removed.
-Loadless block "u2_u0_unit9_u1_u057" () removed.
-Loadless block "u2_u0_unit9_u1_u058" () removed.
-Loadless block "u2_u0_unit9_u1_u059" () removed.
-Loadless block "u2_u0_unit9_u1_u060" () removed.
-Loadless block "u2_u0_unit9_u1_u061" () removed.
-Loadless block "u2_u0_unit9_u1_u062" () removed.
-Loadless block "u2_u0_unit9_u1_u063" () removed.
+		BEGIN
+		-- --------------------
+		RST <= transport '0';
+		PGPG_REG3 <= transport std_logic_vector'("00000000000000000000000000000000"); --0
+		Hit_PGPG_REG3 <= transport '0';
+		MEM_ADA <= transport std_logic_vector'("0000000000000"); --0
+		MEM_WEHA <= transport '0';
+		MEM_WELA <= transport '0';
+		MEM_DTIA <= transport std_logic_vector'("0000000000000000000000000000000000000000000000000000000000000000"); --0
+		DBUS_idata <= transport std_logic_vector'("0000000000000000000000000000000000000000000000000000000000000000"); --0
+		MEM_DTOB <= transport std_logic_vector'("0000000000000000000000000000000000000000000000000000000000000000"); --0
+		-- --------------------
+		WAIT FOR 500 ns; -- Time=500 ns
+		RST <= transport '1';
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=600 ns
+		RST <= transport '0';
+		-- --------------------
+		WAIT FOR 600 ns; -- Time=1200 ns
+		MEM_ADA <= transport std_logic_vector'("0111111110000"); --FF0
+		MEM_WEHA <= transport '1';
+		MEM_WELA <= transport '1';
+		MEM_DTIA <= transport std_logic_vector'("0000000000000000000000000000000000000000000000000000000000001010"); --A
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=1300 ns
+		MEM_ADA <= transport std_logic_vector'("0111111110010"); --FF2
+		MEM_DTIA <= transport std_logic_vector'("0000000000000000000000000000000000000000000000000000000000001011"); --B
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=1400 ns
+		MEM_ADA <= transport std_logic_vector'("0111111110100"); --FF4
+		MEM_DTIA <= transport std_logic_vector'("0000000000000000000000000000000000000000000000000000000000001100"); --C
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=1500 ns
+		MEM_ADA <= transport std_logic_vector'("0111111110110"); --FF6
+		MEM_DTIA <= transport std_logic_vector'("0000000000000000000000000000000000000000000000000000000000001101"); --D
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=1600 ns
+		MEM_WEHA <= transport '0';
+		MEM_WELA <= transport '0';
+		-- --------------------
+		WAIT FOR 300 ns; -- Time=1900 ns
+		MEM_ADA <= transport std_logic_vector'("0011101110000"); --770
+		MEM_WEHA <= transport '1';
+		MEM_WELA <= transport '1';
+		MEM_DTIA <= transport std_logic_vector'("0000000000000000000000000000000000001111111111110000000000000001"); --FFF0001
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=2000 ns
+		MEM_ADA <= transport std_logic_vector'("0011101110010"); --772
+		MEM_DTIA <= transport std_logic_vector'("0000000000000000000000000000000000001111111111110000000000000010"); --FFF0002
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=2100 ns
+		MEM_ADA <= transport std_logic_vector'("0011101110100"); --774
+		MEM_DTIA <= transport std_logic_vector'("0000000000000000000000000000000000001111111111110000000000000011"); --FFF0003
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=2200 ns
+		MEM_ADA <= transport std_logic_vector'("0011101110110"); --776
+		MEM_DTIA <= transport std_logic_vector'("0000000000000000000000000000000000001111111111110000000000000100"); --FFF0004
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=2300 ns
+		MEM_ADA <= transport std_logic_vector'("0011101111000"); --778
+		MEM_DTIA <= transport std_logic_vector'("0000000000000000000000000000000000001111111111110000000000000101"); --FFF0005
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=2400 ns
+		MEM_ADA <= transport std_logic_vector'("0011101111010"); --77A
+		MEM_DTIA <= transport std_logic_vector'("0000000000000000000000000000000000001111111111110000000000000110"); --FFF0006
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=2500 ns
+		MEM_ADA <= transport std_logic_vector'("0011101111100"); --77C
+		MEM_DTIA <= transport std_logic_vector'("0000000000000000000000000000000000001111111111110000000000000111"); --FFF0007
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=2600 ns
+		MEM_WEHA <= transport '0';
+		MEM_WELA <= transport '0';
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=2700 ns
+		MEM_ADA <= transport std_logic_vector'("0000000000100"); --4
+		MEM_WEHA <= transport '1';
+		MEM_WELA <= transport '1';
+		MEM_DTIA <= transport std_logic_vector'("0000000000000000000000000000011101110111011101110000000000000100"); --777770004
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=2800 ns
+		MEM_WEHA <= transport '0';
+		MEM_WELA <= transport '0';
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=2900 ns
+		MEM_ADA <= transport std_logic_vector'("0000000000110"); --6
+		MEM_WEHA <= transport '1';
+		MEM_WELA <= transport '1';
+		MEM_DTIA <= transport std_logic_vector'("0000000000000000000000000000011101110111011101110000000000000110"); --777770006
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=3000 ns
+		MEM_WEHA <= transport '0';
+		MEM_WELA <= transport '0';
+		-- --------------------
+		WAIT FOR 500 ns; -- Time=3500 ns
+		MEM_ADA <= transport std_logic_vector'("0011101111000"); --778
+		MEM_WEHA <= transport '1';
+		MEM_WELA <= transport '1';
+		MEM_DTIA <= transport std_logic_vector'("1001100110011001100110011001100110001000100010001000100010001000"); --9999999988888888
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=3600 ns
+		MEM_ADA <= transport std_logic_vector'("0011101111010"); --77A
+		MEM_DTIA <= transport std_logic_vector'("1011101110111011101110111011101110101010101010101010101010101010"); --BBBBBBBBAAAAAAAA
+		-- --------------------
+		WAIT FOR 100 ns; -- Time=3700 ns
+		MEM_WEHA <= transport '0';
+		MEM_WELA <= transport '0';
+		-- --------------------
+		WAIT FOR 1255 ns; -- Time=4955 ns
+		-- --------------------
 
-The trimmed logic reported below is either:
-   1. part of a cycle
-   2. part of disabled logic
-   3. a side-effect of other trimmed logic
+		STD.TEXTIO.write(TX_OUT, string'("Total[]"));
+		STD.TEXTIO.writeline(results, TX_OUT);
+		ASSERT (FALSE) REPORT
+			"Success! Simulation for annotation completed"
+			SEVERITY FAILURE;
+	END PROCESS;
+END testbench_arch;
 
-The signal "TPIN<9>" is unused and has been removed.
- Unused block "TPIN_9_OBUFT" (TRI) removed.
-The signal "TPIN<8>" is unused and has been removed.
- Unused block "TPIN_8_OBUFT" (TRI) removed.
-Unused block "TPIN<8>" (PAD) removed.
-Unused block "TPIN<9>" (PAD) removed.
-
-Optimized Block(s):
-TYPE 		BLOCK
-GND 		XST_GND
-VCC 		XST_VCC
-
-To enable printing of redundant blocks removed and signals merged, set the
-detailed map report option and rerun map.
-
-Section 6 - IOB Properties
---------------------------
-
-+------------------------------------------------------------------------------------------------------------------------+
-| IOB Name                           | Type    | Direction | IO Standard | Drive    | Slew | Reg (s)  | Resistor | IOB   |
-|                                    |         |           |             | Strength | Rate |          |          | Delay |
-+------------------------------------------------------------------------------------------------------------------------+
-| CBUS<0>                            | IOB     | INPUT     | LVCMOS25    |          |      | INFF1    |          |       |
-| CBUS<1>                            | IOB     | INPUT     | LVCMOS25    |          |      | INFF1    |          |       |
-| CBUS<2>                            | IOB     | INPUT     | LVCMOS25    |          |      | INFF1    |          |       |
-| CBUS<3>                            | IOB     | INPUT     | LVCMOS25    |          |      | INFF1    |          |       |
-| CBUS<4>                            | IOB     | INPUT     | LVCMOS25    |          |      | INFF1    |          |       |
-| CBUS<5>                            | IOB     | INPUT     | LVCMOS25    |          |      | INFF1    |          |       |
-| CBUS<6>                            | IOB     | INPUT     | LVCMOS25    |          |      | INFF1    |          |       |
-| CBUS<7>                            | IOB     | OUTPUT    | LVCMOS25    | 12       | FAST | OFF1     |          |       |
-| CK66                               | IOB     | INPUT     | LVCMOS25    |          |      |          |          |       |
-| CK133                              | IOB     | INPUT     | LVCMOS25    |          |      | INFF1    |          |       |
-| DBUS<0>                            | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<1>                            | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<2>                            | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<3>                            | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<4>                            | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<5>                            | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<6>                            | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<7>                            | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<8>                            | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<9>                            | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<10>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<11>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<12>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<13>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<14>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<15>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<16>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<17>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<18>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<19>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<20>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<21>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<22>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<23>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<24>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<25>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<26>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<27>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<28>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<29>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<30>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<31>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<32>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<33>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<34>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<35>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<36>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<37>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<38>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<39>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<40>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<41>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<42>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<43>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<44>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<45>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<46>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<47>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<48>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<49>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<50>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<51>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<52>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<53>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<54>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<55>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<56>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<57>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<58>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<59>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<60>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<61>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<62>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DBUS<63>                           | IOB     | BIDIR     | LVCMOS25    | 12       | FAST | INFF1    |          |       |
-|                                    |         |           |             |          |      | OFF1     |          |       |
-| DSW<0>                             | IOB     | INPUT     | LVCMOS25    |          |      |          |          |       |
-| DSW<1>                             | IOB     | INPUT     | LVCMOS25    |          |      |          |          |       |
-| DSW<2>                             | IOB     | INPUT     | LVCMOS25    |          |      |          |          |       |
-| DSW<3>                             | IOB     | INPUT     | LVCMOS25    |          |      |          |          |       |
-| DSW<4>                             | IOB     | INPUT     | LVCMOS25    |          |      |          |          |       |
-| DSW<5>                             | IOB     | INPUT     | LVCMOS25    |          |      |          |          |       |
-| DSW<6>                             | IOB     | INPUT     | LVCMOS25    |          |      |          |          |       |
-| DSW<7>                             | IOB     | INPUT     | LVCMOS25    |          |      |          |          |       |
-| FPGA_NO<0>                         | IOB     | INPUT     | LVCMOS25    |          |      | INFF1    |          |       |
-| FPGA_NO<1>                         | IOB     | INPUT     | LVCMOS25    |          |      | INFF1    |          |       |
-| LED<0>                             | IOB     | OUTPUT    | LVCMOS25    | 12       | FAST | OFF1     |          |       |
-| LED<1>                             | IOB     | OUTPUT    | LVCMOS25    | 12       | FAST | OFF1     |          |       |
-| LED<2>                             | IOB     | OUTPUT    | LVCMOS25    | 12       | FAST | OFF1     |          |       |
-| LED<3>                             | IOB     | OUTPUT    | LVCMOS25    | 12       | FAST | OFF1     |          |       |
-| LED<4>                             | IOB     | OUTPUT    | LVCMOS25    | 12       | FAST | OFF1     |          |       |
-| LED<5>                             | IOB     | OUTPUT    | LVCMOS25    | 12       | FAST | OFF1     |          |       |
-| LED<6>                             | IOB     | OUTPUT    | LVCMOS25    | 12       | FAST | OFF1     |          |       |
-| LED<7>                             | IOB     | OUTPUT    | LVCMOS25    | 12       | FAST | OFF1     |          |       |
-| RST                                | IOB     | INPUT     | LVCMOS25    |          |      |          |          |       |
-| TPIN<0>                            | IOB     | OUTPUT    | LVCMOS25    | 12       | FAST | OFF1     |          |       |
-| TPIN<1>                            | IOB     | OUTPUT    | LVCMOS25    | 12       | FAST | OFF1     |          |       |
-| TPIN<2>                            | IOB     | OUTPUT    | LVCMOS25    | 12       | FAST | OFF1     |          |       |
-| TPIN<3>                            | IOB     | OUTPUT    | LVCMOS25    | 12       | FAST | OFF1     |          |       |
-| TPIN<4>                            | IOB     | OUTPUT    | LVCMOS25    | 12       | FAST | OFF1     |          |       |
-| TPIN<5>                            | IOB     | OUTPUT    | LVCMOS25    | 12       | FAST | OFF1     |          |       |
-| TPIN<6>                            | IOB     | OUTPUT    | LVCMOS25    | 12       | FAST | OFF1     |          |       |
-| TPIN<7>                            | IOB     | OUTPUT    | LVCMOS25    | 12       | FAST | OFF1     |          |       |
-| TPIN<10>                           | IOB     | OUTPUT    | LVCMOS25    | 12       | FAST | OFF1     |          |       |
-| TPIN<11>                           | IOB     | OUTPUT    | LVCMOS25    | 12       | FAST | OFF1     |          |       |
-| TPIN<12>                           | IOB     | OUTPUT    | LVCMOS25    | 12       | FAST | OFF1     |          |       |
-| TPIN<13>                           | IOB     | OUTPUT    | LVCMOS25    | 12       | FAST | OFF1     |          |       |
-| TPIN<14>                           | IOB     | OUTPUT    | LVCMOS25    | 12       | FAST | OFF1     |          |       |
-| TPIN<15>                           | IOB     | OUTPUT    | LVCMOS25    | 12       | FAST | OFF1     |          |       |
-+------------------------------------------------------------------------------------------------------------------------+
-
-Section 7 - RPMs
-----------------
-
-Section 8 - Guide Report
-------------------------
-Guide not run on this design.
-
-Section 9 - Area Group Summary
-------------------------------
-No area groups were found in this design.
-
-Section 10 - Modular Design Summary
------------------------------------
-Modular Design not used for this design.
-
-Section 11 - Timing Report
---------------------------
-This design was not run using timing mode.
-
-Section 12 - Configuration String Details
------------------------------------------
-Use the "-detail" map option to print out Configuration Strings
-
-Section 13 - Additional Device Resource Counts
-----------------------------------------------
-Number of JTAG Gates for IOBs = 107
-Number of Equivalent Gates for Design = 9,650,171
-Number of RPM Macros = 0
-Number of Hard Macros = 0
-GT10 = 0
-GT = 0
-CAPTUREs = 0
-BSCANs = 0
-STARTUPs = 0
-PCILOGICs = 0
-DCMs = 1
-GCLKs = 2
-ICAPs = 0
-18X18 Multipliers = 15
-Block RAMs = 143
-TBUFs = 0
-JTAGPPCs = 0
-CLK_Ps = 0
-CLK_Ns = 0
-GTOPADs = 0
-GTIPADs = 0
-PPC405s = 0
-Total Registers (Flops & Latches in Slices & IOBs) not driven by LUTs = 3488
-IOB Dual-Rate Flops not driven by LUTs = 0
-IOB Dual-Rate Flops = 0
-IOB Slave Pads = 0
-IOB Master Pads = 0
-IOB Latches not driven by LUTs = 0
-IOB Latches = 0
-IOB Flip Flops not driven by LUTs = 90
-IOB Flip Flops = 161
-Unbonded IOBs = 0
-Bonded IOBs = 107
-Total Shift Registers = 431
-Static Shift Registers = 431
-Dynamic Shift Registers = 0
-16x1 ROMs = 0
-16x1 RAMs = 0
-32x1 RAMs = 0
-Dual Port RAMs = 0
-MUXFs = 2089
-MULT_ANDs = 0
-4 input LUTs used as Route-Thrus = 484
-4 input LUTs = 13791
-Slice Latches not driven by LUTs = 0
-Slice Latches = 0
-Slice Flip Flops not driven by LUTs = 3398
-Slice Flip Flops = 7792
-Slices = 9450
-Multiplier(9,5) =    |
-Multiplier(9,6) = 
-Number of LUT signals with 4 loads = 195
-Number of LUT signals with 3 loads = 118
-Number of LUT signals with 2 loads = 5237
-Number of LUT signals with 1 load = 7607
-NGM Average fanout of LUT = 2.02
-NGM Maximum fanout of LUT = 442
-NGM Average fanin for LUT = 2.7684
-Number of LUT symbols = 13791
-Number of IPAD symbols = 20
-Number of IBUF symbols = 84
-Number of DCM symbols = 1
-Number of BIPAD symbols = 64
+CONFIGURATION pfpga_dma_cfg OF sim_pfpga_dma IS
+	FOR testbench_arch
+	END FOR;
+END pfpga_dma_cfg;

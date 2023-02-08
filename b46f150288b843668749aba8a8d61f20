@@ -1,2 +1,16 @@
-Wed Dec 28 19:41:45 JST 2022
-set allSynthModules {pcim_lc.MOD cfg.MOD pci_targetcnt.MOD pci_rdtfifo.MOD pci_dmacnt.MOD pcicnt.MOD regcnt.MOD dp32b8192w.MOD dpram.MOD user.MOD pfpga_config.MOD local_write.MOD local_read_cnt.MOD local_read_if.MOD local_read.MOD local_io.MOD writecomb_check.MOD fifofifo.MOD dcm_ps_f.MOD ifpga.MOD}
+Wed Feb  8 19:35:39 JST 2023
+#!/bin/sh
+#
+# An example hook script to check the commit log message taken by
+# applypatch from an e-mail message.
+#
+# The hook should exit with non-zero status after issuing an
+# appropriate message if it wants to stop the commit.  The hook is
+# allowed to edit the commit message file.
+#
+# To enable this hook, rename this file to "applypatch-msg".
+
+. git-sh-setup
+test -x "$GIT_DIR/hooks/commit-msg" &&
+	exec "$GIT_DIR/hooks/commit-msg" ${1+"$@"}
+:

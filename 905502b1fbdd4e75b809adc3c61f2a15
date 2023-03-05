@@ -1,16 +1,19 @@
-Thu Feb  9 19:33:31 JST 2023
-/** 
-# xを1ステップ進める
-# x(k+1) = x(k) + v(k+1/2)*dt
-*/
+Sun Mar  5 19:43:55 JST 2023
+#!Time-stamp: <2007-01-22 04:30:32 hamada>
 
-#include <stdio.h>
-#include "nbodysim.h"
+Linux device driver for the PROGRAPE-4 board,
 
-void leapflog(double dt,double x[][DIM],double v[][DIM],int n)
-{
-    int i,d;
-    for(i=0;i<n;i++)
-        for(d=0;d<3;d++)
-            x[i][d] = x[i][d]+v[i][d]*dt;
-}
+including runtime libraries and HDL source for interface FPGA.
+
+- Linux kernel release 2.6.x
+
+- Xilinx XC3S5000-5-FG900 FPGAs
+
+- Xilinx ISE 8.1i
+-- Release 8.1.03i xst I.27
+-- Release 8.1.03i par I.27
+-- Release 8.1.03i Trace I.27
+-- Release 8.1.03i Bitgen I.27
+
+
+![PROGRAPE-4](http://www.ipa.go.jp/jinzai/esp/2005mito1/mdata/images/clip_image002_006.jpg)

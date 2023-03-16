@@ -1,9 +1,12 @@
-Wed Mar  8 19:46:38 JST 2023
-#!/bin/sh
-#
-# An example hook script to prepare a packed repository for use over
-# dumb transports.
-#
-# To enable this hook, rename this file to "post-update".
+Thu Mar 16 19:51:08 JST 2023
 
-exec git update-server-info
+all:
+	cp top.ucf.ISE6.3i_Synplify top.ucf
+	rm -rf proj
+	tar xvf proj.synplify.tar
+	cd proj;ngdbuild -intstyle ise -dd /home/hamada/VHDL/proj/_ngo -uc ../top.ucf  -p xc2vp70-ff1517-5 top.edn top.ngd
+	cd proj;map -intstyle ise -p xc2vp70-ff1517-5 -cm area -pr b -k 4 -c 100 -tx off -o top_map.ncd top.ngd top.pcf
+	cd proj;par -w -intstyle ise -ol std -t 1 top_map.ncd top.ncd top.pcf
+	cd proj;trce -intstyle ise -e 3 -l 3 -xml top top.ncd -o top.twr top.pcf
+	cd proj;bitgen -intstyle ise -f top.ut top.ncd
+

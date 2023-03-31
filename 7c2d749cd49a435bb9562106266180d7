@@ -1,49 +1,12 @@
-Wed Mar 29 19:37:52 JST 2023
-//Time-stamp: <2006-09-07 13:50:20 hamada>
-
-/NPIPE 1;
-
-#define NPOS 32
-#define NLOG 17
-#define NMAN 8
-#define NCUT 6
-#define NFOR 57
-#define NACC 64
-#define xsize (2.0)
-#define mmin  (1.0e-2)
-#define xscale (pow(2.0,(double)NPOS)/xsize)
-#define mscale (pow(2.0,95.38)/mmin)
-#define escale (xscale*xscale)
-
-#define NEXAD -31
-#define fshift pow(2.0,-1.0*(double)NEXAD)
-#define fscale (-xscale*xscale*fshift/mscale)
-
-/MEM xj[3] <= x[][] : fix(NPOS);
-/MEM mj    <= m[]   : log(NLOG,NMAN);
-/REG xi[3] <= x[][] : fix(NPOS);
-/REG ieps2 <= eps2  : log(NLOG,NMAN);
-/REG sx[3] => a[][] : fix(NACC);
-
-/SCALE xj[3] : xscale;
-/SCALE mj    : mscale;
-/SCALE xi[3] : xscale;
-/SCALE ieps2 : escale;
-/SCALE sx[3] : fscale;
-/NVMP 1;
-
-pg_fix_addsub(SUB,xi,xj,xij,           NPOS,           3);
-pg_conv_ftol(xij,dx,                   NPOS,NLOG,NMAN, 4);
-pg_log_shift(1,dx,x2,                  NLOG);
-
-pg_log_unsigned_add_itp(x2[0],x2[1], x2y2,   NLOG,NMAN,9,NCUT);
-pg_log_unsigned_add_itp(x2[2],ieps2, z2e2,   NLOG,NMAN,9,NCUT);
-pg_log_unsigned_add_itp(x2y2,z2e2,   r2,     NLOG,NMAN,9,NCUT);
-
-pg_log_shift(-1,r2,       r1,          NLOG);
-pg_log_muldiv(MUL,r2,r1,  r3,          NLOG,2);
-pg_log_muldiv(SDIV,mj,r3,  mf,         NLOG,2);
-pg_log_muldiv(MUL,mf,dx,  fx,          NLOG,2);
-pg_log_expadd(fx,fxs,                  NEXAD,NLOG,NMAN,1);
-pg_conv_ltof(fxs, ffx,                 NLOG,NMAN,NFOR,5);
-pg_fix_smaccum(ffx, sx,                NFOR,NACC,4);
+Fri Mar 31 19:26:52 JST 2023
+10
+2.253285e-01	9.191831e-01
+2.068413e-01	7.247797e-01
+7.321991e-01	9.064824e-01
+3.479571e-01	8.578809e-01
+4.151849e-01	1.941677e-01
+6.856104e-01	5.243755e-01
+1.596357e-01	9.547575e-01
+1.269843e-01	4.339532e-03
+3.826915e-01	2.507929e-01
+6.552879e-01	5.344908e-01

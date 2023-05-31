@@ -1,85 +1,129 @@
-Sat Apr 15 19:42:31 JST 2023
-#!/usr/bin/env python3
-#Time-stamp: <2017-05-30 09:51:10 hamada>
-import argparse
-import numpy as np
-import cv2
-from datetime import datetime
-import mkdir
+Wed May 31 19:30:08 JST 2023
+#!/bin/sh
+#
+# An example hook script to blocks unannotated tags from entering.
+# Called by "git receive-pack" with arguments: refname sha1-old sha1-new
+#
+# To enable this hook, rename this file to "update".
+#
+# Config
+# ------
+# hooks.allowunannotated
+#   This boolean sets whether unannotated tags will be allowed into the
+#   repository.  By default they won't be.
+# hooks.allowdeletetag
+#   This boolean sets whether deleting tags will be allowed in the
+#   repository.  By default they won't be.
+# hooks.allowmodifytag
+#   This boolean sets whether a tag may be modified after creation. By default
+#   it won't be.
+# hooks.allowdeletebranch
+#   This boolean sets whether deleting branches will be allowed in the
+#   repository.  By default they won't be.
+# hooks.denycreatebranch
+#   This boolean sets whether remotely creating branches will be denied
+#   in the repository.  By default this is allowed.
+#
 
-def put_text(image, text):
-    font_size = 1.0
-    font_type = cv2.FONT_HERSHEY_PLAIN
-    font_color = (0xaf, 0xdf, 0xf)
-    #    cv2.putText(image, text, (460, 15), font_type, font_size, font_color)
-    cv2.putText(image, text, (10, 15), font_type, font_size, font_color)
+# --- Command line
+refname="$1"
+oldrev="$2"
+newrev="$3"
 
-if (__name__ == '__main__'):
-    parser = argparse.ArgumentParser(description = "description goes here")
-    parser.add_argument("--devid", type=int, help = "set device id", required=False)
-    args = parser.parse_args()
-    devid = 0
-    if args.devid:
-        devid = int(args.devid)
-        print ("set devid = ", devid)
+# --- Safety check
+if [ -z "$GIT_DIR" ]; then
+	echo "Don't run this script from the command line." >&2
+	echo " (if you want, you could supply GIT_DIR then run" >&2
+	echo "  $0 <ref> <oldrev> <newrev>)" >&2
+	exit 1
+fi
 
-    log_base = '../log/'
-    cap = []
-    for i in range(3):
-        cap.append(cv2.VideoCapture(i))
+if [ -z "$refname" -o -z "$oldrev" -o -z "$newrev" ]; then
+	echo "usage: $0 <ref> <oldrev> <newrev>" >&2
+	exit 1
+fi
 
-    # -- swap cap --
-    if True:
-        cap_tmp = cap[0]
-        cap[0] = cap[2]
-        cap[2] = cap_tmp
+# --- Config
+allowunannotated=$(git config --bool hooks.allowunannotated)
+allowdeletebranch=$(git config --bool hooks.allowdeletebranch)
+denycreatebranch=$(git config --bool hooks.denycreatebranch)
+allowdeletetag=$(git config --bool hooks.allowdeletetag)
+allowmodifytag=$(git config --bool hooks.allowmodifytag)
 
+# check for no description
+projectdesc=$(sed -e '1q' "$GIT_DIR/description")
+case "$projectdesc" in
+"Unnamed repository"* | "")
+	echo "*** Project description file hasn't been set" >&2
+	exit 1
+	;;
+esac
 
-    cap_width  = cap[0].get(cv2.CAP_PROP_FRAME_WIDTH)
-    cap_height = cap[0].get(cv2.CAP_PROP_FRAME_HEIGHT)
-    cap_fps    = cap[0].get(cv2.CAP_PROP_FPS)
+# --- Check types
+# if $newrev is 0000...0000, it's a commit to delete a ref.
+zero="0000000000000000000000000000000000000000"
+if [ "$newrev" = "$zero" ]; then
+	newrev_type=delete
+else
+	newrev_type=$(git cat-file -t $newrev)
+fi
 
-    print(cap_width, "x", cap_height, ":", cap_fps)
-    size = (int(cap_width/2), int(cap_height/2))
+case "$refname","$newrev_type" in
+	refs/tags/*,commit)
+		# un-annotated tag
+		short_refname=${refname##refs/tags/}
+		if [ "$allowunannotated" != "true" ]; then
+			echo "*** The un-annotated tag, $short_refname, is not allowed in this repository" >&2
+			echo "*** Use 'git tag [ -a | -s ]' for tags you want to propagate." >&2
+			exit 1
+		fi
+		;;
+	refs/tags/*,delete)
+		# delete tag
+		if [ "$allowdeletetag" != "true" ]; then
+			echo "*** Deleting a tag is not allowed in this repository" >&2
+			exit 1
+		fi
+		;;
+	refs/tags/*,tag)
+		# annotated tag
+		if [ "$allowmodifytag" != "true" ] && git rev-parse $refname > /dev/null 2>&1
+		then
+			echo "*** Tag '$refname' already exists." >&2
+			echo "*** Modifying a tag is not allowed in this repository." >&2
+			exit 1
+		fi
+		;;
+	refs/heads/*,commit)
+		# branch
+		if [ "$oldrev" = "$zero" -a "$denycreatebranch" = "true" ]; then
+			echo "*** Creating a branch is not allowed in this repository" >&2
+			exit 1
+		fi
+		;;
+	refs/heads/*,delete)
+		# delete branch
+		if [ "$allowdeletebranch" != "true" ]; then
+			echo "*** Deleting a branch is not allowed in this repository" >&2
+			exit 1
+		fi
+		;;
+	refs/remotes/*,commit)
+		# tracking branch
+		;;
+	refs/remotes/*,delete)
+		# delete tracking branch
+		if [ "$allowdeletebranch" != "true" ]; then
+			echo "*** Deleting a tracking branch is not allowed in this repository" >&2
+			exit 1
+		fi
+		;;
+	*)
+		# Anything else (is there anything else?)
+		echo "*** Update hook: unknown type of update to ref $refname of type $newrev_type" >&2
+		exit 1
+		;;
+esac
 
-    tnow0 = datetime.now().strftime('%Y%m%d_%H_%M_%S') # ('%Y%m%d_%H_%M_%S_%f')
-
-    while(cap[0].isOpened() and cap[1].isOpened() and cap[2].isOpened()):
-        frame = [0,0,0]
-        for (i, fm) in enumerate(frame):
-            ret, fm = cap[i].read()
-            smallimg = cv2.resize(fm, size)
-            if False: cv2.imshow('camera: %d'%(i), smallimg)
-            frame[i] = smallimg
-
-        # ----------------------------------------------------------------
-        frame_height, frame_width = frame[0].shape[:2]
-        image = np.zeros((frame_height, frame_width*3, 3), dtype=np.uint8)
-
-        for (i, fm) in enumerate(frame):
-            sx = frame_width * i
-            sy = 0
-            ex = frame_width * (i+1)
-            ey = frame_height
-            image[sy:ey,sx:ex] = fm
-
-        cv2.imshow('pycam', image)
-
-        tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S')
-        if(tnow != tnow0):
-            put_text(image, tnow)
-            basedir = '../log/'
-            ofname = mkdir.get_filename_frame(basedir, tnow)
-            cv2.imwrite(ofname, image)
-            print(ofname)
-            tnow0 = tnow
-
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-
-    for (i, fm) in enumerate(frame):
-        cap[i].release()
-
-    cv2.destroyAllWindows()
-
-    print("Done.")
+# --- Finished
+exit 0

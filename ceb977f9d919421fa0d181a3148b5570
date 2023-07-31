@@ -1,118 +1,60 @@
-Mon Jul 24 19:30:50 JST 2023
-library IEEE;
+Mon Jul 31 19:57:06 JST 2023
+info x 52 510 0 0 0 0 0 0 0 0 0 0 0 0 0 0 VHDL
+col x 257 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+radix x 16 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+entity name 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 local_read_if
+term mark 244 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+vlib save 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.STD_LOGIC_UNSIGNED.ALL;
 use IEEE.STD_LOGIC_ARITH.ALL;
-
-
-entity PFPGA_DMA is
-  port (
-    -- pcicnt input
-    MEM_AD  : in std_logic_vector(16 downto 0);     -- DPRAM Port B R/W Address
-    MEM_WE  : in std_logic;
-    MEM_WE  : in std_logic;
-    MEM_DTI : in std_logic_vector(63 downto 0);
-
-    -- CBUS/DBUS
-    DMAW_ENABLE : out std_logic_vector(3 downto 0); -- for 4 pfpga chip
-    DBUS_Port : out std_logic_vector(63 downto 0);
-
-    RST : in  std_logic;
-    CLK : in  std_logic
-    );
-end PFPGA_DMA;
-
-architecture rtl of PFPGA_DMA is
-
------------------------------------------------------------------
--- DMAW
-  signal mem_wea   : std_logic := '0';
-  signal dmaw_we0  : std_logic := '0';
-  signal dmaw_we1  : std_logic := '0';
-  signal dmaw_adr          : std_logic_vector(63 downto 0) := (others=>'0');
-  signal dmaw_dt0,dmaw_dt1 : std_logic_vector(63 downto 0) := (others=>'0');
-  signal dmaw_dbus_o       : std_logic_vector(63 downto 0) := (others=>'0');
-
-begin
-
--- WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
--- DMA WRITE ( ifpga -> pfpga )
--- WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
-  ------------------------------
-  --- mem_wea                ---
-  ------------------------------
-  mem_wea <= MEM_WE;
-
-  ------------------------------
-  --- dmaw_we0,1             ---
-  ------------------------------
-  process (RST,CLK) begin
-    if(RST='1') then
-      dmaw_we0 <= '0';
-    elsif(CLK'event and CLK='1') then
-      dmaw_we0 <= mem_wea;
-    end if;
-  end process;
-
-  process (CLK) begin
-    if(CLK'event and CLK='1') then
-      dmaw_we1 <= dmaw_we0;
-    end if;
-  end process;
-  
-  ------------------------------
-  --- dmaw_adr               ---
-  ------------------------------
-  process (RST,CLK,mem_wea,dmaw_we0) begin
-    if(RST='1') then
-      dmaw_adr <= (others=>'0');
-    elsif(CLK'event and CLK='1') then
-      if((mem_wea = '1') and (dmaw_we0 = '0')) then
-        dmaw_adr(15 downto 0) <= MEM_AD(16 downto 1);
-      end if;
-      dmaw_adr(63 downto 16) <= (others=>'0');
-    end if;
-  end process;
-
-  ------------------------------
-  --- dmaw_dt delay          ---
-  ------------------------------
-  process (RST,CLK) begin
-    if(RST='1') then
-      dmaw_dt1 <= (others=>'0');
-      dmaw_dt0 <= (others=>'0');
-    elsif(CLK'event and CLK='1') then
-      dmaw_dt1 <= dmaw_dt0;
-      dmaw_dt0 <= MEM_DTI;
-    end if;
-  end process;
-
-  ------------------------------
-  --- dmaw_dbus_o            ---
-  ------------------------------
-  process (RST,CLK,dmaw_we0,dmaw_we1) begin
-    if(RST='1') then
-      dmaw_dbus_o <= (others=>'0');
-    elsif(CLK'event and CLK='1') then
-      if(dmaw_we0 = '1' and dmaw_we1 = '0') then
-        dmaw_dbus_o <= dmaw_adr;
-      else
-        dmaw_dbus_o <= dmaw_dt1;
-      end if;
-    end if;
-  end process;
-
-  --- DMAW_ENABLE
-  process (RST,CLK) begin
-    if(RST='1') then
-      DMAW_ENABLE    <= (others=>'0');
-    elsif(CLK'event and CLK='1') then
-      DMAW_ENABLE(0) <= dmaw_we1;
-      DMAW_ENABLE(1) <= dmaw_we1;
-      DMAW_ENABLE(2) <= dmaw_we1;
-      DMAW_ENABLE(3) <= dmaw_we1;
-    end if;
-  end process;
-
-
-end rtl;
+
+var add 16 0 0 226 39 0 257 100 50 50 25 25 0 0 0 0 CLKInstd_logicRISING_EDGECLK
+var add 1 0 0 162 19 0 257 100 50 50 25 25 0 0 0 0 EXECInstd_logicRISING_EDGECLK
+var add 2 18 0 164 20 0 257 100 50 50 25 25 0 0 0 0 START_ADInstd_logic_vectorRISING_EDGECLK
+var add 3 8 0 164 21 0 257 100 50 50 25 25 0 0 0 0 NQWORDInstd_logic_vectorRISING_EDGECLK
+var add 4 3 0 164 22 0 257 100 50 50 25 25 0 0 0 0 CHIPSELInstd_logic_vectorRISING_EDGECLK
+var add 5 12 0 164 23 0 257 100 50 50 25 25 0 0 0 0 MEM_AD_BASEInstd_logic_vectorRISING_EDGECLK
+var add 9 63 0 164 29 0 257 100 50 50 25 25 0 0 0 0 DBUS_idataInstd_logic_vectorRISING_EDGECLK
+var add 15 0 0 162 38 0 257 100 50 50 25 25 0 0 0 0 RSTInstd_logicRISING_EDGECLK
+var add 6 0 0 162 24 0 257 100 50 50 25 25 0 0 0 0 BUSYOutstd_logicRISING_EDGECLK
+var add 7 3 0 164 27 0 257 100 50 50 25 25 0 0 0 0 DMAR_ENABLEOutstd_logic_vectorRISING_EDGECLK
+var add 8 63 0 164 28 0 257 100 50 50 25 25 0 0 0 0 DBUS_PortOutstd_logic_vectorRISING_EDGECLK
+var add 10 0 0 162 30 0 257 100 50 50 25 25 0 0 0 0 DBUS_HiZOutstd_logicRISING_EDGECLK
+var add 11 12 0 164 33 0 257 100 50 50 25 25 0 0 0 0 MEM_ADBOutstd_logic_vectorRISING_EDGECLK
+var add 12 0 0 162 34 0 257 100 50 50 25 25 0 0 0 0 MEM_WEHBOutstd_logicRISING_EDGECLK
+var add 13 0 0 162 35 0 257 100 50 50 25 25 0 0 0 0 MEM_WELBOutstd_logicRISING_EDGECLK
+var add 14 63 0 164 36 0 257 100 50 50 25 25 0 0 0 0 MEM_DTIBOutstd_logic_vectorRISING_EDGECLK
+vdone xxx 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+npos xxx 181 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+cell fill 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+cell fill 2 44 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
+cell fill 2 48 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+cell fill 2 112 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
+cell fill 2 116 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+cell fill 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0000000000000000000
+cell fill 3 16 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0001000000000000000
+cell fill 4 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 000000000
+cell fill 4 16 0 0 0 0 0 0 0 0 0 0 0 0 0 0 000000111
+cell fill 5 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0000
+cell fill 5 16 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0000
+cell fill 6 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0000000000000
+cell fill 6 16 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0000100000000
+cell fill 7 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0000000000000000000000000000000000000000000000000000000000000000
+cell fill 8 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+time info 50 50 25 25 50 50 1 1 0 0 0 0 0 0 0 0 nsCLK
+font save -14 0 400 49 0 0 0 0 0 0 0 0 0 0 0 0 Times New Roman
+src mod 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 c:\cygwin\home\administrator\fkit\pci64\rtl\local_read_if.vhd
+utd true 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+cellenab on 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+grid on 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+com add 1 1 0 415 18 0 -67 0 0 0 0 0 0 0 0 0 Waveform created by
+HDL Bencher 6.1i
+Source = c:\cygwin\home\administrator\fkit\pci64\rtl\local_read_if.vhd
+Mon Jan 03 21:05:15 2005
+type info 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 std_logicBITDOWNTO
+type info 31 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 std_logic_vectorVECTORDOWNTO
+opt vhdl87 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+NumClocks x 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+clock_1 name 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 CLK
+Zoom_level x 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1.00000000000000

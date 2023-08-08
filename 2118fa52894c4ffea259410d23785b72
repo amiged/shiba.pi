@@ -1,22 +1,16 @@
-Fri Jul 14 19:29:44 JST 2023
-# Xilinx CORE Generator 6.2.03i
-# User = Administrator
-Initializing default project...
-Loading plug-ins...
-All runtime messages will be recorded in C:\cygwin\home\Administrator\PG4\pci64\proj\coregen.log
-# busformat=BusFormatAngleBracketNotRipped
-# designflow=VHDL
-# expandedprojectpath=C:\cygwin\home\Administrator\PG4\pci64\proj
-# flowvendor=Foundation_iSE
-# formalverification=None
-# simulationoutputproducts=VHDL
-# xilinxfamily=Virtex2
-# outputoption=DesignFlow
-# overwritefiles=Default
-# simvendor=ModelSim
-# expandedprojectpath=C:\cygwin\home\Administrator\PG4\pci64\proj
-SETPROJECT .
-Set current Project to C:\cygwin\home\Administrator\PG4\pci64\proj
-SET BusFormat = BusFormatAngleBracketNotRipped
-SETXIPCPORTHOST 1271
-XIPCPJSENDCORES virtex2
+Tue Aug  8 19:28:41 JST 2023
+/** 
+# vを1/2ステップ進める
+# v(k+1/2) = v(k) + a(k)*dt/2
+*/
+
+#include <stdio.h>
+#include "nbodysim.h"
+
+void leapflog_half(double dt, double v[][DIM], double a[][DIM], int n)
+{
+    int i,d;
+    for(i=0;i<n;i++)
+      for(d=0;d<3;d++)
+	v[i][d] = v[i][d] + (a[i][d]*dt)/2.0;
+}

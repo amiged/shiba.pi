@@ -1,24 +1,16 @@
-Thu Jun 29 19:49:02 JST 2023
-vhdl work ../clk_muldiv.vhd
-vhdl work ../dmaw.vhd
-vhdl work ../dmaw_state.vhd
-vhdl work ../dmar_state.vhd
-vhdl work ../dmaw_start_adr.vhd
-vhdl work ../dmar_start_adr.vhd
-vhdl work ../dmaw_mem_adr.vhd
-vhdl work ../dmar_mem_adr.vhd
-vhdl work ../dmaw_mem_we.vhd
-vhdl work ../dmar_mem_re.vhd
-vhdl work ../dmar_dbus_hiz.vhd
-vhdl work ../dmar.vhd
-vhdl work ../pgpg_mem/adr_dec.vhd
-vhdl work ../pgpg_mem/pg_module.vhd
-vhdl work ../pgpg_mem/pg_pipe.vhd
-vhdl work ../pgpg_mem/calc.vhd
-vhdl work ../pgpg_mem/pipe_sts.vhd
-vhdl work ../pgpg_mem/setn.vhd
-vhdl work ../pgpg_mem/dpram.vhd
-vhdl work ../pgpg_mem/jmem.vhd
-vhdl work ../pgpg_mem/pgpg_mem.vhd
-vhdl work ../user.vhd
-vhdl work ../top.vhd
+Mon Aug 14 19:34:44 JST 2023
+#include<stdio.h>
+#define LONG long long int 
+// bit level check between emulator and hardware(pg2)
+void check_pg2emu(LONG accel[][3],LONG accel_pg2[][3],int n)
+{
+  int i,j;
+  for(i=0;i<n;i++){
+    for(j=0;i<3;j++){
+      LONG a_emu,a_pg2;
+      a_emu = accel[i][j];
+      a_pg2 = accel_pg2[i][j];
+      if(a_emu != a_pg2){fprintf(stderr,"error\n");}
+    }
+  }
+}

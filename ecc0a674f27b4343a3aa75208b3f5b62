@@ -1,5 +1,18 @@
-Mon Jul 10 19:27:59 JST 2023
--- ProjNav VHDL simulation template: sim_local_read.udo
--- You may edit this file after the line that starts with
--- '-- START' to customize your simulation
--- START user-defined simulation commands
+Tue Aug 15 19:50:41 JST 2023
+FILES
+{
+	VHDL_FILE = pgfpga.vhd;
+}
+COMPILER_SETTINGS_LIST
+{
+	COMPILER_SETTINGS = pgfpga;
+}
+SIMULATOR_SETTINGS_LIST
+{
+	SIMULATOR_SETTINGS = pgfpga;
+}
+SOFTWARE_SETTINGS_LIST
+{
+	SOFTWARE_SETTINGS = Debug;
+	SOFTWARE_SETTINGS = Release;
+}

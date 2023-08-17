@@ -1,45 +1,48 @@
-Sat Aug  5 19:36:49 JST 2023
-all:
-	./pycam.py |tee log.txt
+Thu Aug 17 19:38:32 JST 2023
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+import numpy as np
+import cv2
 
+drawing = False
+mode = True
+ix,iy = -1,-1
 
-clean:
-	rm -rf ../conv
-	mkdir ../conv
-	rm -f *~ .*~
-	rm -rf __pycache__
+def draw_circle(event,x,y,flags,param):
+    global ix,iy,drawing,mode
+    if event == cv2.EVENT_LBUTTONDOWN:
+        print ('Push')
+        drawing = True
+        ix,iy = x,y
 
-c: clean
+    elif event == cv2.EVENT_MOUSEMOVE:
+        if drawing == True:
+            print ('Drawing...')
+            if mode == True:
+                pass
+            else:
+                cv2.circle(img,(x,y),5,(0,0,255),-1)
+        else:
+            pass
+    elif event == cv2.EVENT_LBUTTONUP:
+        print ('Up')
+        drawing = False
+        if mode == True:
+            cv2.rectangle(img,(ix,iy),(x,y),(0,255,0),2)
+        else:
+            cv2.circle(img,(x,y),5,(0,0,255),-1)
 
-conv:
-	rm -rf ../conv
-	mkdir ../conv
-	./gen_cmd.py > xxx
-	bash ./xxx
+if '__main__' == __name__ :
+    img = np.zeros((512,512,3), np.uint8)
+    cv2.namedWindow('image')
+    cv2.setMouseCallback('image',draw_circle)
+    
+    while(1):
+        cv2.imshow('image',img)
+        k = cv2.waitKey(1) & 0xFF
+        if k == ord('m'):
+            mode = not mode
+        elif k == 27:
+            break
 
-
-mov:
-	./mov.py 1 0
-
-
-0.mov: 
-	rm -f out.mp4
-	ffmpeg -r 1 -start_number 0 -i ../conv/%08d.jpg -vcodec libx264 -pix_fmt yuv420p -r 1 out.mp4
-
-r: run
-
-run:
-	./mpycam.py
-
-run3:
-	./pycam.py --devid=0 &
-	./pycam.py --devid=1 &
-	./pycam.py --devid=2 &
-
-kill:
-	killall python3
-	killall pycam.py
-
-clog: clean
-	rm -rf ../log* ../data4bbox ../data4darknet ../conv
-	rm -rf ./tmp.mp4
+    cv2.destroyAllWindows()

@@ -1,34 +1,29 @@
-Sun Aug 27 19:26:48 JST 2023
--- Copyright 2004 Tsuyoshi Hamada
---
---
---clk         __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __
---state_dmaw          0  >< 1 >< 2                                    >< 3 >< 0 
---mem_we                        ____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______
+Sat Sep  2 19:54:15 JST 2023
+//Time-stamp: "2006-11-21 00:17:47 hamada"
 
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL;
+#define FDIM 8       // depend on NBIT_L_UADR     (@ ifpga.vhd)
+#define JDIM 4       // depend on dpram adr width (@ pgpg_mem.vhd)
+#define XI_AWIDTH 4  // depend on l_adri width    (@ pgpg_mem.vhd)
 
-entity dmaw_mem_we is
-  port (
-    CLK       : in std_logic;
-    STATE     : in std_logic_vector(1 downto 0);
-    MEM_WE    : out std_logic );
-end dmaw_mem_we;
+int pgr_open(int);
+void pgr_close(int);
 
-architecture rtl of dmaw_mem_we is
+void pgr_reset(int devid);
+int  pgr_get_writecomb_err(int devid);
 
-begin
+void pgr_setjpset(int devid, unsigned int jdata[][JDIM], int nj);
+void pgr_setjpset_one(int devid, int j, unsigned int jdata[JDIM]);
 
-  process (CLK,STATE) begin
-    if(CLK'event and CLK = '1') then
-      if(STATE="10") then
-        MEM_WE <= '1';
-      else
-        MEM_WE <= '0';
-      end if;
-    end if;
-  end process;
+void pgr_setipset(int devid, unsigned int *idata, int num);
+void pgr_setipset_ichip(int devid, unsigned int ichip, unsigned int *idata, int number_of_pipelines);
+void pgr_setipset_one(int devid, unsigned int ichip, int ipipe, unsigned int *idata, int idim);
 
-end rtl;
+void pgr_start_calc(int devid, unsigned int n);
+void pgr_calc_start(int devid, unsigned int n);
+void pgr_calc_finish(int devid);
+
+void pgr_getfoset(int devid, unsigned long long int fodata[][FDIM]);
+
+void pgr_set_npipe_per_chip(int devid, int n);
+void pgr_set_jwidth(int devid, int n);
+void pgr_set_nchip(int nchip);

@@ -1,134 +1,93 @@
-Sun Jul 30 19:50:20 JST 2023
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#include <math.h>
-#include "pg_util.h"
-
-#include "pgrapi.h"
-
-// #define DEBUG
-
-#define   MAX(x,y)     (((x) > (y)) ?  (x) : (y))
-#define   MIN(x,y)     (((x) < (y)) ?  (x) : (y))
-
-#define NJMAX 16384
-
-#define NPIPE_PER_CHIP  1
-#define NCHIP_PER_BOARD 4
-
-#define NFLO 26
-#define NMAN 16
-#define RMODE 6
-
-static int      devid = 0;
-static int      __first = 0;
-
-static unsigned long long int fdata[NJMAX][FDIM];
-
-void
-force(double x[][3], double m[], double eps2, double a[][3], int n)
-{
-    double          log2(double);
-    int             i, j;
-    unsigned int    npipe, npipe_per_chip;
-    unsigned int    nchip;
-    unsigned int    jdata[JDIM];
-    if (__first == 0) {
-	b3open(devid);
-	pgr_reset(devid);
-	pgr_set_npipe_per_chip(devid, NPIPE_PER_CHIP);
-	pgr_set_jwidth(devid, 16);	// change manually 4 if grape
-	pgr_set_nchip(NCHIP_PER_BOARD);
-	__first = 1;
-    }
-
-    npipe_per_chip = NPIPE_PER_CHIP;
-    nchip = NCHIP_PER_BOARD;
-    npipe = nchip * npipe_per_chip;
-
-    for (j = 0; j < n; j++) {
-	unsigned int    xj[4];
-	xj[0] = (unsigned int) (double2pgpgfloat_r(x[j][0], 26, 16, 6));
-	xj[1] = (unsigned int) (double2pgpgfloat_r(x[j][1], 26, 16, 6));
-	xj[2] = (unsigned int) (double2pgpgfloat_r(x[j][2], 26, 16, 6));
-	xj[3] = (unsigned int) (double2pgpgfloat_r(m[j], 26, 16, 6));
-	for (i = 0; i < JDIM; i++)   jdata[i] = 0x0;
-	jdata[0] |= (0x3ffffff & xj[0]) << 0;	// mask(26)
-	jdata[0] |= (0x3f & xj[1]) << 26;	// mask(6)
-	jdata[1] |= (0xfffff & (xj[1] >> 6));	// mask(20)
-	jdata[1] |= (0xfff & xj[2]) << 20;	// mask(12)
-	jdata[2] |= (0x3fff & (xj[2] >> 12));	// mask(14)
-	jdata[2] |= (0x3ffff & xj[3]) << 14;	// mask(18)
-	jdata[3] |= (0xff & (xj[3] >> 18));	// mask(8)
-	pgr_setjpset_one(devid, j, jdata);
-    }
-
-    for (i = 0; i < n; i += npipe) {
-	int             nn, ii, ichip;
-	nn = MIN(npipe, n - i);
-
-#ifdef DEBUG
-	dum = e_time();
-#endif
-
-	for (ii = 0; ii < nn; ii += npipe_per_chip) {
-	    int             nnn, iii;
-	    ichip = ii / npipe_per_chip;
-
-	    nnn = MIN(npipe_per_chip, nn - ii);
-	    for (iii = 0; iii < nnn; iii++) {
-		unsigned int    idata[4];
-		idata[0] =
-		    (unsigned
-		     int) (double2pgpgfloat_r(x[i + ii + iii][0], 26, 16,
-					      6));
-		idata[1] =
-		    (unsigned
-		     int) (double2pgpgfloat_r(x[i + ii + iii][1], 26, 16,
-					      6));
-		idata[2] =
-		    (unsigned
-		     int) (double2pgpgfloat_r(x[i + ii + iii][2], 26, 16,
-					      6));
-		idata[3] =
-		    (unsigned int) (double2pgpgfloat_r(eps2, 26, 16, 6));
-		pgr_setipset_one(devid, ichip, iii, idata, 4);
-	    }
-	}
-#ifdef DEBUG
-	_t[2] += e_time() - dum;
-	dum = e_time();
-#endif
-
-	pgr_start_calc(devid, n);
-#ifdef DEBUG
-	_t[3] += e_time() - dum;
-	dum = e_time();
-#endif
-
-	pgr_getfoset(devid, fdata);
-	for (ii = 0; ii < nn; ii++) {
-	    a[i + ii][0] =
-		((double) ((long long int) fdata[ii][0] << 0)) *
-		((-1.0 / pow(2.0, (double) 31))) / pow(2.0, 0.0);
-	    a[i + ii][1] =
-		((double) ((long long int) fdata[ii][1] << 0)) *
-		((-1.0 / pow(2.0, (double) 31))) / pow(2.0, 0.0);
-	    a[i + ii][2] =
-		((double) ((long long int) fdata[ii][2] << 0)) *
-		((-1.0 / pow(2.0, (double) 31))) / pow(2.0, 0.0);
-	}
-#ifdef DEBUG
-	_t[4] += e_time() - dum;
-#endif
-
-    }
-#ifdef DEBUG
-    _t[0] = e_time() - _t[0];
-    fprintf(stderr, "total %g sec (jp %g, ip %g, c %g, fo %g %%)\n", _t[0],
-	    100.0 * _t[1] / _t[0], 100.0 * _t[2] / _t[0],
-	    100.0 * _t[3] / _t[0], 100.0 * _t[4] / _t[0]);
-#endif
+Wed Sep  6 19:52:30 JST 2023
+/EQNINJ
+/IPSET xi_0,x[][0],float,26,16
+/IPSET xi_1,x[][1],float,26,16
+/IPSET xi_2,x[][2],float,26,16
+/IPSET vi_0,v[][0],float,26,16
+/IPSET vi_1,v[][1],float,26,16
+/IPSET vi_2,v[][2],float,26,16
+/JPSET xj_0,0,0,25,x[][0],float,26,16
+/JPSET xj_1,0,26,51,x[][1],float,26,16
+/JPSET xj_2,0,52,77,x[][2],float,26,16
+/JPSET vj_0,0,78,103,v[][0],float,26,16
+/JPSET vj_1,0,104,129,v[][1],float,26,16
+/JPSET vj_2,0,130,155,v[][2],float,26,16
+/JPSET mj,0,156,181,m[],float,26,16
+/FOSET rx,p[],fix,64,(1.0/pow(2.0,(double)31))
+/FOSET sx_0,a[][0],fix,64,(1.0/pow(2.0,(double)31))
+/FOSET sx_1,a[][1],fix,64,(1.0/pow(2.0,(double)31))
+/FOSET sx_2,a[][2],fix,64,(1.0/pow(2.0,(double)31))
+/FOSET tx_0,jk[][0],fix,64,(1.0/pow(2.0,(double)31))
+/FOSET tx_1,jk[][1],fix,64,(1.0/pow(2.0,(double)31))
+/FOSET tx_2,jk[][2],fix,64,(1.0/pow(2.0,(double)31))
+/NPIPE 1
+/NVMP 1
+void force(double x[][3], double v[][3], double m[], double p[], double a[][3], double jk[][3], int n){
+  pg_float_sub(xj_0,xi_0,dx_0,26,16,4,6)
+  pg_float_sub(xj_1,xi_1,dx_1,26,16,4,6)
+  pg_float_sub(xj_2,xi_2,dx_2,26,16,4,6)
+  pg_float_mult(dx_0,dx_0,dx2_0,26,16,2,6)
+  pg_float_mult(dx_1,dx_1,dx2_1,26,16,2,6)
+  pg_float_mult(dx_2,dx_2,dx2_2,26,16,2,6)
+  pg_float_unsigned_add(dx2_0,dx2_1,x2y2,26,16,4,6)
+  pg_float_unsigned_add(dx2_2r,x2y2,r2,26,16,4,6)
+  pg_float_sqrt(r2,r1,26,16,3,6)
+  pg_float_mult(r2r,r1,r3,26,16,2,6)
+  pg_float_mult(r3,r2r1,r5,26,16,2,6)
+  pg_float_recipro(r5,r5i,26,16,2,6)
+  pg_float_mult(r5i,mjr,mr5i,26,16,2,6)
+  pg_float_mult(mr5i,r2r2,mf,26,16,2,6)
+  pg_float_mult(mf,r2r3,mp,26,16,2,6)
+  pg_float_expadd(mp,ps,31,26,16,1)
+  pg_float_fixaccum(ps,rx,26,16,57,64,2,30,6)
+  pg_float_expadd(mf,fs,31,26,16,1)
+  pg_float_mult(fs,dx_0r,fx_0,26,16,2,6)
+  pg_float_mult(fs,dx_1r,fx_1,26,16,2,6)
+  pg_float_mult(fs,dx_2r,fx_2,26,16,2,6)
+  pg_float_fixaccum(fx_0,sx_0,26,16,57,64,2,30,6)
+  pg_float_fixaccum(fx_1,sx_1,26,16,57,64,2,30,6)
+  pg_float_fixaccum(fx_2,sx_2,26,16,57,64,2,30,6)
+  pg_float_sub(vj_0,vi_0,dv_0,26,16,4,6)
+  pg_float_sub(vj_1,vi_1,dv_1,26,16,4,6)
+  pg_float_sub(vj_2,vi_2,dv_2,26,16,4,6)
+  pg_float_mult(fs,dv_0r,jk1_0,26,16,2,6)
+  pg_float_mult(fs,dv_1r,jk1_1,26,16,2,6)
+  pg_float_mult(fs,dv_2r,jk1_2,26,16,2,6)
+  pg_float_mult(dx_0,dv_0,xv_0,26,16,2,6)
+  pg_float_mult(dx_1,dv_1,xv_1,26,16,2,6)
+  pg_float_mult(dx_2,dv_2,xv_2,26,16,2,6)
+  pg_float_unsigned_add(xv_0,xv_1,xv1,26,16,4,6)
+  pg_float_unsigned_add(xv_2r,xv1,xv2,26,16,4,6)
+  pg_float_expadd(xv2,xv2x2,1,26,16,1)
+  pg_float_unsigned_add(xv2x2,xv2r,xv2x3,26,16,4,6)
+  pg_float_mult(mr5i,xv2x3r,jk2a,26,16,2,6)
+  pg_float_expadd(jk2a,jk2s,31,26,16,1)
+  pg_float_mult(jk2s,dx_0r1,jk2_0,26,16,2,6)
+  pg_float_mult(jk2s,dx_1r1,jk2_1,26,16,2,6)
+  pg_float_mult(jk2s,dx_2r1,jk2_2,26,16,2,6)
+  pg_float_sub(jk1_0,jk2_0,jk0_0,26,16,4,6)
+  pg_float_sub(jk1_1,jk2_1,jk0_1,26,16,4,6)
+  pg_float_sub(jk1_2,jk2_2,jk0_2,26,16,4,6)
+  pg_float_fixaccum(jk0_0,tx_0,26,16,57,64,2,34,6)
+  pg_float_fixaccum(jk0_1,tx_1,26,16,57,64,2,34,6)
+  pg_float_fixaccum(jk0_2,tx_2,26,16,57,64,2,34,6)
+  pg_pdelay(dx2_2,dx2_2r,26,4)
+  pg_pdelay(r2,r2r,26,3)
+  pg_pdelay(r2,r2r1,26,5)
+  pg_pdelay(mj,mjr,26,23)
+  pg_pdelay(r2,r2r2,26,11)
+  pg_pdelay(dv_1,dv_1r,26,24)
+  pg_pdelay(r2,r2r3,26,13)
+  pg_pdelay(dv_0,dv_0r,26,24)
+  pg_pdelay(xv_2,xv_2r,26,4)
+  pg_pdelay(dv_2,dv_2r,26,24)
+  pg_pdelay(dx_0,dx_0r,26,24)
+  pg_pdelay(dx_1,dx_1r,26,24)
+  pg_pdelay(dx_2,dx_2r,26,24)
+  pg_pdelay(xv2,xv2r,26,1)
+  pg_pdelay(xv2x3,xv2x3r,26,6)
+  pg_pdelay(dx_1,dx_1r1,26,24)
+  pg_pdelay(dx_2,dx_2r1,26,24)
+  pg_pdelay(dx_0,dx_0r1,26,24)
+  pg_rundelay(36)
 }

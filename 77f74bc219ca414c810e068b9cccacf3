@@ -1,50 +1,44 @@
-Sat May 27 19:28:53 JST 2023
-/EQNINJ
-/IPSET xi_0,x[][0],fix,32,(pow(2.0,(double)32)/(2.0))
-/IPSET xi_1,x[][1],fix,32,(pow(2.0,(double)32)/(2.0))
-/IPSET xi_2,x[][2],fix,32,(pow(2.0,(double)32)/(2.0))
-/IPSET ieps2,eps2,log,17,8,((pow(2.0,(double)32)/(2.0))*(pow(2.0,(double)32)/(2.0)))
-/JPSET xj_0,0,0,31,x[][0],fix,32,(pow(2.0,(double)32)/(2.0))
-/JPSET xj_1,0,32,63,x[][1],fix,32,(pow(2.0,(double)32)/(2.0))
-/JPSET xj_2,0,64,95,x[][2],fix,32,(pow(2.0,(double)32)/(2.0))
-/JPSET mj,0,96,112,m[],log,17,8,(pow(2.0,95.38)/(1.0e-2))
-/FOSET sx_0,a[][0],fix,64,(-(pow(2.0,(double)32)/(2.0))*(pow(2.0,(double)32)/(2.0))*pow(2.0,-1.0*(double)-31)/(pow(2.0,95.38)/(1.0e-2)))
-/FOSET sx_1,a[][1],fix,64,(-(pow(2.0,(double)32)/(2.0))*(pow(2.0,(double)32)/(2.0))*pow(2.0,-1.0*(double)-31)/(pow(2.0,95.38)/(1.0e-2)))
-/FOSET sx_2,a[][2],fix,64,(-(pow(2.0,(double)32)/(2.0))*(pow(2.0,(double)32)/(2.0))*pow(2.0,-1.0*(double)-31)/(pow(2.0,95.38)/(1.0e-2)))
-/NPIPE 1
-/NVMP 1
-void force(double x[][3], double m[], double eps2, double a[][3], int n){
-  pg_fix_addsub(SUB,xi_0,xj_0,xij_0,32,3)
-  pg_fix_addsub(SUB,xi_1,xj_1,xij_1,32,3)
-  pg_fix_addsub(SUB,xi_2,xj_2,xij_2,32,3)
-  pg_conv_ftol(xij_0,dx_0,32,17,8,4)
-  pg_conv_ftol(xij_1,dx_1,32,17,8,4)
-  pg_conv_ftol(xij_2,dx_2,32,17,8,4)
-  pg_log_shift(1,dx_0,x2_0,17)
-  pg_log_shift(1,dx_1,x2_1,17)
-  pg_log_shift(1,dx_2,x2_2,17)
-  pg_log_unsigned_add_itp(x2_0,x2_1,x2y2,17,8,9,6)
-  pg_log_unsigned_add_itp(x2_2,ieps2r,z2e2,17,8,9,6)
-  pg_log_unsigned_add_itp(x2y2,z2e2,r2,17,8,9,6)
-  pg_log_shift(-1,r2,r1,17)
-  pg_log_muldiv(MUL,r2,r1,r3,17,2)
-  pg_log_muldiv(SDIV,mjr,r3,mf,17,2)
-  pg_log_muldiv(MUL,mf,dx_0r,fx_0,17,2)
-  pg_log_muldiv(MUL,mf,dx_1r,fx_1,17,2)
-  pg_log_muldiv(MUL,mf,dx_2r,fx_2,17,2)
-  pg_log_expadd(fx_0,fxs_0,-31,17,8,1)
-  pg_log_expadd(fx_1,fxs_1,-31,17,8,1)
-  pg_log_expadd(fx_2,fxs_2,-31,17,8,1)
-  pg_conv_ltof(fxs_0,ffx_0,17,8,57,5)
-  pg_conv_ltof(fxs_1,ffx_1,17,8,57,5)
-  pg_conv_ltof(fxs_2,ffx_2,17,8,57,5)
-  pg_fix_smaccum(ffx_0,sx_0,57,64,4,37)
-  pg_fix_smaccum(ffx_1,sx_1,57,64,4,37)
-  pg_fix_smaccum(ffx_2,sx_2,57,64,4,37)
-  pg_pdelay(ieps2,ieps2r,17,7)
-  pg_pdelay(mj,mjr,17,27)
-  pg_pdelay(dx_0,dx_0r,17,22)
-  pg_pdelay(dx_1,dx_1r,17,22)
-  pg_pdelay(dx_2,dx_2r,17,22)
-  pg_rundelay(41)
+Wed Sep 20 20:00:46 JST 2023
+// Time-stamp: " "
+#include <stdio.h> 
+#include <string.h>
+#include <stdlib.h>
+
+void read_data(char* fname, int* nbody, double posi[][2])
+{
+  int idx,n;
+  char line[2560];
+  FILE *fp;
+  fp = fopen(fname,"r");
+  idx=0;
+
+  { // get N (number of particles)
+    char* p;
+    fgets(line,100,fp);
+    p = (char* )strtok(line,"\n");
+    sscanf(p,"%d",&n);
+    *nbody = n;
+  }
+
+  // get all data
+  for(idx=0;idx<n;idx++){
+    char* p;
+    char col[10][400];
+    int i=0;
+    if(fgets(line,300,fp)==NULL){printf("Error at loading logfiles\n");exit(0);}
+    p = (char* )strtok(line,"\t");
+    strcpy(col[i],p);
+    i++;
+    while((p = (char* )strtok(NULL, "\t"))!=NULL){
+      strcpy(col[i],p);
+      i++;
+    }
+    //--- for debug ---
+    //    for(i=0;i<7;i++) printf("[%s]",col[i]);
+    //    printf("\n");
+
+    posi[idx][0]=atof(col[0]);
+    posi[idx][1]=atof(col[1]);
+  }
+  fclose(fp);
 }

@@ -1,16 +1,29 @@
-Sat Sep  2 19:46:41 JST 2023
-#include<stdio.h>
-#define LONG long long int 
-// bit level check between emulator and hardware(pg2)
-void check_pg2emu(LONG accel[][3],LONG accel_pg2[][3],int n)
-{
-  int i,j;
-  for(i=0;i<n;i++){
-    for(j=0;i<3;j++){
-      LONG a_emu,a_pg2;
-      a_emu = accel[i][j];
-      a_pg2 = accel_pg2[i][j];
-      if(a_emu != a_pg2){fprintf(stderr,"error\n");}
-    }
-  }
-}
+Fri Sep 22 19:37:54 JST 2023
+#!/usr/bin/env python3
+#Time-stamp: <>
+import fnmatch
+import functools
+import os
+import re
+
+def find(path, pattern):
+
+    if isinstance(pattern, str): 
+        match = functools.partial(fnmatch.fnmatch, pat=pattern)
+    elif isinstance(pattern, re._pattern_type):
+        match = pattern.match
+    elif callable(pattern):
+        match = pattern
+    else:
+        raise TypeError
+
+    for root, dirs, files in os.walk(path):
+        for file_ in files:
+            if match(file_):
+                yield os.path.join(root, file_)
+
+
+if __name__ == '__main__':
+    for i in find('../log/', '*.jpg'):
+        print (i)
+

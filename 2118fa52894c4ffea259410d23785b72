@@ -1,104 +1,59 @@
-Sun Sep 10 19:26:51 JST 2023
-#!/usr/bin/env python3
-#Time-stamp: <2017-06-01 03:19:59 hamada>
-import argparse
-import numpy as np
-import cv2
-from datetime import datetime
-import mkdir
+Sun Sep 24 19:38:16 JST 2023
+//-----------------------------------------------------------------------------
+// mk_eight.C:  prints initial conditions for the figure eight
+//              of the three-body problem
+//-----------------------------------------------------------------------------
+#include  <iostream>
+using namespace std;
 
-def get_ndev():
-    ndev = 0
-    devid = []
-    for i in range(0, 10):
-        c = cv2.VideoCapture(i)
-        if c.isOpened():
-            ndev = ndev + 1
-            devid.append(i)
-        c.release()
+typedef double  real;                      // "real" as a general name for the
+                                           // standard floating-point data type
+#define  NDIM     3                        // number of spatial dimensions
 
-    print ("devid = ", devid)
-    return ndev
+int main()
+{
+    const int n = 3;           // number of particles
+    const real t = 0;          // time
+    real r[n][NDIM];           // r[i][k] : position component k for particle i
+    real v[n][NDIM];           // v[i][k] : velocity component k for particle i
+    real m[n];                 // m[i] : mass for particle i
 
-def isOpened(cap):
-    ret = True
-    for c in cap:
-        ret = ret and c.isOpened()
-    return ret
+    m[0] = 1;
+    m[1] = 1;
+    m[2] = 1;
 
+    r[0][0] = 0.9700436;
+    r[0][1] = -0.24308753;
+    r[0][2] = 0;
+    v[0][0] = 0.466203685;
+    v[0][1] = 0.43236573;
+    v[0][2] = 0;
 
-def put_text(image, text):
-    font_size = 1.0
-    font_type = cv2.FONT_HERSHEY_PLAIN
-    font_color = (0xaf, 0xff, 0xaf)
-    #    cv2.putText(image, text, (460, 15), font_type, font_size, font_color)
-    cv2.putText(image, text, (10, 15), font_type, font_size, font_color)
+    r[1][0] = -r[0][0];
+    r[1][1] = -r[0][1];
+    r[1][2] = -r[0][2];
+    v[1][0] = v[0][0];
+    v[1][1] = v[0][1];
+    v[1][2] = v[0][2];
 
-if (__name__ == '__main__'):
-    ndev = get_ndev()
-    log_base = '../log/'
-    cap = []
-    for i in range(ndev):
-        cap.append(cv2.VideoCapture(i))
+    r[2][0] = 0;
+    r[2][1] = 0;
+    r[2][2] = 0;
+    v[2][0] = -2 * v[0][0];
+    v[2][1] = -2 * v[0][1];
+    v[2][2] = -2 * v[0][2];
 
-    # -- swap cap --
-    if False:
-        cap_tmp = cap[0]
-        cap[0] = cap[2]
-        cap[2] = cap_tmp
+    cout.precision(16);
 
-
-    cap_width  = cap[0].get(cv2.CAP_PROP_FRAME_WIDTH)
-    cap_height = cap[0].get(cv2.CAP_PROP_FRAME_HEIGHT)
-    cap_fps    = cap[0].get(cv2.CAP_PROP_FPS)
-
-    print(cap_width, "x", cap_height, ":", cap_fps)
-    size = (int(cap_width/2), int(cap_height/2))
-
-    tnow0 = datetime.now().strftime('%Y%m%d_%H_%M_%S') # ('%Y%m%d_%H_%M_%S_%f')
-
-    while(isOpened(cap)):
-        frame = [0] * ndev
-        for (i, fm) in enumerate(frame):
-            ret, fm = cap[i].read()
-            smallimg = cv2.resize(fm, size)
-            if False: cv2.imshow('camera: %d'%(i), smallimg)
-            frame[i] = smallimg
-
-        # ----------------------------------------------------------------
-        frame_height, frame_width = frame[0].shape[:2]
-
-        nwx = 3
-        nwy = int(1.0+(ndev-1)/3.0)
-
-        image = np.zeros((frame_height * nwy, frame_width*nwx, 3), dtype=np.uint8)
-        # image = np.zeros((frame_height, frame_width*ndev, 3), dtype=np.uint8)
-
-        # --- ROI ---
-        for (i, fm) in enumerate(frame):
-            sx = frame_width * (i%nwx)
-            sy = frame_height * int(i/nwx)
-            ex = frame_width * (i%nwx+1)
-            ey = frame_height * int(1+i/nwx)
-            image[sy:ey,sx:ex] = fm
-
-        cv2.imshow(__file__, image)
-
-        tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S_%f')
-        if(tnow != tnow0):
-            put_text(image, tnow)
-            basedir = '../log/'
-            ofname = mkdir.get_filename_frame(basedir, tnow)
-            cv2.imwrite(ofname, image)
-            print(ofname)
-            tnow0 = tnow
-
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-
-    for (i, fm) in enumerate(frame):
-        cap[i].release()
-
-    cv2.destroyAllWindows()
-
-    print("Done.")
+    cout << n << endl;                      // first output line:  N
+    cout << t << endl;                      // second output line:  time
+    for (int i = 0; i < n; i++){
+        cout << m[i];                       // each next output line:
+        for (int k = 0; k < NDIM; k++)      //   m r_x r_y r_z v_x v_y v_z
+            cout << ' ' << r[i][k];
+        for (int k = 0; k < NDIM; k++)
+            cout << ' ' << v[i][k];
+        cout << endl;
+    }
+}
+//-----------------------------------------------------------------------------

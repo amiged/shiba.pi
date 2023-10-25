@@ -1,44 +1,34 @@
-Wed Sep 20 20:00:46 JST 2023
-// Time-stamp: " "
-#include <stdio.h> 
-#include <string.h>
-#include <stdlib.h>
+Wed Oct 25 19:46:07 JST 2023
+-- Copyright 2004 Tsuyoshi Hamada
+--
+--
+--clk         __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __
+--state_dmaw          0  >< 1 >< 2                                    >< 3 >< 0 
+--mem_we                        ____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______
 
-void read_data(char* fname, int* nbody, double posi[][2])
-{
-  int idx,n;
-  char line[2560];
-  FILE *fp;
-  fp = fopen(fname,"r");
-  idx=0;
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
-  { // get N (number of particles)
-    char* p;
-    fgets(line,100,fp);
-    p = (char* )strtok(line,"\n");
-    sscanf(p,"%d",&n);
-    *nbody = n;
-  }
+entity dmaw_mem_we is
+  port (
+    CLK       : in std_logic;
+    STATE     : in std_logic_vector(1 downto 0);
+    MEM_WE    : out std_logic );
+end dmaw_mem_we;
 
-  // get all data
-  for(idx=0;idx<n;idx++){
-    char* p;
-    char col[10][400];
-    int i=0;
-    if(fgets(line,300,fp)==NULL){printf("Error at loading logfiles\n");exit(0);}
-    p = (char* )strtok(line,"\t");
-    strcpy(col[i],p);
-    i++;
-    while((p = (char* )strtok(NULL, "\t"))!=NULL){
-      strcpy(col[i],p);
-      i++;
-    }
-    //--- for debug ---
-    //    for(i=0;i<7;i++) printf("[%s]",col[i]);
-    //    printf("\n");
+architecture rtl of dmaw_mem_we is
 
-    posi[idx][0]=atof(col[0]);
-    posi[idx][1]=atof(col[1]);
-  }
-  fclose(fp);
-}
+begin
+
+  process (CLK,STATE) begin
+    if(CLK'event and CLK = '1') then
+      if(STATE="10") then
+        MEM_WE <= '1';
+      else
+        MEM_WE <= '0';
+      end if;
+    end if;
+  end process;
+
+end rtl;

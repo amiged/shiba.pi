@@ -1,192 +1,318 @@
-Fri Sep  8 19:37:41 JST 2023
-/*
- * progrape.h -- the device driver header for PROGRAPE-4
- *
- * Copyright (C) 2006-2007 Tsuyoshi Hamada.
- *                                All rights reserved.
- *
- * The source code in this file can be freely used, 
- * so long as an acknowledgment from Tsuyoshi Hamada.
- * 
- * The source code in this file can be modified, branched, and
- * redistributed in source or binary form in the following situation.  
- * If you want to modify, redistribute or make another version based on
- * this source code, you should get distinct agreement from Tsuyoshi
- * Hamada.  The modified, redistributed or branched(another version based
- * on this source code) source code should include the citation that the
- * code comes from the "progrape.c by Tsuyoshi Hamada".
- * 
- * No warranty is attached; 
- * I cannot take responsibility for errors or fitness for use.
- *
- */
-#ifndef _PROGRAPE_H_
-#define _PROGRAPE_H_
-
-#include <linux/ioctl.h> /* for the _IOW etc */
-
-// -------------------------------------------------------------------- for DEBUG
-/*
- * Macros to help debugging
- */
-#undef PDEBUG             /* undef it, just in case */
-#ifdef DEBUG
-#  ifdef __KERNEL__
-     /* This one if debugging is on, and kernel space */
-#    define PDEBUG(fmt, args...) printk( KERN_DEBUG "progrape: " fmt, ## args)
-#  else
-     /* This one for user space */
-#    define PDEBUG(fmt, args...) fprintf(stderr, fmt, ## args)
-#  endif
-#else
-#  define PDEBUG(fmt, args...) /* not debugging: nothing */
-#endif
-
-#undef _PDEBUG
-#define _PDEBUG(fmt, args...) /* nothing: it's a placeholder */
-// -------------------------------------------------------------------- for DEBUG. 
-
-/* 
- * IOCTL definitions
- */
-
-#define PG_IOC_MAGIC (7)
-/*
- * SP : Set by Pointer
- * SV : Set by Value
- * GP : Get by Pointer
- * GV : Get by Value
- */
-#define IOC_SV_MMAPMODE  _IOW(PG_IOC_MAGIC,  1, unsigned)
-#define IOC_GV_REG_ADR   _IOR(PG_IOC_MAGIC,  2, unsigned long)
-#define IOC_GV_REG_SIZE  _IOR(PG_IOC_MAGIC,  3, unsigned long)
-#define IOC_GV_MEM_ADR   _IOR(PG_IOC_MAGIC,  4, unsigned long)
-#define IOC_GV_MEM_SIZE  _IOR(PG_IOC_MAGIC,  5, unsigned long)
-#define IOC_SP_FPGA_INFO _IOW(PG_IOC_MAGIC,  6, char* )
-#define IOC_GP_FPGA_INFO _IOR(PG_IOC_MAGIC,  7, char* )
-#define IOC_GV_PCICFG    _IOR(PG_IOC_MAGIC,  8, unsigned long)
-#define IOC_SV_DMAW      _IOW(PG_IOC_MAGIC,  9, unsigned long)
-#define IOC_SV_DMAR      _IOW(PG_IOC_MAGIC, 10, unsigned long)
-#define IOC_GV_DMA_SIZE  _IOR(PG_IOC_MAGIC, 11, unsigned long)
-
-#define PG_IOC_MAXNR (11)
-
-/*
- * modes for pg_mmap
- * "pcidev->mmap_mode" has one of these mode.
- */
-enum {
-  MMAP_REG_PIOW = 0,      // bar0 for PG4, 0
-  MMAP_REG_PIOR,          // bar0 for PG4, 1
-  MMAP_REG_PIORW,         // bar0 for PG4, 2
-  MMAP_MEM_PIOW,          // bar1 for PG4, 3
-  MMAP_MEM_PIOR,          // bar1 for PG4, 4
-  MMAP_MEM_PIORW,         // bar1 for PG4, 5
-  MMAP_MEM_PIOW_PREFETCH, // bar1 for PG4, 6
-  MMAP_BUF_DMAW,          // DMABUF for Host->Device direction, 7
-  MMAP_BUF_DMAR,          // DMABUF for Device->Host direction, 8
-};
-
-#define NB_FPGA_INFO (256)  // Length(Bytes) of the FPGA information
-
-
-/* 
- * IFPGA register definitions
- */
-#define REG_PFPGA_RST         (0x04)
-#define REG_INT_STAT          (0x10)
-#define REG_INT_MASK          (0x14)
-#define REG_DMA_PCI_ADRS      (0x20)
-#define REG_DMA_LOCAL_ADRS    (0x24)
-#define REG_DMA_COUNT         (0x28)
-#define REG_DMA_CTRL          (0x2C)
-#define REG_DMA_INTERVAL      (0x30)
-#define REG_DMA_STAT          (0x34)
-
-
-#ifdef __KERNEL__
-// -------------------------------------------------------------------- Private Members
-#include <linux/cdev.h>
-#include <asm/semaphore.h> // struct semaphore
-#include <linux/wait.h>    // wait_queue_head_t
-
-struct pg_dev {
-  struct pci_dev *pcidev;  // only for my debugging. Don't use it.
-  unsigned long *buf_dmar; // Kernel logical address     ,also called CPU address
-  unsigned long *buf_dmaw; // Kernel logical address     ,also called CPU address
-  dma_addr_t buf_dmar_pa;  // bus address (type) for DMA ,also called physical address
-  dma_addr_t buf_dmaw_pa;  // bus address (type) for DMA ,also called physical address
-  unsigned long pci_reg_adr;
-  unsigned long pci_reg_size;
-  unsigned long pci_reg_flag;
-  unsigned long pci_mem_adr;
-  unsigned long pci_mem_size;
-  unsigned long pci_mem_flag;  // IORESOURCE_{IO,MEM,PREFETCH,READONLY} @<linux/ioport.h>
-  unsigned long pci_irq_num;
-  unsigned long mmap_mode;
-  wait_queue_head_t wq;        // wait queue for interrupt handler -> tasklet in future
-  unsigned long wq_count;      // wait counter for interrupt handler
-  struct semaphore sem;        // mutual exclusion semaphore
-  struct semaphore sem_open;   // lock device while a person is opening it.
-  unsigned long ntimes_open;   // the number of times for pg_open()
-  struct cdev cdev;	       // Char device structure
-  char fpga_info[NB_FPGA_INFO];// text for FPGA information (for bitfile)
-};
-
-#ifndef PROGRAPE_MAJOR
-#    define PROGRAPE_MAJOR 0  // dynamically allocated if 0
-#endif 
-
-#ifndef PROGRAPE_MAJOR
-#    define PROGRAPE_MAJOR 0  // dynamically allocated if 0
-#endif 
-
-// Number of maximum character device
-#ifndef PROGRAPE_NR_DEVS
-#    define PROGRAPE_NR_DEVS 1
-#endif 
-
-// -------------------------------------------------------------------- Private Members.
-#endif
-
-
-// for the different configurable parameters
-extern int pg_major;
-extern int pg_minor;
-extern int pg_nr_devs;
-
-// Prototyepes for shared functions
-int check_license(void);
-int get_license(void);
-
-
-// --- ISA bridge: Advanced Micro Devices [AMD] AMD-8111 LPC (rev 05)
-#undef PCI_VENDOR_ID_PG
-#undef PCI_DEVICE_ID_PG
-#undef PCI_REVISION_ID_PG
-#define PCI_VENDOR_ID_PG   (0x1022)
-#define PCI_DEVICE_ID_PG   (0x7468)
-#define PCI_REVISION_ID_PG (0x05)
-
-// --- PCI bridge: Advanced Micro Devices [AMD] AMD-8131 PCI-X Bridge (rev 12)
-#undef PCI_VENDOR_ID_PG
-#undef PCI_DEVICE_ID_PG
-#undef PCI_REVISION_ID_PG
-#define PCI_VENDOR_ID_PG   (0x1022)
-#define PCI_DEVICE_ID_PG   (0x7450)
-#define PCI_REVISION_ID_PG (0x12)
-
-// --- PROGRAPE-4 
-#undef PCI_VENDOR_ID_PG
-#undef PCI_DEVICE_ID_PG
-#undef PCI_REVISION_ID_PG
-#define PCI_VENDOR_ID_PG   (0x1679)
-#define PCI_DEVICE_ID_PG   (0x0005)
-#define PCI_REVISION_ID_PG (0x00)
-
-
-#define PG_DMA_BUFSIZE (0x1<<16) // 64 KB : IFPGA Block-RAM size 
-//#define PG_DMA_BUFSIZE (0x1<<12) // 4 KB : IFPGA Block-RAM size 
-#define PG_PCITRANS_64BIT (1)    // 1: 64-bit / 0: 32-bit
-
-#endif // _PROGRAPE_H_
+Sun Nov 12 19:57:52 JST 2023
+# -----------------------
+# pfpga ucf
+# 2004/11/16 by T.Hamada
+# -----------------------
+################################################################################
+# Timing specification
+################################################################################
+#NET "CK133"							TNM_NET = "CLK133"
+#NET "CK66"							TNM_NET = "CLK66"
+NET "CLK0"							TNM_NET = "CLK0";
+NET "CLK1"							TNM_NET = "CLK1";
+################################################################################
+# I/O property
+################################################################################
+NET "CBUS(0)" LOC = "AU10";
+NET "CBUS(1)" LOC = "AT10";
+NET "CBUS(2)" LOC = "AJ12";
+NET "CBUS(3)" LOC = "AJ13";
+NET "CBUS(4)" LOC = "AL10";
+NET "CBUS(5)" LOC = "AL11";
+NET "CBUS(6)" LOC = "AN11";
+NET "CBUS(7)" LOC = "AM11";
+NET "CBUS(0)" IOSTANDARD = LVCMOS25;
+NET "CBUS(1)" IOSTANDARD = LVCMOS25;
+NET "CBUS(2)" IOSTANDARD = LVCMOS25;
+NET "CBUS(3)" IOSTANDARD = LVCMOS25;
+NET "CBUS(4)" IOSTANDARD = LVCMOS25;
+NET "CBUS(5)" IOSTANDARD = LVCMOS25;
+NET "CBUS(6)" IOSTANDARD = LVCMOS25;
+NET "CBUS(7)" IOSTANDARD = LVCMOS25;
+NET "CK66" IOSTANDARD = LVCMOS25;
+NET "CK133" IOSTANDARD = LVCMOS25;
+NET "DBUS(0)" IOSTANDARD = LVCMOS25;
+NET "DBUS(1)" IOSTANDARD = LVCMOS25;
+NET "DBUS(2)" IOSTANDARD = LVCMOS25;
+NET "DBUS(3)" IOSTANDARD = LVCMOS25;
+NET "DBUS(4)" IOSTANDARD = LVCMOS25;
+NET "DBUS(5)" IOSTANDARD = LVCMOS25;
+NET "DBUS(6)" IOSTANDARD = LVCMOS25;
+NET "DBUS(7)" IOSTANDARD = LVCMOS25;
+NET "DBUS(8)" IOSTANDARD = LVCMOS25;
+NET "DBUS(9)" IOSTANDARD = LVCMOS25;
+NET "DBUS(10)" IOSTANDARD = LVCMOS25;
+NET "DBUS(11)" IOSTANDARD = LVCMOS25;
+NET "DBUS(12)" IOSTANDARD = LVCMOS25;
+NET "DBUS(13)" IOSTANDARD = LVCMOS25;
+NET "DBUS(14)" IOSTANDARD = LVCMOS25;
+NET "DBUS(15)" IOSTANDARD = LVCMOS25;
+NET "DBUS(16)" IOSTANDARD = LVCMOS25;
+NET "DBUS(17)" IOSTANDARD = LVCMOS25;
+NET "DBUS(18)" IOSTANDARD = LVCMOS25;
+NET "DBUS(19)" IOSTANDARD = LVCMOS25;
+NET "DBUS(20)" IOSTANDARD = LVCMOS25;
+NET "DBUS(21)" IOSTANDARD = LVCMOS25;
+NET "DBUS(22)" IOSTANDARD = LVCMOS25;
+NET "DBUS(23)" IOSTANDARD = LVCMOS25;
+NET "DBUS(24)" IOSTANDARD = LVCMOS25;
+NET "DBUS(25)" IOSTANDARD = LVCMOS25;
+NET "DBUS(26)" IOSTANDARD = LVCMOS25;
+NET "DBUS(27)" IOSTANDARD = LVCMOS25;
+NET "DBUS(28)" IOSTANDARD = LVCMOS25;
+NET "DBUS(29)" IOSTANDARD = LVCMOS25;
+NET "DBUS(30)" IOSTANDARD = LVCMOS25;
+NET "DBUS(31)" IOSTANDARD = LVCMOS25;
+NET "DBUS(32)" IOSTANDARD = LVCMOS25;
+NET "DBUS(33)" IOSTANDARD = LVCMOS25;
+NET "DBUS(34)" IOSTANDARD = LVCMOS25;
+NET "DBUS(35)" IOSTANDARD = LVCMOS25;
+NET "DBUS(36)" IOSTANDARD = LVCMOS25;
+NET "DBUS(37)" IOSTANDARD = LVCMOS25;
+NET "DBUS(38)" IOSTANDARD = LVCMOS25;
+NET "DBUS(39)" IOSTANDARD = LVCMOS25;
+NET "DBUS(40)" IOSTANDARD = LVCMOS25;
+NET "DBUS(41)" IOSTANDARD = LVCMOS25;
+NET "DBUS(42)" IOSTANDARD = LVCMOS25;
+NET "DBUS(43)" IOSTANDARD = LVCMOS25;
+NET "DBUS(44)" IOSTANDARD = LVCMOS25;
+NET "DBUS(45)" IOSTANDARD = LVCMOS25;
+NET "DBUS(46)" IOSTANDARD = LVCMOS25;
+NET "DBUS(47)" IOSTANDARD = LVCMOS25;
+NET "DBUS(48)" IOSTANDARD = LVCMOS25;
+NET "DBUS(49)" IOSTANDARD = LVCMOS25;
+NET "DBUS(50)" IOSTANDARD = LVCMOS25;
+NET "DBUS(51)" IOSTANDARD = LVCMOS25;
+NET "DBUS(52)" IOSTANDARD = LVCMOS25;
+NET "DBUS(53)" IOSTANDARD = LVCMOS25;
+NET "DBUS(54)" IOSTANDARD = LVCMOS25;
+NET "DBUS(55)" IOSTANDARD = LVCMOS25;
+NET "DBUS(56)" IOSTANDARD = LVCMOS25;
+NET "DBUS(57)" IOSTANDARD = LVCMOS25;
+NET "DBUS(58)" IOSTANDARD = LVCMOS25;
+NET "DBUS(59)" IOSTANDARD = LVCMOS25;
+NET "DBUS(60)" IOSTANDARD = LVCMOS25;
+NET "DBUS(61)" IOSTANDARD = LVCMOS25;
+NET "DBUS(62)" IOSTANDARD = LVCMOS25;
+NET "DBUS(63)" IOSTANDARD = LVCMOS25;
+NET "RST" IOSTANDARD = LVCMOS25;
+NET "FPGA_NO(0)" IOSTANDARD = LVCMOS25;
+NET "FPGA_NO(1)" IOSTANDARD = LVCMOS25;
+NET "LED(0)" IOSTANDARD = LVCMOS25;
+NET "LED(1)" IOSTANDARD = LVCMOS25;
+NET "LED(2)" IOSTANDARD = LVCMOS25;
+NET "LED(3)" IOSTANDARD = LVCMOS25;
+NET "LED(4)" IOSTANDARD = LVCMOS25;
+NET "LED(5)" IOSTANDARD = LVCMOS25;
+NET "LED(6)" IOSTANDARD = LVCMOS25;
+NET "LED(7)" IOSTANDARD = LVCMOS25;
+NET "DSW(0)" IOSTANDARD = LVCMOS25;
+NET "DSW(1)" IOSTANDARD = LVCMOS25;
+NET "DSW(2)" IOSTANDARD = LVCMOS25;
+NET "DSW(3)" IOSTANDARD = LVCMOS25;
+NET "DSW(4)" IOSTANDARD = LVCMOS25;
+NET "DSW(5)" IOSTANDARD = LVCMOS25;
+NET "DSW(6)" IOSTANDARD = LVCMOS25;
+NET "DSW(7)" IOSTANDARD = LVCMOS25;
+NET "CBUS(0)" SLEW = FAST;
+NET "CBUS(1)" SLEW = FAST;
+NET "CBUS(2)" SLEW = FAST;
+NET "CBUS(3)" SLEW = FAST;
+NET "CBUS(4)" SLEW = FAST;
+NET "CBUS(5)" SLEW = FAST;
+NET "CBUS(6)" SLEW = FAST;
+NET "CBUS(7)" SLEW = FAST;
+NET "DBUS(0)" SLEW = FAST;
+NET "DBUS(1)" SLEW = FAST;
+NET "DBUS(2)" SLEW = FAST;
+NET "DBUS(3)" SLEW = FAST;
+NET "DBUS(4)" SLEW = FAST;
+NET "DBUS(5)" SLEW = FAST;
+NET "DBUS(6)" SLEW = FAST;
+NET "DBUS(7)" SLEW = FAST;
+NET "DBUS(8)" SLEW = FAST;
+NET "DBUS(9)" SLEW = FAST;
+NET "DBUS(10)" SLEW = FAST;
+NET "DBUS(11)" SLEW = FAST;
+NET "DBUS(12)" SLEW = FAST;
+NET "DBUS(13)" SLEW = FAST;
+NET "DBUS(14)" SLEW = FAST;
+NET "DBUS(15)" SLEW = FAST;
+NET "DBUS(16)" SLEW = FAST;
+NET "DBUS(17)" SLEW = FAST;
+NET "DBUS(18)" SLEW = FAST;
+NET "DBUS(19)" SLEW = FAST;
+NET "DBUS(20)" SLEW = FAST;
+NET "DBUS(21)" SLEW = FAST;
+NET "DBUS(22)" SLEW = FAST;
+NET "DBUS(23)" SLEW = FAST;
+NET "DBUS(24)" SLEW = FAST;
+NET "DBUS(25)" SLEW = FAST;
+NET "DBUS(26)" SLEW = FAST;
+NET "DBUS(27)" SLEW = FAST;
+NET "DBUS(28)" SLEW = FAST;
+NET "DBUS(29)" SLEW = FAST;
+NET "DBUS(30)" SLEW = FAST;
+NET "DBUS(31)" SLEW = FAST;
+NET "DBUS(32)" SLEW = FAST;
+NET "DBUS(33)" SLEW = FAST;
+NET "DBUS(34)" SLEW = FAST;
+NET "DBUS(35)" SLEW = FAST;
+NET "DBUS(36)" SLEW = FAST;
+NET "DBUS(37)" SLEW = FAST;
+NET "DBUS(38)" SLEW = FAST;
+NET "DBUS(39)" SLEW = FAST;
+NET "DBUS(40)" SLEW = FAST;
+NET "DBUS(41)" SLEW = FAST;
+NET "DBUS(42)" SLEW = FAST;
+NET "DBUS(43)" SLEW = FAST;
+NET "DBUS(44)" SLEW = FAST;
+NET "DBUS(45)" SLEW = FAST;
+NET "DBUS(46)" SLEW = FAST;
+NET "DBUS(47)" SLEW = FAST;
+NET "DBUS(48)" SLEW = FAST;
+NET "DBUS(49)" SLEW = FAST;
+NET "DBUS(50)" SLEW = FAST;
+NET "DBUS(51)" SLEW = FAST;
+NET "DBUS(52)" SLEW = FAST;
+NET "DBUS(53)" SLEW = FAST;
+NET "DBUS(54)" SLEW = FAST;
+NET "DBUS(55)" SLEW = FAST;
+NET "DBUS(56)" SLEW = FAST;
+NET "DBUS(57)" SLEW = FAST;
+NET "DBUS(58)" SLEW = FAST;
+NET "DBUS(59)" SLEW = FAST;
+NET "DBUS(60)" SLEW = FAST;
+NET "DBUS(61)" SLEW = FAST;
+NET "DBUS(62)" SLEW = FAST;
+NET "DBUS(63)" SLEW = FAST;
+NET "TPIN(0)" SLEW = FAST;
+NET "TPIN(1)" SLEW = FAST;
+NET "TPIN(2)" SLEW = FAST;
+NET "TPIN(3)" SLEW = FAST;
+NET "TPIN(4)" SLEW = FAST;
+NET "TPIN(5)" SLEW = FAST;
+NET "TPIN(6)" SLEW = FAST;
+NET "TPIN(7)" SLEW = FAST;
+NET "TPIN(8)" SLEW = FAST;
+NET "TPIN(9)" SLEW = FAST;
+NET "TPIN(10)" SLEW = FAST;
+NET "TPIN(11)" SLEW = FAST;
+NET "TPIN(12)" SLEW = FAST;
+NET "TPIN(13)" SLEW = FAST;
+NET "TPIN(14)" SLEW = FAST;
+NET "TPIN(15)" SLEW = FAST;
+NET "LED(0)" SLEW = FAST;
+NET "LED(1)" SLEW = FAST;
+NET "LED(2)" SLEW = FAST;
+NET "LED(3)" SLEW = FAST;
+NET "LED(4)" SLEW = FAST;
+NET "LED(5)" SLEW = FAST;
+NET "LED(6)" SLEW = FAST;
+NET "LED(7)" SLEW = FAST;
+################################################################################
+# I/O Assignment
+################################################################################
+NET "CK66" LOC = "AG20";
+NET "CK133" LOC = "AK20";
+NET "DBUS(0)" LOC = "AH13";
+NET "DBUS(1)" LOC = "AH14";
+NET "DBUS(2)" LOC = "AR11";
+NET "DBUS(3)" LOC = "AP11";
+NET "DBUS(4)" LOC = "AU11";
+NET "DBUS(5)" LOC = "AT11";
+NET "DBUS(6)" LOC = "AL14";
+NET "DBUS(7)" LOC = "AK14";
+NET "DBUS(8)" LOC = "AM12";
+NET "DBUS(9)" LOC = "AL12";
+NET "DBUS(10)" LOC = "AT12";
+NET "DBUS(11)" LOC = "AR12";
+NET "DBUS(12)" LOC = "AJ14";
+NET "DBUS(13)" LOC = "AJ15";
+NET "DBUS(14)" LOC = "AM13";
+NET "DBUS(15)" LOC = "AL13";
+NET "DBUS(16)" LOC = "AP12";
+NET "DBUS(17)" LOC = "AN13";
+NET "DBUS(18)" LOC = "AL15";
+NET "DBUS(19)" LOC = "AK15";
+NET "DBUS(20)" LOC = "AT13";
+NET "DBUS(21)" LOC = "AR13";
+NET "DBUS(22)" LOC = "AN14";
+NET "DBUS(23)" LOC = "AM14";
+NET "DBUS(24)" LOC = "AH15";
+NET "DBUS(25)" LOC = "AH16";
+NET "DBUS(26)" LOC = "AR14";
+NET "DBUS(27)" LOC = "AP14";
+NET "DBUS(28)" LOC = "AU14";
+NET "DBUS(29)" LOC = "AT14";
+NET "DBUS(30)" LOC = "AH17";
+NET "DBUS(31)" LOC = "AG17";
+NET "DBUS(32)" LOC = "AN15";
+NET "DBUS(33)" LOC = "AM15";
+NET "DBUS(34)" LOC = "AR15";
+NET "DBUS(35)" LOC = "AP15";
+NET "DBUS(36)" LOC = "AK16";
+NET "DBUS(37)" LOC = "AJ17";
+NET "DBUS(38)" LOC = "AU15";
+NET "DBUS(39)" LOC = "AT15";
+NET "DBUS(40)" LOC = "AM16";
+NET "DBUS(41)" LOC = "AL16";
+NET "DBUS(42)" LOC = "AM17";
+NET "DBUS(43)" LOC = "AL17";
+NET "DBUS(44)" LOC = "AR16";
+NET "DBUS(45)" LOC = "AR17";
+NET "DBUS(46)" LOC = "AH18";
+NET "DBUS(47)" LOC = "AG18";
+NET "DBUS(48)" LOC = "AU17";
+NET "DBUS(49)" LOC = "AT17";
+NET "DBUS(50)" LOC = "AM18";
+NET "DBUS(51)" LOC = "AL18";
+NET "DBUS(52)" LOC = "AK18";
+NET "DBUS(53)" LOC = "AJ18";
+NET "DBUS(54)" LOC = "AP18";
+NET "DBUS(55)" LOC = "AN18";
+NET "DBUS(56)" LOC = "AT18";
+NET "DBUS(57)" LOC = "AR18";
+NET "DBUS(58)" LOC = "AH19";
+NET "DBUS(59)" LOC = "AG19";
+NET "DBUS(60)" LOC = "AU18";
+NET "DBUS(61)" LOC = "AU19";
+NET "DBUS(62)" LOC = "AM19";
+NET "DBUS(63)" LOC = "AL19";
+NET "RST" LOC = "AR19";
+NET "TPIN(0)" LOC = "Y36";
+NET "TPIN(2)" LOC = "Y37";
+NET "TPIN(4)" LOC = "Y31";
+NET "TPIN(6)" LOC = "W31";
+NET "TPIN(8)" LOC = "Y32";
+NET "TPIN(10)" LOC = "Y33";
+NET "TPIN(12)" LOC = "W36";
+NET "TPIN(14)" LOC = "W37";
+NET "TPIN(1)" LOC = "W27";
+NET "TPIN(3)" LOC = "W28";
+NET "TPIN(5)" LOC = "W34";
+NET "TPIN(7)" LOC = "W35";
+NET "TPIN(9)" LOC = "G38";
+NET "TPIN(11)" LOC = "G39";
+NET "TPIN(13)" LOC = "G36";
+NET "TPIN(15)" LOC = "G37";
+NET "FPGA_NO(0)" LOC = "AP19";
+NET "FPGA_NO(1)" LOC = "AN19";
+NET "LED(0)" LOC = "P34";
+NET "LED(1)" LOC = "P33";
+NET "LED(2)" LOC = "R27";
+NET "LED(3)" LOC = "T27";
+NET "LED(4)" LOC = "P36";
+NET "LED(5)" LOC = "P35";
+NET "LED(6)" LOC = "P37";
+NET "LED(7)" LOC = "N37";
+NET "DSW(0)" LOC = "T30";
+NET "DSW(1)" LOC = "T29";
+NET "DSW(2)" LOC = "P39";
+NET "DSW(3)" LOC = "P38";
+NET "DSW(4)" LOC = "R33";
+NET "DSW(5)" LOC = "R32";
+NET "DSW(6)" LOC = "T28";
+NET "DSW(7)" LOC = "U28";
+NET "CK66" TNM_NET = "CK66";
+TIMESPEC "TS_CK66" = PERIOD "CK66" 20 ns HIGH 50 %;

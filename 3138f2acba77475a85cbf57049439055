@@ -1,20 +1,65 @@
-Wed Nov  8 19:39:04 JST 2023
+Sat Nov 18 19:30:03 JST 2023
+-- Copyright 2004 Tsuyoshi Hamada
+--
+--
+-- clk         __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __
+-- [ DBUS ]           X   >< n ><d0 ><d1 ><d2 ><d3 ><d4 ><d5 ><d6 ><d7 >
+-- STATE               0  >< 1 >< 2                                    >< 3 >< 0 
+-- START_ADR                    < n                                    >
+-- x                              0 >< 1 >< 2 >< 3 >< 4 >< 5 >< 6 >< 7 >< 8 >< 0 >
+-- z                              1 >< 2 >< 3 >< 4 >< 5 >< 6 >< 7 >< 8 >< 9 >< 1 >
+-- mem_adr_inc                    0 >< 1 >< 2 >< 3 >< 4 >< 5 >< 6 >< 7 >< 8 >< 0 >
+-- MEM_ADR                           < n ><n+1><n+2><n+3><n+4><n+5><n+6><n+7>
 
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
-all:
-	cp top.ucf.ISE6.3i top.ucf
-	rm -rf proj
-	tar xvf proj.ise6.3i.tar
-	cd proj;xst -intstyle ise -ifn __projnav/top.xst -ofn top.syr
-	cd proj;ngdbuild -intstyle ise -dd ./_ngo -uc ../top.ucf  -p xc2vp70-ff1517-5 top.ngc top.ngd
-	cd proj;map -intstyle ise -p xc2vp70-ff1517-5 -cm area -pr b -k 4 -c 100 -tx off -o top_map.ncd top.ngd top.pcf
-	cd proj;par -w -intstyle ise -ol std -t 1 top_map.ncd top.ncd top.pcf
-	cd proj;trce -intstyle ise -e 3 -l 3 -xml top top.ncd -o top.twr top.pcf
-	cd proj;bitgen -intstyle ise -f top.ut top.ncd
+entity dmaw_mem_adr is
+  port (
+    CLK       : in  std_logic;
+    STATE     : in std_logic_vector(1 downto 0);  -- STATE of DMAW
+    START_ADR : in std_logic_vector(18 downto 0);
+    MEM_ADR   : out  std_logic_vector(18 downto 0)
+    );
+end dmaw_mem_adr;
 
+architecture rtl of dmaw_mem_adr is
 
+signal mem_adr_inc : std_logic_vector(18 downto 0);
+signal   x,z : std_logic_vector(18 downto 0);
+constant one : std_logic_vector(18 downto 0) := "0000000000000000001";
 
-clean:
-	rm -rf proj top.ucf *~ .*~
+begin
 
+  z <= x + one;
 
+  -----------------
+  -- mem_adr_inc
+  -----------------
+  process (CLK,STATE) begin
+    if(clk'event and clk = '1') then
+      if(STATE = "10") then
+        mem_adr_inc <= z;
+      else
+        mem_adr_inc <= (others=>'0');
+      end if;
+    end if;
+  end process;
+
+  x <= mem_adr_inc;
+
+  -----------------
+  -- MEM_ADR
+  -----------------
+  process (CLK,STATE) begin
+    if(clk'event and clk = '1') then
+      if(STATE="10") then
+        MEM_ADR <= mem_adr_inc + START_ADR;
+      else
+        MEM_ADR <= (others=>'0');
+      end if;
+    end if;
+  end process;
+
+end rtl;

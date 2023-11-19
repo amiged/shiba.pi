@@ -1,75 +1,71 @@
-Wed Nov 15 19:44:54 JST 2023
-#!/usr/bin/perl
-#
-# mtrr : MTRR register resetting script for PROGRAPE-4
-#
-# Copyright (C) 2006-2007 Tsuyoshi Hamada. All rights reserved.
-# 
-# No warranty is attached; 
-#
+Sun Nov 19 19:27:33 JST 2023
+-- 2004/05/13 16:30
+-- for matsubayashi simulation
 
-my $devid   = 0;
-my $bar;
-my $cmd;
-my $exe;
+#define NPOS 32
+#define NLOG 17
+#define NMAN 8
+#define NCUT 6
+#define NFOR 57
+#define NACC 64
 
-if(@ARGV){
-    sprintf($devid, "%d", $ARGV[0]);
+#define DELAY_SUB 2     /* A */
+#define DELAY_FL  4     /* B */
+#define DELAY_X2Y2 5    /* C */
+#define DELAY_R2   5    /* D */
+#define DELAY_R3   1    /* E */
+#define DELAY_MR3  1    /* F */
+#define DELAY_F    1    /* G */
+#define DELAY_OF   1    /* H */
+#define DELAY_LF   2    /* I */
+#define DELAY_AC   3    /* J */
+
+#define DELAY_EPS  6    /* A+B */
+#define DELAY_DX   12   /* C+D+E+F */
+#define DELAY_M    17   /* A+B+C+D+E */
+#define DELAY_CLE  22   /* A+B+C+D+E+F+G+H+I */
+#define DELAY_TOT  25   /* (DELAY_CLE) + J */
+
+
+
+
+#define xsize (100.0)
+#define mmin (1.220703125e-04)
+#define xoffset (xsize/2.0)
+#define xscale (pow(2.0,(double)NPOS)/xsize)
+#define mscale (pow(2.0,95.38)/mmin)
+#define escale (xscale*xscale)
+#define foffset (pow(2.0,23.0))
+#define fscale (-xscale*xscale*foffset/mscale)
+--mmin 0xdf61
+
+/NPIPE 1
+/NVMP 1
+
+/JPSET xj,0,0,31,x[][0],ufix,NPOS,xscale,xoffset
+/JPSET yj,0,32,63,x[][1],ufix,NPOS,xscale,xoffset
+/JPSET zj,0,64,95,x[][2],ufix,NPOS,xscale,xoffset
+/JPSET mj,0,96,112,m[],log,NLOG,NMAN,mscale
+/IPSET xi,x[][0],ufix,NPOS,xscale,xoffset
+/IPSET yi,x[][1],ufix,NPOS,xscale,xoffset
+/IPSET zi,x[][2],ufix,NPOS,xscale,xoffset
+/IPSET ieps2,eps2,log,NLOG,NMAN,escale
+/FOSET sx,a[][0],fix,NACC,fscale
+/FOSET sy,a[][1],fix,NACC,fscale
+/FOSET sz,a[][2],fix,NACC,fscale
+/VALSET fx_ofst,0x9700,0,16
+/VALSET fy_ofst,0x9700,0,16
+/VALSET fz_ofst,0x9700,0,16
+/DATASET fx_ofst,01001011100000000,0,16
+/DATASET fy_ofst,01001011100000000,0,16
+/DATASET fz_ofst,01001011100000000,0,16
+
+void force_gravity_on_emulator(x,m,eps2,a,n)
+	double x[][3];
+	double m[];
+	double eps2;
+	double a[][3];
+	int n;
+{
+  pg_conv_ftol(xij,dx,NPOS,NLOG,NMAN,DELAY_FL);
 }
-
-$bar = 1;
-
-my $adr=0, $size;
-
-$cmd = "ifpga_get_barinfo $devid $bar";
-$exe = `$cmd`;
-chomp($exe);
-$adr = $exe;
-
-$cmd = "ifpga_get_barinfo $devid $bar 1";
-$exe = `$cmd`;
-chomp($exe);
-$size = $exe;
-
-print "BAR1 start at $adr, size $size bytes\n";
-
-if( ($adr eq '') || ($adr eq '0x0') || ($adr eq "0xffffffff")){
-    print "discontinued\n";
-    exit(-1);
-}
-
-
-open(RD,"/proc/mtrr");
-my $hit_line = '';
-while(<RD>){
-    my $s = $_;
-    chomp($s);
-    if($s =~ /$adr/){
-	$hit_line = $s;
-    }
-}
-close(RD);
-
-if($hit_line ne ''){
-    print "Hit: ". $hit_line ."\n";
-}else{
-    $cmd = "cat /proc/mtrr";
-    print `$cmd` ."\n";
-    print "Can't find the mtrr register for bar1($adr)\n";
-    print "discontinued\n";
-    exit(-1);
-}
-
-my ($reg_nr, ) = split(/\:/,$hit_line);
-$reg_nr =~ s/reg//;
-$reg_nr = sprintf("%d",$reg_nr);
-
-$cmd = "echo \"disable=$reg_nr\" >| /proc/mtrr";
-print  $cmd. "\n";
-print  `$cmd`. "\n";
-
-$cmd = "cat /proc/mtrr";
-print `$cmd`;
-
-
-1;

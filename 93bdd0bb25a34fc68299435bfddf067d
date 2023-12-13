@@ -1,68 +1,29 @@
-Mon Nov 27 19:55:24 JST 2023
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.std_logic_arith.all;                                        
-use ieee.std_logic_unsigned.all;                                    
+Wed Dec 13 19:39:54 JST 2023
+#!/usr/bin/env python3
+#Time-stamp: <>
+import fnmatch
+import functools
+import os
+import re
 
-entity calc is
-  port (
-    start      : in  std_logic;
-    clk        : in  std_logic;
-    pclk       : in  std_logic;
-    n          : in  std_logic_vector(31 downto 0);
-    run        : out  std_logic;
-    mem_adr    : out  std_logic_vector(31 downto 0));
-end calc;
+def find(path, pattern):
 
-architecture rtl of calc is
+    if isinstance(pattern, str): 
+        match = functools.partial(fnmatch.fnmatch, pat=pattern)
+    elif isinstance(pattern, re._pattern_type):
+        match = pattern.match
+    elif callable(pattern):
+        match = pattern
+    else:
+        raise TypeError
 
-signal rst :  std_logic;
-signal rstn : std_logic_vector(31 downto 0);
-signal start_r : std_logic;
-signal mema_dc : std_logic_vector(17 downto 0) := (others=>'0');
-begin
+    for root, dirs, files in os.walk(path):
+        for file_ in files:
+            if match(file_):
+                yield os.path.join(root, file_)
 
--- GENERATE rst PULS ------------------
-process(pclk) begin
-  if(pclk'event and pclk='1') then
-    rst <= rstn(0);
-  end if;
-end process;
 
-process (clk) begin
-  if(clk'event and clk='1') then
-    rstn(0) <= start_r AND (NOT start);
-    start_r <= start;
-  end if;
-end process;
----------------------------------------
+if __name__ == '__main__':
+    for i in find('../log/', '*.jpg'):
+        print (i)
 
--- GENERATE run --------------------------
-process(pclk,rst) begin
-  if(rst = '1') then
-    run <= '0';
-  elsif(pclk'event and pclk='1') then
-    if(mema_dc /= "000000000000000000") then
-      run <= '1';
-    else
-      run <= '0';
-    end if;
-  end if;
-end process;
-
--- GENERATE mem_adr  ---------------------
-process(pclk,rst) begin
-  if(rst = '1') then
-    mema_dc <=  n(17 downto 0) ;
-  elsif(pclk'event and pclk='1') then
-    if(mema_dc /= "000000000000000000") then
-      mema_dc <= mema_dc - "000000000000000001";
-    end if;
-  end if;
-end process;
---hoge
-  mem_adr <= "000000000000000" & mema_dc(15 downto 0) & "0";  -- G5
---mem_adr <= "00000000000000" & mema_dc(15 downto 0) & "00";  -- SPH FirstStage
---mem_adr <= "0000000000000" & mema_dc(15 downto 0) & "000";  -- SPH SecondStage
-
-end rtl;

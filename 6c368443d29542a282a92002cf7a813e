@@ -1,127 +1,65 @@
-Mon Sep 25 19:30:11 JST 2023
-//-------------------------
-#define NMAX (1<<17)
-#include <cstdio>
-#include <cstdlib>
-#define USE_CUDA_MALLOC_HOST (yes)
-#define IDIM (4)
-#define JDIM (4)
-#define FDIM (3)
-#define NJ_SHMEM (NTHRE)
+Wed Dec 20 19:40:47 JST 2023
+-- Copyright 2004 Tsuyoshi Hamada
+--
+--
+-- clk         __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __
+-- [ DBUS ]           X   >< n ><d0 ><d1 ><d2 ><d3 ><d4 ><d5 ><d6 ><d7 >
+-- STATE               0  >< 1 >< 2                                    >< 3 >< 0 
+-- START_ADR                    < n                                    >
+-- x                              0 >< 1 >< 2 >< 3 >< 4 >< 5 >< 6 >< 7 >< 8 >< 0 >
+-- z                              1 >< 2 >< 3 >< 4 >< 5 >< 6 >< 7 >< 8 >< 9 >< 1 >
+-- mem_adr_inc                    0 >< 1 >< 2 >< 3 >< 4 >< 5 >< 6 >< 7 >< 8 >< 0 >
+-- MEM_ADR                           < n ><n+1><n+2><n+3><n+4><n+5><n+6><n+7>
 
-float4* h_xj;
-float* h_xi;
-float* h_fo;
-float4* d_xj;
-float* d_xi;
-float* d_fo;
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
-extern "C" void 
-force(double xj[][3], double mj[], double xi[][3], double eps2, double a[][3], int ni, int nj)
-{
-  static bool is_open = false;
-  int devid = 0;
-  int ndev;
-  int nj1 = ((nj+NJ_SHMEM-1)/NJ_SHMEM)*NJ_SHMEM;
+entity dmaw_mem_adr is
+  port (
+    CLK       : in  std_logic;
+    STATE     : in std_logic_vector(1 downto 0);  -- STATE of DMAW
+    START_ADR : in std_logic_vector(18 downto 0);
+    MEM_ADR   : out  std_logic_vector(18 downto 0)
+    );
+end dmaw_mem_adr;
 
-  if( ni > NMAX ){
-    printf("ERROR %s|%d\n",__FILE__, __LINE__);
-    printf(" ni > %d : ni=%d\n",ni, NMAX);
-    exit(-1);
-  }
+architecture rtl of dmaw_mem_adr is
 
-  if( nj > NMAX ){
-    printf("ERROR %s|%d\n",__FILE__, __LINE__);
-    printf(" nj > %d : nj=%d\n",nj, NMAX);
-    exit(-1);
-  }
+signal mem_adr_inc : std_logic_vector(18 downto 0);
+signal   x,z : std_logic_vector(18 downto 0);
+constant one : std_logic_vector(18 downto 0) := "0000000000000000001";
 
-  unsigned int ip_size = sizeof(float) * ni * IDIM;
-  unsigned int jp_size = sizeof(float4) * nj1;
-  unsigned int fo_size = sizeof(float) * ni * FDIM;
+begin
 
-  if(is_open == false){
-    char gpu_name[256];
-    CUDA_SAFE_CALL(cudaSetDevice(devid));
-    CUDA_SAFE_CALL(cudaGetDeviceCount(&ndev));
-    if(ndev == 0){
-      fprintf(stdout, "ndev = %d @ %s|%d\n", ndev, __FILE__, __LINE__);
-      exit(-1);
-    }else{
-      int dev = devid;
-      cudaDeviceProp deviceProp;
-      CUDA_SAFE_CALL(cudaGetDeviceProperties(&deviceProp, dev));
-      if (deviceProp.major == 9999 && deviceProp.minor == 9999){
-	printf("There is no device supporting CUDA.\n");
-      }
-      fprintf(stderr, "  GPU : %s\n", deviceProp.name);
-      sprintf(gpu_name,"%s", deviceProp.name);
-    }
+  z <= x + one;
 
-    unsigned int _nmax = NMAX;
-    unsigned int _ip_size = sizeof( float) * _nmax * IDIM;
-    unsigned int _jp_size = sizeof(float4) * _nmax;
-    unsigned int _fo_size = sizeof(float) * _nmax * FDIM;
+  -----------------
+  -- mem_adr_inc
+  -----------------
+  process (CLK,STATE) begin
+    if(clk'event and clk = '1') then
+      if(STATE = "10") then
+        mem_adr_inc <= z;
+      else
+        mem_adr_inc <= (others=>'0');
+      end if;
+    end if;
+  end process;
 
-#if defined(USE_CUDA_MALLOC_HOST)
-    CUDA_SAFE_CALL(  cudaMallocHost( (void**)&h_xj, _jp_size)  );
-    CUDA_SAFE_CALL(  cudaMallocHost( (void**)&h_xi, _ip_size)  );
-    CUDA_SAFE_CALL(  cudaMallocHost( (void**)&h_fo, _fo_size)  );
-#else
-    h_xj = (float4*) malloc(_jp_size);
-    h_xi = (float*)  malloc(_ip_size);
-    h_fo = (float*)  malloc(_fo_size);
-#endif
-    CUDA_SAFE_CALL( cudaMalloc( (void**) &d_xj, _jp_size));
-    CUDA_SAFE_CALL( cudaMalloc( (void**) &d_xi, _ip_size));
-    CUDA_SAFE_CALL( cudaMalloc( (void**) &d_fo, _fo_size));
-    for(int i = 0; i < _nmax ; i++) h_xj[i] = make_float4(0.0, 0.0, 0.0, 0.0);
-    CUDA_SAFE_CALL( cudaMemcpy( d_xj, h_xj, _jp_size, cudaMemcpyHostToDevice) );
-    CUDA_SAFE_CALL( cudaMemcpy( d_xi, h_xj, _ip_size, cudaMemcpyHostToDevice) );
-    CUDA_SAFE_CALL( cudaMemcpy( d_fo, h_xj, _fo_size, cudaMemcpyHostToDevice) );
-    fprintf(stderr, "open %s by CUNBODY-1 library: rev.hamada20080905  (^<_^)/ %d\n", gpu_name, devid);
-    is_open = true;
-  }
-  for(int i = 0; i < nj; i++){
-    h_xj[i].x = (float) xj[i][0];
-    h_xj[i].y = (float) xj[i][1];
-    h_xj[i].z = (float) xj[i][2];
-    h_xj[i].w = (float) mj[i];
-    //    printf("h_xj:%d\t%e\t%e\t%e\t%e\n",i, h_xj[i].x, h_xj[i].y, h_xj[i].z, h_xj[i].w );
-  }
-  if(nj < nj1){
-    for(int i = nj; i < nj1; i++){
-      h_xj[i] = make_float4(0.0, 0.0, 0.0, 0.0);
-      //      printf("h_xj:%d\t%e\t%e\t%e\t%e\n",i, h_xj[i].x, h_xj[i].y, h_xj[i].z, h_xj[i].w );
-    }
-  }
-  CUDA_SAFE_CALL( cudaMemcpy( d_xj, h_xj, jp_size, cudaMemcpyHostToDevice) );
-  for(int i = 0; i < ni; i++){
-    h_xi[i     ] = (float) xi[i][0];
-    h_xi[i+ni  ] = (float) xi[i][1];
-    h_xi[i+ni*2] = (float) xi[i][2];
-    h_xi[i+ni*3] = (float) eps2;
-    //    printf("h_xi:%d\t%e\t%e\t%e\t%e\n",i, h_xi[i], h_xi[i+ni], h_xi[i+ni*2], h_xi[i+ni*3] );
-  }
-  CUDA_SAFE_CALL( cudaMemcpy( d_xi, h_xi, ip_size, cudaMemcpyHostToDevice) );
+  x <= mem_adr_inc;
 
-  //  printf("Nj=%d\n",nj1);
-  /*
-  dim3 grid((ni+NTHRE)/NTHRE);
-  dim3 threads  (NTHRE);
-  */
-  //  printf("------------------------ %d, %d\n",ni, nj1);
-  dim3 grid(ni/128);
-  dim3 threads  (128);
-  kernel<<< grid, threads >>>(d_xj, d_xi, d_fo, ni, nj1);
-  CUT_CHECK_ERROR("Kernel execution failed");
+  -----------------
+  -- MEM_ADR
+  -----------------
+  process (CLK,STATE) begin
+    if(clk'event and clk = '1') then
+      if(STATE="10") then
+        MEM_ADR <= mem_adr_inc + START_ADR;
+      else
+        MEM_ADR <= (others=>'0');
+      end if;
+    end if;
+  end process;
 
-  CUDA_SAFE_CALL( cudaMemcpy( h_fo, d_fo, fo_size, cudaMemcpyDeviceToHost) );
-
-  for(int i=0;i<ni; i++){
-    a[i][0] = (double)h_fo[i];
-    a[i][1] = (double)h_fo[i+ni];
-    a[i][2] = (double)h_fo[i+ni*2];
-    //    printf("a:%d\t%e\t%e\t%e\n",i, h_fo[i], h_fo[i+ni], h_fo[i+ni*2] );
-  }
-}
+end rtl;

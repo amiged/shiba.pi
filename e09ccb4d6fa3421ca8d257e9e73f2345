@@ -1,4 +1,29 @@
-Tue Oct  3 19:28:34 JST 2023
-XILINX-XDB 0.1 STUB 0.1 ASCII
-XILINX-XDM V1.2e
-$5fx4>763-Xnzd}foo8#5+72(-90!?:n;03345338?<j7<??01775=1f38;;<=;;23:;?Dtd`Gkfio5NrbjLfocd|z30NaalkU{sa<=DGDGBXYKK7:AQADRBL11Hc`~Fnrvb?@hsa}sBb~zn;DlwmqIidoi7KgceEgsakbt02Lb`h@nmd`8BljbGk`Ge~z7;GkoaUgs`h1Meak\estfwd=Nfjf~hhAmj99JjvrIido=7AANDDF;?Igio|klio5Cicpbv|Hfel;:7Agmr`pzWqgsmdoex~64Mdqpebctj2ZjofoheOcna<=Wi{ynXdcj4:Rbvq?<Y|kgekgjr79Pawpb{k1_i~zYebvlvvd<\fzMeakCirv;?Phn|Gkfii5ZsdQweqcjmg~x=i5WIMKM\(^CJ):%=-][UC"3*4&F[JCB:6Vkb^Kg55=_ldUFmga}Vdppmjh682RoaRCfnnpUawungg90mab7;ckm`Dtd`h1iecjJnukw}g=eagn[mnengd68m`cbi2ceoa{ke,30=>oikeoi :7;n`iMkbbpj1{j}in_bmmblaa3yl{klQloodjc(70m2zm|joPcnlemb+?991{j}in_bmmbla)~an:?6~ipfc\gjhaan$}di#>1018tcv`iVidbkgh.wjg)446:2zm|joPcnlemb(q`m'9=?5fqeb[fiin`m%zej"329qpi0<z}f&=5;4run.=f=tkfznMmgOch`?vehxlLb`hAmjb9pgjvbD`dnBxc<;rkn2>une$89:6}fm,003>une'`chl5|il,ila+58h1xe` ehe/153=tadzgih5|te]okbodW8;=8k5|te]okbodWhxbxe?=;rvg[ii`ajU~b~ghndf5?pub%8>=7x}j-075?pub%8<>7x}j-478qvc*><1~h#8}ABs02=GHq>86K4;:0yPe?24280:?<mk9786f=4|f;?1=6`=6;08 72=::1v_44;3;39567dl0<19ok;;R36>15=93;8=nj66;7`0g=T13>86<4>30ag=3<1<;i0h9=50;396~Uf2=91=7?<1bf:2?3e0;1e>h4>8:M14?6<G8:1<6xI3283>4<629qXm7:<:08274ec1?0>o9l4n0495>d4<3:1<7850zl0g?7<f10:7B?j:19'5<<73-l1??5+1083?!7d291/=o4;;Ng94>I6:3:0C>l51za6f<7290;6=ua3b8ebc`anol0b54=019L5`<73F896>urO0:94>{e<>0;6=4?:1ym7f<03g21==>4O0g94>"6?38i7)?n:568 4b=:>1D>l4?;N1a>4}zG891=vsrb5:94?6=83:pb>m58:l;>4673F;n6=5+1681f>"6i3>>7)?k:358K7g=82E8n7?t}N30>4}zuk>26=4?:183k5d201e47??0:M2a?6<,8=1>o5+1`872>"6l38<7B<n:19L7g<6stE:?7?t}|`04?6=83:1<v`<c;`8j=<53F;n6=5+d;0e?J1=82E8n7?t}N30>4}zuk936=4?:183k5d28o0b54;;N3f>5=#>39<7)?i:19'`?4a3Fh1<6Al:19L6<<73F9i6<urO2c95~{zut|M8<4?:082>5}Ti3>86<4>30ag=3<2k0i0b<851:`76?6=8381<v`<c;38j=<63F;n6=5+1883?!`=<91/=<4?;%3`>5=#9k0>7Bk50:M26?6<G:h1=vsm3d83>5<729qe?n4>;o:96>I6m3:0(i4<d:M4>5=H;k0:wpsm3g83>5<629qe?n4>;o:90>I6m3:0(;4<d:&2b?6<,m08h6Am:19Lg?6<G;31<6A<b;3xyJ5f28qvn?4?:183>5}i;j0;7c658:M2a?6<,8>1<6*=1;0e?J4>291D>54?;N1a>4}zG:k1=vsr}|~yEFDs==1m=?>68c6yEFEs9wKL]u@f;`8K44=9=1D=?4>9:M26?7b3F;<6o5@19824>I6k3h0C<j5119L64<e3F896<>4O349f>I5?3;;7B<k:c9L6`<502E897=>;N1:>67<G:l1?<5@4180e>I3=39:7B:9:2c8yEF
+Sun Jan 21 19:29:26 JST 2024
+#!/usr/bin/env python3
+#Time-stamp: <>
+import fnmatch
+import functools
+import os
+import re
+
+def find(path, pattern):
+
+    if isinstance(pattern, str): 
+        match = functools.partial(fnmatch.fnmatch, pat=pattern)
+    elif isinstance(pattern, re._pattern_type):
+        match = pattern.match
+    elif callable(pattern):
+        match = pattern
+    else:
+        raise TypeError
+
+    for root, dirs, files in os.walk(path):
+        for file_ in files:
+            if match(file_):
+                yield os.path.join(root, file_)
+
+
+if __name__ == '__main__':
+    for i in find('../log/', '*.jpg'):
+        print (i)
+

@@ -1,144 +1,50 @@
-Tue Jan 16 19:27:13 JST 2024
--- C:\CYGWIN\HOME\ADMINISTRATOR\FKIT\PCI64\PROJ
--- VHDL Annotation Test Bench created by
--- HDL Bencher 6.1i
--- Sun Jan 02 23:10:52 2005
+Mon Jan 22 19:52:42 JST 2024
+-- Copyright 2004 Tsuyoshi Hamada
+--
+--
+--clk         __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __
+--[DMAR_ENABLE] _____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
+--en0                _____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
+--en1                     _____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
+--en2                          _____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
+--en3                               _____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
+--DBUS_HiZ            ~~~~~~~~~~~~~~\_________________________________________________/~~~~
 
-LIBRARY IEEE;
-USE IEEE.STD_LOGIC_1164.ALL;
-USE IEEE.STD_LOGIC_UNSIGNED.ALL;
-USE IEEE.STD_LOGIC_ARITH.ALL;
-USE IEEE.STD_LOGIC_TEXTIO.ALL;
-USE STD.TEXTIO.ALL;
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
 
-ENTITY local_write IS
-END local_write;
+entity dmar_dbus_hiz is
+  port (
+    RST       : in std_logic;
+    CLK       : in std_logic;
+    ENABLE    : in std_logic;
+    DBUS_HiZ  : out std_logic :='1');
+end dmar_dbus_hiz;
 
-ARCHITECTURE testbench_arch OF local_write IS
--- If you get a compiler error on the following line,
--- from the menu do Options->Configuration select VHDL 87
-FILE RESULTS: TEXT OPEN WRITE_MODE IS "c:\cygwin\home\administrator\fkit\pci64\proj\local_write.ano";
-	COMPONENT local_write
-		PORT (
-			MEM_AD : In  std_logic_vector (16 DOWNTO 0);
-			MEM_WE : In  std_logic;
-			MEM_DTI : In  std_logic_vector (63 DOWNTO 0);
-			DMAW_ENABLE : Out  std_logic_vector (3 DOWNTO 0);
-			DBUS_Port : Out  std_logic_vector (63 DOWNTO 0);
-			RST : In  std_logic;
-			CLK : In  std_logic
-		);
-	END COMPONENT;
+architecture rtl of dmar_dbus_hiz is
+signal en0,en1,en2,en3 : std_logic :='0';
+begin
 
-	SIGNAL MEM_AD : std_logic_vector (16 DOWNTO 0);
-	SIGNAL MEM_WE : std_logic;
-	SIGNAL MEM_DTI : std_logic_vector (63 DOWNTO 0);
-	SIGNAL DMAW_ENABLE : std_logic_vector (3 DOWNTO 0);
-	SIGNAL DBUS_Port : std_logic_vector (63 DOWNTO 0);
-	SIGNAL RST : std_logic;
-	SIGNAL CLK : std_logic;
+  process(CLK) begin
+    if(CLK'event and CLK = '1') then
+      en3 <= en2;
+      en2 <= en1;
+      en1 <= en0;
+      en0 <= ENABLE;
+    end if;
+  end process;
 
-BEGIN
-	UUT : local_write
-	PORT MAP (
-		MEM_AD => MEM_AD,
-		MEM_WE => MEM_WE,
-		MEM_DTI => MEM_DTI,
-		DMAW_ENABLE => DMAW_ENABLE,
-		DBUS_Port => DBUS_Port,
-		RST => RST,
-		CLK => CLK
-	);
 
-	PROCESS -- clock process for CLK,
-		VARIABLE TX_TIME : INTEGER :=0;
+  process(RST,CLK,en2,en3) begin
+    if(RST='1') then
+      DBUS_HiZ <= '1';
+    elsif(CLK'event and CLK = '1') then
+     if( (en1='1') AND (en2='0') ) then
+       DBUS_HiZ <= '0';
+     elsif( (en2='0') AND (en3='1') ) then
+       DBUS_HiZ <= '1';
+     end if;
+    end if;
+  end process;
 
-		PROCEDURE ANNOTATE_DMAW_ENABLE(
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
-			STD.TEXTIO.write(TX_LOC, TX_TIME);
-			STD.TEXTIO.write(TX_LOC,string'(",DMAW_ENABLE,"));
-			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, DMAW_ENABLE);
-			STD.TEXTIO.write(TX_LOC, string'("]"));
-			TX_STR(TX_LOC.all'range) := TX_LOC.all;
-			STD.TEXTIO.writeline(results, TX_LOC);
-			STD.TEXTIO.Deallocate(TX_LOC);
-		END;
-
-		PROCEDURE ANNOTATE_DBUS_Port(
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
-			STD.TEXTIO.write(TX_LOC, TX_TIME);
-			STD.TEXTIO.write(TX_LOC,string'(",DBUS_Port,"));
-			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, DBUS_Port);
-			STD.TEXTIO.write(TX_LOC, string'("]"));
-			TX_STR(TX_LOC.all'range) := TX_LOC.all;
-			STD.TEXTIO.writeline(results, TX_LOC);
-			STD.TEXTIO.Deallocate(TX_LOC);
-		END;
-
-	BEGIN
-		CLOCK_LOOP : LOOP
-		CLK <= transport '0';
-		WAIT FOR 5 ns;
-		TX_TIME := TX_TIME + 5;
-		CLK <= transport '1';
-		WAIT FOR 50 ns;
-		TX_TIME := TX_TIME + 50;
-		CLK <= transport '0';
-		WAIT FOR 35 ns;
-		TX_TIME := TX_TIME + 35;
-		ANNOTATE_DMAW_ENABLE(TX_TIME);
-		ANNOTATE_DBUS_Port(TX_TIME);
-		WAIT FOR 10 ns;
-		TX_TIME := TX_TIME + 10;
-		END LOOP CLOCK_LOOP;
-	END PROCESS;
-
-	PROCESS   -- Process for CLK
-		VARIABLE TX_OUT : LINE;
-
-		BEGIN
-		-- --------------------
-		MEM_AD <= transport std_logic_vector'("00000000000000000"); --0
-		MEM_WE <= transport '0';
-		MEM_DTI <= transport std_logic_vector'("0000000000000000000000000000000000000000000000000000000000000000"); --0
-		RST <= transport '0';
-		-- --------------------
-		WAIT FOR 300 ns; -- Time=300 ns
-		MEM_AD <= transport std_logic_vector'("00000010100000000"); --500
-		MEM_WE <= transport '1';
-		MEM_DTI <= transport std_logic_vector'("0000000000000000000000000000000000000000000000000001000100010001"); --1111
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=400 ns
-		MEM_DTI <= transport std_logic_vector'("0000000000000000000000000000000000000000000000000010001000100010"); --2222
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=500 ns
-		MEM_DTI <= transport std_logic_vector'("0000000000000000000000000000000000000000000000000011001100110011"); --3333
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=600 ns
-		MEM_WE <= transport '0';
-		-- --------------------
-		WAIT FOR 3505 ns; -- Time=4105 ns
-		-- --------------------
-
-		STD.TEXTIO.write(TX_OUT, string'("Total[]"));
-		STD.TEXTIO.writeline(results, TX_OUT);
-		ASSERT (FALSE) REPORT
-			"Success! Simulation for annotation completed"
-			SEVERITY FAILURE;
-	END PROCESS;
-END testbench_arch;
-
-CONFIGURATION local_write_cfg OF local_write IS
-	FOR testbench_arch
-	END FOR;
-END local_write_cfg;
+end rtl;

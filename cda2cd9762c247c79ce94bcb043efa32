@@ -1,27 +1,26 @@
-Tue Jan  2 19:29:11 JST 2024
-#!/usr/bin/env python3
-#Time-stamp: <2017-06-10 01:52:29 hamada>
-import cv2
-import urllib.request
-import numpy as np
+Wed Jan 24 19:35:07 JST 2024
+#include <stdio.h>
+#include "nbodysim.h"
 
-#stream=urllib.request.urlopen('http://133.45.9.162:3389/mjpegfeed?640x480')        # for DroidCam
-stream=urllib.request.urlopen('http://192.168.101.160:3389/video?dummy=param.mjpg') # for IP Webcam
+void debug(double x[][DIM],double a[][DIM], int n, int nstep)
+{
+  int i;
+  static int flag=0;
+  static FILE* fp;
 
-bytes = b''
-while True:
-    raw = stream.read(1024)
-    bytes += raw
-    #print (bytes)
-    a = bytes.find(b'\xff\xd8')
-    b = bytes.find(b'\xff\xd9')
-    if a!=-1 and b!=-1:
-        jpg = bytes[a:b+2]
-        bytes= bytes[b+2:]
-        image = cv2.imdecode(np.fromstring(jpg, dtype=np.uint8),cv2.IMREAD_COLOR)
-        cv2.imshow('droidcam',image)
-        key = cv2.waitKey(1) & 0xFF
-        if key == ord('q'): break
+  if(flag==0){
+    fp = fopen("aaa.log","w");
+    flag = 1;
+  }else{
+    rewind(fp);
+  }
 
-cv2.destroyAllWindows()
+  for(i=0;i<n;i++){
+    fprintf(fp,"%d\t",nstep);
+    fprintf(fp,"%1.8e\t%1.8e\t%1.8e\t",x[i][0],x[i][1],x[i][2]);
+    fprintf(fp,"%1.8e\t%1.8e\t%1.8e\n",a[i][0],a[i][1],a[i][2]);
+  }
+
+  fflush(fp);
+}
 

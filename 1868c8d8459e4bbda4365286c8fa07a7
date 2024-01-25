@@ -1,302 +1,344 @@
-Tue Dec 19 19:44:08 JST 2023
--- C:\CYGWIN\HOME\ADMINISTRATOR\FKIT\PCI64\PROJ
--- VHDL Annotation Test Bench created by
--- HDL Bencher 6.1i
--- Wed Jan 05 04:12:45 2005
+Thu Jan 25 19:28:10 JST 2024
+/***************************************************
+ * The lowest level library for PROGRAPE-4
+ *
+ * Copyright(c) by Tsuyoshi Hamada.
+ * All rights reserved.
+ *
+ * PLEASE DO NOT BRANCH !!
+ *
+ * 20060916.rev1 : Development start
+ ***************************************************/
 
-LIBRARY IEEE;
-USE IEEE.STD_LOGIC_1164.ALL;
-USE IEEE.STD_LOGIC_UNSIGNED.ALL;
-USE IEEE.STD_LOGIC_ARITH.ALL;
-USE IEEE.STD_LOGIC_TEXTIO.ALL;
-USE STD.TEXTIO.ALL;
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <unistd.h>
+#include <sys/ioctl.h> // ioctl()
+#include <sys/mman.h>  // mmap()
+#include <sys/types.h> // open()
+#include <sys/stat.h>  // open()
+#include <sys/fcntl.h> // open()
 
-ENTITY sim_local_io IS
-END sim_local_io;
+#undef CERR
+#define CERR(fmt, args...) fprintf(stderr, fmt, ## args)
 
-ARCHITECTURE testbench_arch OF sim_local_io IS
--- If you get a compiler error on the following line,
--- from the menu do Options->Configuration select VHDL 87
-FILE RESULTS: TEXT OPEN WRITE_MODE IS "c:\cygwin\home\administrator\fkit\pci64\proj\sim_local_io.ano";
-	COMPONENT local_io
-		GENERIC (
-			NBIT_L_ADRO : INTEGER
-		);
-		PORT (
-			CALC_STS : In  std_logic;
-			NPIPE : In  std_logic_vector (7 DOWNTO 0);
-			BUSY_LOCAL_READ : Out  std_logic;
-			MEM_ADA : In  std_logic_vector (16 DOWNTO 0);
-			MEM_WEHA : In  std_logic;
-			MEM_WELA : In  std_logic;
-			MEM_DTIA : In  std_logic_vector (63 DOWNTO 0);
-			DMAW_ENABLE : Out  std_logic_vector (3 DOWNTO 0);
-			DMAR_ENABLE : Out  std_logic_vector (3 DOWNTO 0);
-			DBUS_Port : Out  std_logic_vector (63 DOWNTO 0);
-			DBUS_idata : In  std_logic_vector (63 DOWNTO 0);
-			DBUS_HiZ : Out  std_logic;
-			MEM_ADB : Out  std_logic_vector (12 DOWNTO 0);
-			MEM_WEHB : Out  std_logic;
-			MEM_WELB : Out  std_logic;
-			MEM_DTIB : Out  std_logic_vector (63 DOWNTO 0);
-			MEM_DTOB : In  std_logic_vector (63 DOWNTO 0);
-			RST : In  std_logic;
-			CLK : In  std_logic
-		);
-	END COMPONENT;
+#undef _CERR
+#define _CERR(fmt, args...) 
 
-	SIGNAL CALC_STS : std_logic;
-	SIGNAL NPIPE : std_logic_vector (7 DOWNTO 0);
-	SIGNAL BUSY_LOCAL_READ : std_logic;
-	SIGNAL MEM_ADA : std_logic_vector (16 DOWNTO 0);
-	SIGNAL MEM_WEHA : std_logic;
-	SIGNAL MEM_WELA : std_logic;
-	SIGNAL MEM_DTIA : std_logic_vector (63 DOWNTO 0);
-	SIGNAL DMAW_ENABLE : std_logic_vector (3 DOWNTO 0);
-	SIGNAL DMAR_ENABLE : std_logic_vector (3 DOWNTO 0);
-	SIGNAL DBUS_Port : std_logic_vector (63 DOWNTO 0);
-	SIGNAL DBUS_idata : std_logic_vector (63 DOWNTO 0);
-	SIGNAL DBUS_HiZ : std_logic;
-	SIGNAL MEM_ADB : std_logic_vector (12 DOWNTO 0);
-	SIGNAL MEM_WEHB : std_logic;
-	SIGNAL MEM_WELB : std_logic;
-	SIGNAL MEM_DTIB : std_logic_vector (63 DOWNTO 0);
-	SIGNAL MEM_DTOB : std_logic_vector (63 DOWNTO 0);
-	SIGNAL RST : std_logic;
-	SIGNAL CLK : std_logic;
+#define MAX_NBOARD 8
+unsigned int* bar0[MAX_NBOARD];
+unsigned int* bar1[MAX_NBOARD];
 
-BEGIN
-	UUT : local_io
-	GENERIC MAP (
-		NBIT_L_ADRO => 3
-	)
-	PORT MAP (
-		CALC_STS => CALC_STS,
-		NPIPE => NPIPE,
-		BUSY_LOCAL_READ => BUSY_LOCAL_READ,
-		MEM_ADA => MEM_ADA,
-		MEM_WEHA => MEM_WEHA,
-		MEM_WELA => MEM_WELA,
-		MEM_DTIA => MEM_DTIA,
-		DMAW_ENABLE => DMAW_ENABLE,
-		DMAR_ENABLE => DMAR_ENABLE,
-		DBUS_Port => DBUS_Port,
-		DBUS_idata => DBUS_idata,
-		DBUS_HiZ => DBUS_HiZ,
-		MEM_ADB => MEM_ADB,
-		MEM_WEHB => MEM_WEHB,
-		MEM_WELB => MEM_WELB,
-		MEM_DTIB => MEM_DTIB,
-		MEM_DTOB => MEM_DTOB,
-		RST => RST,
-		CLK => CLK
-	);
+//---------------------------------------
+#include "progrape.h"
 
-	PROCESS -- clock process for CLK,
-		VARIABLE TX_TIME : INTEGER :=0;
+static char *devname[] = {
+  "/dev/progrape0",
+  "/dev/progrape1",
+  "/dev/progrape2",
+  "/dev/progrape3",
+  "/dev/progrape4",
+  "/dev/progrape5",
+  "/dev/progrape6",
+  "/dev/progrape7",
+  "/dev/progrape8",
+};
 
-		PROCEDURE ANNOTATE_DMAW_ENABLE(
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
-			STD.TEXTIO.write(TX_LOC, TX_TIME);
-			STD.TEXTIO.write(TX_LOC,string'(",DMAW_ENABLE,"));
-			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, DMAW_ENABLE);
-			STD.TEXTIO.write(TX_LOC, string'("]"));
-			TX_STR(TX_LOC.all'range) := TX_LOC.all;
-			STD.TEXTIO.writeline(results, TX_LOC);
-			STD.TEXTIO.Deallocate(TX_LOC);
-		END;
+static int pg4_dev[] = {
+  -1,-1,-1,-1,-1,-1,-1,-1,
+};
 
-		PROCEDURE ANNOTATE_DMAR_ENABLE(
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
-			STD.TEXTIO.write(TX_LOC, TX_TIME);
-			STD.TEXTIO.write(TX_LOC,string'(",DMAR_ENABLE,"));
-			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, DMAR_ENABLE);
-			STD.TEXTIO.write(TX_LOC, string'("]"));
-			TX_STR(TX_LOC.all'range) := TX_LOC.all;
-			STD.TEXTIO.writeline(results, TX_LOC);
-			STD.TEXTIO.Deallocate(TX_LOC);
-		END;
+unsigned int *dmar_buf[MAX_NBOARD];
+unsigned int *dmaw_buf[MAX_NBOARD];
 
-		PROCEDURE ANNOTATE_DBUS_Port(
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
-			STD.TEXTIO.write(TX_LOC, TX_TIME);
-			STD.TEXTIO.write(TX_LOC,string'(",DBUS_Port,"));
-			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, DBUS_Port);
-			STD.TEXTIO.write(TX_LOC, string'("]"));
-			TX_STR(TX_LOC.all'range) := TX_LOC.all;
-			STD.TEXTIO.writeline(results, TX_LOC);
-			STD.TEXTIO.Deallocate(TX_LOC);
-		END;
+unsigned int* pg4_get_bar0ptr(int devid){ return bar0[devid]; }
+unsigned int* pg4_get_bar1ptr(int devid){ return bar1[devid]; }
 
-		PROCEDURE ANNOTATE_DBUS_HiZ(
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
-			STD.TEXTIO.write(TX_LOC, TX_TIME);
-			STD.TEXTIO.write(TX_LOC,string'(",DBUS_HiZ,"));
-			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, DBUS_HiZ);
-			STD.TEXTIO.write(TX_LOC, string'("]"));
-			TX_STR(TX_LOC.all'range) := TX_LOC.all;
-			STD.TEXTIO.writeline(results, TX_LOC);
-			STD.TEXTIO.Deallocate(TX_LOC);
-		END;
+#define DMA_BSIZE (0x1<<10) // 4KB
 
-		PROCEDURE ANNOTATE_MEM_ADB(
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
-			STD.TEXTIO.write(TX_LOC, TX_TIME);
-			STD.TEXTIO.write(TX_LOC,string'(",MEM_ADB,"));
-			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, MEM_ADB);
-			STD.TEXTIO.write(TX_LOC, string'("]"));
-			TX_STR(TX_LOC.all'range) := TX_LOC.all;
-			STD.TEXTIO.writeline(results, TX_LOC);
-			STD.TEXTIO.Deallocate(TX_LOC);
-		END;
+static void * __mmap_bar     (int devid, int bar);
+//    static int __pg4_DMA         (int devid, unsigned int size, unsigned int offset, unsigned int dir);
+//    static int __pg4_DMA_noInterrupt(int devid, unsigned int size, unsigned int offset, unsigned int dir);
+//    static int __pg4_DMA_with_retry(int devid, unsigned int size, unsigned int offset, unsigned int dir);
+int           pg4_DMAget     (int devid, unsigned int size);
+int           pg4_DMAput     (int devid, unsigned int size);
+int           pg4_DMAput_offset (int devid, unsigned int size, unsigned offset);
+int           pg4_DMAget_offset (int devid, unsigned int size, unsigned offset);
+void          pg4_wait       (int devid, int n);
+void          pg4_DMAcheck   (int devid);
+int           pg4_DMAretry   (int devid);
+unsigned long pg4_getbaseaddr(int devid, int j);
+unsigned long pg4_getbaseaddr_size(int devid, int bar);
+unsigned long pg4_read_pciconfig_dword(int devid, int adr);
+void pg4_get_pfpga_info(int devid, char *info);
+void pg4_set_pfpga_info(int devid, char *info);
 
-		PROCEDURE ANNOTATE_MEM_WEHB(
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
-			STD.TEXTIO.write(TX_LOC, TX_TIME);
-			STD.TEXTIO.write(TX_LOC,string'(",MEM_WEHB,"));
-			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, MEM_WEHB);
-			STD.TEXTIO.write(TX_LOC, string'("]"));
-			TX_STR(TX_LOC.all'range) := TX_LOC.all;
-			STD.TEXTIO.writeline(results, TX_LOC);
-			STD.TEXTIO.Deallocate(TX_LOC);
-		END;
 
-		PROCEDURE ANNOTATE_MEM_WELB(
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
-			STD.TEXTIO.write(TX_LOC, TX_TIME);
-			STD.TEXTIO.write(TX_LOC,string'(",MEM_WELB,"));
-			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, MEM_WELB);
-			STD.TEXTIO.write(TX_LOC, string'("]"));
-			TX_STR(TX_LOC.all'range) := TX_LOC.all;
-			STD.TEXTIO.writeline(results, TX_LOC);
-			STD.TEXTIO.Deallocate(TX_LOC);
-		END;
+static void * __mmap_dmabuf(int id, int is_wbuf)
+{
+  unsigned long size;
+  void *mapped_ptr;
 
-		PROCEDURE ANNOTATE_MEM_DTIB(
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
-			STD.TEXTIO.write(TX_LOC, TX_TIME);
-			STD.TEXTIO.write(TX_LOC,string'(",MEM_DTIB,"));
-			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, MEM_DTIB);
-			STD.TEXTIO.write(TX_LOC, string'("]"));
-			TX_STR(TX_LOC.all'range) := TX_LOC.all;
-			STD.TEXTIO.writeline(results, TX_LOC);
-			STD.TEXTIO.Deallocate(TX_LOC);
-		END;
+  switch (is_wbuf) {
+  case 0:
+    {
+      if (ioctl(pg4_dev[id], IOC_SV_MMAPMODE, MMAP_BUF_DMAR)) {
+	CERR("mmap dmar buf failed | %s:%d\n", __FILE__, __LINE__);
+	exit (-1);
+      }
+      size = ioctl(pg4_dev[id], IOC_GV_DMA_SIZE);
 
-		PROCEDURE ANNOTATE_BUSY_LOCAL_READ(
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
-			STD.TEXTIO.write(TX_LOC, TX_TIME);
-			STD.TEXTIO.write(TX_LOC,string'(",BUSY_LOCAL_READ,"));
-			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, BUSY_LOCAL_READ);
-			STD.TEXTIO.write(TX_LOC, string'("]"));
-			TX_STR(TX_LOC.all'range) := TX_LOC.all;
-			STD.TEXTIO.writeline(results, TX_LOC);
-			STD.TEXTIO.Deallocate(TX_LOC);
-		END;
+    }
+    break;
+  case 1:
+    {
+      if (ioctl(pg4_dev[id], IOC_SV_MMAPMODE, MMAP_BUF_DMAW)) {
+	CERR("mmap dmaw buf failed | %s:%d\n", __FILE__, __LINE__);
+	exit (-1);
+      }
+      size = ioctl(pg4_dev[id], IOC_GV_DMA_SIZE);
+    }
+    break;
+  default :
+    CERR("mmap dmabuf %d invalid | %s:%d\n", is_wbuf, __FILE__, __LINE__);
+    exit (-1);
+  }
 
-	BEGIN
-		CLOCK_LOOP : LOOP
-		CLK <= transport '0';
-		WAIT FOR 25 ns;
-		TX_TIME := TX_TIME + 25;
-		CLK <= transport '1';
-		WAIT FOR 25 ns;
-		TX_TIME := TX_TIME + 25;
-		ANNOTATE_DMAW_ENABLE(TX_TIME);
-		ANNOTATE_DMAR_ENABLE(TX_TIME);
-		ANNOTATE_DBUS_Port(TX_TIME);
-		ANNOTATE_DBUS_HiZ(TX_TIME);
-		ANNOTATE_MEM_ADB(TX_TIME);
-		ANNOTATE_MEM_WEHB(TX_TIME);
-		ANNOTATE_MEM_WELB(TX_TIME);
-		ANNOTATE_MEM_DTIB(TX_TIME);
-		ANNOTATE_BUSY_LOCAL_READ(TX_TIME);
-		WAIT FOR 25 ns;
-		TX_TIME := TX_TIME + 25;
-		CLK <= transport '0';
-		WAIT FOR 25 ns;
-		TX_TIME := TX_TIME + 25;
-		END LOOP CLOCK_LOOP;
-	END PROCESS;
+  mapped_ptr = mmap(NULL,
+		    size,
+		    (PROT_READ| PROT_WRITE),
+		    MAP_SHARED,
+		    pg4_dev[id],
+		    0);
+  _CERR("mmap_ptr called\n");
 
-	PROCESS   -- Process for CLK
-		VARIABLE TX_OUT : LINE;
+  return (mapped_ptr);
+}
 
-		BEGIN
-		-- --------------------
-		CALC_STS <= transport '0';
-		MEM_ADA <= transport std_logic_vector'("00000000000000000"); --0
-		MEM_WEHA <= transport '0';
-		MEM_WELA <= transport '0';
-		MEM_DTIA <= transport std_logic_vector'("0000000000000000000000000000000000000000000000000000000000000000"); --0
-		DBUS_idata <= transport std_logic_vector'("0000000000000000000000000000000000000000000000000000000000000000"); --0
-		MEM_DTOB <= transport std_logic_vector'("0000000000000000000000000000000000000000000000000000000000000000"); --0
-		RST <= transport '0';
-		NPIPE <= transport std_logic_vector'("00000010"); --2
-		-- --------------------
-		WAIT FOR 3400 ns; -- Time=3400 ns
-		CALC_STS <= transport '1';
-		-- --------------------
-		WAIT FOR 13600 ns; -- Time=17000 ns
-		CALC_STS <= transport '0';
-		-- --------------------
-		WAIT FOR 2700 ns; -- Time=19700 ns
-		-- --------------------
 
-		STD.TEXTIO.write(TX_OUT, string'("Total[]"));
-		STD.TEXTIO.writeline(results, TX_OUT);
-		ASSERT (FALSE) REPORT
-			"Success! Simulation for annotation completed"
-			SEVERITY FAILURE;
-	END PROCESS;
-END testbench_arch;
+static void * __mmap_bar(int id, int bar)
+{
+  unsigned long size;
+  unsigned long pagesize = getpagesize();
+  void *mapped_ptr;
 
-CONFIGURATION local_io_cfg OF sim_local_io IS
-	FOR testbench_arch
-	END FOR;
-END local_io_cfg;
+  switch (bar) {
+  case 0:
+    {
+      if (ioctl(pg4_dev[id], IOC_SV_MMAPMODE, MMAP_REG_PIORW)) {
+	CERR("mmap bar%d failed | %s:%d\n",bar,__FILE__,__LINE__);
+	exit (-1);
+      }
+      size = ioctl(pg4_dev[id], IOC_GV_REG_SIZE);
+    }
+    break;
+  case 1:
+    {
+      if (ioctl(pg4_dev[id], IOC_SV_MMAPMODE, MMAP_MEM_PIORW)) {
+	CERR("mmap bar%d failed | %s:%d\n",bar,__FILE__,__LINE__);
+	exit (-1);
+      }
+      size = ioctl(pg4_dev[id], IOC_GV_MEM_SIZE);
+    }
+    break;
+  default :
+    CERR("mmap bar%d invalid | %s:%d\n",bar,__FILE__,__LINE__);
+    exit (-1);
+  }
+
+  mapped_ptr = mmap(NULL,
+		    (size/pagesize+1)*pagesize,
+		    (PROT_READ| PROT_WRITE),
+		    MAP_SHARED,
+		    pg4_dev[id],
+		    0);
+
+  return (mapped_ptr);
+}
+
+
+int pg4_open(int id)
+{
+  pg4_dev[id] = open(devname[id], O_RDWR);
+  if(pg4_dev[id] == -1) {
+    CERR("open failed %s | %s:%d\n",devname[id] ,__FILE__,__LINE__);
+    return -1;
+  }
+
+  bar0[id] = (unsigned int *) __mmap_bar(id, 0); // mmap BAR0
+  bar1[id] = (unsigned int *) __mmap_bar(id, 1); // mmap BAR1
+
+  dmaw_buf[id] = (unsigned int *) __mmap_dmabuf(id, 1); // mmap DMAW buf
+  dmar_buf[id] = (unsigned int *) __mmap_dmabuf(id, 0); // mmap DMAR buf
+
+  if(dmaw_buf[id] == NULL){
+    CERR("mmap dmaw_buf failed %s | %s:%d\n",devname[id] ,__FILE__,__LINE__);
+    return (-1);
+  }
+
+  if(dmar_buf[id] == NULL){
+    CERR("mmap dmar_buf failed %s | %s:%d\n",devname[id] ,__FILE__,__LINE__);
+    return (-1);
+  }
+
+  _CERR("DMAW Buff at 0x%x\n",(unsigned int)dmaw_buf[id]);
+  _CERR("DMAR Buff at 0x%x\n",(unsigned int)dmar_buf[id]);
+
+  return 1;
+}
+
+
+void pg4_close(int id){
+  close(pg4_dev[id]);
+  pg4_dev[id] = -1;
+}
+
+
+void pg4_close_and_exit(int id){
+  //  pg4_DMAcheck(id);
+  pg4_close(id);
+  exit(1);
+}
+
+
+inline unsigned int pg4_readbase0(int id, unsigned int index){ return *(bar0[id] + index); }
+inline void         pg4_writebase0(int id, unsigned int index, unsigned int val){ *(bar0[id] + index) = val; }
+inline unsigned int pg4_readbase1(int id, unsigned int index){ return *(bar1[id] + index); }
+inline void         pg4_writebase1(int id, unsigned int index, unsigned int val){ *(bar1[id] + index) = val; }
+inline unsigned int ReadBase0(int id, unsigned int addr){return pg4_readbase0(id, addr>>2);}
+inline unsigned int ReadBase1(int id, unsigned int addr){return pg4_readbase1(id, addr>>2);}
+inline void         WriteBase0(int id, unsigned int addr, unsigned int val){pg4_writebase0(id, addr>>2, val);}
+inline void         WriteBase1(int id, unsigned int addr, unsigned int val){pg4_writebase1(id, addr>>2, val);}
+
+
+unsigned int pg4_get_dma_size(int id) {
+  return ( (unsigned int)ioctl(pg4_dev[id], IOC_GV_DMA_SIZE) );
+}
+
+
+unsigned int* pg4_get_dmawptr(int id) {
+  return ( (unsigned int*)dmaw_buf[id] );
+}
+
+
+unsigned int* pg4_get_dmarptr(int id) {
+  return ( (unsigned int*)dmar_buf[id] );
+}
+
+
+int pg4_DMAput(int id, unsigned int size)
+{
+  int ret = ioctl(pg4_dev[id], IOC_SV_DMAW, size);
+  if(ret){
+    CERR("DMAW failed %d| %s:%d\n",ret ,__FILE__, __LINE__);
+    exit (-1);
+  }
+  return (0);
+}
+
+
+int pg4_DMAget(int id, unsigned int size)
+{
+  int ret = ioctl(pg4_dev[id], IOC_SV_DMAR, size);
+  if(ret){
+    CERR("DMAR failed %d| %s:%d\n",ret ,__FILE__, __LINE__);
+    exit (-1);
+  }
+  return (0);
+}
+
+
+void pg4_DMAcheck(int devid)
+{
+  unsigned int flag, retry;
+  fprintf(stderr,"\t INT_STAT       (0x%X) : %x\n", REG_INT_STAT,       ReadBase0(devid, REG_INT_STAT));
+  fprintf(stderr,"\t INT_MASK       (0x%X) : %x\n", REG_INT_MASK,       ReadBase0(devid, REG_INT_MASK));
+  fprintf(stderr,"\t DMA_PCI_ADRS   (0x%X) : %x\n", REG_DMA_PCI_ADRS,   ReadBase0(devid, REG_DMA_PCI_ADRS));
+  fprintf(stderr,"\t DMA_LOCAL_ADRS (0x%X) : %x\n", REG_DMA_LOCAL_ADRS, ReadBase0(devid, REG_DMA_LOCAL_ADRS));
+  fprintf(stderr,"\t DMA_COUNT      (0x%X) : %x\n", REG_DMA_COUNT,      ReadBase0(devid, REG_DMA_COUNT));
+  fprintf(stderr,"\t DMA_CTRL       (0x%X) : %x\n", REG_DMA_CTRL,       ReadBase0(devid, REG_DMA_CTRL));
+  fprintf(stderr,"\t DMA_INTERVAL   (0x%X) : %x\n", REG_DMA_INTERVAL,   ReadBase0(devid, REG_DMA_INTERVAL));
+  fprintf(stderr,"\t DMA_STAT       (0x%X) : %x\n", REG_DMA_STAT,       ReadBase0(devid, REG_DMA_STAT));
+
+  flag = ReadBase0(devid, REG_DMA_STAT);
+
+  retry = ((0x1<<16)-1)&flag;
+  fprintf(stderr,"\t DMA dissconnect count %i\n", (flag>>16));
+  fprintf(stderr,"\t DMA retry count       %i\n", retry);
+  fprintf(stderr,"\n");
+  fflush(NULL);
+}
+
+int pg4_DMAretry(int devid)
+{
+  unsigned int flag, retry;
+  flag = ReadBase0(devid, REG_DMA_STAT);
+  retry = ((0x1<<16)-1)&flag;
+  return retry;
+}
+
+int pg4_DMAput_offset(int devid, unsigned int size, unsigned offset)
+{
+  CERR("REMOVED, %s:%d\n", __FILE__, __LINE__);exit(-1);
+  return -1;
+}
+
+int pg4_DMAget_offset(int devid, unsigned int size, unsigned offset)
+{
+  CERR("REMOVED, %s:%d\n", __FILE__, __LINE__);exit(-1);
+  return -1;
+}
+
+void pg4_wait(int devid, int n)
+{
+  CERR("REMOVED, %s:%d\n", __FILE__, __LINE__);exit(-1);
+}
+
+unsigned long pg4_getbaseaddr(int id, int bar)
+{
+  unsigned long ret;
+  if( (bar==0) || (bar==1)){
+    int bar0_dword_adr = 0x4;
+    ret = pg4_read_pciconfig_dword(id, bar0_dword_adr + bar);
+  }else{
+    CERR("bar %d invalid | %s:%d\n",bar ,__FILE__ ,__LINE__);
+    exit(-1);
+  }
+  return ret;
+}
+
+unsigned long pg4_getbaseaddr_size(int id, int bar)
+{
+  unsigned long size;
+  switch (bar) {
+  case 0:
+    size = ioctl(pg4_dev[id], IOC_GV_REG_SIZE);
+    break;
+  case 1:
+    size = ioctl(pg4_dev[id], IOC_GV_MEM_SIZE);
+    break;
+  default :
+    CERR("bar%d invalid | %s:%d\n",bar,__FILE__,__LINE__);
+    exit (-1);
+  }
+
+  return (size); // [Bytes]
+}
+
+unsigned long pg4_read_pciconfig_dword(int id, int adr)
+{
+  // note : 'adr' uses dword address (not byte address).
+  return (unsigned long) ioctl(pg4_dev[id], IOC_GV_PCICFG, adr);
+}
+
+void pg4_get_pfpga_info(int id, char* ret){
+  char info[NB_FPGA_INFO];
+  ioctl(pg4_dev[id], IOC_GP_FPGA_INFO, info);
+  strcpy(ret, info);
+}
+
+void pg4_set_pfpga_info(int id, char* info){
+  ioctl(pg4_dev[id], IOC_SP_FPGA_INFO, info);
+}

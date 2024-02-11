@@ -1,36 +1,16 @@
-Sat Dec  9 19:33:54 JST 2023
-#!/usr/bin/env python3
-import os
-from datetime import datetime
-import time
+Sun Feb 11 19:35:57 JST 2024
+/** 
+# xを1ステップ進める
+# x(k+1) = x(k) + v(k+1/2)*dt
+*/
 
-# YYYYMMDD_HH_MM_SS
-def get_filename_frame(basedir, str_datetime):
-    cell = list(str_datetime)
-    str_YYYYMMDD = ''.join(cell[0:8])
-    str_HH = ''.join(cell[9:11])
-    str_MM = ''.join(cell[12:14])
-    str_SS = ''.join(cell[15:17])
-    dirname = basedir + str_YYYYMMDD + "/" + str_HH
-    if os.path.exists(dirname) != True:
-        os.makedirs(dirname)
-    ret = dirname + "/" + str_datetime+".jpg"
-    ret = ret.replace(' ','')
-    return ret
+#include <stdio.h>
+#include "nbodysim.h"
 
-
-def get_filename_frame_simple(basedir, fname):
-    dirname = basedir
-    if os.path.exists(dirname) != True:
-        os.makedirs(dirname)
-    ret = dirname + fname
-    ret = ret.replace(' ','')
-    return ret
-
-
-if __name__ == '__main__':
-    while(True):
-        tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S')
-        fname = get_filename_frame('../work/', tnow)
-        print (fname)
-        time.sleep(0.5)
+void leapflog(double dt,double x[][DIM],double v[][DIM],int n)
+{
+    int i,d;
+    for(i=0;i<n;i++)
+        for(d=0;d<3;d++)
+            x[i][d] = x[i][d]+v[i][d]*dt;
+}

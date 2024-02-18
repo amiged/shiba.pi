@@ -1,189 +1,91 @@
-Wed Feb 14 19:29:41 JST 2024
--- C:\CYGWIN\HOME\ADMINISTRATOR\FKIT\PCI64\PROJ
--- VHDL Test Bench created by
--- HDL Bencher 6.1i
--- Wed Dec 29 19:47:04 2004
--- 
--- Notes:
--- 1) This testbench has been automatically generated from
---   your Test Bench Waveform
--- 2) To use this as a user modifiable testbench do the following:
---   - Save it as a file with a .vhd extension (i.e. File->Save As...)
---   - Add it to your project as a testbench source (i.e. Project->Add Source...)
--- 
+Sun Feb 18 19:52:21 JST 2024
+//-----------------------------------------------------------------------------
+// Output Pair-Wise Error
+// Modify: Tsuyoshi Hamada, Nov, 2006
+//-----------------------------------------------------------------------------
+#include  <iostream>
+#include  <cmath>
+#include  <cstdlib>
+#include  <iomanip> // cout << setw() << setprecision() 
+using namespace std;
 
-LIBRARY IEEE;
-USE IEEE.STD_LOGIC_1164.ALL;
-USE IEEE.STD_LOGIC_UNSIGNED.ALL;
-USE IEEE.STD_LOGIC_ARITH.ALL;
-USE IEEE.STD_LOGIC_TEXTIO.ALL;
-USE STD.TEXTIO.ALL;
+extern "C" void  force(double x[][3], double v[][3], double m[], double p[], double a[][3], double j[][3], int n);
+extern "C" void _force(double x[][3], double v[][3], double m[], double p[], double a[][3], double j[][3], int n);
 
-ENTITY sim_writecomb_check IS
-END sim_writecomb_check;
+extern "C" void debug_position_snap(double x[][3], double Gflops, int n, int nstep);
 
-ARCHITECTURE testbench_arch OF sim_writecomb_check IS
--- If you get a compiler error on the following line,
--- from the menu do Options->Configuration select VHDL 87
-FILE RESULTS: TEXT OPEN WRITE_MODE IS "results.txt";
-	COMPONENT writecomb_check
-		PORT (
-			MEM_WEHA : In  std_logic;
-			MEM_WELA : In  std_logic;
-			IS_ERR : Out  std_logic_vector (1 DOWNTO 0);
-			RST : In  std_logic;
-			CLK : In  std_logic
-		);
-	END COMPONENT;
+#define NMAX 1024
 
-	SIGNAL MEM_WEHA : std_logic;
-	SIGNAL MEM_WELA : std_logic;
-	SIGNAL IS_ERR : std_logic_vector (1 DOWNTO 0);
-	SIGNAL RST : std_logic;
-	SIGNAL CLK : std_logic;
+double rsv[65536][3];
 
-BEGIN
-	UUT : writecomb_check
-	PORT MAP (
-		MEM_WEHA => MEM_WEHA,
-		MEM_WELA => MEM_WELA,
-		IS_ERR => IS_ERR,
-		RST => RST,
-		CLK => CLK
-	);
+int main(int argc, char *argv[]) {
+  int index;
+  int n = 2;
 
-	PROCESS -- clock process for CLK,
-	BEGIN
-		CLOCK_LOOP : LOOP
-		CLK <= transport '0';
-		WAIT FOR 5 ns;
-		CLK <= transport '1';
-		WAIT FOR 50 ns;
-		CLK <= transport '0';
-		WAIT FOR 35 ns;
-		WAIT FOR 10 ns;
-		END LOOP CLOCK_LOOP;
-	END PROCESS;
+  double m[NMAX];
+  double r[NMAX][3];
+  double v[NMAX][3];
 
-	PROCESS   -- Process for CLK
-		VARIABLE TX_OUT : LINE;
-		VARIABLE TX_ERROR : INTEGER := 0;
+  double p[NMAX];
+  double a[NMAX][3];
+  double jk[NMAX][3];
 
-		PROCEDURE CHECK_IS_ERR(
-			next_IS_ERR : std_logic_vector (1 DOWNTO 0);
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			-- If compiler error ("/=" is ambiguous) occurs in the next line of code
-			-- change compiler settings to use explicit declarations only
-			IF (IS_ERR /= next_IS_ERR) THEN 
-				STD.TEXTIO.write(TX_LOC,string'("Error at time="));
-				STD.TEXTIO.write(TX_LOC, TX_TIME);
-				STD.TEXTIO.write(TX_LOC,string'("ns IS_ERR="));
-				IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, IS_ERR);
-				STD.TEXTIO.write(TX_LOC, string'(", Expected = "));
-				IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, next_IS_ERR);
-				STD.TEXTIO.write(TX_LOC, string'(" "));
-				TX_STR(TX_LOC.all'range) := TX_LOC.all;
-				STD.TEXTIO.writeline(results, TX_LOC);
-				STD.TEXTIO.Deallocate(TX_LOC);
-				ASSERT (FALSE) REPORT TX_STR SEVERITY ERROR;
-				TX_ERROR := TX_ERROR + 1;
-			END IF;
-		END;
+  double _p[NMAX];
+  double _a[NMAX][3];
+  double _jk[NMAX][3];
 
-		BEGIN
-		-- --------------------
-		RST <= transport '0';
-		MEM_WEHA <= transport '0';
-		MEM_WELA <= transport '0';
-		-- --------------------
-		WAIT FOR 200 ns; -- Time=200 ns
-		RST <= transport '0';
-		-- --------------------
-		WAIT FOR 500 ns; -- Time=700 ns
-		MEM_WEHA <= transport '0';
-		MEM_WELA <= transport '0';
-		-- --------------------
-		WAIT FOR 200 ns; -- Time=900 ns
-		RST <= transport '1';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=1000 ns
-		RST <= transport '0';
-		-- --------------------
-		WAIT FOR 1900 ns; -- Time=2900 ns
-		MEM_WEHA <= transport '1';
-		MEM_WELA <= transport '1';
-		-- --------------------
-		WAIT FOR 500 ns; -- Time=3400 ns
-		MEM_WEHA <= transport '0';
-		MEM_WELA <= transport '0';
-		-- --------------------
-		WAIT FOR 1100 ns; -- Time=4500 ns
-		MEM_WEHA <= transport '1';
-		MEM_WELA <= transport '1';
-		-- --------------------
-		WAIT FOR 200 ns; -- Time=4700 ns
-		MEM_WEHA <= transport '0';
-		MEM_WELA <= transport '0';
-		-- --------------------
-		WAIT FOR 1300 ns; -- Time=6000 ns
-		MEM_WELA <= transport '1';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=6100 ns
-		MEM_WELA <= transport '0';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=6200 ns
-		MEM_WEHA <= transport '0';
-		-- --------------------
-		WAIT FOR 300 ns; -- Time=6500 ns
-		MEM_WEHA <= transport '1';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=6600 ns
-		MEM_WEHA <= transport '0';
-		-- --------------------
-		WAIT FOR 1300 ns; -- Time=7900 ns
-		MEM_WELA <= transport '1';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=8000 ns
-		MEM_WEHA <= transport '1';
-		MEM_WELA <= transport '0';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=8100 ns
-		MEM_WEHA <= transport '0';
-		MEM_WELA <= transport '1';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=8200 ns
-		MEM_WEHA <= transport '1';
-		MEM_WELA <= transport '0';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=8300 ns
-		MEM_WEHA <= transport '0';
-		-- --------------------
-		WAIT FOR 2005 ns; -- Time=10305 ns
-		-- --------------------
+  m[0] = m[1] = 1.0;
 
-		IF (TX_ERROR = 0) THEN 
-			STD.TEXTIO.write(TX_OUT,string'("No errors or warnings"));
-			STD.TEXTIO.writeline(results, TX_OUT);
-			ASSERT (FALSE) REPORT
-				"Simulation successful (not a failure).  No problems detected. "
-				SEVERITY FAILURE;
-		ELSE
-			STD.TEXTIO.write(TX_OUT, TX_ERROR);
-			STD.TEXTIO.write(TX_OUT, string'(
-				" errors found in simulation"));
-			STD.TEXTIO.writeline(results, TX_OUT);
-			ASSERT (FALSE) REPORT
-				"Errors found during simulation"
-				SEVERITY FAILURE;
-		END IF;
-	END PROCESS;
-END testbench_arch;
+  for (int i = 0; i < 3 ; i++) r[i][0] = 0.0;
+  for (int i = 0; i < 3 ; i++) v[i][0] = 0.0;
+  for (int i = 0; i < 3 ; i++) v[i][1] = 0.0;
 
-CONFIGURATION writecomb_check_cfg OF sim_writecomb_check IS
-	FOR testbench_arch
-	END FOR;
-END writecomb_check_cfg;
+  index=0;
+  srand(0x12345);
+
+  for (int t = 0; t < 1000 ; t++){
+    
+
+    //    for (int i = 0; i < 3 ; i++) r[1][i] = pow(10.0, 2.0*rand()/(RAND_MAX+1.0));
+
+
+
+    for (int i = 0; i < 3 ; i++) r[1][i] = 1.0*rand()/(RAND_MAX+1.0);
+
+    for (int i = 0; i < 3 ; i++)  rsv[index][i] = r[1][i];
+    index++;
+
+
+    _force(r, v, m, _p, _a, _jk, n);
+     force(r, v, m,  p,  a,  jk, n);
+
+     double err_p, err_a[3], err_jk[3];
+     double rad;
+     rad = sqrt(r[1][0]*r[1][0]+r[1][1]*r[1][1]+r[1][2]*r[1][2]);
+     err_p = fabs(p[0]-_p[0])/_p[0];
+
+    
+     for (int k = 0; k < 3; k++){
+       double host  = _a[0][k];
+       double pipe  =  a[0][k];
+       double err = sqrt((host - pipe)*(host - pipe))/host;
+
+       cout << setw(8);
+       cout.precision(6);
+       cout << rad  << "\t";
+       cout.precision(6);
+       cout << err  << "\t";
+       cout.precision(6);
+       cout << host << "\t";
+       cout.precision(6);
+       cout << pipe << endl;
+
+     }
+
+  }
+  
+
+  debug_position_snap(rsv, 123.456, index, 10);
+
+  return 0;
+}

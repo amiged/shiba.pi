@@ -1,22 +1,2 @@
-Tue Jan 23 19:31:44 JST 2024
-# Xilinx CORE Generator 6.2.03i
-# User = Administrator
-Initializing default project...
-Loading plug-ins...
-All runtime messages will be recorded in C:\cygwin\home\Administrator\PG4\pci64\proj\coregen.log
-# busformat=BusFormatAngleBracketNotRipped
-# designflow=VHDL
-# expandedprojectpath=C:\cygwin\home\Administrator\PG4\pci64\proj
-# flowvendor=Foundation_iSE
-# formalverification=None
-# simulationoutputproducts=VHDL
-# xilinxfamily=Virtex2
-# outputoption=DesignFlow
-# overwritefiles=Default
-# simvendor=ModelSim
-# expandedprojectpath=C:\cygwin\home\Administrator\PG4\pci64\proj
-SETPROJECT .
-Set current Project to C:\cygwin\home\Administrator\PG4\pci64\proj
-SET BusFormat = BusFormatAngleBracketNotRipped
-SETXIPCPORTHOST 1271
-XIPCPJSENDCORES virtex2
+Wed Feb 21 19:40:23 JST 2024
+set AD {../rtl/ifpga.ucf}

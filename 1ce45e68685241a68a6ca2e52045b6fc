@@ -1,29 +1,50 @@
-Sat Dec  9 19:39:22 JST 2023
-//Time-stamp: "2006-11-21 00:17:47 hamada"
+Fri Mar  1 19:35:39 JST 2024
+-- Copyright 2004 Tsuyoshi Hamada
+--
+--
+--clk         __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __
+--[DMAR_ENABLE] _____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
+--en0                _____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
+--en1                     _____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
+--en2                          _____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
+--en3                               _____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
+--DBUS_HiZ            ~~~~~~~~~~~~~~\_________________________________________________/~~~~
 
-#define FDIM 8       // depend on NBIT_L_UADR     (@ ifpga.vhd)
-#define JDIM 4       // depend on dpram adr width (@ pgpg_mem.vhd)
-#define XI_AWIDTH 4  // depend on l_adri width    (@ pgpg_mem.vhd)
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
 
-int pgr_open(int);
-void pgr_close(int);
+entity dmar_dbus_hiz is
+  port (
+    RST       : in std_logic;
+    CLK       : in std_logic;
+    ENABLE    : in std_logic;
+    DBUS_HiZ  : out std_logic :='1');
+end dmar_dbus_hiz;
 
-void pgr_reset(int devid);
-int  pgr_get_writecomb_err(int devid);
+architecture rtl of dmar_dbus_hiz is
+signal en0,en1,en2,en3 : std_logic :='0';
+begin
 
-void pgr_setjpset(int devid, unsigned int jdata[][JDIM], int nj);
-void pgr_setjpset_one(int devid, int j, unsigned int jdata[JDIM]);
+  process(CLK) begin
+    if(CLK'event and CLK = '1') then
+      en3 <= en2;
+      en2 <= en1;
+      en1 <= en0;
+      en0 <= ENABLE;
+    end if;
+  end process;
 
-void pgr_setipset(int devid, unsigned int *idata, int num);
-void pgr_setipset_ichip(int devid, unsigned int ichip, unsigned int *idata, int number_of_pipelines);
-void pgr_setipset_one(int devid, unsigned int ichip, int ipipe, unsigned int *idata, int idim);
 
-void pgr_start_calc(int devid, unsigned int n);
-void pgr_calc_start(int devid, unsigned int n);
-void pgr_calc_finish(int devid);
+  process(RST,CLK,en2,en3) begin
+    if(RST='1') then
+      DBUS_HiZ <= '1';
+    elsif(CLK'event and CLK = '1') then
+     if( (en1='1') AND (en2='0') ) then
+       DBUS_HiZ <= '0';
+     elsif( (en2='0') AND (en3='1') ) then
+       DBUS_HiZ <= '1';
+     end if;
+    end if;
+  end process;
 
-void pgr_getfoset(int devid, unsigned long long int fodata[][FDIM]);
-
-void pgr_set_npipe_per_chip(int devid, int n);
-void pgr_set_jwidth(int devid, int n);
-void pgr_set_nchip(int nchip);
+end rtl;

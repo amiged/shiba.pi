@@ -1,153 +1,63 @@
-Thu Feb 29 19:27:46 JST 2024
--- Copyright 2004,2005,2006 by Tsuyoshi Hamada
--- 2006/06/22 : add some comments (T.H)
--- 2006/02/08 : Fixed (T.H)
--- LOCAL IO (READ & WRITE)
-library IEEE;
+Tue Mar 12 19:50:05 JST 2024
+info x 55 510 0 0 0 0 0 0 0 0 0 0 0 0 0 0 VHDL
+col x 772 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+radix x 16 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+entity name 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 writecomb_check
+term mark 409 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+vlib save 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.STD_LOGIC_UNSIGNED.ALL;
 use IEEE.STD_LOGIC_ARITH.ALL;
-
-entity LOCAL_IO is
-  generic (NBIT_L_ADRO : integer := 3);
-  port (
-    
-    CALC_STS : in std_logic;                               -- from PFPGA CBUS INPUT (1: pipe done, 0: pipe idle or running) 
-    NPIPE : in std_logic_vector(7 downto 0) := "00000001"; -- from PGPG_REG3
-    BUSY_LOCAL_READ : out std_logic :='0';                 -- to GPREG0(0)
-
-    -- pcicnt input
-    MEM_ADA  : in std_logic_vector(19 downto 0);     -- DPRAM Port B R/W Address
-    MEM_WEHA : in std_logic;
-    MEM_WELA : in std_logic;
-    MEM_DTIA : in std_logic_vector(63 downto 0);
-
-    -- CBUS/DBUS
-    DMAW_ENABLE : out std_logic_vector(3 downto 0); -- for 4 pfpga chip
-    DMAR_ENABLE : out std_logic_vector(3 downto 0); -- for 4 pfpga chip
-    DBUS_Port : out std_logic_vector(63 downto 0);
-    DBUS_idata: in std_logic_vector(63 downto 0);
-    DBUS_HiZ  : out std_logic;
-
-    -- DPRAM R/W ports
-    MEM_ADB     : out std_logic_vector(12 downto 0);     -- DPRAM Port B R/W Address
-    MEM_WEHB    : out std_logic;                         -- DPRAM Port B Write Enable (High Word)
-    MEM_WELB    : out std_logic;                         -- DPRAM Port B Write Enable (Low  Word)
-    MEM_DTIB    : out std_logic_vector(63 downto 0);     -- DPRAM Port B Write Data
-    MEM_DTOB    : in  std_logic_vector(63 downto 0);     -- DPRAM Port B Read Data
-
-    RST : in  std_logic;
-    CLK : in  std_logic
-    );
-end LOCAL_IO;
-architecture rtl of LOCAL_IO is
-
-component LOCAL_WRITE
-  port (
-    -- pcicnt input
-    MEM_AD  : in std_logic_vector(19 downto 0);
-    MEM_WE  : in std_logic;
-    MEM_DTI : in std_logic_vector(63 downto 0);
-
-    -- CBUS/DBUS
-    DMAW_ENABLE : out std_logic_vector(3 downto 0); -- for 4 pfpga chip
-    DBUS_Port : out std_logic_vector(63 downto 0);  -- outside of this module, 1 delay is inserted.
-    RST : in  std_logic;
-    CLK : in  std_logic
-    );
-end component;
-
-component LOCAL_READ
-  generic ( NBIT_L_ADRO : integer := 3);
-  port (
-    NPIPE : in std_logic_vector(7 downto 0); -- from PGPG_REG3
-    CALC_STS : in std_logic;    -- from PFPGA
-    BUSY : out std_logic :='0'; -- to GPREG0
-
-    -- CBUS/DBUS
-    DMAR_ENABLE : out std_logic_vector(3 downto 0); -- for 4 pfpga chip
-    DBUS_Port : out std_logic_vector(63 downto 0);
-    DBUS_idata: in std_logic_vector(63 downto 0);
-    DBUS_HiZ  : out std_logic;
-
-    -- DPRAM R/W ports
-    MEM_ADB     : out std_logic_vector(12 downto 0);     -- DPRAM Port B R/W Address
-    MEM_WEHB    : out std_logic;                         -- DPRAM Port B Write Enable (High Word)
-    MEM_WELB    : out std_logic;                         -- DPRAM Port B Write Enable (Low  Word)
-    MEM_DTIB    : out std_logic_vector(63 downto 0);     -- DPRAM Port B Write Data
-
-    RST : in  std_logic;
-    CLK : in  std_logic
-    );
-end component;
-  signal dbus_port0   : std_logic_vector(63 downto 0) := (others=>'0'); 
--- DMAW
-  signal dmaw_dbus_o  : std_logic_vector(63 downto 0) := (others=>'0');
--- DMAR
-  signal dmar_dbus_o  : std_logic_vector(63 downto 0) := (others=>'0');
-  signal busy_dmar    : std_logic;
-
-begin
-
-  -- DMA BUSY or IDLE
-  process (CLK,busy_dmar,CALC_STS) begin
-    if(CLK'event and CLK='1') then
-      if   (CALC_STS='1' AND busy_dmar='0') then
-        BUSY_LOCAL_READ <= '0';
-      elsif(CALC_STS='1' AND busy_dmar='1') then
-        BUSY_LOCAL_READ <= '1';
-      elsif(CALC_STS='1' AND busy_dmar='0') then
-        BUSY_LOCAL_READ <= '1';
-      elsif(CALC_STS='0') then
-        BUSY_LOCAL_READ <= '1';
-      end if;
-    end if;
-  end process;
-
-
-
-  ------------------------------
-  --- DBUS_Port              ---
-  ------------------------------
-  process (CLK) begin
-    if(CLK'event and CLK='1') then
-      DBUS_Port <= dbus_port0;
-    end if;
-  end process;
-
-  with busy_dmar select
-    dbus_port0 <= dmar_dbus_o when '1',
-                  dmaw_dbus_o when others;
-
--------------------------------------------------------------------------------
--- Write : IFPGA --> PFPGAs
--------------------------------------------------------------------------------
-u0 : LOCAL_WRITE
-  port map (MEM_AD      => MEM_ADA,
-            MEM_WE      => MEM_WELA,
-            MEM_DTI     => MEM_DTIA,
-            DMAW_ENABLE => DMAW_ENABLE,
-            DBUS_Port   => dmaw_dbus_o,
-            RST         => RST,
-            CLK         => CLK);
-
--------------------------------------------------------------------------------
--- Read : IFPGA <-- PFPGAs
--------------------------------------------------------------------------------
-u1 : LOCAL_READ
-  generic map (NBIT_L_ADRO => NBIT_L_ADRO)
-  port map (NPIPE       => NPIPE,
-            CALC_STS    => CALC_STS,
-            BUSY        => busy_dmar,
-            DMAR_ENABLE => DMAR_ENABLE,
-            DBUS_Port   => dmar_dbus_o,
-            DBUS_idata  => DBUS_idata,
-            DBUS_HiZ    => DBUS_HiZ,
-            MEM_ADB     => MEM_ADB,
-            MEM_WEHB    => MEM_WEHB,
-            MEM_WELB    => MEM_WELB,
-            MEM_DTIB    => MEM_DTIB,
-            RST         => RST,
-            CLK         => CLK);
-
-end rtl;
+
+var add 4 0 0 162 12 0 772 100 50 50 5 85 0 0 0 0 RSTInstd_logicRISING_EDGECLK
+var add 5 0 0 226 13 0 772 100 50 50 5 85 0 0 0 0 CLKInstd_logicRISING_EDGECLK
+var add 1 0 0 162 9 0 772 100 50 50 5 85 0 0 0 0 MEM_WEHAInstd_logicRISING_EDGECLK
+var add 2 0 0 162 10 0 772 100 50 50 5 85 0 0 0 0 MEM_WELAInstd_logicRISING_EDGECLK
+var add 3 1 0 164 11 0 772 100 50 50 5 85 0 0 0 0 IS_ERROutstd_logic_vectorRISING_EDGECLK
+vdone xxx 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+npos xxx 125 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+cell fill 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+cell fill 1 8 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+cell fill 1 36 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
+cell fill 1 40 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+cell fill 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+cell fill 3 28 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+cell fill 3 116 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
+cell fill 3 136 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+cell fill 3 180 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
+cell fill 3 188 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+cell fill 3 248 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+cell fill 3 260 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
+cell fill 3 264 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+cell fill 3 320 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
+cell fill 3 324 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+cell fill 3 328 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
+cell fill 3 332 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+cell fill 4 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+cell fill 4 28 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+cell fill 4 116 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
+cell fill 4 136 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+cell fill 4 180 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
+cell fill 4 188 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+cell fill 4 240 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
+cell fill 4 244 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+cell fill 4 316 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
+cell fill 4 320 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+cell fill 4 324 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
+cell fill 4 328 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+time info 50 50 5 85 50 50 1 1 0 0 0 0 0 0 0 0 nsCLK
+font save -14 0 400 49 0 0 0 0 0 0 0 0 0 0 0 0 Times New Roman
+src mod 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 c:\cygwin\home\administrator\fkit\pci64\rtl\writecomb_check.vhd
+utd true 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+cellenab on 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+grid on 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+com add 1 1 0 442 7 0 -67 0 0 0 0 0 0 0 0 0 Waveform created by
+HDL Bencher 6.1i
+Source = c:\cygwin\home\administrator\fkit\pci64\rtl\writecomb_check.vhd
+Wed Dec 29 19:45:47 2004
+type info 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 std_logicBITDOWNTO
+type info 31 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 std_logic_vectorVECTORDOWNTO
+opt vhdl87 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+NumClocks x 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+clock_1 name 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 CLK
+Zoom_level x 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1.00000000000000

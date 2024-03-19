@@ -1,47 +1,59 @@
-Fri Feb  9 19:28:01 JST 2024
-info x 42 510 0 0 0 0 0 0 0 0 0 0 0 0 0 0 VHDL
-col x 1540 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-radix x 16 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-entity name 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 local_read_cnt
-term mark 1313 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-vlib save 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL;
-use IEEE.STD_LOGIC_ARITH.ALL;
-
-var add 11 0 0 226 39 0 1540 100 50 50 25 25 0 0 0 0 CLKInstd_logicRISING_EDGECLK
-var add 2 0 0 98 25 0 1540 100 50 50 25 25 0 0 0 0 CALC_DONEInstd_logicRISING_EDGECLK
-var add 9 0 0 98 36 0 1540 100 50 50 25 25 0 0 0 0 BUSY_IFInstd_logicRISING_EDGECLK
-var add 10 0 0 98 38 0 1540 100 50 50 25 25 0 0 0 0 RSTInstd_logicRISING_EDGECLK
-var add 1 7 0 100 24 0 1540 100 50 50 25 25 0 0 0 0 NPIPEInstd_logic_vectorRISING_EDGECLK
-var add 3 0 0 98 27 0 1540 100 50 50 25 25 0 0 0 0 BUSYOutstd_logicRISING_EDGECLK
-var add 4 0 0 98 30 0 1540 100 50 50 25 25 0 0 0 0 EXECOutstd_logicRISING_EDGECLK
-var add 5 18 0 100 31 0 1540 100 50 50 25 25 0 0 0 0 START_ADOutstd_logic_vectorRISING_EDGECLK
-var add 6 8 0 100 32 0 1540 100 50 50 25 25 0 0 0 0 NQWORDOutstd_logic_vectorRISING_EDGECLK
-var add 7 3 0 100 33 0 1540 100 50 50 25 25 0 0 0 0 CHIPSELOutstd_logic_vectorRISING_EDGECLK
-var add 8 12 0 100 34 0 1540 100 50 50 25 25 0 0 0 0 MEM_AD_BASEOutstd_logic_vectorRISING_EDGECLK
-vdone xxx 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-npos xxx 181 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-cell fill 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-cell fill 2 24 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
-cell fill 2 28 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-cell fill 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-cell fill 4 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-cell fill 5 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 00000000
-cell fill 5 4 0 0 0 0 0 0 0 0 0 0 0 0 0 0 00000010
-time info 50 50 25 25 50 50 1 1 0 0 0 0 0 0 0 0 nsCLK
-font save -14 0 400 49 0 0 0 0 0 0 0 0 0 0 0 0 Times New Roman
-generic add 1 16 1 0 0 0 0 0 0 0 0 0 0 0 0 0 CNT_WIDTHINTEGER16
-generic add 2 24576 1 0 0 0 0 0 0 0 0 0 0 0 0 0 FO_BASEINTEGER24576
-generic add 3 3 1 0 0 0 0 0 0 0 0 0 0 0 0 0 NBIT_FO_UADINTEGER3
-generic add 4 8 1 0 0 0 0 0 0 0 0 0 0 0 0 0 INTF_LATINTEGER8
-src mod 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 c:\cygwin\home\administrator\fkit\pci64\rtl\local_read_cnt.vhd
-utd true 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-cellenab on 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-grid on 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-type info 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 std_logicBITDOWNTO
-type info 31 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 std_logic_vectorVECTORDOWNTO
-opt vhdl87 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-NumClocks x 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-clock_1 name 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 CLK
-Zoom_level x 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 5.06250000000000
+Tue Mar 19 19:29:55 JST 2024
+//-----------------------------------------------------------------------------
+// mk_eight.C:  prints initial conditions for the figure eight
+//              of the three-body problem
+//-----------------------------------------------------------------------------
+#include  <iostream>
+using namespace std;
+
+typedef double  real;                      // "real" as a general name for the
+                                           // standard floating-point data type
+#define  NDIM     3                        // number of spatial dimensions
+
+int main()
+{
+    const int n = 3;           // number of particles
+    const real t = 0;          // time
+    real r[n][NDIM];           // r[i][k] : position component k for particle i
+    real v[n][NDIM];           // v[i][k] : velocity component k for particle i
+    real m[n];                 // m[i] : mass for particle i
+
+    m[0] = 1;
+    m[1] = 1;
+    m[2] = 1;
+
+    r[0][0] = 0.9700436;
+    r[0][1] = -0.24308753;
+    r[0][2] = 0;
+    v[0][0] = 0.466203685;
+    v[0][1] = 0.43236573;
+    v[0][2] = 0;
+
+    r[1][0] = -r[0][0];
+    r[1][1] = -r[0][1];
+    r[1][2] = -r[0][2];
+    v[1][0] = v[0][0];
+    v[1][1] = v[0][1];
+    v[1][2] = v[0][2];
+
+    r[2][0] = 0;
+    r[2][1] = 0;
+    r[2][2] = 0;
+    v[2][0] = -2 * v[0][0];
+    v[2][1] = -2 * v[0][1];
+    v[2][2] = -2 * v[0][2];
+
+    cout.precision(16);
+
+    cout << n << endl;                      // first output line:  N
+    cout << t << endl;                      // second output line:  time
+    for (int i = 0; i < n; i++){
+        cout << m[i];                       // each next output line:
+        for (int k = 0; k < NDIM; k++)      //   m r_x r_y r_z v_x v_y v_z
+            cout << ' ' << r[i][k];
+        for (int k = 0; k < NDIM; k++)
+            cout << ' ' << v[i][k];
+        cout << endl;
+    }
+}
+//-----------------------------------------------------------------------------

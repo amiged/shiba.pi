@@ -1,85 +1,57 @@
-Thu Jan  4 19:26:54 JST 2024
-#!/usr/bin/env python3
-#Time-stamp: <2017-05-30 09:51:10 hamada>
-import argparse
-import numpy as np
-import cv2
-from datetime import datetime
-import mkdir
-
-def put_text(image, text):
-    font_size = 1.0
-    font_type = cv2.FONT_HERSHEY_PLAIN
-    font_color = (0xaf, 0xdf, 0xf)
-    #    cv2.putText(image, text, (460, 15), font_type, font_size, font_color)
-    cv2.putText(image, text, (10, 15), font_type, font_size, font_color)
-
-if (__name__ == '__main__'):
-    parser = argparse.ArgumentParser(description = "description goes here")
-    parser.add_argument("--devid", type=int, help = "set device id", required=False)
-    args = parser.parse_args()
-    devid = 0
-    if args.devid:
-        devid = int(args.devid)
-        print ("set devid = ", devid)
-
-    log_base = '../log/'
-    cap = []
-    for i in range(3):
-        cap.append(cv2.VideoCapture(i))
-
-    # -- swap cap --
-    if True:
-        cap_tmp = cap[0]
-        cap[0] = cap[2]
-        cap[2] = cap_tmp
-
-
-    cap_width  = cap[0].get(cv2.CAP_PROP_FRAME_WIDTH)
-    cap_height = cap[0].get(cv2.CAP_PROP_FRAME_HEIGHT)
-    cap_fps    = cap[0].get(cv2.CAP_PROP_FPS)
-
-    print(cap_width, "x", cap_height, ":", cap_fps)
-    size = (int(cap_width/2), int(cap_height/2))
-
-    tnow0 = datetime.now().strftime('%Y%m%d_%H_%M_%S') # ('%Y%m%d_%H_%M_%S_%f')
-
-    while(cap[0].isOpened() and cap[1].isOpened() and cap[2].isOpened()):
-        frame = [0,0,0]
-        for (i, fm) in enumerate(frame):
-            ret, fm = cap[i].read()
-            smallimg = cv2.resize(fm, size)
-            if False: cv2.imshow('camera: %d'%(i), smallimg)
-            frame[i] = smallimg
-
-        # ----------------------------------------------------------------
-        frame_height, frame_width = frame[0].shape[:2]
-        image = np.zeros((frame_height, frame_width*3, 3), dtype=np.uint8)
-
-        for (i, fm) in enumerate(frame):
-            sx = frame_width * i
-            sy = 0
-            ex = frame_width * (i+1)
-            ey = frame_height
-            image[sy:ey,sx:ex] = fm
-
-        cv2.imshow('pycam', image)
-
-        tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S')
-        if(tnow != tnow0):
-            put_text(image, tnow)
-            basedir = '../log/'
-            ofname = mkdir.get_filename_frame(basedir, tnow)
-            cv2.imwrite(ofname, image)
-            print(ofname)
-            tnow0 = tnow
-
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-
-    for (i, fm) in enumerate(frame):
-        cap[i].release()
-
-    cv2.destroyAllWindows()
-
-    print("Done.")
+Sun Mar 31 19:30:11 JST 2024
+1
+0.0	0.0
+-100.0	0.0
+-100.0	0.0
+-100.0	0.0
+-100.0	0.0
+-2.746715e-01	4.191831e-01
+-2.931587e-01	2.247797e-01
+2.321991e-01	4.064824e-01
+-1.520429e-01	3.578809e-01
+-8.481506e-02	-3.058323e-01
+1.856104e-01	2.437552e-02
+-3.403643e-01	4.547575e-01
+-3.730157e-01	-4.956605e-01
+-1.173085e-01	-2.492071e-01
+1.552879e-01	3.449078e-02
+1.099664e-01	-2.121421e-01
+4.092620e-01	2.361288e-01
+-3.788992e-01	1.148062e-01
+-2.340848e-01	4.453564e-01
+-7.531051e-02	-2.516460e-01
+1.772955e-01	-4.287967e-01
+-4.426001e-02	-3.237644e-04
+-4.797312e-01	3.861750e-01
+1.545830e-01	5.970007e-02
+4.850480e-01	-1.605443e-01
+-4.632017e-01	-2.009751e-01
+4.881687e-01	-5.634217e-02
+-3.708808e-01	4.150378e-01
+-1.135756e-01	-4.695678e-01
+-3.155564e-01	4.356883e-01
+-1.920876e-02	9.783734e-02
+-6.385236e-02	-3.949834e-01
+2.275205e-01	-3.768423e-01
+1.721155e-01	-4.660092e-01
+4.644338e-01	-4.804784e-01
+-4.553355e-01	-7.876486e-02
+2.642185e-01	4.444889e-01
+5.434882e-02	1.171663e-01
+1.465040e-01	-1.143288e-01
+4.021194e-01	-1.771178e-01
+-7.684997e-02	-4.504972e-02
+7.223762e-02	-4.515364e-01
+-2.392842e-02	-3.878574e-01
+3.425949e-01	-1.136164e-01
+-4.632521e-01	2.447992e-01
+2.661087e-03	-2.676771e-01
+-2.328564e-01	-3.223420e-01
+-4.466751e-01	-1.286633e-01
+-4.479510e-01	-6.189542e-02
+-4.433532e-01	1.711145e-01
+-2.251056e-01	-4.814771e-01
+1.644014e-01	3.307433e-01
+-4.618902e-01	1.489123e-01
+7.775744e-02	3.332788e-01
+3.334003e-01	-1.894713e-01

@@ -1,131 +1,302 @@
-Sun Dec 17 19:51:34 JST 2023
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL;
-use IEEE.STD_LOGIC_ARITH.ALL;
+Mon Apr  1 19:27:13 JST 2024
+#!/usr/bin/env python3
+#Time-stamp: <2017-06-12 07:44:23 hamada>
+import cv2
+import urllib.request
+import numpy as np
+import argparse
+from datetime import datetime
+import mkdir
 
-entity USER is
-  port (
-    RST         : in  std_logic;                     -- PCI Bus Reset
-    CLK         : in  std_logic;                     -- PCI bus Clock
-    PSW_IN      : in  std_logic_vector( 1 downto 0); -- Push SW Input
-    DIPSW       : out  std_logic_vector( 3 downto 0);-- DIPSW Signal
-    PSW_ON0     : out  std_logic;                    -- User Interrupt 0 On Request
-    PSW_ON1     : out  std_logic;                    -- User Interrupt 1 On Request
-    USERINT2_ON : out  std_logic                     -- User Interrupt 2 On Request
-    );
-end USER;
+class DroidCam(object):
+    def __init__(self):
+        self.droidapp = 'IP Webcam'
+        self.ipadr  = '192.168.7.2'
+#        self.droidapp = 'DroidCam'
+#        self.ipadr  = '133.45.9.162'
+        self.port  = '3389'
+        self.stream = -1
+        self.URL = -1
+    def get_stream(self):
+        stub = ''
+        if (self.droidapp == 'DroidCam'):
+            stub = '/mjpegfeed?960x720'
+        elif (self.droidapp == 'IP Webcam'):
+            stub = '/video?dummy=param.mjpg'
+        else:
+            stub = '/mjpegfeed?640x480'
+
+        url = 'http://'+self.ipadr+':'+self.port + stub
+        print ('URL: ', url)
+        self.URL = url
+        self.stream = urllib.request.urlopen(self.URL)
+        return (self.stream)
+
+class State(object):
+    def __init__(self):
+        self.is_record = False
+        self.drawing = False
+        self.moving = False
+        self.posi0 = [-1,-1]
+        self.posi1 = [-1,-1]
+        self.posi2 = [-1,-1]
+        self.image = -1
+        self.image_size = [-1, -1] # [height, width]
+        self.image_orig = -1
+        self.class_num = 777
+        self.image_num = 0
+
+    def draw_rect(self):
+        # print ("posi0, posi1: ", self.posi0, self.posi1)
+        cv2.rectangle(self.image, (self.posi0[0], self.posi0[1]), (self.posi1[0], self.posi1[1]), (0, 255, 0), 1)
+
+    def draw_text(self):
+        if(self.is_record):
+            font = cv2.FONT_HERSHEY_TRIPLEX # cv2.FONT_HERSHEY_PLAIN
+            font_size = 0.8
+            text = "<<%d>>"% (self.image_num)
+            color = (0x0, 0x0, 0xBF)
+            px = int(self.image_size[1]/2)
+            py = 30
+            cv2.putText(self.image, text,(px, py), font, font_size, color)
+
+state = State()
+
+def mouse_event(event,x,y,flags,param):
+    global state
+
+    if x < 0: x = 0
+    if y < 0: y = 0
+    if x >= state.image_size[1]: x = state.image_size[1] - 1
+    if y >= state.image_size[0]: y = state.image_size[0] - 1
+
+    if event == (cv2.EVENT_LBUTTONDOWN):
+        state.posi0[0] = x0 = state.posi1[0]
+        state.posi0[1] = y0 = state.posi1[1]
+        state.posi1[0] = x
+        state.posi1[1] = y
+        print ("Rect: (%d, %d) - (%d, %d)"%(x0, y0, x, y) )
+
+    if event == (cv2.EVENT_RBUTTONDOWN): 
+        state.moving = True
+        state.posi2[0] = x
+        state.posi2[1] = y
+
+    if event == (cv2.EVENT_RBUTTONUP): 
+        state.moving = False
+        state.posi2[0] = x
+        state.posi2[1] = y
+    
+
+    if event == (cv2.EVENT_MOUSEMOVE):
+        if state.moving == True:
+            width  = abs(state.posi0[0] - state.posi1[0])
+            height = abs(state.posi0[1] - state.posi1[1])
+            x0 = x - int(width/2)
+            x1 = x + int(width/2)
+            y0 = y - int(height/2)
+            y1 = y + int(height/2)
+
+            x_min = min(x0, x1)
+            x_max = max(x0, x1)
+            y_min = min(y0, y1)
+            y_max = max(y0, y1)
+
+            if x_min < 0: x_min = 0
+            if y_min < 0: y_min = 0
+            if x_max >= state.image_size[1]: x_max = state.image_size[1] - 1
+            if y_max >= state.image_size[0]: y_max = state.image_size[0] - 1
+
+            state.posi0[0] = x_min
+            state.posi0[1] = y_min
+            state.posi1[0] = x_max
+            state.posi1[1] = y_max
 
 
-architecture USER_rtl of USER is
+def __mouse_event(event,x,y,flags,param):
+    global state
 
---------------------------------------------------
--- signals
---------------------------------------------------
-
-  signal DIPSWi      : std_logic_vector( 3 downto 0);          ------ Internal DIPSW Data
-  signal SWCHK_CUNT  : std_logic_vector( 7 downto 0);          ------ Push SW Check Counter
-  signal PSWCHK_CNT0 : std_logic_vector( 2 downto 0);          ------ Push SW 0 Check
-  signal PSWCHK_CNT1 : std_logic_vector( 2 downto 0);          ------ Push SW 1 Check
-  signal PSW_ON0i    : std_logic;                      ------ User Interrupt 0 On Request
-  signal PSW_ON1i    : std_logic;                      ------ User Interrupt 1 On Request
-
-begin
+    if x < 0: x = 0
+    if y < 0: y = 0
+    if x >= state.image_size[1]: x = state.image_size[1] - 1
+    if y >= state.image_size[0]: y = state.image_size[0] - 1
 
 
---------------------------------------------------------------------------------
--- DIPSW Input Signal Output Control Process
---------------------------------------------------------------------------------
-    DIPSWi <= (others=>'0');  -- 2004/11/11 by T.Hamada
-    DIPSW <= DIPSWi;
+    if event == (cv2.EVENT_LBUTTONDOWN):
+        state.posi0[0] = x0 = state.posi1[0]
+        state.posi0[1] = y0 = state.posi1[1]
+        state.posi1[0] = x
+        state.posi1[1] = y
+        print ("Rect: (%d, %d) - (%d, %d)"%(x0, y0, x, y) )
 
---------------------------------------------------------------------------------
--- Push SW Check Counter Control Process
---------------------------------------------------------------------------------
+#------------------------------------------------------------------------ save_data
+def save_data_bbox(image_dbg, image_orig, fnum):
+    global state
+    class_num = state.class_num
+    posi0 = state.posi0
+    posi1 = state.posi1
+    basedir = '../data4bbox/'
+    fname_body = "image_%08d" % fnum
 
-  process (RST,CLK) begin
-    if (RST='1') then
-       SWCHK_CUNT <= (others=>'0');
-    elsif (CLK'event and CLK='1') then
-       SWCHK_CUNT <= SWCHK_CUNT+1;                  ------ Counter Increment
-    end if;
-  end process;
+    # save image_orig (for Images/)
+    fname = fname_body + ".jpg"
+    basedir_images = basedir+"Images/%03d/"%(class_num)
+    ofname_images = mkdir.get_filename_frame_simple(basedir_images , fname)
+    print (ofname_images)
+    cv2.imwrite(ofname_images, image_orig)
 
---------------------------------------------------------------------------------
--- Push SW 0 Check Control Process
---------------------------------------------------------------------------------
+    # save image_dbg (for Debug/)
+    fname = fname_body + ".jpg"
+    basedir_dbg = basedir+"Debug/%03d/"%(class_num)
+    ofname_dbg  = mkdir.get_filename_frame_simple(basedir_dbg , fname)
+    print (ofname_dbg)
+    cv2.imwrite(ofname_dbg, image_dbg)
 
-  process (RST,CLK) begin
-    if (RST='1') then
-       PSWCHK_CNT0 <= (others=>'1');
-    elsif (CLK'event and CLK='1') then
-      if (SWCHK_CUNT="11111111") then
-         PSWCHK_CNT0 <= PSWCHK_CNT0(1 downto 0) & PSW_IN(0);    ------ PSW_IN(0) Sampling
-      end if;
-    end if;
-  end process;
+    # save labes
+    fname = fname_body + ".txt"
+    basedir_labels = basedir+"Labels/%03d/"%(class_num)
+    ofname_labels  = mkdir.get_filename_frame_simple(basedir_labels , fname)
+    print (ofname_labels)
+    bbox_posi = []
+    bbox_posi.append(min(posi0[0], posi1[0]))
+    bbox_posi.append(min(posi0[1], posi1[1]))
+    bbox_posi.append(max(posi0[0], posi1[0]))
+    bbox_posi.append(max(posi0[1], posi1[1]))
+    with open(ofname_labels, "w") as file:
+        file.write("1\n")
+        file.write("%d %d %d %d\n" % (tuple(bbox_posi)))
 
---------------------------------------------------------------------------------
--- Push SW 0 On Signal Output Control Process
---------------------------------------------------------------------------------
+def save_data_darknet(image_dbg, image_orig, fnum):
+    global state
+    class_num = state.class_num
+    posi0 = state.posi0
+    posi1 = state.posi1
+    basedir = '../data4darknet/'
+    fname_body = "image_%08d" % fnum
 
-  process (RST,CLK) begin
-    if (RST='1') then
-       PSW_ON0i <= '0';
-    elsif (CLK'event and CLK='1') then
-      if (SWCHK_CUNT="11111111") then
-        PSW_ON0i <= PSWCHK_CNT0(2) and (not PSWCHK_CNT0(1));    ------ SW Check Signal Set
-      else
-        PSW_ON0i <= '0';
-      end if;
-    end if;
-  end process;
+    # save image_orig (for Images/)
+    fname = fname_body + ".jpg"
+    basedir_images = basedir+"images/%03d/"%(class_num)
+    ofname_images = mkdir.get_filename_frame_simple(basedir_images , fname)
+    #print (ofname_images)
+    cv2.imwrite(ofname_images, image_orig)
 
-    PSW_ON0 <= PSW_ON0i;
+    # save image_dbg (for Debug/)
+    fname = fname_body + ".jpg"
+    basedir_dbg = basedir+"debug/%03d/"%(class_num)
+    ofname_dbg  = mkdir.get_filename_frame_simple(basedir_dbg , fname)
+    #print (ofname_dbg)
+    cv2.imwrite(ofname_dbg, image_dbg)
 
---------------------------------------------------------------------------------
--- Push SW 1 Check Control Process
---------------------------------------------------------------------------------
+    # save labes
+    fname = fname_body + ".txt"
+    basedir_labels = basedir+"labels/%03d/"%(class_num)
+    ofname_labels  = mkdir.get_filename_frame_simple(basedir_labels , fname)
+    print (ofname_labels)
+    bbox_posi = []
+    bbox_posi.append(min(posi0[0], posi1[0]))
+    bbox_posi.append(min(posi0[1], posi1[1]))
+    bbox_posi.append(max(posi0[0], posi1[0]))
+    bbox_posi.append(max(posi0[1], posi1[1]))
+    
+    label_format = 'BBox'
+    label_format = 'darknet'
 
-  process (RST,CLK) begin
-    if (RST='1') then
-       PSWCHK_CNT1 <= (others=>'1');
-    elsif (CLK'event and CLK='1') then
-      if (SWCHK_CUNT="11111111") then
-         PSWCHK_CNT1 <= PSWCHK_CNT1(1 downto 0) & PSW_IN(1);    ------ PSW_IN(1) Sampling
-      end if;
-    end if;
-  end process;
+    if label_format == 'BBox': 
+        with open(ofname_labels, "w") as file:
+            file.write("1\n")
+            file.write("%d %d %d %d\n" % (tuple(bbox_posi)))
 
---------------------------------------------------------------------------------
--- Push SW 1 On Signal Output Control Process
---------------------------------------------------------------------------------
+    if label_format == 'darknet': 
+        img_h, img_w = image_orig.shape[:2]
+        dh = float(img_h)
+        dw = float(img_w)
+        x0 = bbox_posi[0]
+        y0 = bbox_posi[1]
+        x1 = bbox_posi[2]
+        y1 = bbox_posi[3]
+        dnet_x = (x0 + x1)/(2.0*dw)
+        dnet_y = (y0 + y1)/(2.0*dh)
+        dnet_w = (x1 - x0)/dw
+        dnet_h = (y1 - y0)/dh
+        with open(ofname_labels, "w") as file:
+            file.write("0 %1.17f %1.17f %1.17f %1.17f\n" % (dnet_x, dnet_y, dnet_w, dnet_h))
 
-  process (RST,CLK) begin
-    if (RST='1') then
-       PSW_ON1i <= '0';
-    elsif (CLK'event and CLK='1') then
-      if (SWCHK_CUNT="11111111") then
-        PSW_ON1i <= PSWCHK_CNT1(2) and (not PSWCHK_CNT1(1));    ------ SW Check Signal Set
-      else
-        PSW_ON1i <= '0';
-      end if;
-    end if;
-  end process;
 
-    PSW_ON1 <= PSW_ON1i;
+def save_data(image_dbg, image_orig, fnum, label_format='darknet'):
+    if False:                      save_data_bbox(image_dbg, image_orig, fnum)
+    if label_format == 'darknet': save_data_darknet(image_dbg, image_orig, fnum)
 
---------------------------------------------------------------------------------
--- User Interrupt 2 Signal Output Control Process
---------------------------------------------------------------------------------
+#------------------------------------------------------------------------ save_data./
 
-  process (RST,CLK) begin
-    if (RST='1') then
-      USERINT2_ON <= '0';
-    elsif (CLK'event and CLK='1') then
-      USERINT2_ON <=  RST and DIPSWi(0) and (not PSWCHK_CNT1(2))
-                            and PSWCHK_CNT1(1);
-    end if;
-  end process;
 
-end USER_rtl;
+if (__name__ == '__main__'):
+
+    droidcam = DroidCam()
+    stream = droidcam.get_stream()
+
+    parser = argparse.ArgumentParser(description = "description goes here")
+    parser.add_argument("--devid", type=int, help = "set device id", required=False)
+    args = parser.parse_args()
+    devid = 0
+    if args.devid:
+        devid = int(args.devid)
+        print ("set devid = ", devid)
+
+
+    bytes = b''
+
+    frame = -1
+    # --- init loop ---
+    while True:
+        raw = stream.read(1024)
+        bytes += raw
+        a = bytes.find(b'\xff\xd8')
+        b = bytes.find(b'\xff\xd9')
+        if a!=-1 and b!=-1:
+            jpg = bytes[a:b+2]
+            bytes= bytes[b+2:]
+            frame = cv2.imdecode(np.fromstring(jpg, dtype=np.uint8),cv2.IMREAD_COLOR)
+            state.image_orig = frame.copy()
+            state.image      = frame.copy()
+            state.image_size[0], state.image_size[1] = frame.shape[:2]
+            cv2.imshow('droidcam',state.image)
+            break
+
+    # --- record/annotation loop ---
+    while True:
+        raw = stream.read(1024)
+        bytes += raw
+        a = bytes.find(b'\xff\xd8')
+        b = bytes.find(b'\xff\xd9')
+        if a!=-1 and b!=-1:
+            jpg = bytes[a:b+2]
+            bytes= bytes[b+2:]
+            frame = cv2.imdecode(np.fromstring(jpg, dtype=np.uint8),cv2.IMREAD_COLOR)
+
+        state.image_orig = frame.copy()
+        state.image      = frame.copy()
+        state.image_size[0], state.image_size[1] = frame.shape[:2]
+        state.draw_rect()
+        state.draw_text()
+        cv2.imshow('droidcam',state.image)
+        cv2.setMouseCallback("droidcam", mouse_event)
+        tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S_%f')
+        if(state.is_record):
+            save_data(state.image, state.image_orig, state.image_num)
+            state.image_num += 1
+
+        key = cv2.waitKey(1) & 0xFF
+        if key == ord('q'): break
+        if ( (key == ord(' ')) or 
+             (key == 34) or # Muhenkan
+             (key == 35) or # Henkan
+             (key == 39) or # katakana
+             (key == 10)    # Enter
+        ):
+            state.is_record = not (state.is_record)
+
+
+    cv2.destroyAllWindows()
+    print("Done.")
+

@@ -1,517 +1,91 @@
-Wed Mar 20 19:49:49 JST 2024
-DEFAULT_DEVICE_OPTIONS
-{
-	RESERVE_PIN = "AS INPUT TRI-STATED";
-	RESERVE_ALL_UNUSED_PINS = "AS OUTPUT DRIVING GROUND";
-	HEXOUT_FILE_COUNT_DIRECTION = UP;
-	HEXOUT_FILE_START_ADDRESS = 0;
-	GENERATE_HEX_FILE = OFF;
-	GENERATE_RBF_FILE = OFF;
-	GENERATE_TTF_FILE = OFF;
-	RESERVE_DATA7_THROUGH_DATA1_AFTER_CONFIGURATION = OFF;
-	RESERVE_RDYNBUSY_AFTER_CONFIGURATION = OFF;
-	RESERVE_NWS_NRS_NCS_CS_AFTER_CONFIGURATION = OFF;
-	DISABLE_CONF_DONE_AND_NSTATUS_PULLUPS_ON_CONFIG_DEVICE = OFF;
-	AUTO_INCREMENT_CONFIG_DEVICE_JTAG_USER_CODE = ON;
-	APEX20K_CONFIG_DEVICE_JTAG_USER_CODE = FFFFFFFF;
-	APEX20K_CONFIGURATION_DEVICE = EPC2LC20;
-	USE_CONFIGURATION_DEVICE = ON;
-	ENABLE_INIT_DONE_OUTPUT = OFF;
-	ENABLE_LOCK_OUTPUT = OFF;
-	ENABLE_DEVICE_WIDE_OE = OFF;
-	ENABLE_COMPACT_PCI = OFF;
-	ENABLE_DEVICE_WIDE_RESET = OFF;
-	RELEASE_CLEARS_BEFORE_TRI_STATES = OFF;
-	AUTO_RESTART_CONFIGURATION = ON;
-	USER_START_UP_CLOCK = OFF;
-	APEX20K_CONFIGURATION_SCHEME = "PASSIVE SERIAL";
-	APEX20K_JTAG_USER_CODE = FFFFFFFF;
-	RESERVE_NCEO_AFTER_CONFIGURATION = "AS OUTPUT DRIVING GROUND";
-	RESERVE_CLKUSR_AFTER_CONFIGURATION = OFF;
-	ENABLE_LOW_VOLTAGE_MODE_ON_CONFIG_DEVICE = OFF;
-	ENABLE_JTAG_BST_SUPPORT = ON;
-}
-AUTO_INSERT_ELA_ENTITY(bc_ela)
-{
-	ELA_ENTITY_NAME = bc_ela;
-	AUTO_INSERT_ELA_ENTITY = DISABLE;
-	SOURCE_FILE = bc_ela.tdf;
-}
-REPORT_FOLDER_SETTINGS("||Compilation Report")
-{
-	REPORT_OUTPUT_SECTION = ON;
-	PAGE_ORIENTATION = PORTRAIT;
-}
-REPORT_FOLDER_SETTINGS("||Compilation Report||Project Settings")
-{
-	REPORT_OUTPUT_SECTION = ON;
-	PAGE_ORIENTATION = PORTRAIT;
-}
-REPORT_FOLDER_SETTINGS("||Compilation Report||Results for \"pgfpga\" Compiler Settings")
-{
-	REPORT_OUTPUT_SECTION = ON;
-	PAGE_ORIENTATION = PORTRAIT;
-}
-REPORT_FOLDER_SETTINGS("||Compilation Report||Results for \"pgfpga\" Compiler Settings||Resource Section")
-{
-	REPORT_OUTPUT_SECTION = ON;
-	PAGE_ORIENTATION = PORTRAIT;
-}
-REPORT_FOLDER_SETTINGS("||Compilation Report||Results for \"pgfpga\" Compiler Settings||Timing Analyses")
-{
-	REPORT_OUTPUT_SECTION = ON;
-	PAGE_ORIENTATION = PORTRAIT;
-}
-REPORT_TEXT_SETTINGS("||Compilation Report||Legal Notice")
-{
-	REPORT_OUTPUT_SECTION = ON;
-	PAGE_ORIENTATION = PORTRAIT;
-}
-REPORT_TABLE_SETTINGS("||Compilation Report||Project Settings||General Settings")
-{
-	REPORT_OUTPUT_SECTION = ON;
-	PAGE_ORIENTATION = PORTRAIT;
-}
-REPORT_TABLE_SETTINGS("||Compilation Report||Results for \"pgfpga\" Compiler Settings||Compiler Settings")
-{
-	REPORT_OUTPUT_SECTION = ON;
-	PAGE_ORIENTATION = PORTRAIT;
-}
-REPORT_TABLE_SETTINGS("||Compilation Report||Results for \"pgfpga\" Compiler Settings||Device Options")
-{
-	REPORT_OUTPUT_SECTION = ON;
-	PAGE_ORIENTATION = PORTRAIT;
-}
-REPORT_TABLE_SETTINGS("||Compilation Report||Results for \"pgfpga\" Compiler Settings||Resource Section||Resource Usage Summary")
-{
-	REPORT_OUTPUT_SECTION = ON;
-	PAGE_ORIENTATION = PORTRAIT;
-}
-REPORT_TABLE_SETTINGS("||Compilation Report||Results for \"pgfpga\" Compiler Settings||Resource Section||Input Pins")
-{
-	REPORT_OUTPUT_SECTION = ON;
-	PAGE_ORIENTATION = PORTRAIT;
-}
-REPORT_TABLE_SETTINGS("||Compilation Report||Results for \"pgfpga\" Compiler Settings||Resource Section||Output Pins")
-{
-	REPORT_OUTPUT_SECTION = ON;
-	PAGE_ORIENTATION = PORTRAIT;
-}
-REPORT_TABLE_SETTINGS("||Compilation Report||Results for \"pgfpga\" Compiler Settings||Resource Section||Bidir Pins")
-{
-	REPORT_OUTPUT_SECTION = ON;
-	PAGE_ORIENTATION = PORTRAIT;
-}
-REPORT_TABLE_SETTINGS("||Compilation Report||Results for \"pgfpga\" Compiler Settings||Resource Section||All Package Pins")
-{
-	REPORT_OUTPUT_SECTION = ON;
-	PAGE_ORIENTATION = PORTRAIT;
-}
-REPORT_TABLE_SETTINGS("||Compilation Report||Results for \"pgfpga\" Compiler Settings||Resource Section||Control Signals")
-{
-	REPORT_OUTPUT_SECTION = ON;
-	PAGE_ORIENTATION = PORTRAIT;
-}
-REPORT_TABLE_SETTINGS("||Compilation Report||Results for \"pgfpga\" Compiler Settings||Resource Section||Global & Other Fast Signals")
-{
-	REPORT_OUTPUT_SECTION = ON;
-	PAGE_ORIENTATION = PORTRAIT;
-}
-REPORT_TABLE_SETTINGS("||Compilation Report||Results for \"pgfpga\" Compiler Settings||Resource Section||Cascade Chains")
-{
-	REPORT_OUTPUT_SECTION = ON;
-	PAGE_ORIENTATION = PORTRAIT;
-}
-REPORT_TABLE_SETTINGS("||Compilation Report||Results for \"pgfpga\" Compiler Settings||Resource Section||Non-Global High Fan-Out Signals")
-{
-	REPORT_OUTPUT_SECTION = ON;
-	PAGE_ORIENTATION = PORTRAIT;
-}
-REPORT_TABLE_SETTINGS("||Compilation Report||Results for \"pgfpga\" Compiler Settings||Resource Section||Peripheral Signals")
-{
-	REPORT_OUTPUT_SECTION = ON;
-	PAGE_ORIENTATION = PORTRAIT;
-}
-REPORT_TABLE_SETTINGS("||Compilation Report||Results for \"pgfpga\" Compiler Settings||Resource Section||MegaLAB Usage Summary")
-{
-	REPORT_OUTPUT_SECTION = ON;
-	PAGE_ORIENTATION = PORTRAIT;
-}
-REPORT_TABLE_SETTINGS("||Compilation Report||Results for \"pgfpga\" Compiler Settings||Resource Section||Row Interconnect")
-{
-	REPORT_OUTPUT_SECTION = ON;
-	PAGE_ORIENTATION = PORTRAIT;
-}
-REPORT_TABLE_SETTINGS("||Compilation Report||Results for \"pgfpga\" Compiler Settings||Resource Section||LAB Column Interconnect")
-{
-	REPORT_OUTPUT_SECTION = ON;
-	PAGE_ORIENTATION = PORTRAIT;
-}
-REPORT_TABLE_SETTINGS("||Compilation Report||Results for \"pgfpga\" Compiler Settings||Resource Section||ESB Column Interconnect")
-{
-	REPORT_OUTPUT_SECTION = ON;
-	PAGE_ORIENTATION = PORTRAIT;
-}
-REPORT_TABLE_SETTINGS("||Compilation Report||Results for \"pgfpga\" Compiler Settings||Resource Section||ClockLock")
-{
-	REPORT_OUTPUT_SECTION = ON;
-	PAGE_ORIENTATION = PORTRAIT;
-}
-REPORT_TABLE_SETTINGS("||Compilation Report||Results for \"pgfpga\" Compiler Settings||Timing Analyses||Timing Settings")
-{
-	REPORT_OUTPUT_SECTION = ON;
-	PAGE_ORIENTATION = PORTRAIT;
-}
-REPORT_TABLE_SETTINGS("||Compilation Report||Results for \"pgfpga\" Compiler Settings||Timing Analyses||Clock Requirement: 'altclklock:upll|pll' ( 25.0 MHz, -1.5 ns )")
-{
-	REPORT_OUTPUT_SECTION = ON;
-	PAGE_ORIENTATION = PORTRAIT;
-}
-REPORT_TABLE_SETTINGS("||Compilation Report||Results for \"pgfpga\" Compiler Settings||Timing Analyses||Clock Requirement: 'altclklock:upll|pll~CLK1' ( 50.0 MHz, -1.5 ns )")
-{
-	REPORT_OUTPUT_SECTION = ON;
-	PAGE_ORIENTATION = PORTRAIT;
-}
-REPORT_TABLE_SETTINGS("||Compilation Report||Results for \"pgfpga\" Compiler Settings||Processing Time")
-{
-	REPORT_OUTPUT_SECTION = ON;
-	PAGE_ORIENTATION = PORTRAIT;
-}
-REPORT_CMP_SUMMARY_SETTINGS("||Compilation Report||Results for \"pgfpga\" Compiler Settings||Summary")
-{
-	REPORT_OUTPUT_SECTION = ON;
-	PAGE_ORIENTATION = PORTRAIT;
-}
-REPORT_EMBEDDED_SETTINGS("||Compilation Report||Results for \"pgfpga\" Compiler Settings||Hierarchy")
-{
-	REPORT_OUTPUT_SECTION = ON;
-	PAGE_ORIENTATION = PORTRAIT;
-}
-REPORT_EMBEDDED_SETTINGS("||Compilation Report||Results for \"pgfpga\" Compiler Settings||Floorplan View")
-{
-	REPORT_OUTPUT_SECTION = ON;
-	PAGE_ORIENTATION = PORTRAIT;
-}
-REPORT_EMBEDDED_SETTINGS("||Compilation Report||Results for \"pgfpga\" Compiler Settings||Messages")
-{
-	REPORT_OUTPUT_SECTION = ON;
-	PAGE_ORIENTATION = PORTRAIT;
-}
-REPORT_EMBEDDED_SETTINGS("||Compilation Report||Results for \"pgfpga\" Compiler Settings||Equations")
-{
-	REPORT_OUTPUT_SECTION = ON;
-	PAGE_ORIENTATION = PORTRAIT;
-}
-REPORT_EMBEDDED_SETTINGS("||Compilation Report||Results for \"pgfpga\" Compiler Settings||Pin File")
-{
-	REPORT_OUTPUT_SECTION = ON;
-	PAGE_ORIENTATION = PORTRAIT;
-}
-REPORT_CHART_SETTINGS("||Compilation Report||Results for \"pgfpga\" Compiler Settings||Resource Section||Carry Chains")
-{
-	REPORT_OUTPUT_SECTION = ON;
-	PAGE_ORIENTATION = PORTRAIT;
-	REPORT_CHART_TYPE = BAR;
-}
-REPORT_CHART_SETTINGS("||Compilation Report||Results for \"pgfpga\" Compiler Settings||Resource Section||Local Routing Interconnect")
-{
-	REPORT_OUTPUT_SECTION = ON;
-	PAGE_ORIENTATION = PORTRAIT;
-	REPORT_CHART_TYPE = BAR;
-}
-REPORT_CHART_SETTINGS("||Compilation Report||Results for \"pgfpga\" Compiler Settings||Resource Section||MegaLAB Interconnect")
-{
-	REPORT_OUTPUT_SECTION = ON;
-	PAGE_ORIENTATION = PORTRAIT;
-	REPORT_CHART_TYPE = BAR;
-}
-REPORT_CHART_SETTINGS("||Compilation Report||Results for \"pgfpga\" Compiler Settings||Resource Section||LAB External Interconnect")
-{
-	REPORT_OUTPUT_SECTION = ON;
-	PAGE_ORIENTATION = PORTRAIT;
-	REPORT_CHART_TYPE = BAR;
-}
-REPORT_TAN_TSU_SETTINGS("||Compilation Report||Results for \"pgfpga\" Compiler Settings||Timing Analyses||tsu (Input Setup Times)")
-{
-	REPORT_OUTPUT_SECTION = ON;
-	PAGE_ORIENTATION = PORTRAIT;
-	NODE_LIMIT = "-1";
-}
-REPORT_TAN_TSU_SETTINGS("||Compilation Report||Results for \"pgfpga\" Compiler Settings||Timing Analyses||th (Input Hold Times)")
-{
-	REPORT_OUTPUT_SECTION = ON;
-	PAGE_ORIENTATION = PORTRAIT;
-	NODE_LIMIT = "-1";
-}
-REPORT_TAN_TSU_SETTINGS("||Compilation Report||Results for \"pgfpga\" Compiler Settings||Timing Analyses||tco (Clock to Output Delays)")
-{
-	REPORT_OUTPUT_SECTION = ON;
-	PAGE_ORIENTATION = PORTRAIT;
-	NODE_LIMIT = "-1";
-}
-REPORT_SETTINGS(general)
-{
-	ALWAYS_USE_PORTRAIT_HEADER_FOOTER = OFF;
-	RIGHT_MARGIN = 1.000000;
-	LEFT_MARGIN = 1.000000;
-	BOTTOM_MARGIN = 1.000000;
-	TOP_MARGIN = 1.000000;
-}
-CHIP(pgfpga)
-{
-	"altclklock:upll|pll" : LOCATION = PLL_1;
-	"altclklock:upll|pll~1" : LOCATION = PLL_1;
-	"altclklock:upll|pll~CLK1" : LOCATION = PLL_1;
-	e_active : LOCATION = Pin_K8;
-	e_clk : LOCATION = Pin_N8;
-	e_fod[0] : LOCATION = Pin_J5;
-	e_fod[10] : LOCATION = Pin_F5;
-	e_fod[11] : LOCATION = Pin_F6;
-	e_fod[12] : LOCATION = Pin_F7;
-	e_fod[13] : LOCATION = Pin_E5;
-	e_fod[14] : LOCATION = Pin_E6;
-	e_fod[15] : LOCATION = Pin_E7;
-	e_fod[16] : LOCATION = Pin_G8;
-	e_fod[17] : LOCATION = Pin_F8;
-	e_fod[18] : LOCATION = Pin_E8;
-	e_fod[19] : LOCATION = Pin_H9;
-	e_fod[1] : LOCATION = Pin_J6;
-	e_fod[20] : LOCATION = Pin_D9;
-	e_fod[21] : LOCATION = Pin_D8;
-	e_fod[22] : LOCATION = Pin_E9;
-	e_fod[23] : LOCATION = Pin_H10;
-	e_fod[24] : LOCATION = Pin_G10;
-	e_fod[25] : LOCATION = Pin_D10;
-	e_fod[26] : LOCATION = Pin_F10;
-	e_fod[27] : LOCATION = Pin_H11;
-	e_fod[28] : LOCATION = Pin_G11;
-	e_fod[29] : LOCATION = Pin_F11;
-	e_fod[2] : LOCATION = Pin_J7;
-	e_fod[30] : LOCATION = Pin_E11;
-	e_fod[31] : LOCATION = Pin_H12;
-	e_fod[32] : LOCATION = Pin_G12;
-	e_fod[33] : LOCATION = Pin_E12;
-	e_fod[34] : LOCATION = Pin_H13;
-	e_fod[35] : LOCATION = Pin_E13;
-	e_fod[3] : LOCATION = Pin_J8;
-	e_fod[4] : LOCATION = Pin_H5;
-	e_fod[5] : LOCATION = Pin_H6;
-	e_fod[6] : LOCATION = Pin_H7;
-	e_fod[7] : LOCATION = Pin_G5;
-	e_fod[8] : LOCATION = Pin_G6;
-	e_fod[9] : LOCATION = Pin_G7;
-	e_ipd[0] : LOCATION = Pin_AB15;
-	e_ipd[10] : LOCATION = Pin_W12;
-	e_ipd[11] : LOCATION = Pin_K6;
-	e_ipd[12] : LOCATION = Pin_AA11;
-	e_ipd[13] : LOCATION = Pin_Y11;
-	e_ipd[14] : LOCATION = Pin_W11;
-	e_ipd[15] : LOCATION = Pin_AB10;
-	e_ipd[16] : LOCATION = Pin_Y10;
-	e_ipd[17] : LOCATION = Pin_W10;
-	e_ipd[18] : LOCATION = Pin_AB9;
-	e_ipd[19] : LOCATION = Pin_W9;
-	e_ipd[1] : LOCATION = Pin_V15;
-	e_ipd[20] : LOCATION = Pin_AB8;
-	e_ipd[21] : LOCATION = Pin_AA8;
-	e_ipd[22] : LOCATION = Pin_Y8;
-	e_ipd[23] : LOCATION = Pin_AB7;
-	e_ipd[24] : LOCATION = Pin_AA7;
-	e_ipd[25] : LOCATION = Pin_Y7;
-	e_ipd[26] : LOCATION = Pin_W7;
-	e_ipd[27] : LOCATION = Pin_AB6;
-	e_ipd[28] : LOCATION = Pin_Y6;
-	e_ipd[29] : LOCATION = Pin_W6;
-	e_ipd[2] : LOCATION = Pin_Y15;
-	e_ipd[30] : LOCATION = Pin_V6;
-	e_ipd[31] : LOCATION = Pin_AB5;
-	e_ipd[32] : LOCATION = Pin_AA5;
-	e_ipd[33] : LOCATION = Pin_Y5;
-	e_ipd[34] : LOCATION = Pin_W5;
-	e_ipd[35] : LOCATION = Pin_V5;
-	e_ipd[3] : LOCATION = Pin_W15;
-	e_ipd[4] : LOCATION = Pin_AB14;
-	e_ipd[5] : LOCATION = Pin_AB13;
-	e_ipd[6] : LOCATION = Pin_W13;
-	e_ipd[7] : LOCATION = Pin_AB12;
-	e_ipd[8] : LOCATION = Pin_V12;
-	e_ipd[9] : LOCATION = Pin_Y12;
-	e_ipwe : LOCATION = Pin_V7;
-	e_jpwe : LOCATION = Pin_L9;
-	e_nd : LOCATION = Pin_L5;
-	e_pid[0] : LOCATION = Pin_V8;
-	e_pid[1] : LOCATION = Pin_U5;
-	e_pid[2] : LOCATION = Pin_U6;
-	e_pid[3] : LOCATION = Pin_U7;
-	e_pid[4] : LOCATION = Pin_U8;
-	e_pid[5] : LOCATION = Pin_T5;
-	e_pid[6] : LOCATION = Pin_T6;
-	e_pid[7] : LOCATION = Pin_T7;
-	e_pid[8] : LOCATION = Pin_T8;
-	e_pid[9] : LOCATION = Pin_T9;
-	e_rst : LOCATION = Pin_H14;
-	e_sts : LOCATION = Pin_K7;
-	e_sysclk : LOCATION = Pin_F13;
-	e_vd : LOCATION = Pin_K5;
-	e_wd : LOCATION = Pin_L7;
-	m_ah[0] : LOCATION = Pin_H24;
-	m_ah[10] : LOCATION = Pin_F25;
-	m_ah[11] : LOCATION = Pin_F26;
-	m_ah[12] : LOCATION = Pin_H20;
-	m_ah[13] : LOCATION = Pin_H25;
-	m_ah[14] : LOCATION = Pin_H26;
-	m_ah[15] : LOCATION = Pin_K23;
-	m_ah[16] : LOCATION = Pin_K24;
-	m_ah[17] : LOCATION = Pin_H21;
-	m_ah[18] : LOCATION = Pin_H22;
-	m_ah[1] : LOCATION = Pin_H23;
-	m_ah[2] : LOCATION = Pin_K26;
-	m_ah[3] : LOCATION = Pin_K25;
-	m_ah[4] : LOCATION = Pin_F20;
-	m_ah[5] : LOCATION = Pin_D26;
-	m_ah[6] : LOCATION = Pin_F21;
-	m_ah[7] : LOCATION = Pin_F22;
-	m_ah[8] : LOCATION = Pin_G24;
-	m_ah[9] : LOCATION = Pin_F24;
-	m_al[0] : LOCATION = Pin_AA21;
-	m_al[10] : LOCATION = Pin_W22;
-	m_al[11] : LOCATION = Pin_W23;
-	m_al[12] : LOCATION = Pin_W24;
-	m_al[13] : LOCATION = Pin_AA22;
-	m_al[14] : LOCATION = Pin_AA23;
-	m_al[15] : LOCATION = Pin_AA24;
-	m_al[16] : LOCATION = Pin_AA25;
-	m_al[17] : LOCATION = Pin_W25;
-	m_al[18] : LOCATION = Pin_W26;
-	m_al[1] : LOCATION = Pin_AA20;
-	m_al[2] : LOCATION = Pin_AC26;
-	m_al[3] : LOCATION = Pin_AA26;
-	m_al[4] : LOCATION = Pin_U24;
-	m_al[5] : LOCATION = Pin_U23;
-	m_al[6] : LOCATION = Pin_V26;
-	m_al[7] : LOCATION = Pin_U26;
-	m_al[8] : LOCATION = Pin_W20;
-	m_al[9] : LOCATION = Pin_W21;
-	m_clk[0] : LOCATION = Pin_T26;
-	m_clk[1] : LOCATION = Pin_M26;
-	m_dh[0] : LOCATION = Pin_L18;
-	m_dh[10] : LOCATION = Pin_E15;
-	m_dh[11] : LOCATION = Pin_E14;
-	m_dh[12] : LOCATION = Pin_M22;
-	m_dh[13] : LOCATION = Pin_L20;
-	m_dh[14] : LOCATION = Pin_G15;
-	m_dh[15] : LOCATION = Pin_J14;
-	m_dh[16] : LOCATION = Pin_M20;
-	m_dh[17] : LOCATION = Pin_N22;
-	m_dh[18] : LOCATION = Pin_J15;
-	m_dh[19] : LOCATION = Pin_H15;
-	m_dh[1] : LOCATION = Pin_K20;
-	m_dh[20] : LOCATION = Pin_M18;
-	m_dh[21] : LOCATION = Pin_M21;
-	m_dh[22] : LOCATION = Pin_E16;
-	m_dh[23] : LOCATION = Pin_M19;
-	m_dh[24] : LOCATION = Pin_G16;
-	m_dh[25] : LOCATION = Pin_N19;
-	m_dh[26] : LOCATION = Pin_F16;
-	m_dh[27] : LOCATION = Pin_J16;
-	m_dh[28] : LOCATION = Pin_H16;
-	m_dh[29] : LOCATION = Pin_G17;
-	m_dh[2] : LOCATION = Pin_K22;
-	m_dh[30] : LOCATION = Pin_F17;
-	m_dh[31] : LOCATION = Pin_E17;
-	m_dh[32] : LOCATION = Pin_G18;
-	m_dh[33] : LOCATION = Pin_N18;
-	m_dh[34] : LOCATION = Pin_H17;
-	m_dh[35] : LOCATION = Pin_H18;
-	m_dh[3] : LOCATION = Pin_L21;
-	m_dh[4] : LOCATION = Pin_L19;
-	m_dh[5] : LOCATION = Pin_L22;
-	m_dh[6] : LOCATION = Pin_J19;
-	m_dh[7] : LOCATION = Pin_K21;
-	m_dh[8] : LOCATION = Pin_D14;
-	m_dh[9] : LOCATION = Pin_K19;
-	m_dl[0] : LOCATION = Pin_W17;
-	m_dl[10] : LOCATION = Pin_R22;
-	m_dl[11] : LOCATION = Pin_P22;
-	m_dl[12] : LOCATION = Pin_Y17;
-	m_dl[13] : LOCATION = Pin_AB18;
-	m_dl[14] : LOCATION = Pin_R21;
-	m_dl[15] : LOCATION = Pin_L14;
-	m_dl[16] : LOCATION = Pin_AB17;
-	m_dl[17] : LOCATION = Pin_Y16;
-	m_dl[18] : LOCATION = Pin_D15;
-	m_dl[19] : LOCATION = Pin_R20;
-	m_dl[1] : LOCATION = Pin_AA19;
-	m_dl[20] : LOCATION = Pin_W16;
-	m_dl[21] : LOCATION = Pin_AA17;
-	m_dl[22] : LOCATION = Pin_R18;
-	m_dl[23] : LOCATION = Pin_V16;
-	m_dl[24] : LOCATION = Pin_T21;
-	m_dl[25] : LOCATION = Pin_AA16;
-	m_dl[26] : LOCATION = Pin_T22;
-	m_dl[27] : LOCATION = Pin_T19;
-	m_dl[28] : LOCATION = Pin_T20;
-	m_dl[29] : LOCATION = Pin_U20;
-	m_dl[2] : LOCATION = Pin_Y19;
-	m_dl[30] : LOCATION = Pin_U22;
-	m_dl[31] : LOCATION = Pin_T18;
-	m_dl[32] : LOCATION = Pin_U21;
-	m_dl[33] : LOCATION = Pin_AB16;
-	m_dl[34] : LOCATION = Pin_V19;
-	m_dl[35] : LOCATION = Pin_U19;
-	m_dl[3] : LOCATION = Pin_AB19;
-	m_dl[4] : LOCATION = Pin_R17;
-	m_dl[5] : LOCATION = Pin_AB20;
-	m_dl[6] : LOCATION = Pin_W18;
-	m_dl[7] : LOCATION = Pin_Y18;
-	m_dl[8] : LOCATION = Pin_P19;
-	m_dl[9] : LOCATION = Pin_AA18;
-	m_oe[0] : LOCATION = Pin_R24;
-	m_oe[1] : LOCATION = Pin_M24;
-	m_we[0] : LOCATION = Pin_R23;
-	m_we[1] : LOCATION = Pin_L23;
-	RESERVE_ALL_UNUSED_PINS = "AS OUTPUT DRIVING GROUND";
-	HEXOUT_FILE_COUNT_DIRECTION = UP;
-	HEXOUT_FILE_START_ADDRESS = 0;
-	GENERATE_HEX_FILE = OFF;
-	GENERATE_RBF_FILE = OFF;
-	GENERATE_TTF_FILE = ON;
-	RESERVE_DATA7_THROUGH_DATA1_AFTER_CONFIGURATION = OFF;
-	RESERVE_RDYNBUSY_AFTER_CONFIGURATION = OFF;
-	RESERVE_NWS_NRS_NCS_CS_AFTER_CONFIGURATION = OFF;
-	DISABLE_CONF_DONE_AND_NSTATUS_PULLUPS_ON_CONFIG_DEVICE = OFF;
-	AUTO_INCREMENT_CONFIG_DEVICE_JTAG_USER_CODE = ON;
-	APEX20K_CONFIG_DEVICE_JTAG_USER_CODE = FFFFFFFF;
-	APEX20K_CONFIGURATION_DEVICE = EPC2LC20;
-	USE_CONFIGURATION_DEVICE = ON;
-	ENABLE_INIT_DONE_OUTPUT = OFF;
-	ENABLE_LOCK_OUTPUT = OFF;
-	ENABLE_DEVICE_WIDE_OE = OFF;
-	ENABLE_DEVICE_WIDE_RESET = OFF;
-	RELEASE_CLEARS_BEFORE_TRI_STATES = OFF;
-	AUTO_RESTART_CONFIGURATION = ON;
-	USER_START_UP_CLOCK = OFF;
-	APEX20K_CONFIGURATION_SCHEME = "PASSIVE SERIAL";
-	APEX20K_JTAG_USER_CODE = FFFFFFFF;
-	RESERVE_NCEO_AFTER_CONFIGURATION = "AS OUTPUT DRIVING GROUND";
-	RESERVE_CLKUSR_AFTER_CONFIGURATION = OFF;
-	ENABLE_LOW_VOLTAGE_MODE_ON_CONFIG_DEVICE = OFF;
-	ENABLE_JTAG_BST_SUPPORT = ON;
-	DEVICE_FILTER_SPEED_GRADE = "-2X";
-	DEVICE_FILTER_PIN_COUNT = 672;
-	DEVICE_FILTER_PACKAGE = FBGA;
-	BASE_PIN_OUT_FILE_ON_SAMEFRAME_DEVICE = OFF;
-	DEVICE = "EP20K400FC672-2X";
-}
-COMPILER_SETTINGS
-{
-	FOCUS_ENTITY_NAME = |pgfpga;
-	RUN_TIMING_ANALYSES = ON;
-	FAMILY = APEX20K;
-	APEX_FITTER_TYPE = ADVANCED;
-	OPTIMIZE_IO_TIMING = OFF;
-	OPTIMIZE_INTERNAL_TIMING = NORMAL_COMPILATION;
-	COMPILATION_LEVEL = FULL;
-	SAVE_DISK_SPACE = ON;
-	SPEED_DISK_USAGE_TRADEOFF = NORMAL;
-}
+Tue Apr  2 19:47:17 JST 2024
+-- Copyright 2004 Tsuyoshi Hamada
+--
+--
+--clk         __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __
+--[ENABLE]    _______/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
+--[ DBUS ]          >< n ><d0 ><d1 ><d2 ><d3 ><d4 ><d5 ><d6 ><d7 >
+
+--  ena0      _______/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
+--  ena1           _______/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
+--[ DBUS ]          >< n ><d0 ><d1 ><d2 ><d3 ><d4 ><d5 ><d6 ><d7 >
+-- acnt                0 >< n ><n+1><n+2><n+3><n+4><n+5><n+6><n+7>< 0
+--MEM_ADR                   0 >< n ><n+1><n+2><n+3><n+4><n+5><n+6><n+7>< 0
+--MEM_DATA                     <d0 ><d1 ><d2 ><d3 ><d4 ><d5 ><d6 ><d7 >
+--MEM_WE                   ____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+
+entity dmaw is
+  port (
+    RST       : in std_logic;
+    CLK       : in std_logic;
+    ENABLE    : in std_logic;
+    DBUS      : in std_logic_vector(63 downto 0);
+    MEM_WE    : out std_logic;
+    MEM_ADR   : out std_logic_vector(18 downto 0);
+    MEM_DATA  : out std_logic_vector(63 downto 0)   );
+end dmaw;
+
+architecture rtl of dmaw is
+
+signal ena0,ena1,ena2,ena3,ena4 : std_logic :='0';
+signal acnt,acntr : std_logic_vector(18 downto 0) :=(others=>'0');
+signal we : std_logic :='0';
+
+begin
+
+  -- MEM_DATA --
+  process (CLK) begin
+    if(CLK'event and CLK = '1') then
+      MEM_DATA <= DBUS;
+    end if;
+  end process;
+
+  -- MEM_WE --
+  process (CLK) begin
+    if(CLK'event and CLK = '1') then
+      MEM_WE <= ena1;
+    end if;
+  end process;
+
+  -- MEM_ADR --
+  process (CLK) begin
+    if(CLK'event and CLK = '1') then
+      MEM_ADR <= acnt;
+    end if;
+  end process;
+
+  -- acnt
+  acntr <= acnt;
+  process (RST,CLK,ena0,ena1) begin
+    if(RST = '1') then
+      acnt  <= (others=>'0');
+    elsif(CLK'event and CLK = '1') then
+      if((ena0='1') AND (ena1='0')) then
+        acnt <= DBUS(18 downto 0);
+      elsif((ena0='1') AND (ena1='1')) then
+        acnt <= acntr + "0000000000000000001";
+      else
+        acnt <= (others=>'0');
+      end if;
+    end if;
+  end process;
+
+
+
+  -- ENABLE delays
+  ena0 <= ENABLE;
+  process (CLK) begin
+    if(CLK'event and CLK = '1') then
+      ena4 <= ena3;
+      ena3 <= ena2;
+      ena2 <= ena1;
+      ena1 <= ena0;
+    end if;
+  end process;
+
+
+end rtl;

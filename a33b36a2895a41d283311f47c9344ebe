@@ -1,272 +1,53 @@
-Fri Feb  9 19:37:37 JST 2024
--- PGR ALLCORE
--- by Tsuyoshi Hamada
--- Last Modified at 2005/01/02
--- Last Modified at 2004/11/20
---
--- SYS_CLK   __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __
--- WE        __/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\____
---(WRITE)
--- ADR         < 0 >< 1 >< 2 >< 3 >< 4 >< 5 >< 6 >< 7 >
--- DTI         < 0 >< 1 >< 2 >< 3 >< 4 >< 5 >< 6 >< 7 >
---(READ)
--- ADR         < 0 >< 1 >< 2 >< 3 >< 4 >< 5 >< 6 >< 7 >
--- DTO              < 0 >< 1 >< 2 >< 3 >< 4 >< 5 >< 6 >< 7 >
-
-
-library ieee;
-LIBRARY UNISIM;
+Tue Apr  2 19:26:40 JST 2024
+info x 45 510 0 0 0 0 0 0 0 0 0 0 0 0 0 0 VHDL
+col x 292 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+radix x 16 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+entity name 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 pfpga_config
+term mark 255 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+vlib save 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_arith.all;
 use ieee.std_logic_unsigned.all;
-USE UNISIM.Vcomponents.ALL;
-
-entity pgpg_mem is
-  port (
-    RST           : in  std_logic;
-    SYS_CLK       : in  std_logic;
-    PIPE_CLK      : in  std_logic;
-    ADR           : in  std_logic_vector(18 downto 0);
-    WE            : in  std_logic;
-    DTI           : in  std_logic_vector(63 downto 0);
-    DTO           : out std_logic_vector(63 downto 0);
-    STS           : out std_logic;
-    FPGA_NO       : in std_logic_vector(1 downto 0));
-end pgpg_mem;
-
-architecture RTL of pgpg_mem is
-
-component adr_dec
-  port (
-    clk        : in std_logic;
-    adr        : in std_logic_vector(18 downto 0);
-    is_jpw     : out std_logic;
-    is_ipw     : out std_logic;
-    is_fo      : out std_logic;
-    is_setn    : out std_logic;
-    is_run     : out std_logic;
-    FPGA_NO    : in std_logic_vector(1 downto 0));
-end component;
-
-component pipe_sts
-  port (
-    rst        : in  std_logic;
-    clk        : in  std_logic;
-    run        : in  std_logic;
-    runret     : in  std_logic;
-    status     : out std_logic_vector(31 downto 0));
-end component;
-
-component calc is
-  port (
-    start      : in  std_logic;
-    clk        : in  std_logic;
-    pclk       : in  std_logic;
-    n          : in  std_logic_vector(31 downto 0);
-    run        : out  std_logic;
-    mem_adr    : out  std_logic_vector(31 downto 0));
-end component;
-
-component setn
-  port (
-    clk       : in std_logic;
-    we        : in std_logic;
-    idata     : in std_logic_vector(31 downto 0);
-    odata     : out std_logic_vector(31 downto 0));
-end component;
-
-component jmem
-  port (
-    wadr        : in  std_logic_vector(15 downto 0);
-    wclk        : in  std_logic;
-    radr        : in  std_logic_vector(15 downto 0);
-    rclk        : in  std_logic;
-    rst        : in  std_logic; -- not used
-    we         : in  std_logic;
-    idata      : in  std_logic_vector(63 downto 0);
---  odata      : out  std_logic_vector(127 downto 0));  -- for G5            (JDIM 4)
---  odata      : out  std_logic_vector(255 downto 0));  -- for SPH 1st stage (JDIM 8)
-    odata      : out  std_logic_vector(511 downto 0));  -- for SPH 2nd stage (JDIM 16)
-end component;
-
--- pg_pipe
-component pg_pipe
-  generic(JDATA_WIDTH : integer := 384;
-          IDATA_WIDTH : integer := 64  );
-  port(
-    p_jdata : in std_logic_vector(JDATA_WIDTH-1 downto 0);
-    p_run : in std_logic;
-    p_we :  in std_logic;
-    p_adri : in std_logic_vector(11 downto 0);
-    p_datai : in std_logic_vector(IDATA_WIDTH-1 downto 0);
-    p_adro : in std_logic_vector(11 downto 0);
-    p_datao : out std_logic_vector(IDATA_WIDTH-1 downto 0);
-    p_runret : out std_logic;
---  aclk : in std_logic;                -- for pg_float_accum
-    rst,pclk,clk : in std_logic);
-end component;
-
--- adr_dec
-signal is_jpw : std_logic;
-signal is_ipw : std_logic;
-signal is_fo  : std_logic;
-signal is_setn : std_logic;
-signal is_run : std_logic;
-
--- pipe_sts
-signal p_runret  : std_logic;
-signal odata_sts : std_logic_vector(31 downto 0);
-
--- calc
-signal calc_we : std_logic;
-signal calc_jadr : std_logic_vector(31 downto 0);
-signal p_run : std_logic;
-
--- setn
-signal setn_we : std_logic;
-signal odata_setn : std_logic_vector(31 downto 0);
-
--- fo
-signal odata_fo : std_logic_vector(63 downto 0);
-signal p_adro   : std_logic_vector(11 downto 0);
-
--- ipw
-signal p_we    : std_logic;
-signal p_adri : std_logic_vector(11 downto 0);
-
--- jmem
---signal jmem_d : std_logic_vector(127 downto 0);  -- for G5
---signal jmem_d : std_logic_vector(255 downto 0);  -- for SHP 1st Stage
-signal jmem_d : std_logic_vector(511 downto 0);  -- for SHP 2nd Stage
-signal jpw_we : std_logic;
-signal jmem_adr : std_logic_vector(63 downto 0);
-signal jmem_adr_outside : std_logic_vector(15 downto 0);
-
-
-signal idata : std_logic_vector(63 downto 0);
-signal clk : std_logic;
-signal pclk : std_logic;
-constant zero32 : std_logic_vector(31 downto 0) := (others=>'0');
-signal ADR_ff : std_logic_vector(18 downto 0) := (others=>'0');
-signal odata_jmem : std_logic_vector(63 downto 0) := (others=>'0');
-
--- DEBUG ---------------------------------------------
-signal debug_p_jdata : std_logic_vector(511 downto 0);
-constant c_zero : std_logic_vector(1023 downto 0) := (others=>'0');
-------------------------------------------------------
-
-begin
-
-clk  <= SYS_CLK;
-pclk <= PIPE_CLK;
---pclk <= SYS_CLK;
-
-idata <= DTI;
-
--- calc status
-process(clk) begin
-  if(clk'event and clk='1') then
-    STS <= odata_sts(0);
-  end if;
-end process;
-
-
-
-----------
--- DTO ---
-----------
-
-DTO <= odata_fo;
-
-unit0: adr_dec port map(
-    clk=>clk,
-    adr=>ADR,
-    is_jpw =>is_jpw,  -- jmem
-    is_ipw =>is_ipw,  -- ireg
-    is_fo  =>is_fo,   -- fo
-    is_setn=>is_setn, -- setn
-    is_run =>is_run, -- do calc
-    FPGA_NO => FPGA_NO);
-
--------------------------------------------------------------------------------
--- pg_pipe
--------------------------------------------------------------------------------
-p_we <= is_ipw and WE;
---- ADR CONVERSION XI ---
-p_adri(3 downto 0)  <= '0' & ADR(2 downto 0); --  16 xi       (2004/01/01)
-p_adri(10 downto 4) <= ADR(9 downto 3);       -- 128 pipes    (2004/01/01)
-p_adri(11)          <= '0';                   -- chipsel mask (2005/01/01)
---- ADR CONVERSION AI ---
-p_adro(3 downto 0)  <= '0' & ADR(2 downto 0); --   8 ai       (2004/01/02)
-p_adro(10 downto 4) <= ADR(9 downto 3);       -- 128 pipes    (2004/01/02)
-p_adro(11)          <= '0';                   -- chipsel mask
-
-unit1 : pg_pipe
---  generic map (JDATA_WIDTH =>128,     -- for JDIM4
---  generic map (JDATA_WIDTH =>113,     -- for G5
---  generic map (JDATA_WIDTH =>208,     -- for SPH 1st Stage
---  generic map (JDATA_WIDTH =>384,     -- for SPH 2nd Stage
-    generic map (JDATA_WIDTH =>512,     -- for JDIM16
-                 IDATA_WIDTH =>64 )
-    port map(
---  p_jdata => jmem_d(73 downto 0),     -- G3
---  p_jdata => jmem_d(112 downto 0),    -- G5
---  p_jdata => jmem_d(207 downto 0),    -- SPH 1st Stage
---  p_jdata => jmem_d(383 downto 0),    -- SPH 2nd Stage
-    p_jdata => jmem_d(511 downto 0),    -- JDIM16
-    p_run   => p_run,
-    p_we    => p_we,
-    p_adri  => p_adri,
-    p_datai => idata,
-    p_adro  => p_adro,
-    p_datao => odata_fo,
-    p_runret=> p_runret,
-    rst => '0',
-    pclk => pclk,
-    clk =>clk);
-
--- calc ---------------------------------------------
-calc_we <= is_run AND WE;
-unit2 : calc port map(
-       start   => calc_we,
-       clk     => clk,
-       pclk    => pclk,
-       n       => odata_setn,
-       run     => p_run,
-       mem_adr => calc_jadr);
-
--- pipe_sts
-unit3 : pipe_sts port map(
-           rst => RST,
-           clk => pclk,
-           run => p_run,
-           runret=>p_runret,
-           status=>odata_sts);
-
--- setn access -------------------------------------
-setn_we <= is_setn AND WE;
-unit8 : setn port map(
-       clk=>clk,
-       we=>setn_we,
-       idata=>idata(31 downto 0),
-       odata=>odata_setn);
-
--- jmem access -------------------------------------
-jpw_we <= is_jpw AND WE;
-
---jmem_adr_outside <= "0" & ADR(14 downto 0);
-jmem_adr_outside <= ADR(15 downto 0);
-
-
-unit9: jmem port map(
-    rst=>'0',
-    we=>jpw_we,
-    wadr=>jmem_adr_outside(15 downto 0),  -- ADDRESS for WRITE 
-    wclk=>clk,                            -- CLOCK   for WRITE
-    radr => calc_jadr(15 downto 0),       -- ADDRESS for READ 
-    rclk=>pclk,                           -- CLOCK   for READ
-    idata=>idata,
-    odata=>jmem_d);
-
-end rtl;
-
+
+var add 1 0 0 226 12 0 292 100 50 50 5 5 0 0 0 0 clkInstd_logicRISING_EDGEclk
+var add 2 0 0 162 13 0 276 100 50 50 5 5 0 0 0 0 rst_nInstd_logicRISING_EDGEclk
+var add 3 8 0 164 14 0 276 100 50 50 5 5 0 0 0 0 cmd_regInstd_logic_vectorRISING_EDGEclk
+var add 4 31 0 164 15 0 276 100 50 50 5 5 0 0 0 0 data_regInstd_logic_vectorRISING_EDGEclk
+var add 5 7 0 164 17 0 276 100 50 50 5 5 0 0 0 0 CFG_DOutstd_logic_vectorRISING_EDGEclk
+var add 6 0 0 162 18 0 276 100 50 50 5 5 0 0 0 0 CFG_CCLKOutstd_logicRISING_EDGEclk
+var add 7 0 0 162 19 0 276 100 50 50 5 5 0 0 0 0 CFG_PROG_B0Outstd_logicRISING_EDGEclk
+var add 8 0 0 162 20 0 276 100 50 50 5 5 0 0 0 0 CFG_PROG_B1Outstd_logicRISING_EDGEclk
+var add 9 0 0 162 21 0 276 100 50 50 5 5 0 0 0 0 CFG_PROG_B2Outstd_logicRISING_EDGEclk
+var add 10 0 0 162 22 0 276 100 50 50 5 5 0 0 0 0 CFG_PROG_B3Outstd_logicRISING_EDGEclk
+var add 11 0 0 162 23 0 276 100 50 50 5 5 0 0 0 0 CFG_CS_B0Outstd_logicRISING_EDGEclk
+var add 12 0 0 162 24 0 276 100 50 50 5 5 0 0 0 0 CFG_CS_B1Outstd_logicRISING_EDGEclk
+var add 13 0 0 162 25 0 276 100 50 50 5 5 0 0 0 0 CFG_CS_B2Outstd_logicRISING_EDGEclk
+var add 14 0 0 162 26 0 276 100 50 50 5 5 0 0 0 0 CFG_CS_B3Outstd_logicRISING_EDGEclk
+var add 15 0 0 162 27 0 276 100 50 50 5 5 0 0 0 0 CFG_RDWR_BOutstd_logicRISING_EDGEclk
+vdone xxx 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+npos xxx 137 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+cell fill 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+cell fill 2 12 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
+cell fill 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 000000000
+cell fill 3 32 0 0 0 0 0 0 0 0 0 0 0 0 0 0 011110001
+cell fill 3 48 0 0 0 0 0 0 0 0 0 0 0 0 0 0 011100001
+cell fill 3 64 0 0 0 0 0 0 0 0 0 0 0 0 0 0 011110001
+cell fill 3 124 0 0 0 0 0 0 0 0 0 0 0 0 0 0 111110001
+cell fill 4 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 00000000000000000000000000000000
+cell fill 4 96 0 0 0 0 0 0 0 0 0 0 0 0 0 0 10000000100000001000000011111111
+time info 50 50 5 5 50 50 1 1 0 0 0 0 0 0 0 0 usclk
+font save -14 0 400 49 0 0 0 0 0 0 0 0 0 0 0 0 Times New Roman
+src mod 0 261533364 29673166 0 0 0 0 0 0 0 0 0 0 0 0 0 pfpga_config.vhd
+utd true 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+cellenab on 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+grid on 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+com add 1 1 0 169 17 0 -67 0 0 0 0 0 0 0 0 0 Waveform created by
+HDL Bencher 6.1i
+Source = pfpga_config.vhd
+Wed Nov 10 11:36:42 2004
+type info 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 std_logicBITDOWNTO
+type info 31 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 std_logic_vectorVECTORDOWNTO
+opt vhdl87 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+NumClocks x 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+clock_1 name 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 clk
+Zoom_level x 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1.00000000000000

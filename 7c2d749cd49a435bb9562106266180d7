@@ -1,49 +1,94 @@
-Mon Feb  5 19:37:08 JST 2024
-//Time-stamp: <2006-09-07 13:50:20 hamada>
+Mon Apr 15 19:31:12 JST 2024
+-- LOCAL READ CONTROLLER ( ifpga <- pfpga )
+-- by Tsuyoshi Hamada
+--
+-- CLK            __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~
+-- CALC_DONE      ___/~~~~\____
+-- BUSY               ___/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\_______________
+-- hit1               ___/~~~~\____
+-- c_nchip               < NC                >< NC -1                           >< negativ value
+-- next_chip                          ___/~~~~\____                      ___/~~~~\____
+--==================================================
+-- CLK            __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~
+-- CALC_DONE      ___/~~~~\____
+-- c_npipe               < NP                >< NP -1                           >< negativ value
+-- next_pipe
 
-/NPIPE 1;
 
-#define NPOS 32
-#define NLOG 17
-#define NMAN 8
-#define NCUT 6
-#define NFOR 57
-#define NACC 64
-#define xsize (2.0)
-#define mmin  (1.0e-2)
-#define xscale (pow(2.0,(double)NPOS)/xsize)
-#define mscale (pow(2.0,95.38)/mmin)
-#define escale (xscale*xscale)
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
 
-#define NEXAD -31
-#define fshift pow(2.0,-1.0*(double)NEXAD)
-#define fscale (-xscale*xscale*fshift/mscale)
+entity local_read_cnt is
+  port (
+    -- from PGPG_REG3
+    NCHIP : in std_logic_vector(1 downto 0);     -- (number of chips) - 1
+    NPIPE : in std_logic_vector(7 downto 0);     -- (number of pipelines) - 1
+    NFI   : in std_logic_vector(7 downto 0);     -- (number of fi registers in a pipe) - 1
+    CALC_DONE : in std_logic;   -- pulse
+    -- to GPREG0
+    BUSY  : out std_logic;
 
-/MEM xj[3] <= x[][] : fix(NPOS);
-/MEM mj    <= m[]   : log(NLOG,NMAN);
-/REG xi[3] <= x[][] : fix(NPOS);
-/REG ieps2 <= eps2  : log(NLOG,NMAN);
-/REG sx[3] => a[][] : fix(NACC);
+    -- to LOCAL_READ_IF
+    EXEC     : out std_logic;                     -- pulse
+    START_AD : out std_logic_vector(18 downto 0); -- 19 bit
+    NQWORD   : out std_logic_vector( 8 downto 0); --  9 bit
+    CHIPSEL  : out std_logic_vector( 3 downto 0); --  4 bit
+    MEM_AD_BASE : out std_logic_vector(12 downto 0);
+    -- from LOCAL_READ_IF
+    BUSY_IF : in std_logic;
+ 
+    RST : in  std_logic;
+    CLK : in  std_logic
+    );
+end local_read;
 
-/SCALE xj[3] : xscale;
-/SCALE mj    : mscale;
-/SCALE xi[3] : xscale;
-/SCALE ieps2 : escale;
-/SCALE sx[3] : fscale;
-/NVMP 1;
+architecture rtl of local_read is
 
-pg_fix_addsub(SUB,xi,xj,xij,           NPOS,           3);
-pg_conv_ftol(xij,dx,                   NPOS,NLOG,NMAN, 4);
-pg_log_shift(1,dx,x2,                  NLOG);
+signal hit0,hit1,hit2 : std_logic :='0';
+signal c_nchip,c_nchipr  : std_logic_vector(2 downto 0) := (others=>'0');
+signal c_npipe,c_npiper  : std_logic_vector(7 downto 0) := (others=>'0');
+signal c_nfi  ,c_nfir    : std_logic_vector(7 downto 0) := (others=>'0');
+signal next_chip, next_pipe : std_logic :='0';
 
-pg_log_unsigned_add_itp(x2[0],x2[1], x2y2,   NLOG,NMAN,9,NCUT);
-pg_log_unsigned_add_itp(x2[2],ieps2, z2e2,   NLOG,NMAN,9,NCUT);
-pg_log_unsigned_add_itp(x2y2,z2e2,   r2,     NLOG,NMAN,9,NCUT);
+begin
 
-pg_log_shift(-1,r2,       r1,          NLOG);
-pg_log_muldiv(MUL,r2,r1,  r3,          NLOG,2);
-pg_log_muldiv(SDIV,mj,r3,  mf,         NLOG,2);
-pg_log_muldiv(MUL,mf,dx,  fx,          NLOG,2);
-pg_log_expadd(fx,fxs,                  NEXAD,NLOG,NMAN,1);
-pg_conv_ltof(fxs, ffx,                 NLOG,NMAN,NFOR,5);
-pg_fix_smaccum(ffx, sx,                NFOR,NACC,4);
+  hit0 <= CALC_DONE;
+  process (CLK) begin
+    if (CLK'event and CLK='1') then
+      hit2 <= hit1;
+      hit1 <= hit0;
+    end if;
+  end process;
+
+  -- BUSY
+  process (RST,CLK,c_nchip) begin
+    if (RST = '1') then
+      BUSY <= '0';
+    elsif (CLK'event and CLK='1') then
+      if((hit0 = '1') AND (hit1 = '0')) then
+        BUSY <= '1';
+      elsif(c_nchip(2) = '1') then
+        BUSY <= '0';
+      end if;
+    end if;
+  end process;
+
+
+  -- NCHIP COUNTER
+  c_nchipr <= c_nchip - "01";
+  process (RST,CLK,next_chip) begin
+    if (RST = '1') then
+      c_nchip <= (others=>'0');
+    elsif (CLK'event and CLK='1') then
+      if((hit0 = '1') AND (hit1 = '0')) then
+        c_nchip <= "0" & NCHIP;              -- SIGNED VALUE
+      elsif (next_chip='1') then
+        c_nchip <= c_nchipr;
+      end if;
+    end if;
+  end process;
+
+  
+

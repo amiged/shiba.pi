@@ -1,53 +1,36 @@
-Tue Apr  2 19:26:40 JST 2024
-info x 45 510 0 0 0 0 0 0 0 0 0 0 0 0 0 0 VHDL
-col x 292 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-radix x 16 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-entity name 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 pfpga_config
-term mark 255 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-vlib save 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 library ieee;
-use ieee.std_logic_1164.all;
-use ieee.std_logic_arith.all;
-use ieee.std_logic_unsigned.all;
-
-var add 1 0 0 226 12 0 292 100 50 50 5 5 0 0 0 0 clkInstd_logicRISING_EDGEclk
-var add 2 0 0 162 13 0 276 100 50 50 5 5 0 0 0 0 rst_nInstd_logicRISING_EDGEclk
-var add 3 8 0 164 14 0 276 100 50 50 5 5 0 0 0 0 cmd_regInstd_logic_vectorRISING_EDGEclk
-var add 4 31 0 164 15 0 276 100 50 50 5 5 0 0 0 0 data_regInstd_logic_vectorRISING_EDGEclk
-var add 5 7 0 164 17 0 276 100 50 50 5 5 0 0 0 0 CFG_DOutstd_logic_vectorRISING_EDGEclk
-var add 6 0 0 162 18 0 276 100 50 50 5 5 0 0 0 0 CFG_CCLKOutstd_logicRISING_EDGEclk
-var add 7 0 0 162 19 0 276 100 50 50 5 5 0 0 0 0 CFG_PROG_B0Outstd_logicRISING_EDGEclk
-var add 8 0 0 162 20 0 276 100 50 50 5 5 0 0 0 0 CFG_PROG_B1Outstd_logicRISING_EDGEclk
-var add 9 0 0 162 21 0 276 100 50 50 5 5 0 0 0 0 CFG_PROG_B2Outstd_logicRISING_EDGEclk
-var add 10 0 0 162 22 0 276 100 50 50 5 5 0 0 0 0 CFG_PROG_B3Outstd_logicRISING_EDGEclk
-var add 11 0 0 162 23 0 276 100 50 50 5 5 0 0 0 0 CFG_CS_B0Outstd_logicRISING_EDGEclk
-var add 12 0 0 162 24 0 276 100 50 50 5 5 0 0 0 0 CFG_CS_B1Outstd_logicRISING_EDGEclk
-var add 13 0 0 162 25 0 276 100 50 50 5 5 0 0 0 0 CFG_CS_B2Outstd_logicRISING_EDGEclk
-var add 14 0 0 162 26 0 276 100 50 50 5 5 0 0 0 0 CFG_CS_B3Outstd_logicRISING_EDGEclk
-var add 15 0 0 162 27 0 276 100 50 50 5 5 0 0 0 0 CFG_RDWR_BOutstd_logicRISING_EDGEclk
-vdone xxx 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-npos xxx 137 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-cell fill 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-cell fill 2 12 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
-cell fill 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 000000000
-cell fill 3 32 0 0 0 0 0 0 0 0 0 0 0 0 0 0 011110001
-cell fill 3 48 0 0 0 0 0 0 0 0 0 0 0 0 0 0 011100001
-cell fill 3 64 0 0 0 0 0 0 0 0 0 0 0 0 0 0 011110001
-cell fill 3 124 0 0 0 0 0 0 0 0 0 0 0 0 0 0 111110001
-cell fill 4 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 00000000000000000000000000000000
-cell fill 4 96 0 0 0 0 0 0 0 0 0 0 0 0 0 0 10000000100000001000000011111111
-time info 50 50 5 5 50 50 1 1 0 0 0 0 0 0 0 0 usclk
-font save -14 0 400 49 0 0 0 0 0 0 0 0 0 0 0 0 Times New Roman
-src mod 0 261533364 29673166 0 0 0 0 0 0 0 0 0 0 0 0 0 pfpga_config.vhd
-utd true 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-cellenab on 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-grid on 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-com add 1 1 0 169 17 0 -67 0 0 0 0 0 0 0 0 0 Waveform created by
-HDL Bencher 6.1i
-Source = pfpga_config.vhd
-Wed Nov 10 11:36:42 2004
-type info 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 std_logicBITDOWNTO
-type info 31 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 std_logic_vectorVECTORDOWNTO
-opt vhdl87 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-NumClocks x 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-clock_1 name 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 clk
-Zoom_level x 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1.00000000000000
+Sun Apr 21 19:30:29 JST 2024
+#!/usr/bin/env python3
+import os
+from datetime import datetime
+import time
+
+# YYYYMMDD_HH_MM_SS
+def get_filename_frame(basedir, str_datetime):
+    cell = list(str_datetime)
+    str_YYYYMMDD = ''.join(cell[0:8])
+    str_HH = ''.join(cell[9:11])
+    str_MM = ''.join(cell[12:14])
+    str_SS = ''.join(cell[15:17])
+    dirname = basedir + str_YYYYMMDD + "/" + str_HH
+    if os.path.exists(dirname) != True:
+        os.makedirs(dirname)
+    ret = dirname + "/" + str_datetime+".jpg"
+    ret = ret.replace(' ','')
+    return ret
+
+
+def get_filename_frame_simple(basedir, fname):
+    dirname = basedir
+    if os.path.exists(dirname) != True:
+        os.makedirs(dirname)
+    ret = dirname + fname
+    ret = ret.replace(' ','')
+    return ret
+
+
+if __name__ == '__main__':
+    while(True):
+        tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S')
+        fname = get_filename_frame('../work/', tnow)
+        print (fname)
+        time.sleep(0.5)

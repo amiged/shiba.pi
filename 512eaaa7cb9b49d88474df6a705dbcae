@@ -1,387 +1,401 @@
-Thu Apr 11 19:28:22 JST 2024
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL;
-use IEEE.STD_LOGIC_ARITH.ALL;
+Tue Apr 23 19:26:29 JST 2024
+// Time-stamp: <2007-01-08 05:05:50 hamada>
+// The lowest level library for PROGRAPE-4
+//
+// by Tsuyoshi Hamada
+// 20061229.rev1 : back to non pci_driver version
+// 20061116.rev1 : try pci_driver
+// 20060916.rev1 : Development start
+//
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <unistd.h>
+#include <sys/ioctl.h> // ioctl()
+#include <sys/mman.h>  // mmap()
+#include <sys/types.h> // open()
+#include <sys/stat.h>  // open()
+#include <sys/fcntl.h> // open()
+
+#undef CERR
+#define CERR(fmt, args...) fprintf(stderr, fmt, ## args)
 
 
-entity PFPGA_DMA is
-  port (
-    -- PGPG REG input 
-    PGPG_REG3 : in std_logic_vector(31 downto 0);  -- PFPGA Read  { CHIPSEL(4b), NQWORD(9b),  STARTADR(19b) }
-    GPREG0    : out std_logic_vector(31 downto 0); -- PFPGA Read Status(BUSY or DONE)
-    Hit_PGPG_REG3 : in std_logic;
+#define MAX_NBOARD 8
+unsigned int* bar0[MAX_NBOARD];
+unsigned int* bar1[MAX_NBOARD];
 
-    -- pcicnt input
-    MEM_ADA  : in std_logic_vector(16 downto 0);     -- DPRAM Port B R/W Address
-    MEM_WEHA : in std_logic;
-    MEM_WELA : in std_logic;
-    MEM_DTIA : in std_logic_vector(63 downto 0);
+//---------------------------------------
+#include "progrape.h"
 
+static char *devname[] = {
+  "/dev/progrape0",
+  "/dev/progrape1",
+  "/dev/progrape2",
+  "/dev/progrape3",
+  "/dev/progrape4",
+  "/dev/progrape5",
+  "/dev/progrape6",
+  "/dev/progrape7",
+  "/dev/progrape8",
+};
 
-    -- CBUS/DBUS
-    DMAW_ENABLE : out std_logic_vector(3 downto 0); -- for 4 pfpga chip
-    DMAR_ENABLE : out std_logic_vector(3 downto 0); -- for 4 pfpga chip
-    DBUS_Port : out std_logic_vector(63 downto 0);
-    DBUS_idata: in std_logic_vector(63 downto 0);
-    DBUS_HiZ  : out std_logic;
+static int pg4_dev[] = {
+  -1,-1,-1,-1,-1,-1,-1,-1,
+};
 
-    -- DPRAM R/W ports
-    MEM_ADB     : out std_logic_vector(12 downto 0);     -- DPRAM Port B R/W Address
-    MEM_WEHB    : out std_logic;                         -- DPRAM Port B Write Enable (High Word)
-    MEM_WELB    : out std_logic;                         -- DPRAM Port B Write Enable (Low  Word)
-    MEM_DTIB    : out std_logic_vector(63 downto 0);     -- DPRAM Port B Write Data
-    MEM_DTOB    : in  std_logic_vector(63 downto 0);     -- DPRAM Port B Read Data
+unsigned int* pg4_get_bar0ptr(int devid){ return bar0[devid]; }
+unsigned int* pg4_get_bar1ptr(int devid){ return bar1[devid]; }
 
-    RST : in  std_logic;
-    CLK : in  std_logic
-    );
-end PFPGA_DMA;
+#define DMA_BSIZE (0x1<<10) // 4KB
 
-architecture rtl of PFPGA_DMA is
-
------------------------------------------------------------------
--- DMAW/R
-  signal Hit_DMAW,Hit_DMAWr,Hit_DMAR,Hit_DMARr : std_logic;
-  signal ChipSel    : std_logic_vector(3 downto 0);
-  signal START_ADR : std_logic_vector(18 downto 0);
-
--- DMAW
-  signal mem_wea   : std_logic := '0';
-  signal dmaw_we0  : std_logic := '0';
-  signal dmaw_we1  : std_logic := '0';
-  signal dmaw_adr          : std_logic_vector(63 downto 0) := (others=>'0');
-  signal dmaw_dt0,dmaw_dt1 : std_logic_vector(63 downto 0) := (others=>'0');
-  signal dmaw_dbus_o       : std_logic_vector(63 downto 0) := (others=>'0');
---
-
--- DMAR
-  signal dmar_enable_cnt0   : std_logic_vector(12 downto 0) :=(others=>'0');
-  signal dmar_enable_cnt0_r : std_logic_vector(12 downto 0) :=(others=>'0');
-  signal dmar_enable0 : std_logic :='0';
-  signal dmar_enable1 : std_logic :='0';
-  signal dmar_enable2 : std_logic :='0';
-  signal dmar_enable3 : std_logic :='0';
-  signal dmar_enable4 : std_logic :='0';
-  signal dmar_enable5 : std_logic :='0';
-  signal dmar_enable6 : std_logic :='0';
-  signal dmar_enable7 : std_logic :='0';
-  signal lo_mem_wad, lo_mem_wad_z : std_logic_vector(12 downto 0);
-  signal dmar_dbus_o   : std_logic_vector(63 downto 0) := (others=>'0');
----
-  signal busy_dmar : std_logic;
-  signal busy_dmaw : std_logic;
-  signal dbus_port0 : std_logic_vector(63 downto 0) := (others=>'0'); 
-begin
-
-  GPREG0(0)   <= '0'; -- not used
-  Hit_DMAW    <= '0'; -- not used
-  busy_dmaw   <= '0'; -- not used
-
-  -- DMA BUSY or IDLE
-  GPREG0(1)   <= busy_dmar;
-  busy_dmar   <= Hit_DMAR or Hit_DMARr or dmar_enable0 or  dmar_enable1 or  dmar_enable2 or  dmar_enable3
-                                       or dmar_enable4 or  dmar_enable5 or  dmar_enable6 or  dmar_enable7;
-  GPREG0(31 downto 2) <= (others=>'0');
+static void * __mmap_bar     (int devid, int bar);
+//    static int __pg4_DMA         (int devid, unsigned int size, unsigned int offset, unsigned int dir);
+//    static int __pg4_DMA_noInterrupt(int devid, unsigned int size, unsigned int offset, unsigned int dir);
+//    static int __pg4_DMA_with_retry(int devid, unsigned int size, unsigned int offset, unsigned int dir);
+int           pg4_DMAget     (int devid, unsigned int size);
+int           pg4_DMAput     (int devid, unsigned int size);
+int           pg4_DMAput_offset (int devid, unsigned int size, unsigned offset);
+int           pg4_DMAget_offset (int devid, unsigned int size, unsigned offset);
+void          pg4_wait       (int devid, int n);
+void          pg4_DMAcheck   (int devid);
+int           pg4_DMAretry   (int devid);
+unsigned long pg4_getbaseaddr(int devid, int j);
+unsigned long pg4_getbaseaddr_size(int devid, int bar);
+unsigned long pg4_read_pciconfig_dword(int devid, int adr);
+void pg4_get_pfpga_info(int devid, char *info);
+void pg4_set_pfpga_info(int devid, char *info);
 
 
-  Hit_DMAR <= Hit_PGPG_REG3;
-  process (CLK) begin
-    if (CLK'event and CLK='1') then
-      Hit_DMAWr <= Hit_DMAW;
-      Hit_DMARr <= Hit_DMAR;
-    end if;
-  end process;
+static void * __mmap_bar(int id, int bar)
+{
+  unsigned long size;
+  unsigned long pagesize = getpagesize();
+  void *mapped_ptr;
+
+  switch (bar) {
+  case 0:
+    {
+      if (ioctl(pg4_dev[id], IOC_SV_MMAPMODE, MMAP_REG_PIORW)) {
+	CERR("mmap bar%d failed | %s:%d\n",bar,__FILE__,__LINE__);
+	exit (-1);
+      }
+      size = ioctl(pg4_dev[id], IOC_GV_REG_SIZE);
+    }
+    break;
+  case 1:
+    {
+      if (ioctl(pg4_dev[id], IOC_SV_MMAPMODE, MMAP_MEM_PIORW)) {
+	CERR("mmap bar%d failed | %s:%d\n",bar,__FILE__,__LINE__);
+	exit (-1);
+      }
+      size = ioctl(pg4_dev[id], IOC_GV_MEM_SIZE);
+    }
+    break;
+  default :
+    CERR("mmap bar%d invalid | %s:%d\n",bar,__FILE__,__LINE__);
+    exit (-1);
+  }
+
+  mapped_ptr = mmap(NULL,
+		    (size/pagesize+1)*pagesize,
+		    (PROT_READ| PROT_WRITE),
+		    MAP_SHARED,
+		    pg4_dev[id],
+		    0);
+
+  return (mapped_ptr);
+}
 
 
--- WRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWR
---    WR SHARE
--- WRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRWR
+int pg4_open(int id)
+{
+  pg4_dev[id] = open(devname[id], O_RDWR);
+  if(pg4_dev[id] == -1) {
+    CERR("open failed %s | %s:%d\n",devname[id] ,__FILE__,__LINE__);
+    return -1;
+  }
 
-  ----------------------------
-  --- DMAR/W START ADR     ---
-  ----------------------------
-  process (CLK,Hit_DMAW,Hit_DMAWr,Hit_DMAR,Hit_DMARr) begin
-    if(RST='1') then
-      START_ADR <= (others=>'0');
-    elsif(CLK'event and CLK='1') then
-      if   ((Hit_DMAW = '0') AND (Hit_DMAWr = '1')) then
-        START_ADR <= (others=>'0');
-      elsif((Hit_DMAR = '0') AND (Hit_DMARr = '1')) then
-        START_ADR <= PGPG_REG3(18 downto 0);
-      end if;
-    end if;
-  end process;
+  bar0[id] = (unsigned int *) __mmap_bar(id, 0); // mmap BAR0
+  bar1[id] = (unsigned int *) __mmap_bar(id, 1); // mmap BAR1
+  //  Allocate Kernel Memory(&pg4_dev[id], DMA_BSIZE, &(kernel_memory[id]));
 
-  ----------------------------
-  --- ChipSel              ---
-  ----------------------------
-  process (CLK,Hit_DMAW,Hit_DMAWr,Hit_DMAR,Hit_DMARr) begin
-    if(RST='1') then
-      ChipSel <= (others=>'0');
-    elsif(CLK'event and CLK='1') then
-      if   ((Hit_DMAW = '0') AND (Hit_DMAWr = '1')) then
-        ChipSel <= (others=>'0');
-      elsif((Hit_DMAR = '0') AND (Hit_DMARr = '1')) then
-        if    (PGPG_REG3(28) = '1') then
-          ChipSel <= "0001";
-        elsif (PGPG_REG3(29) = '1') then
-          ChipSel <= "0010";
-        elsif (PGPG_REG3(30) = '1') then
-          ChipSel <= "0100";
-        else
-          ChipSel <= "1000";
-        end if;
-      end if;
-    end if;
-  end process;
+  return 1;
+}
 
-  ------------------------------
-  --- DBUS_Port              ---
-  ------------------------------
-  process (CLK) begin
-    if(CLK'event and CLK='1') then
-      DBUS_Port <= dbus_port0;
-    end if;
-  end process;
+void pg4_close(int id){
+  //  Free Kernel Memory( &(kernel_memory[id]) );
+  close(pg4_dev[id]);
+  pg4_dev[id] = -1;
+}
 
-  with busy_dmar select
-    dbus_port0 <= dmar_dbus_o when '1',
-                  dmaw_dbus_o when others;
+void pg4_close_and_exit(int id){
+  //  pg4_DMAcheck(id);
+  pg4_close(id);
+  exit(1);
+}
 
-  ------------------------------
-  --- MEM_ADB                ---
-  ------------------------------
-  process (CLK) begin
-    if(CLK'event and CLK='1') then
-      MEM_ADB <= lo_mem_wad;
-    end if;
-  end process;
+inline unsigned int pg4_readbase0(int id, unsigned int index){ return *(bar0[id] + index); }
+inline void         pg4_writebase0(int id, unsigned int index, unsigned int val){ *(bar0[id] + index) = val; }
+inline unsigned int pg4_readbase1(int id, unsigned int index){ return *(bar1[id] + index); }
+inline void         pg4_writebase1(int id, unsigned int index, unsigned int val){ *(bar1[id] + index) = val; }
+inline unsigned int ReadBase0(int id, unsigned int addr){return pg4_readbase0(id, addr>>2);}
+inline unsigned int ReadBase1(int id, unsigned int addr){return pg4_readbase1(id, addr>>2);}
+inline void         WriteBase0(int id, unsigned int addr, unsigned int val){pg4_writebase0(id, addr>>2, val);}
+inline void         WriteBase1(int id, unsigned int addr, unsigned int val){pg4_writebase1(id, addr>>2, val);}
 
--- WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
--- DMA WRITE ( ifpga -> pfpga )
--- WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
-  ------------------------------
-  --- mem_wea                ---
-  ------------------------------
-  mem_wea <= MEM_WEHA AND MEM_WELA;
+#ifdef ___HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH___
+// return kernel memory (for DMA buffer) pointer in user space
+unsigned int* pg4_get_dmabuf_userspace_pointer(int devid) { return ( (unsigned int*)kernel_memory[devid].mem );}
+unsigned int  pg4_get_dmabuf_phisical_address(int devid){ return ( kernel_memory[devid].pa ); }
+unsigned int  pg4_get_dmabuf_size(int devid){ return ( kernel_memory[devid].size ); }
 
-  ------------------------------
-  --- dmaw_we0,1             ---
-  ------------------------------
-  process (RST,CLK) begin
-    if(RST='1') then
-      dmaw_we0 <= '0';
-    elsif(CLK'event and CLK='1') then
-      dmaw_we0 <= mem_wea;
-    end if;
-  end process;
+// Temporaly function (sonouchi kesu !!)
+unsigned int* pg4mmap(int devid) { return (pg4_get_dmabuf_userspace_pointer(devid));}
 
-  process (CLK) begin
-    if(CLK'event and CLK='1') then
-      dmaw_we1 <= dmaw_we0;
-    end if;
-  end process;
+int pg4_DMAput(int devid, unsigned int size)
+{
+  unsigned int dir    = 1; //  Host -> Board
+  unsigned int offset = 0;
+  return (__pg4_DMA(devid, size, offset, dir));
+}
+
+int pg4_DMAget(int devid, unsigned int size)
+{
+  unsigned int dir    = 0; //  Host <- Board
+  unsigned int offset = 0;
+  return (__pg4_DMA_with_retry(devid, size, offset, dir));
+  //  return (__pg4_DMA(devid, size, offset, dir));
+}
+
+int __pg4_DMA_with_retry(int devid, unsigned int size, unsigned int offset, unsigned int dir)
+{
+  static int recurse = 0;
+  unsigned int n_retry, n_disconnect, x;
+  __pg4_DMA(devid, size, offset, dir);
+
+  x = ReadBase0(devid, 0x34);
+  n_disconnect = ((0x1<<16)-1) & (x>>16);
+  n_retry      = ((0x1<<16)-1) & x;
   
-  ------------------------------
-  --- dmaw_adr               ---
-  ------------------------------
-  process (RST,CLK,mem_wea,dmaw_we0) begin
-    if(RST='1') then
-      dmaw_adr <= (others=>'0');
-    elsif(CLK'event and CLK='1') then
-      if((mem_wea = '1') and (dmaw_we0 = '0')) then
-        dmaw_adr(15 downto 0) <= MEM_ADA(16 downto 1);
-      end if;
-      dmaw_adr(63 downto 16) <= (others=>'0');
-    end if;
-  end process;
+  if(n_retry > 0){
+    puts("");
+    puts("----------------------------");
+    fprintf(stderr,"recurse %d\n",recurse);
+    fprintf(stderr,"n_disconnect %d\n", n_disconnect);
+    fprintf(stderr,"n_retry      %d\n", n_retry);
+    WriteBase0(devid, 0x34, 0);
+    fflush(NULL);
+    recurse++;
+    __pg4_DMA_with_retry(devid, size, offset, dir);
+    recurse--;
+  }
 
-  ------------------------------
-  --- dmaw_dt delay          ---
-  ------------------------------
-  process (RST,CLK) begin
-    if(RST='1') then
-      dmaw_dt1 <= (others=>'0');
-      dmaw_dt0 <= (others=>'0');
-    elsif(CLK'event and CLK='1') then
-      dmaw_dt1 <= dmaw_dt0;
-      dmaw_dt0 <= MEM_DTIA;
-    end if;
-  end process;
-
-  ------------------------------
-  --- dmaw_dbus_o            ---
-  ------------------------------
-  process (RST,CLK,dmaw_we0,dmaw_we1) begin
-    if(RST='1') then
-      dmaw_dbus_o <= (others=>'0');
-    elsif(CLK'event and CLK='1') then
-      if(dmaw_we0 = '1' and dmaw_we1 = '0') then
-        dmaw_dbus_o <= dmaw_adr;
-      else
-        dmaw_dbus_o <= dmaw_dt1;
-      end if;
-    end if;
-  end process;
-
-  --- DMAW_ENABLE
-  process (RST,CLK) begin
-    if(RST='1') then
-      DMAW_ENABLE    <= (others=>'0');
-    elsif(CLK'event and CLK='1') then
-      DMAW_ENABLE(0) <= dmaw_we1;
-      DMAW_ENABLE(1) <= dmaw_we1;
-      DMAW_ENABLE(2) <= dmaw_we1;
-      DMAW_ENABLE(3) <= dmaw_we1;
-    end if;
-  end process;
-
--- RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
--- DMA READ (ifpga <- pfpga)
--- RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
-
-  ----------------------------
-  -- DMAR ENABLE COUNT     ---
-  ----------------------------
-  dmar_enable_cnt0_r <= dmar_enable_cnt0;
-  process (RST,CLK,Hit_DMAR,Hit_DMARr,dmar_enable_cnt0_r) begin
-    if(RST='1') then
-      dmar_enable_cnt0 <= (others=>'0');
-    elsif(CLK'event and CLK='1') then
-      if((Hit_DMAR = '0') AND (Hit_DMARr = '1'))then
-        dmar_enable_cnt0 <= "0000" & PGPG_REG3(27 downto 19);   -- SET NQWORD
-      elsif(dmar_enable_cnt0_r /= "000000000000") then
-        dmar_enable_cnt0 <= dmar_enable_cnt0_r - "000000000001";
-      end if;
-    end if;
-  end process;
-
-  ----------------------------
-  -- DMAR ENABLE 0         ---
-  ----------------------------
-  process (RST,CLK,Hit_DMAR,Hit_DMARr,dmar_enable_cnt0) begin
-    if(RST='1') then
-      dmar_enable0 <= '0';
-    elsif(CLK'event and CLK='1') then
-      if((Hit_DMAR = '0') AND (Hit_DMARr = '1'))then
-        dmar_enable0 <= '1';
-      elsif(dmar_enable_cnt0 = "000000000000") then
-        dmar_enable0 <= '0';
-      end if;
-    end if;
-  end process;
-
-  process (CLK) begin
-    if(CLK'event and CLK='1') then
-      dmar_enable7 <= dmar_enable6;
-      dmar_enable6 <= dmar_enable5;
-      dmar_enable5 <= dmar_enable4;
-      dmar_enable4 <= dmar_enable3;
-      dmar_enable3 <= dmar_enable2;
-      dmar_enable2 <= dmar_enable1;
-      dmar_enable1 <= dmar_enable0;
-    end if;
-  end process;
+  return 0;
+}
 
 
-  ------------------------------
-  --- DMAR ENABLE            ---
-  ------------------------------
-  process (CLK,dmar_enable1,dmar_enable2)  begin
-    if(CLK'event and CLK='1') then
-      if((dmar_enable0 = '1') OR (dmar_enable1 = '1')) then
-        DMAR_ENABLE(0) <= '1' AND ChipSel(0);
-        DMAR_ENABLE(1) <= '1' AND ChipSel(1);
-        DMAR_ENABLE(2) <= '1' AND ChipSel(2);
-        DMAR_ENABLE(3) <= '1' AND ChipSel(3);
-      else
-        DMAR_ENABLE <= (others=>'0');
-      end if;
-    end if;
-  end process;
+// Basic Function for DMA trans. (private function)
+//int xxxx__pg4_DMA(int devid, unsigned int size, unsigned int offset, unsigned int dir)
+int __pg4_DMA(int devid, unsigned int size, unsigned int offset, unsigned int dir)
+{
+  unsigned int adr;
+  adr = kernel_memory[devid].pa;
+  //  fprintf(stderr,"kernel_memory[%d].pa = %x\n",devid,adr); exit(-1);
+  WriteBase0(devid, 0x20, adr);    // 0x20 : DMA_PCI_ADRS
+  WriteBase0(devid, 0x24, offset); // 0x24 : DMA_LOCAL_ADRS
+  WriteBase0(devid, 0x28, size);   // 0x28 : DMA_COUNT
 
-  ------------------------------
-  --- DMAR_DBUS_O            ---
-  ------------------------------
-  process (RST,CLK,dmar_enable0,dmar_enable1,dmar_enable2,dmar_enable3)  begin
-    if(RST='1') then
-      dmar_dbus_o <= (others=>'0');
-    elsif(CLK'event and CLK='1') then
-      if(    (dmar_enable0 = '1') AND (dmar_enable1 = '0') ) then
-        dmar_dbus_o <= ("000000000000000000000000000000000000000000000" & START_ADR);
-      elsif( (dmar_enable1 = '1') AND (dmar_enable2 = '0') ) then
---        dmar_dbus_o <= X"FFFFFFFFFFFFFFFF";
-        NULL;
-      elsif( (dmar_enable2 = '1') AND (dmar_enable3 = '0') ) then
-        dmar_dbus_o <= (others=>'0');
-      end if;
-    end if;
-  end process;
+  { // Interrupt thread setup
+    pthread_t tid;
 
-  ------------------------------
-  --- DBUS_HiZ               ---
-  ------------------------------
-  process (RST,CLK,dmar_enable2,dmar_enable3,dmar_enable4,dmar_enable5)  begin
-    if(RST='1') then
-      DBUS_HiZ <= '0';
-    elsif(CLK'event and CLK='1') then
-      if((dmar_enable2 = '1') OR (dmar_enable3 = '1') OR (dmar_enable4 = '1') OR (dmar_enable5 = '1') ) then
-        DBUS_HiZ <= '1';
-      else
-        DBUS_HiZ <= '0';
-      end if;
-    end if;
-  end process;
+    int_count=0;
+    thread_alive= 1;
+    pthread_create( &tid, NULL, pg4_int_handler, &dev[devid] );
+    pthread_mutex_init( &int_mutex, NULL );
+    pthread_mutex_lock( &int_mutex );
+  }
 
-  ------------------------------
-  --- MEM_DTIB               ---
-  ------------------------------
-  process (CLK)  begin
-    if(CLK'event and CLK='1') then
-      MEM_DTIB <= DBUS_idata;
-    end if;
-  end process;
+  { // 0x30 : DMA_INTERVAL
+    unsigned int burst = 0;  // DMA Length
+    unsigned int inter = 0;  // DMA Interval
+    WriteBase0(devid, 0x30, ((burst<<16)|(inter)));
+  }
+  { // 0x2C : DMA_CTRL
+    //                  reserved  :  DMA_CTRL(31 downto 5)
+    unsigned int dma_dir   = dir; // DMA_CTRL(4)  [1:HOST->BOARD/ 0:HOST<-BOARD]
+    unsigned int dma_mode  = 0x1; // DMA_CTRL(3 downto 2)
+    unsigned int dma_64_32 = 0x0; // DMA_CTRL(1)  [1:64bit/ 0:32bit]
+    unsigned int dma_start = 0x1; // DMA_CTRL(0)
+    unsigned int cmd;
 
-  ------------------------------
-  --- MEM_WEHB, MEM_WELB     ---
-  ------------------------------
-  process (CLK)  begin
-    if(CLK'event and CLK='1') then
-      MEM_WEHB <= dmar_enable6;
-      MEM_WELB <= dmar_enable6;
-    end if;
-  end process;
+    cmd = (dma_dir<<4) | (dma_mode<<2) | (dma_64_32<<1) | dma_start;
 
-  ------------------------------
-  --- lo_mem_wad             ---
-  ------------------------------
-  lo_mem_wad_z <= lo_mem_wad;
---  process (RST,CLK,dmar_enable5,dmar_enable6)  begin
---    if(RST='1') then
---      lo_mem_wad <= "1000000000000";
---    elsif(CLK'event and CLK='1') then
---      if((dmar_enable5 = '1') AND (dmar_enable6 = '0')) then
---        lo_mem_wad <= "1000000000000";
---      elsif((dmar_enable5 = '1') AND (dmar_enable6 = '1')) then
---        lo_mem_wad <= lo_mem_wad_z + "0000000000001";
---      elsif((dmar_enable5 = '0') AND (dmar_enable6 = '1')) then
---        lo_mem_wad <= "1000000000000";
---      end if;
---    end if;
---  end process;
-  process (RST,CLK,dmar_enable5,dmar_enable6)  begin
-    if(RST='1') then
-      lo_mem_wad <= "0000000000000";
-    elsif(CLK'event and CLK='1') then
-      if((dmar_enable5 = '1') AND (dmar_enable6 = '0')) then
-        lo_mem_wad <= "0000000000000";
-      elsif((dmar_enable5 = '1') AND (dmar_enable6 = '1')) then
-        lo_mem_wad <= lo_mem_wad_z + "0000000000001";
-      elsif((dmar_enable5 = '0') AND (dmar_enable6 = '1')) then
-        lo_mem_wad <= "0000000000000";
-      end if;
-    end if;
-  end process;
+    WriteBase0(devid, 0x10,   0); // 0x10 : INT_STAT ... clear
+    WriteBase0(devid, 0x2C,   0); // 0x2C : DMA_CTRL ... clear
+    WriteBase0(devid, 0x34,   0); // 0x34 : DMA_STAT ... clear
+    WriteBase0(devid, 0x14,   1); // 0x14 : INT_MASK  [1:Enable INT/ 0:Disable INT]
+    WriteBase0(devid, 0x2C, cmd); // do DMA
 
-end rtl;
+    // -------------- !! WAIT !! -----------------
+    puts("-------------------------- ");
+    pthread_mutex_lock( &int_mutex );
+//    pd_waitForInterrupt(&dev[devid]);
+    puts("--------------------------// ");
+    // -------------- !! WAIT !! -----------------
+
+    {
+     pthread_mutex_unlock( &int_mutex );
+     pthread_mutex_destroy( &int_mutex );
+    }
+
+    WriteBase0(devid, 0x10,   0); // 0x10 : INT_STAT ... clear
+    WriteBase0(devid, 0x14, 0x0); // 0x14 : INT_MASK  [1:Enable INT/ 0:Disable INT]
+    WriteBase0(devid, 0x2C,   0); // 0x2C : DMA_CTRL ... clear
+    pg4_close_and_exit(devid);
+  }
+
+  //  if(ReadBase0(devid, 0x34)) pg4_close_and_exit(devid);
+  //  pg4_close_and_exit(devid);
+  return 0;
+}
+
+// Basic Function for DMA trans. (private function)
+//int __pg4_DMA(int devid, unsigned int size, unsigned int offset, unsigned int dir)
+int __pg4_DMA_noInterrupt(int devid, unsigned int size, unsigned int offset, unsigned int dir)
+{
+  unsigned int adr;
+  adr = kernel_memory[devid].pa;
+  //  fprintf(stderr,"kernel_memory[%d].pa = %x\n",devid,adr); exit(-1);
+  WriteBase0(devid, 0x20, adr);    // 0x20 : DMA_PCI_ADRS
+  WriteBase0(devid, 0x24, offset); // 0x24 : DMA_LOCAL_ADRS
+  WriteBase0(devid, 0x28, size);   // 0x28 : DMA_COUNT
+  { // 0x30 : DMA_INTERVAL
+    unsigned int burst = 0;  // DMA Length
+    unsigned int inter = 0;  // DMA Interval
+    WriteBase0(devid, 0x30, ((burst<<16)|(inter)));
+  }
+  { // 0x2C : DMA_CTRL
+    //                  reserved  :  DMA_CTRL(31 downto 5)
+    unsigned int dma_dir   = dir; // DMA_CTRL(4)  [1:HOST->BOARD/ 0:HOST<-BOARD]
+    unsigned int dma_mode  = 0x1; // DMA_CTRL(3 downto 2)
+    unsigned int dma_64_32 = 0x0; // DMA_CTRL(1)  [1:64bit/ 0:32bit]
+    unsigned int dma_start = 0x1; // DMA_CTRL(0)
+    unsigned int cmd;
+    cmd = (dma_dir<<4) | (dma_mode<<2) | (dma_64_32<<1) | dma_start;
+    WriteBase0(devid, 0x10,   0); // 0x10 : INT_STAT ... clear
+    WriteBase0(devid, 0x2C,   0); // 0x2C : DMA_CTRL ... clear
+    WriteBase0(devid, 0x34,   0); // 0x34 : DMA_STAT ... clear
+    WriteBase0(devid, 0x14,   0); // 0x14 : INT_MASK  [1:Enable INT/ 0:Disable INT]
+    WriteBase0(devid, 0x2C, cmd); // do DMA
+    // -------------- !! WAIT !! -----------------
+    usleep(1000);
+    // -------------- !! WAIT !! -----------------
+    WriteBase0(devid, 0x10,   0); // 0x10 : INT_STAT ... clear
+    WriteBase0(devid, 0x14, 0x0); // 0x14 : INT_MASK  [1:Enable INT/ 0:Disable INT]
+    WriteBase0(devid, 0x2C,   0); // 0x2C : DMA_CTRL ... clear
+  }
+  return 0;
+}
+
+
+int pg4_DMAput_offset(int devid, unsigned int size, unsigned offset)
+{
+  return -1;
+}
+
+int pg4_DMAget_offset(int devid, unsigned int size, unsigned offset)
+{
+  return -1;
+}
+
+void pg4_wait(int devid, int n)
+{
+  unsigned int i;
+  n = n << 1;
+  for(i=0;i<n;i++) {
+    WriteBase0(devid,0x4, 1);
+    WriteBase0(devid,0x4, 0);
+  }
+}
+
+void pg4_DMAcheck(int devid)
+{
+  unsigned int flag, retry;
+  fprintf(stderr,"\t INT_STAT       (0x10) : %x\n", ReadBase0(devid, 0x10));
+  fprintf(stderr,"\t INT_MASK       (0x14) : %x\n", ReadBase0(devid, 0x14));
+  fprintf(stderr,"\t DMA_PCI_ADRS   (0x20) : %x\n", ReadBase0(devid, 0x20));
+  fprintf(stderr,"\t DMA_LOCAL_ADRS (0x24) : %x\n", ReadBase0(devid, 0x24));
+  fprintf(stderr,"\t DMA_COUNT      (0x28) : %x\n", ReadBase0(devid, 0x28));
+  fprintf(stderr,"\t DMA_CTRL       (0x2C) : %x\n", ReadBase0(devid, 0x2c));
+  fprintf(stderr,"\t DMA_INTERVAL   (0x30) : %x\n", ReadBase0(devid, 0x30));
+  fprintf(stderr,"\t DMA_STAT       (0x34) : %x\n", ReadBase0(devid, 0x34));
+
+  flag = ReadBase0(devid, 0x34);
+
+  retry = ((0x1<<16)-1)&flag;
+  fprintf(stderr,"\t DMA dissconnect count %i\n", (flag>>16));
+  fprintf(stderr,"\t DMA retry count       %i\n", retry);
+  fprintf(stderr,"\n");
+  fflush(NULL);
+}
+
+int pg4_DMAretry(int devid)
+{
+  unsigned int flag, retry;
+  flag = ReadBase0(devid, 0x34);
+  retry = ((0x1<<16)-1)&flag;
+  return retry;
+}
+#endif
+//HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
+
+
+unsigned long pg4_getbaseaddr(int id, int bar)
+{
+  unsigned long ret;
+  if( (bar==0) || (bar==1)){
+    int bar0_dword_adr = 0x4;
+    ret = pg4_read_pciconfig_dword(id, bar0_dword_adr + bar);
+  }else{
+    CERR("bar %d invalid | %s:%d\n",bar ,__FILE__ ,__LINE__);
+    exit(-1);
+  }
+  return ret;
+}
+
+unsigned long pg4_getbaseaddr_size(int id, int bar)
+{
+  unsigned long size;
+  switch (bar) {
+  case 0:
+    size = ioctl(pg4_dev[id], IOC_GV_REG_SIZE);
+    break;
+  case 1:
+    size = ioctl(pg4_dev[id], IOC_GV_MEM_SIZE);
+    break;
+  default :
+    CERR("bar%d invalid | %s:%d\n",bar,__FILE__,__LINE__);
+    exit (-1);
+  }
+
+  return (size); // [Bytes]
+}
+
+unsigned long pg4_read_pciconfig_dword(int id, int adr)
+{
+  // note : 'adr' uses dword address (not byte address).
+  return (unsigned long) ioctl(pg4_dev[id], IOC_GV_PCICFG, adr);
+}
+
+void pg4_get_pfpga_info(int id, char* ret){
+  char info[NB_FPGA_INFO];
+  ioctl(pg4_dev[id], IOC_GP_FPGA_INFO, info);
+  strcpy(ret, info);
+}
+
+void pg4_set_pfpga_info(int id, char* info){
+  ioctl(pg4_dev[id], IOC_SP_FPGA_INFO, info);
+}

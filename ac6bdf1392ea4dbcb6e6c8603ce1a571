@@ -1,36 +1,29 @@
-Mon Apr 15 19:39:49 JST 2024
-#!/usr/bin/env python3
-import os
-from datetime import datetime
-import time
+Sat May  4 19:43:51 JST 2024
+//Time-stamp: "2006-11-21 00:17:47 hamada"
 
-# YYYYMMDD_HH_MM_SS
-def get_filename_frame(basedir, str_datetime):
-    cell = list(str_datetime)
-    str_YYYYMMDD = ''.join(cell[0:8])
-    str_HH = ''.join(cell[9:11])
-    str_MM = ''.join(cell[12:14])
-    str_SS = ''.join(cell[15:17])
-    dirname = basedir + str_YYYYMMDD + "/" + str_HH
-    if os.path.exists(dirname) != True:
-        os.makedirs(dirname)
-    ret = dirname + "/" + str_datetime+".jpg"
-    ret = ret.replace(' ','')
-    return ret
+#define FDIM 8       // depend on NBIT_L_UADR     (@ ifpga.vhd)
+#define JDIM 4       // depend on dpram adr width (@ pgpg_mem.vhd)
+#define XI_AWIDTH 4  // depend on l_adri width    (@ pgpg_mem.vhd)
 
+int pgr_open(int);
+void pgr_close(int);
 
-def get_filename_frame_simple(basedir, fname):
-    dirname = basedir
-    if os.path.exists(dirname) != True:
-        os.makedirs(dirname)
-    ret = dirname + fname
-    ret = ret.replace(' ','')
-    return ret
+void pgr_reset(int devid);
+int  pgr_get_writecomb_err(int devid);
 
+void pgr_setjpset(int devid, unsigned int jdata[][JDIM], int nj);
+void pgr_setjpset_one(int devid, int j, unsigned int jdata[JDIM]);
 
-if __name__ == '__main__':
-    while(True):
-        tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S')
-        fname = get_filename_frame('../work/', tnow)
-        print (fname)
-        time.sleep(0.5)
+void pgr_setipset(int devid, unsigned int *idata, int num);
+void pgr_setipset_ichip(int devid, unsigned int ichip, unsigned int *idata, int number_of_pipelines);
+void pgr_setipset_one(int devid, unsigned int ichip, int ipipe, unsigned int *idata, int idim);
+
+void pgr_start_calc(int devid, unsigned int n);
+void pgr_calc_start(int devid, unsigned int n);
+void pgr_calc_finish(int devid);
+
+void pgr_getfoset(int devid, unsigned long long int fodata[][FDIM]);
+
+void pgr_set_npipe_per_chip(int devid, int n);
+void pgr_set_jwidth(int devid, int n);
+void pgr_set_nchip(int nchip);

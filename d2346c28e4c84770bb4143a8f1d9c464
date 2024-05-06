@@ -1,47 +1,56 @@
-Mon Jan 29 19:28:44 JST 2024
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
+Mon May  6 19:27:52 JST 2024
+#!/usr/bin/env python3
+#Time-stamp: <2017-06-11 19:17:43 hamada>
+import argparse
+import numpy as np
+import cv2
+from datetime import datetime
+import mkdir
 
-/*
- * ifpga_get_barinfo.c -- to get infomation of pci bar regsters
- *
- * Copyright (C) 2006-2007 Tsuyoshi Hamada
- *                                All rights reserved.
- * 
- * No warranty is attached; 
- * I cannot take responsibility for errors or fitness for use.
- *
- */
+def put_text(image, text):
+    font_size = 1.0
+    font_type = cv2.FONT_HERSHEY_PLAIN
+    font_color = (0xf, 0xf, 0xff)
+    cv2.putText(image, text, (440, 15), font_type, font_size, font_color)
 
-#include "pg4.h"
+if (__name__ == '__main__'):
+    parser = argparse.ArgumentParser(description = "description goes here")
+    parser.add_argument("--devid", type=int, help = "set device id", required=False)
+    args = parser.parse_args()
+    devid = 0
+    if args.devid:
+        devid = int(args.devid)
+        print ("set devid = ", devid)
 
-int main(int argc, char* argv[])
-{
-  int devid  = 0;
-  int bar    = 0;
-  int is_size = 0;
-  unsigned long z = 0;
+    log_base = '../log/'
+    cap = cv2.VideoCapture(devid)
 
-  if (argc < 3) {
-    fprintf(stderr, "%s <devid> <bar_num> <adr=0/size=1>\n", argv[0]);
-    exit(-1);
-  }
-  
-  if(argc == 3) is_size = 0; else is_size = atoi(argv[3]);
+    cap_width  = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+    cap_height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+    cap_fps    = cap.get(cv2.CAP_PROP_FPS)
 
-  devid = atoi(argv[1]);
-  bar   = atoi(argv[2]);
-  
-  pg4_open(devid);
+    print(cap_width, "x", cap_height, ":", cap_fps)
 
-  if(is_size)
-    z = 0xffffffff & pg4_getbaseaddr_size(devid, bar);
-  else
-    z = 0xffffffff & pg4_getbaseaddr(devid, bar);
+    tnow0 = datetime.now().strftime('%Y%m%d_%H_%M_%S') # ('%Y%m%d_%H_%M_%S_%f')
 
-  printf("0x%08lx\n",z);
-  pg4_close(devid);
+    while(cap.isOpened()):
+        ret, frame = cap.read()
+        cv2.imshow('camera: %d'%(devid), frame)
 
-  return 1;
-}
+        #tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S')
+        tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S_%f')
+        if(tnow != tnow0):
+            put_text(frame, tnow)
+            basedir = '../log.%d/'% (devid)
+            ofname = mkdir.get_filename_frame(basedir, tnow)
+            cv2.imwrite(ofname, frame)
+            print(ofname, "devid = %d"%devid)
+            tnow0 = tnow
+
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    cap.release()
+    cv2.destroyAllWindows()
+
+    print("Done.")

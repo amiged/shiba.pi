@@ -1,5 +1,9 @@
-Mon Apr 15 19:53:16 JST 2024
--- ProjNav VHDL simulation template: sim_local_read_cnt.udo
--- You may edit this file after the line that starts with
--- '-- START' to customize your simulation
--- START user-defined simulation commands
+Thu May  9 19:44:17 JST 2024
+V1 3
+FL c:/cygwin/home/administrator/fkit/pci64/tmp2/pfpga_config.vhd 2004/11/10.11:36:20
+EN work/PFPGA_CONFIG \
+      FL c:/cygwin/home/administrator/fkit/pci64/tmp2/pfpga_config.vhd \
+      PB ieee/STD_LOGIC_1164 PB ieee/STD_LOGIC_ARITH PB ieee/STD_LOGIC_UNSIGNED
+AR work/PFPGA_CONFIG/RTL \
+      FL c:/cygwin/home/administrator/fkit/pci64/tmp2/pfpga_config.vhd \
+      EN work/PFPGA_CONFIG

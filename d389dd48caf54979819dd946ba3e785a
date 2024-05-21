@@ -1,91 +1,34 @@
-Tue May 21 19:38:09 JST 2024
--- Copyright 2004-2005 Tsuyoshi Hamada
---clk         __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __
---MEM_WEHA         _______/~~~~\__________
---MEM_WELA    _______/~~~~\__________
---MEM_DTIA[L]        < L  >              
---MEM_DTIA[H]             < H  >              
---wait             _______/~~~~~~~~~\__________
---dtl
+Tue May 21 19:45:45 JST 2024
+// Time-stamp: "2006-12-07 19:19:07 hamada"
+// Copyright (c) 2006 by Tsuyoshi Hamada, All rights reserved.
 
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL;
-use IEEE.STD_LOGIC_ARITH.ALL;
+#include <stdio.h>
+#include <stdlib.h>
+#include "pg4.h"
 
+unsigned int* ptr;
+unsigned int* bar1;
 
-entity FIFOFIFO is
-  port (
-    -- pcicnt input
-    MEM_ADA  : in std_logic_vector(19 downto 0);     -- DPRAM Port B R/W Address
-    MEM_WEHA : in std_logic;
-    MEM_WELA : in std_logic;
-    MEM_DTIA : in std_logic_vector(63 downto 0);
-    -- output
-    MEM_AD     : out std_logic_vector(31 downto 0);
-    MEM_WE     : out std_logic;
-    MEM_DTI    : out std_logic_vector(63 downto 0);
+int main(int argc,char *argv[])
+{
+  int devid = 0;
+  int i;
 
-    RST : in  std_logic;
-    CLK : in  std_logic
-    );
-end FIFOFIFO;
+  pg4_open(devid);
+  bar1 = pg4_get_bar1ptr(devid);
+  printf("BAR0: %lx\n",pg4_getbaseaddr(devid,0));
+  printf("BAR1: %lx\n",pg4_getbaseaddr(devid,1));
 
-architecture rtl of FIFOFIFO is
-  signal we   : std_logic :='0'; 
-  signal adr  : std_logic_vector(19 downto 0) := (others=>'0'); 
-  signal data : std_logic_vector(63 downto 0) := (others=>'0'); 
-begin
+  puts("clear DMA_CTRL register(0x2C).");
+  WriteBase0(devid, 0x2C,   0); // 0x2C : DMA_CTRL ... clear
 
-  MEM_AD(31 downto 20) <= (others=>'0');
-  MEM_AD(19 downto 0) <= adr;
+  puts("clear INT_STAT register(0x10).");
+  WriteBase0(devid, 0x10,   0); // 0x14 : INT_MASK  [1:Enable INT/ 0:Disable INT]
 
-  MEM_WE <= we;
-  MEM_DTI <= data;
+  puts("clear INT_MASK register(0x14).");
+  WriteBase0(devid, 0x14,   0); // 0x14 : INT_MASK  [1:Enable INT/ 0:Disable INT]
 
+  pg4_DMAcheck(devid);
 
-  process (RST,CLK,MEM_WEHA,MEM_WELA) begin
-    if(RST='1') then
-      adr <= (others=>'0');
-    elsif (CLK'event and CLK='1') then
-      if(MEM_WEHA='1' AND MEM_WELA='1') then
-        adr <= MEM_ADA(19 downto 0);
-      elsif(MEM_WEHA='0' AND MEM_WELA='1') then
-        adr <= MEM_ADA(19 downto 0);
-      elsif(MEM_WEHA='1' AND MEM_WELA='0') then
-        adr <= MEM_ADA(19 downto 0);
-      end if;
-    end if;
-  end process;
-
-  process (RST,CLK,MEM_WEHA,MEM_WELA) begin
-    if(RST='1') then
-      we <= '0';
-    elsif (CLK'event and CLK='1') then
-      if(MEM_WEHA='1' AND MEM_WELA='1') then
-        we <= '1';
-      elsif(MEM_WEHA='0' AND MEM_WELA='1') then
-        we <= '0';
-      elsif(MEM_WEHA='1' AND MEM_WELA='0') then
-        we <= '1';
-      else
-        we <= '0';
-      end if;
-    end if;
-  end process;
-
-  process (RST,CLK,MEM_WEHA,MEM_WELA) begin
-    if(RST='1') then
-      data <= (others=>'0');
-    elsif (CLK'event and CLK='1') then
-      if(MEM_WEHA='1' AND MEM_WELA='1') then
-        data <= MEM_DTIA;
-      elsif(MEM_WEHA='0' AND MEM_WELA='1') then
-        data(31 downto 0) <= MEM_DTIA(31 downto 0);
-      elsif(MEM_WEHA='1' AND MEM_WELA='0') then
-        data(63 downto 32) <= MEM_DTIA(63 downto 32);
-      end if;
-    end if;
-  end process;
-
-end rtl;
+  return 0;
+}

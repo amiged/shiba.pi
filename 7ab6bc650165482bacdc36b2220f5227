@@ -1,17 +1,57 @@
-Sun Feb  4 19:53:02 JST 2024
-#!/usr/bin/perl
+Wed Jun 26 19:37:49 JST 2024
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.std_logic_arith.all;                                        
+use ieee.std_logic_unsigned.all;                                    
 
-my $N = 300;
-my $XSCALE = 1.0;
-my $YSCALE = 1.0;
+entity pipe_sts is
+  port (
+    rst        : in  std_logic;
+    clk        : in  std_logic;
+    run        : in  std_logic;
+    runret     : in  std_logic;
+    status     : out std_logic_vector(31 downto 0)
+  );
+end pipe_sts;
 
-srand(12345);
+architecture rtl of pipe_sts is
+signal sts_reg  : std_logic_vector(7 downto 0) :=X"77";
+signal rund,sts : std_logic;
+signal cntr : std_logic_vector(7 downto 0);
+signal irun : std_logic := '0';
 
-print $N ."\n";
+begin
 
-for(my $i=0;$i<$N;$i++){
-    my $x = (rand(1.0)*$XSCALE - $XSCALE/2.0);
-    my $y = (rand(1.0)*$YSCALE - $XSCALE/2.0);
-    my $s = sprintf("%e\t%e\n",$x,$y);
-    print $s;
-}
+-- clk    ____~~~~____~~~~____~~~~____~~~~__
+-- runret _____~~~~~~~~_____________________
+-- rund   _____________~~~~~~~~_____________
+-- status                      <finish     >
+
+-- status
+status(31 downto 8) <= (others=>'0');
+process(clk,rst) begin
+  if(rst='1') then
+    status(7 downto 0) <= (others=>'1');
+  elsif(clk'event and clk='1') then
+    if((runret='0') AND (rund='1')) then  -- 計算終了
+      status(7 downto 0) <= (others=>'1');
+    elsif((run='1') AND (irun='0')) then -- 計算開始
+      status(7 downto 0) <= (others=>'0');
+    end if;
+  end if;
+end process;
+
+process(clk) begin
+  if(clk'event and clk='1') then
+    rund  <= runret;
+  end if;
+end process;
+
+process(clk) begin
+  if(clk'event and clk='1') then
+    irun  <= run;
+  end if;
+end process;
+
+
+end rtl;

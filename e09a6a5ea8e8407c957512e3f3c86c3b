@@ -1,28 +1,20 @@
-Thu Jun 13 19:47:51 JST 2024
-// Copyright(c) 2004- by PGPG
-// The original source : contrib/src_h/vi/pg_util.h
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-#include <math.h>
-#ifndef LONG
-#define LONG unsigned long long int
-#endif
-LONG  double2pgpglog(double x, int nbit_log, int nbit_man);
-double pgpglog2double(LONG x,  int nbit_log, int nbit_man);
-LONG  double2pgpgfloat(double a, int nbit_float, int nbit_man);
-LONG  double2pgpgfloat_r(double a, int nbit_float, int nbit_man, int rmode);
-double pgpgfloat2double(LONG x, int nbit_float, int nbit_man);
-LONG extractbit_long(LONG in, int hi, int lo);
-void l2bit(LONG a);
-void putbits(LONG a);
-void putbits32(LONG a);
-void putbitsn(LONG a,int n);
-double gen_rand_abs(void);
-double gen_rand(void);
-double gen_rand_tamanizero(void);
+Fri Jul  5 19:28:50 JST 2024
 
 
-#include <sys/time.h>
-#include <sys/resource.h>
-double e_time(void);
+all:
+	cp top.ucf.ISE6.3i top.ucf
+	rm -rf proj
+	tar xvf proj.ise6.3i.tar
+	cd proj;xst -intstyle ise -ifn __projnav/top.xst -ofn top.syr
+	cd proj;ngdbuild -intstyle ise -dd ./_ngo -uc ../top.ucf  -p xc2vp70-ff1517-5 top.ngc top.ngd
+	cd proj;map -intstyle ise -p xc2vp70-ff1517-5 -cm area -pr b -k 4 -c 100 -tx off -o top_map.ncd top.ngd top.pcf
+	cd proj;par -w -intstyle ise -ol std -t 1 top_map.ncd top.ncd top.pcf
+	cd proj;trce -intstyle ise -e 3 -l 3 -xml top top.ncd -o top.twr top.pcf
+	cd proj;bitgen -intstyle ise -f top.ut top.ncd
+
+
+
+clean:
+	rm -rf proj top.ucf *~ .*~
+
+

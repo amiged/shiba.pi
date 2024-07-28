@@ -1,103 +1,118 @@
-Sun Jun 23 19:51:10 JST 2024
-# Current time Tue Jan 04 17:06:01 2005
-# ModelSim Stack Trace
-# Program = vish
-# Id = "5.7g"
-# Version = "2003.10"
-# Date = "Oct 13 2003"
-# Platform = win32pe
+Sun Jul 28 19:29:47 JST 2024
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
 
-Exception c0000005 has occurred at address 0060b1ac. Traceback:
-# 0    0x0060b1ac: 'TclpAlloc + 0x9c'
-# 1    0x0060f6ae: 'Tcl_Alloc + 0xe'
-# 2    0x006370a1: 'Tcl_ListObjReplace + 0x321'
-# 3    0x0063b669: 'Tcl_DuplicateObj + 0xd9'
-# 4    0x0061414d: 'Tcl_LreplaceObjCmd + 0x10d'
-# 5    0x006238e4: 'TclExecuteByteCode + 0x5b4'
-# 6    0x0060cb12: 'Tcl_EvalObjEx + 0x1f2'
-# 7    0x006427ef: 'TclObjInterpProc + 0x26f'
-# 8    0x0063ccd6: 'Tcl_EvalObjv + 0x3d6'
-# 9    0x0063d18a: 'Tcl_EvalEx + 0x11a'
-# 10   0x0063d426: 'Tcl_Eval + 0x16'
-# 11   0x10002ad3: 'Itk_ArchetypeInit + 0x1ad3'
-# 12   0x100019a0: 'Itk_ArchetypeInit + 0x9a0'
-# 13   0x0033b67c: 'Itcl_EvalMemberCode + 0x206'
-# 14   0x0033c346: 'Itcl_ExecMethod + 0x18d'
-# 15   0x00344657: 'Itcl_EvalArgs + 0x133'
-# 16   0x0033e4b1: 'Itcl_HandleInstance + 0x1f2'
-# 17   0x006238e4: 'TclExecuteByteCode + 0x5b4'
-# 18   0x0060cb12: 'Tcl_EvalObjEx + 0x1f2'
-# 19   0x0063a5ba: 'Tcl_NamespaceObjCmd + 0xb2a'
-# 20   0x00639ba9: 'Tcl_NamespaceObjCmd + 0x119'
-# 21   0x0063ccd6: 'Tcl_EvalObjv + 0x3d6'
-# 22   0x0063d18a: 'Tcl_EvalEx + 0x11a'
-# 23   0x0063d426: 'Tcl_Eval + 0x16'
-# 24   0x0060df0c: 'Tcl_GlobalEval + 0x1c'
-# 25   0x00530d70: 'Tk_BindEvent + 0x99c'
-# 26   0x00553635: 'TkBindEventProc + 0x18f'
-# 27   0x0055d2e2: 'Tk_HandleEvent + 0x5eb'
-# 28   0x005acff7: 'Tk_DestroyWindow + 0x204'
-# 29   0x005acf2a: 'Tk_DestroyWindow + 0x137'
-# 30   0x005acf2a: 'Tk_DestroyWindow + 0x137'
-# 31   0x005acf2a: 'Tk_DestroyWindow + 0x137'
-# 32   0x005ae2f1: 'Tk_GetNumMainWindows + 0x70'
-# 33   0x00622f8d: 'Tcl_Finalize + 0x4d'
-# 34   0x0061060e: 'Tcl_ExitObjCmd + 0x3e'
-# 35   0x006238e4: 'TclExecuteByteCode + 0x5b4'
-# 36   0x0060cb12: 'Tcl_EvalObjEx + 0x1f2'
-# 37   0x006427ef: 'TclObjInterpProc + 0x26f'
-# 38   0x006238e4: 'TclExecuteByteCode + 0x5b4'
-# 39   0x0060cb12: 'Tcl_EvalObjEx + 0x1f2'
-# 40   0x006427ef: 'TclObjInterpProc + 0x26f'
-# 41   0x006238e4: 'TclExecuteByteCode + 0x5b4'
-# 42   0x0060cb12: 'Tcl_EvalObjEx + 0x1f2'
-# 43   0x006427ef: 'TclObjInterpProc + 0x26f'
-# 44   0x006238e4: 'TclExecuteByteCode + 0x5b4'
-# 45   0x0060cb12: 'Tcl_EvalObjEx + 0x1f2'
-# 46   0x006427ef: 'TclObjInterpProc + 0x26f'
-# 47   0x0063ccd6: 'Tcl_EvalObjv + 0x3d6'
-# 48   0x0063d18a: 'Tcl_EvalEx + 0x11a'
-# 49   0x0060cc62: 'Tcl_EvalObjEx + 0x342'
-# 50   0x0061059c: 'Tcl_EvalObjCmd + 0x6c'
-# 51   0x006238e4: 'TclExecuteByteCode + 0x5b4'
-# 52   0x0060cb12: 'Tcl_EvalObjEx + 0x1f2'
-# 53   0x006427ef: 'TclObjInterpProc + 0x26f'
-# 54   0x0063ccd6: 'Tcl_EvalObjv + 0x3d6'
-# 55   0x0063d18a: 'Tcl_EvalEx + 0x11a'
-# 56   0x0063d426: 'Tcl_Eval + 0x16'
-# 57   0x0060df0c: 'Tcl_GlobalEval + 0x1c'
-# 58   0x0042d1f7: '<unknown (@0x42d1f7)>'
-# 59   0x0060c2bb: 'TclInvokeStringCommand + 0x6b'
-# 60   0x0063ccd6: 'Tcl_EvalObjv + 0x3d6'
-# 61   0x0063d18a: 'Tcl_EvalEx + 0x11a'
-# 62   0x0063d426: 'Tcl_Eval + 0x16'
-# 63   0x0060df0c: 'Tcl_GlobalEval + 0x1c'
-# 64   0x0042cfd2: '<unknown (@0x42cfd2)>'
-# 65   0x0060c2bb: 'TclInvokeStringCommand + 0x6b'
-# 66   0x006238e4: 'TclExecuteByteCode + 0x5b4'
-# 67   0x0060cb12: 'Tcl_EvalObjEx + 0x1f2'
-# 68   0x00623a73: 'TclExecuteByteCode + 0x743'
-# 69   0x0060cb12: 'Tcl_EvalObjEx + 0x1f2'
-# 70   0x006427ef: 'TclObjInterpProc + 0x26f'
-# 71   0x006238e4: 'TclExecuteByteCode + 0x5b4'
-# 72   0x0060cb12: 'Tcl_EvalObjEx + 0x1f2'
-# 73   0x006427ef: 'TclObjInterpProc + 0x26f'
-# 74   0x0063ccd6: 'Tcl_EvalObjv + 0x3d6'
-# 75   0x0063d18a: 'Tcl_EvalEx + 0x11a'
-# 76   0x0063d426: 'Tcl_Eval + 0x16'
-# 77   0x0060df0c: 'Tcl_GlobalEval + 0x1c'
-# 78   0x00530d70: 'Tk_BindEvent + 0x99c'
-# 79   0x00553635: 'TkBindEventProc + 0x18f'
-# 80   0x0055d2e2: 'Tk_HandleEvent + 0x5eb'
-# 81   0x0055d6d2: 'TkQueueEventForAllChildren + 0xcf'
-# 82   0x0063af20: 'Tcl_ServiceEvent + 0x60'
-# 83   0x0063b191: 'Tcl_DoOneEvent + 0x111'
-# 84   0x0055d73c: 'Tk_MainLoop + 0x14'
-# 85   0x0057ce48: 'Tk_MainEx + 0x438'
-# 86   0x0042eed4: '<unknown (@0x42eed4)>'
-# 87   0x0042f3e9: '<unknown (@0x42f3e9)>'
-# 88   0x004c0925: '<unknown (@0x4c0925)>'
-# 89   0x77e7893d: '<unknown (@0x77e7893d)>'
-StackWalk failed 487
-# End of Stack Trace
 
+entity PFPGA_DMA is
+  port (
+    -- pcicnt input
+    MEM_AD  : in std_logic_vector(16 downto 0);     -- DPRAM Port B R/W Address
+    MEM_WE  : in std_logic;
+    MEM_WE  : in std_logic;
+    MEM_DTI : in std_logic_vector(63 downto 0);
+
+    -- CBUS/DBUS
+    DMAW_ENABLE : out std_logic_vector(3 downto 0); -- for 4 pfpga chip
+    DBUS_Port : out std_logic_vector(63 downto 0);
+
+    RST : in  std_logic;
+    CLK : in  std_logic
+    );
+end PFPGA_DMA;
+
+architecture rtl of PFPGA_DMA is
+
+-----------------------------------------------------------------
+-- DMAW
+  signal mem_wea   : std_logic := '0';
+  signal dmaw_we0  : std_logic := '0';
+  signal dmaw_we1  : std_logic := '0';
+  signal dmaw_adr          : std_logic_vector(63 downto 0) := (others=>'0');
+  signal dmaw_dt0,dmaw_dt1 : std_logic_vector(63 downto 0) := (others=>'0');
+  signal dmaw_dbus_o       : std_logic_vector(63 downto 0) := (others=>'0');
+
+begin
+
+-- WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+-- DMA WRITE ( ifpga -> pfpga )
+-- WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+  ------------------------------
+  --- mem_wea                ---
+  ------------------------------
+  mem_wea <= MEM_WE;
+
+  ------------------------------
+  --- dmaw_we0,1             ---
+  ------------------------------
+  process (RST,CLK) begin
+    if(RST='1') then
+      dmaw_we0 <= '0';
+    elsif(CLK'event and CLK='1') then
+      dmaw_we0 <= mem_wea;
+    end if;
+  end process;
+
+  process (CLK) begin
+    if(CLK'event and CLK='1') then
+      dmaw_we1 <= dmaw_we0;
+    end if;
+  end process;
+  
+  ------------------------------
+  --- dmaw_adr               ---
+  ------------------------------
+  process (RST,CLK,mem_wea,dmaw_we0) begin
+    if(RST='1') then
+      dmaw_adr <= (others=>'0');
+    elsif(CLK'event and CLK='1') then
+      if((mem_wea = '1') and (dmaw_we0 = '0')) then
+        dmaw_adr(15 downto 0) <= MEM_AD(16 downto 1);
+      end if;
+      dmaw_adr(63 downto 16) <= (others=>'0');
+    end if;
+  end process;
+
+  ------------------------------
+  --- dmaw_dt delay          ---
+  ------------------------------
+  process (RST,CLK) begin
+    if(RST='1') then
+      dmaw_dt1 <= (others=>'0');
+      dmaw_dt0 <= (others=>'0');
+    elsif(CLK'event and CLK='1') then
+      dmaw_dt1 <= dmaw_dt0;
+      dmaw_dt0 <= MEM_DTI;
+    end if;
+  end process;
+
+  ------------------------------
+  --- dmaw_dbus_o            ---
+  ------------------------------
+  process (RST,CLK,dmaw_we0,dmaw_we1) begin
+    if(RST='1') then
+      dmaw_dbus_o <= (others=>'0');
+    elsif(CLK'event and CLK='1') then
+      if(dmaw_we0 = '1' and dmaw_we1 = '0') then
+        dmaw_dbus_o <= dmaw_adr;
+      else
+        dmaw_dbus_o <= dmaw_dt1;
+      end if;
+    end if;
+  end process;
+
+  --- DMAW_ENABLE
+  process (RST,CLK) begin
+    if(RST='1') then
+      DMAW_ENABLE    <= (others=>'0');
+    elsif(CLK'event and CLK='1') then
+      DMAW_ENABLE(0) <= dmaw_we1;
+      DMAW_ENABLE(1) <= dmaw_we1;
+      DMAW_ENABLE(2) <= dmaw_we1;
+      DMAW_ENABLE(3) <= dmaw_we1;
+    end if;
+  end process;
+
+
+end rtl;

@@ -1,42 +1,40 @@
-Mon Jul 15 19:29:43 JST 2024
-// Time-stamp: "2006-12-07 13:35:12 hamada"
-// Copyright (c) 2006 by Tsuyoshi Hamada, All rights reserved.
-
-#include <stdio.h>
-#include <stdlib.h>
-#include "pg4.h"
-
-//#define NMAX (0x1<<10) // 4KB
-//#define NMAX (0x1<<11) // 8KB
-//#define NMAX (0x1<<12) // 16KB
-//#define NMAX (0x1<<13) // 32KB
-#define NMAX (0x1<<14) // 64KB
-
-unsigned int* ptr;
-unsigned int* bar1;
-
-int main(int argc,char *argv[])
-{
-  int devid = 0;
-  int n = NMAX;
-  int i;
-
-  if(argc > 1){
-    n = atoi(argv[1]);
-  }
-  printf("n = %d\n",n);
-
-  pg4_open(devid);
-  bar1 = pg4_get_bar1ptr(devid);
-  printf("BAR0: %lx\n",pg4_getbaseaddr(devid,0));
-  printf("BAR1: %lx\n",pg4_getbaseaddr(devid,1));
-
-  for(i = 0; i < n; i++) {
-    unsigned int x;
-    x = pg4_readbase1(devid, i);
-    printf("%x : %x\n",i,x);
-  }
+Thu Aug 22 19:45:12 JST 2024
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
 
 
-  return 0;
-}
+entity WRITECOMB_CHECK is
+  port (
+    MEM_WEHA : in std_logic;
+    MEM_WELA : in std_logic;
+    IS_ERR : out std_logic_vector(25 downto 0);
+    RST : in  std_logic;
+    CLK : in  std_logic
+    );
+end WRITECOMB_CHECK;
+
+architecture rtl of WRITECOMB_CHECK is
+
+signal cnt,cntr : std_logic_vector(25 downto 0) := (others=>'0');
+
+begin
+
+  IS_ERR <= cnt;
+
+  cntr <= cnt;
+
+  process(CLK, RST, MEM_WEHA, MEM_WELA) begin
+    if(RST = '1') then
+      cnt <= (others=>'0');
+    elsif(CLK'event and CLK='1') then
+      if(MEM_WEHA='1' AND MEM_WELA='0') then
+        cnt <= cntr + "00000000000000000000000001";
+      elsif(MEM_WEHA='0' AND MEM_WELA='1') then
+        cnt <= cntr + "00000000000000000000000001";
+      end if;
+    end if;
+  end process;
+
+end rtl;

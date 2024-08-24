@@ -1,37 +1,59 @@
-Tue Jul 16 19:30:52 JST 2024
--- Copyright 2004 Tsuyoshi Hamada
---
---
---clk         __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __
---[dma_we]    _______/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
---[ DBUS ]           X   >< n ><d0 ><d1 ><d2 ><d3 ><d4 ><d5 ><d6 ><d7 >
---state_dmaw          0  >< 1 >< 2                                    >< 3 >< 0 
---mem_data                          <d0 ><d1 ><d2 ><d3 ><d4 ><d5 ><d6 ><d7 >
+Sat Aug 24 19:50:52 JST 2024
+//-----------------------------------------------------------------------------
+// mk_eight.C:  prints initial conditions for the figure eight
+//              of the three-body problem
+//-----------------------------------------------------------------------------
+#include  <iostream>
+using namespace std;
 
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL;
+typedef double  real;                      // "real" as a general name for the
+                                           // standard floating-point data type
+#define  NDIM     3                        // number of spatial dimensions
 
-entity dmaw_mem_data is
-  port (
-    CLK      : in std_logic;
-    DBUS     : in std_logic_vector(63 downto 0);
-    STATE    : in std_logic_vector(1 downto 0);
-    MEM_DATA : out std_logic_vector(63 downto 0) );
-end dmaw_mem_data;
+int main()
+{
+    const int n = 3;           // number of particles
+    const real t = 0;          // time
+    real r[n][NDIM];           // r[i][k] : position component k for particle i
+    real v[n][NDIM];           // v[i][k] : velocity component k for particle i
+    real m[n];                 // m[i] : mass for particle i
 
-architecture rtl of dmaw_mem_data is
-constant zero : std_logic_vector(63 downto 0) := (others=>'0');
-begin
+    m[0] = 1;
+    m[1] = 1;
+    m[2] = 1;
 
-  process (CLK,STATE) begin
-    if(CLK'event and CLK = '1') then
-      if(STATE="10") then
-        MEM_DATA <= DBUS;
-      else
-        MEM_DATA <= zero;
-      end if;
-    end if;
-  end process;
+    r[0][0] = 0.9700436;
+    r[0][1] = -0.24308753;
+    r[0][2] = 0;
+    v[0][0] = 0.466203685;
+    v[0][1] = 0.43236573;
+    v[0][2] = 0;
 
-end rtl;
+    r[1][0] = -r[0][0];
+    r[1][1] = -r[0][1];
+    r[1][2] = -r[0][2];
+    v[1][0] = v[0][0];
+    v[1][1] = v[0][1];
+    v[1][2] = v[0][2];
+
+    r[2][0] = 0;
+    r[2][1] = 0;
+    r[2][2] = 0;
+    v[2][0] = -2 * v[0][0];
+    v[2][1] = -2 * v[0][1];
+    v[2][2] = -2 * v[0][2];
+
+    cout.precision(16);
+
+    cout << n << endl;                      // first output line:  N
+    cout << t << endl;                      // second output line:  time
+    for (int i = 0; i < n; i++){
+        cout << m[i];                       // each next output line:
+        for (int k = 0; k < NDIM; k++)      //   m r_x r_y r_z v_x v_y v_z
+            cout << ' ' << r[i][k];
+        for (int k = 0; k < NDIM; k++)
+            cout << ' ' << v[i][k];
+        cout << endl;
+    }
+}
+//-----------------------------------------------------------------------------

@@ -1,34 +1,49 @@
-Thu Aug 22 19:52:13 JST 2024
-// Time-stamp: "2006-12-07 19:19:07 hamada"
-// Copyright (c) 2006 by Tsuyoshi Hamada, All rights reserved.
-
-#include <stdio.h>
-#include <stdlib.h>
-#include "pg4.h"
-
-unsigned int* ptr;
-unsigned int* bar1;
-
-int main(int argc,char *argv[])
-{
-  int devid = 0;
-  int i;
-
-  pg4_open(devid);
-  bar1 = pg4_get_bar1ptr(devid);
-  printf("BAR0: %lx\n",pg4_getbaseaddr(devid,0));
-  printf("BAR1: %lx\n",pg4_getbaseaddr(devid,1));
-
-  puts("clear DMA_CTRL register(0x2C).");
-  WriteBase0(devid, 0x2C,   0); // 0x2C : DMA_CTRL ... clear
-
-  puts("clear INT_STAT register(0x10).");
-  WriteBase0(devid, 0x10,   0); // 0x14 : INT_MASK  [1:Enable INT/ 0:Disable INT]
-
-  puts("clear INT_MASK register(0x14).");
-  WriteBase0(devid, 0x14,   0); // 0x14 : INT_MASK  [1:Enable INT/ 0:Disable INT]
-
-  pg4_DMAcheck(devid);
-
-  return 0;
-}
+Tue Sep  3 19:46:45 JST 2024
+JDF G
+// Created by Project Navigator ver 1.0
+PROJECT proj
+DESIGN proj
+DEVFAM virtex2p
+DEVFAMTIME 0
+DEVICE xc2vp70
+DEVICETIME 0
+DEVPKG ff1517
+DEVPKGTIME 0
+DEVSPEED -5
+DEVSPEEDTIME 0
+DEVTOPLEVELMODULETYPE HDL
+TOPLEVELMODULETYPETIME 0
+DEVSYNTHESISTOOL XST (VHDL/Verilog)
+SYNTHESISTOOLTIME 0
+DEVSIMULATOR Modelsim
+SIMULATORTIME 0
+DEVGENERATEDSIMULATIONMODEL VHDL
+GENERATEDSIMULATIONMODELTIME 0
+SOURCE ..\dmaw_mem_data.vhd
+SOURCE ..\dmaw_mem_we.vhd
+SOURCE ..\dmar_mem_adr.vhd
+SOURCE ..\dmaw_mem_adr.vhd
+SOURCE ..\dmar_start_adr.vhd
+SOURCE ..\dmaw_start_adr.vhd
+SOURCE ..\dmar_dbus_hiz.vhd
+SOURCE ..\dmar.vhd
+SOURCE ..\clk_muldiv_by_xcore.vhd
+SOURCE ..\dmaw.vhd
+SOURCE ..\user.vhd
+SOURCE ..\dmar_state.vhd
+SOURCE ..\dmar_mem_re.vhd
+SOURCE ..\clk_muldiv.vhd
+SOURCE ..\dmaw_state.vhd
+SOURCE ..\top.vhd
+SOURCE ..\pgpg_mem\dpram.vhd
+SOURCE ..\pgpg_mem\pg_module.vhd
+SOURCE ..\pgpg_mem\calc.vhd
+SOURCE ..\pgpg_mem\jmem.vhd
+SOURCE ..\pgpg_mem\pgpg_mem.vhd
+SOURCE ..\pgpg_mem\adr_dec.vhd
+SOURCE ..\pgpg_mem\pg_pipe.vhd
+SOURCE ..\pgpg_mem\setn.vhd
+SOURCE ..\pgpg_mem\pipe_sts.vhd
+DEPASSOC top ..\top.ucf
+[STRATEGY-LIST]
+Normal=True

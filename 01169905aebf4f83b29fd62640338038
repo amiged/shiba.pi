@@ -1,91 +1,114 @@
-Thu Jun 13 19:27:09 JST 2024
--- Copyright 2004 Tsuyoshi Hamada
+Thu Sep 12 19:26:55 JST 2024
+-- multiple clock generator
+-- by Tsuyoshi Hamada
+-- Last Modified at 2004/01/11
+-- ===== COMPONENT SAMPLE =======================================
+--component CLK_MULDIV
+--  generic (CLKFX_MULTIPLY : integer :=3;
+--           CLKFX_DIVIDE : integer := 2);
+--  port (ICLK : in std_logic;
+--        OCLK : out std_logic;
+--        OCLK_FX : out std_logic;
+--        LOCKED : out std_logic);
+--end component;
 --
---
---clk         __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __
---[ENABLE]    _______/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
---[ DBUS ]          >< n ><d0 ><d1 ><d2 ><d3 ><d4 ><d5 ><d6 ><d7 >
+-- ===== INSTANCIATION SAMPLE ====================================
+--dcm0 : CLK_MULDIV
+----  generic map (CLKFX_MULTIPLY =>11,CLKFX_DIVIDE=>2) -- 183MHz
+----  generic map (CLKFX_MULTIPLY =>16,CLKFX_DIVIDE=>3) -- 178MHz
+----  generic map (CLKFX_MULTIPLY =>5,CLKFX_DIVIDE=>1)  -- 167MHz
+----  generic map (CLKFX_MULTIPLY =>9,CLKFX_DIVIDE=>2)  -- 150MHz
+----  generic map (CLKFX_MULTIPLY =>4,CLKFX_DIVIDE=>1)  -- 133MHz
+----  generic map (CLKFX_MULTIPLY =>7,CLKFX_DIVIDE=>2)  -- 117MHz
+----  generic map (CLKFX_MULTIPLY =>3,CLKFX_DIVIDE=>1)  -- 100MHz
+----  generic map (CLKFX_MULTIPLY =>2,CLKFX_DIVIDE=>1)  -- 67MHz
+--  generic map (CLKFX_MULTIPLY =>1,CLKFX_DIVIDE=>1)    -- 33MHz if SYS_CLK is 33MHz
+--  port map (
+--	ICLK=>SYS_CLK,
+--	OCLK=>clk,
+--	OCLK_FX=>pclk,
+--	LOCKED=>dcm_locked);
 
---  ena0      _______/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
---  ena1           _______/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
---[ DBUS ]          >< n ><d0 ><d1 ><d2 ><d3 ><d4 ><d5 ><d6 ><d7 >
--- acnt                0 >< n ><n+1><n+2><n+3><n+4><n+5><n+6><n+7>< 0
---MEM_ADR                   0 >< n ><n+1><n+2><n+3><n+4><n+5><n+6><n+7>< 0
---MEM_DATA                     <d0 ><d1 ><d2 ><d3 ><d4 ><d5 ><d6 ><d7 >
---MEM_WE                   ____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______
 
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL;
+library ieee;
+LIBRARY UNISIM;
+use ieee.std_logic_1164.all;
+use ieee.std_logic_arith.all;                                        
+use ieee.std_logic_unsigned.all;                                    
+USE UNISIM.Vcomponents.ALL;
 
-entity dmaw is
-  port (
-    RST       : in std_logic;
-    CLK       : in std_logic;
-    ENABLE    : in std_logic;
-    DBUS      : in std_logic_vector(63 downto 0);
-    MEM_WE    : out std_logic;
-    MEM_ADR   : out std_logic_vector(18 downto 0);
-    MEM_DATA  : out std_logic_vector(63 downto 0)   );
-end dmaw;
+entity CLK_MULDIV is
+  generic (CLKFX_MULTIPLY : integer :=3;
+           CLKFX_DIVIDE : integer := 2);
+  port (ICLK : in std_logic;
+        OCLK : out std_logic;
+        OCLK_FX : out std_logic;
+        LOCKED : out std_logic);
+end CLK_MULDIV;
 
-architecture rtl of dmaw is
+architecture rtl of CLK_MULDIV is
+component BUFG port (I: in  std_logic;  O: out  std_logic); 
+end component;
+component IBUFG port(I: in std_logic; O: out std_logic);
+end component;
+component DCM
+  generic ( 
+       CLKFX_MULTIPLY : integer := 3;
+       CLKFX_DIVIDE : integer := 2;
+       CLKIN_PERIOD : real := 15.000000;
+       DLL_FREQUENCY_MODE : string := "LOW";
+       DUTY_CYCLE_CORRECTION : boolean := TRUE;
+       CLKOUT_PHASE_SHIFT : string := "FIXED";
+       PHASE_SHIFT  : integer := 0;
+       STARTUP_WAIT : boolean := FALSE
+      );  
+  port ( CLKIN   : in  std_logic;
+       CLKFB   : in  std_logic;
+       DSSEN   : in  std_logic;
+       PSINCDEC   : in  std_logic;
+       PSEN     : in  std_logic;
+       PSCLK   : in  std_logic;
+       RST     : in  std_logic;
+       CLK0     : out std_logic;
+       CLK90   : out std_logic;
+       CLK180   : out std_logic;
+       CLK270   : out std_logic;
+       CLK2X   : out std_logic;
+       CLK2X180   : out std_logic;
+       CLKDV   : out std_logic;
+       CLKFX   : out std_logic;
+       CLKFX180   : out std_logic;
+       LOCKED   : out std_logic;
+       PSDONE   : out std_logic;
+       STATUS   : out std_logic_vector(7 downto 0)
+      );
+end component;
 
-signal ena0,ena1,ena2,ena3,ena4 : std_logic :='0';
-signal acnt,acntr : std_logic_vector(18 downto 0) :=(others=>'0');
-signal we : std_logic :='0';
+signal dcm_in,dcm_out,dcm_fx,dcm_fb : std_logic;
 
 begin
 
-  -- MEM_DATA --
-  process (CLK) begin
-    if(CLK'event and CLK = '1') then
-      MEM_DATA <= DBUS;
-    end if;
-  end process;
+dcm0 : DCM
+  generic map (CLKFX_MULTIPLY=>CLKFX_MULTIPLY,
+	CLKFX_DIVIDE=>CLKFX_DIVIDE,
+        CLKIN_PERIOD => 15.000000,
+	DUTY_CYCLE_CORRECTION=>TRUE)
+  port map(
+    RST          => '0',         -- リセット
+    CLKIN        => dcm_in,      -- PHASE SHIFT入力クロック
+    CLKFB        => dcm_fb,         -- FB入力
+    DSSEN        => '0',
+    PSINCDEC     => '0',
+    PSEN         => '0',         -- 位相シフトイネーブル
+    PSCLK        => '0',         -- 位相シフトクロック
+    LOCKED       => LOCKED,
+    CLKFX        => dcm_fx,      -- ICLK x N
+    CLK0         => dcm_out      -- PHASE SHIFT出力クロック
+  );
 
-  -- MEM_WE --
-  process (CLK) begin
-    if(CLK'event and CLK = '1') then
-      MEM_WE <= ena1;
-    end if;
-  end process;
-
-  -- MEM_ADR --
-  process (CLK) begin
-    if(CLK'event and CLK = '1') then
-      MEM_ADR <= acnt;
-    end if;
-  end process;
-
-  -- acnt
-  acntr <= acnt;
-  process (RST,CLK,ena0,ena1) begin
-    if(RST = '1') then
-      acnt  <= (others=>'0');
-    elsif(CLK'event and CLK = '1') then
-      if((ena0='1') AND (ena1='0')) then
-        acnt <= DBUS(18 downto 0);
-      elsif((ena0='1') AND (ena1='1')) then
-        acnt <= acntr + "0000000000000000001";
-      else
-        acnt <= (others=>'0');
-      end if;
-    end if;
-  end process;
-
-
-
-  -- ENABLE delays
-  ena0 <= ENABLE;
-  process (CLK) begin
-    if(CLK'event and CLK = '1') then
-      ena4 <= ena3;
-      ena3 <= ena2;
-      ena2 <= ena1;
-      ena1 <= ena0;
-    end if;
-  end process;
-
-
+U_BUFG0 : IBUFG port map(I=>ICLK, O=>dcm_in);
+U_BUFG1 : BUFG port map(I=>dcm_out,   O=>dcm_fb);
+U_BUFG2 : BUFG port map(I=>dcm_fx, O=>OCLK_FX);  -- 66,100,133MHz
+OCLK <= dcm_fb;
 end rtl;
+

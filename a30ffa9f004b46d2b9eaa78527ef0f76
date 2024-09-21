@@ -1,68 +1,68 @@
-Sun Sep 15 19:51:33 JST 2024
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.std_logic_arith.all;                                        
-use ieee.std_logic_unsigned.all;                                    
+Sat Sep 21 19:30:50 JST 2024
+#!/usr/bin/env python3
+# ----------------------------------------------------------------------
+# BBox-Label-Tool
+#1
+#231 204 403 455
+# ----------------------------------------------------------------------
+# darknet 
+#0 0.49531250000000004 0.6864583333333333 0.26875 0.5229166666666667
+# ----------------------------------------------------------------------
+import glob
 
-entity calc is
-  port (
-    start      : in  std_logic;
-    clk        : in  std_logic;
-    pclk       : in  std_logic;
-    n          : in  std_logic_vector(31 downto 0);
-    run        : out  std_logic;
-    mem_adr    : out  std_logic_vector(31 downto 0));
-end calc;
+def convert(size, box):
+    dw = (size[0])
+    dh = (size[1])
+    x = (box[0] + box[2])/2.0
+    y = (box[1] + box[3])/2.0
+    w = box[2] - box[0]
+    h = box[3] - box[1]
+    x = x/dw
+    w = w/dw
+    y = y/dh
+    h = h/dh
+    return (x,y,w,h)
 
-architecture rtl of calc is
 
-signal rst :  std_logic;
-signal rstn : std_logic_vector(31 downto 0);
-signal start_r : std_logic;
-signal mema_dc : std_logic_vector(17 downto 0) := (others=>'0');
-begin
+def _convert(size, box):
+    dw = 1./(size[0])
+    dh = 1./(size[1])
+    x = (box[0] + box[2])/2.0 - 1
+    y = (box[1] + box[3])/2.0 - 1
+    w = box[2] - box[0]
+    h = box[3] - box[1]
+    x = x*dw
+    w = w*dw
+    y = y*dh
+    h = h*dh
+    return (x,y,w,h)
 
--- GENERATE rst PULS ------------------
-process(pclk) begin
-  if(pclk'event and pclk='1') then
-    rst <= rstn(0);
-  end if;
-end process;
+flist = glob.glob("../data4bbox/Labels/777/image*.txt")
+flist.sort()
 
-process (clk) begin
-  if(clk'event and clk='1') then
-    rstn(0) <= start_r AND (NOT start);
-    start_r <= start;
-  end if;
-end process;
----------------------------------------
+for fname in flist:
+    with open(fname, "r") as fd:
+        lines = fd.readlines()
+        l = lines[1].replace('\n','')
+        box_str = l.split(' ')
+        box = []
+        for v in box_str:
+            box.append(float(int(v)))
 
--- GENERATE run --------------------------
-process(pclk,rst) begin
-  if(rst = '1') then
-    run <= '0';
-  elsif(pclk'event and pclk='1') then
-    if(mema_dc /= "000000000000000000") then
-      run <= '1';
-    else
-      run <= '0';
-    end if;
-  end if;
-end process;
+        size = [640.0, 480.0]
+        x, y, w, h = convert(size, box)
 
--- GENERATE mem_adr  ---------------------
-process(pclk,rst) begin
-  if(rst = '1') then
-    mema_dc <=  n(17 downto 0) ;
-  elsif(pclk'event and pclk='1') then
-    if(mema_dc /= "000000000000000000") then
-      mema_dc <= mema_dc - "000000000000000001";
-    end if;
-  end if;
-end process;
---hoge
-  mem_adr <= "000000000000000" & mema_dc(15 downto 0) & "0";  -- G5
---mem_adr <= "00000000000000" & mema_dc(15 downto 0) & "00";  -- SPH FirstStage
---mem_adr <= "0000000000000" & mema_dc(15 downto 0) & "000";  -- SPH SecondStage
+        if False:
+        #if True:
+            x0 = box[0]
+            y0 = box[1]
+            x1 = box[2]
+            y1 = box[3]
+            x = (x0 + x1)/2.0/size[0]
+            y = (y0 + y1)/2.0/size[1]
 
-end rtl;
+
+        #print(fname, lines[1], box, x, y, w, h)
+        print("%1.17f %1.17f %1.17f %1.17f " %(x, y, w, h))
+
+    

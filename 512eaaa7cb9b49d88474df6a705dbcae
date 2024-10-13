@@ -1,10 +1,19 @@
-Mon Oct  7 19:26:49 JST 2024
-# ProjNav -> New Source -> TBW
-c:\cygwin\home\administrator\fkit\pci64\tmp2\__projnav\hb_cmds
-# ProjNav -> New Source -> TBW
-C:\cygwin\home\Administrator\Fkit\pci64\tmp2\__projnav\hb_cmds
-# Bencher Waveform : PDCL (jhdparse)
-# ModelSim : Simulate Behavioral VHDL Model
-sim.fdo
-# ModelSim : Simulate Behavioral VHDL Model
-vsim.wlf
+Sun Oct 13 19:34:43 JST 2024
+//============================================================================
+struct flops_member {
+  double Gflops;
+  double start_time;
+  double force_time;
+  int nbody;
+  int times;
+  int nstep;
+  int nskip;
+};
+
+void flops_initialize(struct flops_member *fm, int n, int nskip);
+void flops_check(struct flops_member *fm);
+
+void flops_ftime_init(struct flops_member *fm);
+void flops_ftime_save(struct flops_member *fm);
+
+

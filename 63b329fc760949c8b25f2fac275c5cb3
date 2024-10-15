@@ -1,52 +1,401 @@
-Sat Oct 12 19:50:21 JST 2024
-#include "cutil.h"
+Tue Oct 15 19:27:55 JST 2024
+// Time-stamp: <2007-01-08 05:05:50 hamada>
+// The lowest level library for PROGRAPE-4
+//
+// by Tsuyoshi Hamada
+// 20061229.rev1 : back to non pci_driver version
+// 20061116.rev1 : try pci_driver
+// 20060916.rev1 : Development start
+//
 
-__device__ float4 
-inter(float4 xj, float4 xi, float4 apot)
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <unistd.h>
+#include <sys/ioctl.h> // ioctl()
+#include <sys/mman.h>  // mmap()
+#include <sys/types.h> // open()
+#include <sys/stat.h>  // open()
+#include <sys/fcntl.h> // open()
+
+#undef CERR
+#define CERR(fmt, args...) fprintf(stderr, fmt, ## args)
+
+
+#define MAX_NBOARD 8
+unsigned int* bar0[MAX_NBOARD];
+unsigned int* bar1[MAX_NBOARD];
+
+//---------------------------------------
+#include "progrape.h"
+
+static char *devname[] = {
+  "/dev/progrape0",
+  "/dev/progrape1",
+  "/dev/progrape2",
+  "/dev/progrape3",
+  "/dev/progrape4",
+  "/dev/progrape5",
+  "/dev/progrape6",
+  "/dev/progrape7",
+  "/dev/progrape8",
+};
+
+static int pg4_dev[] = {
+  -1,-1,-1,-1,-1,-1,-1,-1,
+};
+
+unsigned int* pg4_get_bar0ptr(int devid){ return bar0[devid]; }
+unsigned int* pg4_get_bar1ptr(int devid){ return bar1[devid]; }
+
+#define DMA_BSIZE (0x1<<10) // 4KB
+
+static void * __mmap_bar     (int devid, int bar);
+//    static int __pg4_DMA         (int devid, unsigned int size, unsigned int offset, unsigned int dir);
+//    static int __pg4_DMA_noInterrupt(int devid, unsigned int size, unsigned int offset, unsigned int dir);
+//    static int __pg4_DMA_with_retry(int devid, unsigned int size, unsigned int offset, unsigned int dir);
+int           pg4_DMAget     (int devid, unsigned int size);
+int           pg4_DMAput     (int devid, unsigned int size);
+int           pg4_DMAput_offset (int devid, unsigned int size, unsigned offset);
+int           pg4_DMAget_offset (int devid, unsigned int size, unsigned offset);
+void          pg4_wait       (int devid, int n);
+void          pg4_DMAcheck   (int devid);
+int           pg4_DMAretry   (int devid);
+unsigned long pg4_getbaseaddr(int devid, int j);
+unsigned long pg4_getbaseaddr_size(int devid, int bar);
+unsigned long pg4_read_pciconfig_dword(int devid, int adr);
+void pg4_get_pfpga_info(int devid, char *info);
+void pg4_set_pfpga_info(int devid, char *info);
+
+
+static void * __mmap_bar(int id, int bar)
 {
-  /* ここは図5.と同じ */ 
-  float mj    = xj.w;        // Mass Mj
-  float ieps2 = xi.w;        // epsilon^2
-  float dx = xj.x - xi.x;    // Coordinates Xj - Xi
-  float dy = xj.y - xi.y;    // Coordinates Yj - Yi
-  float dz = xj.z - xi.z;    // Coordinates Zj - Zi
-  float r2 = dx*dx+dy*dy+dz*dz+ieps2;
-  float r1i = 1/sqrt(r2);
-  float r2i = r1i * r1i;
-  float mr3i = mj * r2i * r1i;
-  apot.x += dx * mr3i;       // Accel AXi
-  apot.y += dy * mr3i;       // Accel AYi
-  apot.z += dz * mr3i;       // Accel AZi
-  return (apot);
-}
-#define NTHRE (128) // blockDim.xと同値
-__global__ void
-kernel(float4* g_xj,
-       float* g_xi,
-       float* g_fi,
-       int ni,
-       int nj)
-{
-  int tid      = threadIdx.x;
-  int i = blockIdx.x*NTHRE+tid;
-  float4 ai = make_float4(0.0, 0.0, 0.0, 0.0);
-  float4 xi;
-  xi.x = g_xi[i];
-  xi.y = g_xi[i+ni];
-  xi.z = g_xi[i+ni*2];
-  xi.w = g_xi[i+ni*3];
-  __shared__ float4 s_xj[NTHRE];
-  for(int j = 0; j<nj; j+=NTHRE){
-    __syncthreads();
-    s_xj[tid] = g_xj[j+tid];
-    __syncthreads();
-    for(int js = 0; js<NTHRE; js++) ai = inter(s_xj[js], xi, ai);
+  unsigned long size;
+  unsigned long pagesize = getpagesize();
+  void *mapped_ptr;
+
+  switch (bar) {
+  case 0:
+    {
+      if (ioctl(pg4_dev[id], IOC_SV_MMAPMODE, MMAP_REG_PIORW)) {
+	CERR("mmap bar%d failed | %s:%d\n",bar,__FILE__,__LINE__);
+	exit (-1);
+      }
+      size = ioctl(pg4_dev[id], IOC_GV_REG_SIZE);
+    }
+    break;
+  case 1:
+    {
+      if (ioctl(pg4_dev[id], IOC_SV_MMAPMODE, MMAP_MEM_PIORW)) {
+	CERR("mmap bar%d failed | %s:%d\n",bar,__FILE__,__LINE__);
+	exit (-1);
+      }
+      size = ioctl(pg4_dev[id], IOC_GV_MEM_SIZE);
+    }
+    break;
+  default :
+    CERR("mmap bar%d invalid | %s:%d\n",bar,__FILE__,__LINE__);
+    exit (-1);
   }
-  if(i<ni){
-    g_fi[i]      = ai.x;
-    g_fi[i+ni]   = ai.y;
-    g_fi[i+ni*2] = ai.z;
+
+  mapped_ptr = mmap(NULL,
+		    (size/pagesize+1)*pagesize,
+		    (PROT_READ| PROT_WRITE),
+		    MAP_SHARED,
+		    pg4_dev[id],
+		    0);
+
+  return (mapped_ptr);
+}
+
+
+int pg4_open(int id)
+{
+  pg4_dev[id] = open(devname[id], O_RDWR);
+  if(pg4_dev[id] == -1) {
+    CERR("open failed %s | %s:%d\n",devname[id] ,__FILE__,__LINE__);
+    return -1;
+  }
+
+  bar0[id] = (unsigned int *) __mmap_bar(id, 0); // mmap BAR0
+  bar1[id] = (unsigned int *) __mmap_bar(id, 1); // mmap BAR1
+  //  Allocate Kernel Memory(&pg4_dev[id], DMA_BSIZE, &(kernel_memory[id]));
+
+  return 1;
+}
+
+void pg4_close(int id){
+  //  Free Kernel Memory( &(kernel_memory[id]) );
+  close(pg4_dev[id]);
+  pg4_dev[id] = -1;
+}
+
+void pg4_close_and_exit(int id){
+  //  pg4_DMAcheck(id);
+  pg4_close(id);
+  exit(1);
+}
+
+inline unsigned int pg4_readbase0(int id, unsigned int index){ return *(bar0[id] + index); }
+inline void         pg4_writebase0(int id, unsigned int index, unsigned int val){ *(bar0[id] + index) = val; }
+inline unsigned int pg4_readbase1(int id, unsigned int index){ return *(bar1[id] + index); }
+inline void         pg4_writebase1(int id, unsigned int index, unsigned int val){ *(bar1[id] + index) = val; }
+inline unsigned int ReadBase0(int id, unsigned int addr){return pg4_readbase0(id, addr>>2);}
+inline unsigned int ReadBase1(int id, unsigned int addr){return pg4_readbase1(id, addr>>2);}
+inline void         WriteBase0(int id, unsigned int addr, unsigned int val){pg4_writebase0(id, addr>>2, val);}
+inline void         WriteBase1(int id, unsigned int addr, unsigned int val){pg4_writebase1(id, addr>>2, val);}
+
+#ifdef ___HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH___
+// return kernel memory (for DMA buffer) pointer in user space
+unsigned int* pg4_get_dmabuf_userspace_pointer(int devid) { return ( (unsigned int*)kernel_memory[devid].mem );}
+unsigned int  pg4_get_dmabuf_phisical_address(int devid){ return ( kernel_memory[devid].pa ); }
+unsigned int  pg4_get_dmabuf_size(int devid){ return ( kernel_memory[devid].size ); }
+
+// Temporaly function (sonouchi kesu !!)
+unsigned int* pg4mmap(int devid) { return (pg4_get_dmabuf_userspace_pointer(devid));}
+
+int pg4_DMAput(int devid, unsigned int size)
+{
+  unsigned int dir    = 1; //  Host -> Board
+  unsigned int offset = 0;
+  return (__pg4_DMA(devid, size, offset, dir));
+}
+
+int pg4_DMAget(int devid, unsigned int size)
+{
+  unsigned int dir    = 0; //  Host <- Board
+  unsigned int offset = 0;
+  return (__pg4_DMA_with_retry(devid, size, offset, dir));
+  //  return (__pg4_DMA(devid, size, offset, dir));
+}
+
+int __pg4_DMA_with_retry(int devid, unsigned int size, unsigned int offset, unsigned int dir)
+{
+  static int recurse = 0;
+  unsigned int n_retry, n_disconnect, x;
+  __pg4_DMA(devid, size, offset, dir);
+
+  x = ReadBase0(devid, 0x34);
+  n_disconnect = ((0x1<<16)-1) & (x>>16);
+  n_retry      = ((0x1<<16)-1) & x;
+  
+  if(n_retry > 0){
+    puts("");
+    puts("----------------------------");
+    fprintf(stderr,"recurse %d\n",recurse);
+    fprintf(stderr,"n_disconnect %d\n", n_disconnect);
+    fprintf(stderr,"n_retry      %d\n", n_retry);
+    WriteBase0(devid, 0x34, 0);
+    fflush(NULL);
+    recurse++;
+    __pg4_DMA_with_retry(devid, size, offset, dir);
+    recurse--;
+  }
+
+  return 0;
+}
+
+
+// Basic Function for DMA trans. (private function)
+//int xxxx__pg4_DMA(int devid, unsigned int size, unsigned int offset, unsigned int dir)
+int __pg4_DMA(int devid, unsigned int size, unsigned int offset, unsigned int dir)
+{
+  unsigned int adr;
+  adr = kernel_memory[devid].pa;
+  //  fprintf(stderr,"kernel_memory[%d].pa = %x\n",devid,adr); exit(-1);
+  WriteBase0(devid, 0x20, adr);    // 0x20 : DMA_PCI_ADRS
+  WriteBase0(devid, 0x24, offset); // 0x24 : DMA_LOCAL_ADRS
+  WriteBase0(devid, 0x28, size);   // 0x28 : DMA_COUNT
+
+  { // Interrupt thread setup
+    pthread_t tid;
+
+    int_count=0;
+    thread_alive= 1;
+    pthread_create( &tid, NULL, pg4_int_handler, &dev[devid] );
+    pthread_mutex_init( &int_mutex, NULL );
+    pthread_mutex_lock( &int_mutex );
+  }
+
+  { // 0x30 : DMA_INTERVAL
+    unsigned int burst = 0;  // DMA Length
+    unsigned int inter = 0;  // DMA Interval
+    WriteBase0(devid, 0x30, ((burst<<16)|(inter)));
+  }
+  { // 0x2C : DMA_CTRL
+    //                  reserved  :  DMA_CTRL(31 downto 5)
+    unsigned int dma_dir   = dir; // DMA_CTRL(4)  [1:HOST->BOARD/ 0:HOST<-BOARD]
+    unsigned int dma_mode  = 0x1; // DMA_CTRL(3 downto 2)
+    unsigned int dma_64_32 = 0x0; // DMA_CTRL(1)  [1:64bit/ 0:32bit]
+    unsigned int dma_start = 0x1; // DMA_CTRL(0)
+    unsigned int cmd;
+
+    cmd = (dma_dir<<4) | (dma_mode<<2) | (dma_64_32<<1) | dma_start;
+
+    WriteBase0(devid, 0x10,   0); // 0x10 : INT_STAT ... clear
+    WriteBase0(devid, 0x2C,   0); // 0x2C : DMA_CTRL ... clear
+    WriteBase0(devid, 0x34,   0); // 0x34 : DMA_STAT ... clear
+    WriteBase0(devid, 0x14,   1); // 0x14 : INT_MASK  [1:Enable INT/ 0:Disable INT]
+    WriteBase0(devid, 0x2C, cmd); // do DMA
+
+    // -------------- !! WAIT !! -----------------
+    puts("-------------------------- ");
+    pthread_mutex_lock( &int_mutex );
+//    pd_waitForInterrupt(&dev[devid]);
+    puts("--------------------------// ");
+    // -------------- !! WAIT !! -----------------
+
+    {
+     pthread_mutex_unlock( &int_mutex );
+     pthread_mutex_destroy( &int_mutex );
+    }
+
+    WriteBase0(devid, 0x10,   0); // 0x10 : INT_STAT ... clear
+    WriteBase0(devid, 0x14, 0x0); // 0x14 : INT_MASK  [1:Enable INT/ 0:Disable INT]
+    WriteBase0(devid, 0x2C,   0); // 0x2C : DMA_CTRL ... clear
+    pg4_close_and_exit(devid);
+  }
+
+  //  if(ReadBase0(devid, 0x34)) pg4_close_and_exit(devid);
+  //  pg4_close_and_exit(devid);
+  return 0;
+}
+
+// Basic Function for DMA trans. (private function)
+//int __pg4_DMA(int devid, unsigned int size, unsigned int offset, unsigned int dir)
+int __pg4_DMA_noInterrupt(int devid, unsigned int size, unsigned int offset, unsigned int dir)
+{
+  unsigned int adr;
+  adr = kernel_memory[devid].pa;
+  //  fprintf(stderr,"kernel_memory[%d].pa = %x\n",devid,adr); exit(-1);
+  WriteBase0(devid, 0x20, adr);    // 0x20 : DMA_PCI_ADRS
+  WriteBase0(devid, 0x24, offset); // 0x24 : DMA_LOCAL_ADRS
+  WriteBase0(devid, 0x28, size);   // 0x28 : DMA_COUNT
+  { // 0x30 : DMA_INTERVAL
+    unsigned int burst = 0;  // DMA Length
+    unsigned int inter = 0;  // DMA Interval
+    WriteBase0(devid, 0x30, ((burst<<16)|(inter)));
+  }
+  { // 0x2C : DMA_CTRL
+    //                  reserved  :  DMA_CTRL(31 downto 5)
+    unsigned int dma_dir   = dir; // DMA_CTRL(4)  [1:HOST->BOARD/ 0:HOST<-BOARD]
+    unsigned int dma_mode  = 0x1; // DMA_CTRL(3 downto 2)
+    unsigned int dma_64_32 = 0x0; // DMA_CTRL(1)  [1:64bit/ 0:32bit]
+    unsigned int dma_start = 0x1; // DMA_CTRL(0)
+    unsigned int cmd;
+    cmd = (dma_dir<<4) | (dma_mode<<2) | (dma_64_32<<1) | dma_start;
+    WriteBase0(devid, 0x10,   0); // 0x10 : INT_STAT ... clear
+    WriteBase0(devid, 0x2C,   0); // 0x2C : DMA_CTRL ... clear
+    WriteBase0(devid, 0x34,   0); // 0x34 : DMA_STAT ... clear
+    WriteBase0(devid, 0x14,   0); // 0x14 : INT_MASK  [1:Enable INT/ 0:Disable INT]
+    WriteBase0(devid, 0x2C, cmd); // do DMA
+    // -------------- !! WAIT !! -----------------
+    usleep(1000);
+    // -------------- !! WAIT !! -----------------
+    WriteBase0(devid, 0x10,   0); // 0x10 : INT_STAT ... clear
+    WriteBase0(devid, 0x14, 0x0); // 0x14 : INT_MASK  [1:Enable INT/ 0:Disable INT]
+    WriteBase0(devid, 0x2C,   0); // 0x2C : DMA_CTRL ... clear
+  }
+  return 0;
+}
+
+
+int pg4_DMAput_offset(int devid, unsigned int size, unsigned offset)
+{
+  return -1;
+}
+
+int pg4_DMAget_offset(int devid, unsigned int size, unsigned offset)
+{
+  return -1;
+}
+
+void pg4_wait(int devid, int n)
+{
+  unsigned int i;
+  n = n << 1;
+  for(i=0;i<n;i++) {
+    WriteBase0(devid,0x4, 1);
+    WriteBase0(devid,0x4, 0);
   }
 }
 
-#include "api.h"
+void pg4_DMAcheck(int devid)
+{
+  unsigned int flag, retry;
+  fprintf(stderr,"\t INT_STAT       (0x10) : %x\n", ReadBase0(devid, 0x10));
+  fprintf(stderr,"\t INT_MASK       (0x14) : %x\n", ReadBase0(devid, 0x14));
+  fprintf(stderr,"\t DMA_PCI_ADRS   (0x20) : %x\n", ReadBase0(devid, 0x20));
+  fprintf(stderr,"\t DMA_LOCAL_ADRS (0x24) : %x\n", ReadBase0(devid, 0x24));
+  fprintf(stderr,"\t DMA_COUNT      (0x28) : %x\n", ReadBase0(devid, 0x28));
+  fprintf(stderr,"\t DMA_CTRL       (0x2C) : %x\n", ReadBase0(devid, 0x2c));
+  fprintf(stderr,"\t DMA_INTERVAL   (0x30) : %x\n", ReadBase0(devid, 0x30));
+  fprintf(stderr,"\t DMA_STAT       (0x34) : %x\n", ReadBase0(devid, 0x34));
+
+  flag = ReadBase0(devid, 0x34);
+
+  retry = ((0x1<<16)-1)&flag;
+  fprintf(stderr,"\t DMA dissconnect count %i\n", (flag>>16));
+  fprintf(stderr,"\t DMA retry count       %i\n", retry);
+  fprintf(stderr,"\n");
+  fflush(NULL);
+}
+
+int pg4_DMAretry(int devid)
+{
+  unsigned int flag, retry;
+  flag = ReadBase0(devid, 0x34);
+  retry = ((0x1<<16)-1)&flag;
+  return retry;
+}
+#endif
+//HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
+
+
+unsigned long pg4_getbaseaddr(int id, int bar)
+{
+  unsigned long ret;
+  if( (bar==0) || (bar==1)){
+    int bar0_dword_adr = 0x4;
+    ret = pg4_read_pciconfig_dword(id, bar0_dword_adr + bar);
+  }else{
+    CERR("bar %d invalid | %s:%d\n",bar ,__FILE__ ,__LINE__);
+    exit(-1);
+  }
+  return ret;
+}
+
+unsigned long pg4_getbaseaddr_size(int id, int bar)
+{
+  unsigned long size;
+  switch (bar) {
+  case 0:
+    size = ioctl(pg4_dev[id], IOC_GV_REG_SIZE);
+    break;
+  case 1:
+    size = ioctl(pg4_dev[id], IOC_GV_MEM_SIZE);
+    break;
+  default :
+    CERR("bar%d invalid | %s:%d\n",bar,__FILE__,__LINE__);
+    exit (-1);
+  }
+
+  return (size); // [Bytes]
+}
+
+unsigned long pg4_read_pciconfig_dword(int id, int adr)
+{
+  // note : 'adr' uses dword address (not byte address).
+  return (unsigned long) ioctl(pg4_dev[id], IOC_GV_PCICFG, adr);
+}
+
+void pg4_get_pfpga_info(int id, char* ret){
+  char info[NB_FPGA_INFO];
+  ioctl(pg4_dev[id], IOC_GP_FPGA_INFO, info);
+  strcpy(ret, info);
+}
+
+void pg4_set_pfpga_info(int id, char* info){
+  ioctl(pg4_dev[id], IOC_SP_FPGA_INFO, info);
+}

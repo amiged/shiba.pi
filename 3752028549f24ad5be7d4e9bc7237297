@@ -1,53 +1,51 @@
-Sat Oct  5 19:28:37 JST 2024
-/*
- * ifpga_bram_clear.c
- *
- * Copyright (C) 2006-2007 Tsuyoshi Hamada
- *                                All rights reserved.
- * 
- * No warranty is attached; 
- * I cannot take responsibility for errors or fitness for use.
- *
- */
+Sun Oct 20 19:54:23 JST 2024
+-- Copyright 2004 Tsuyoshi Hamada
+--
+--
+--clk         __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __
+--[dma_we]    _______/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\______________
+--state_dmaw          0  >< 1 >< 2                                    >< 3 >< 0 
 
-#include <stdio.h>
-#include <stdlib.h>
-#include "pg4.h"
+-- 0->1 : if((state==0)&&(dma_we==1))
+-- 1->2 : if (state==1)
+-- 2->3 : if((state==2) &&(dma_we==0))
+-- 3->0 : if (state==3)
 
-//#define NMAX (0x1<<10) // 4KB
-//#define NMAX (0x1<<11) // 8KB
-//#define NMAX (0x1<<12) // 16KB
-//#define NMAX (0x1<<13) // 32KB
-#define NMAX (0x1<<14) // 64KB
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
-unsigned int* ptr;
-unsigned int* bar1;
+entity dmaw_state is
+  port (
+    RST      : in std_logic;
+    CLK      : in std_logic;
+    ENABLE   : in std_logic;
+    STATE    : out std_logic_vector(1 downto 0) );
+end dmaw_state;
 
-int main(int argc,char *argv[])
-{
-  int devid = 0;
-  int n = NMAX;
-  int val = 0x1234567;
-  int i;
+architecture rtl of dmaw_state is
 
-  if(argc > 1){
-    n = atoi(argv[1]);
-  }
-  if(argc > 2){
-    val = atoi(argv[2]);
-  }
+signal state_ff : std_logic_vector(1 downto 0);
+begin
 
-  printf("n = %d\n",n);
-  printf("filled by %x\n",val);
+  STATE <= state_ff;
 
-  pg4_open(devid);
-  bar1 = pg4_get_bar1ptr(devid);
-  printf("BAR0: %lx\n",pg4_getbaseaddr(devid,0));
-  printf("BAR1: %lx\n",pg4_getbaseaddr(devid,1));
+  process (RST,CLK,ENABLE,state_ff) begin
+    if(RST='1') then
+      state_ff <= (others=>'0');
+    elsif(CLK'event and CLK = '1') then
+      if((state_ff="00") AND (ENABLE='1')) then
+        state_ff <= "01";
+      elsif(state_ff = "01") then
+        state_ff <= "10";
+      elsif((state_ff = "10") AND (ENABLE='0')) then
+        state_ff <= "11";
+      elsif((state_ff = "10") AND (ENABLE='1')) then
+        state_ff <= "10";
+      else -- if(state_ff = "11") then
+        state_ff <= "00";
+      end if;
+    end if;
+  end process;
 
-  for(i = 0; i < n; i++) {
-    pg4_writebase1(devid, i, val);
-  }
-
-  return 0;
-}
+end rtl;

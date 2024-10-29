@@ -1,1713 +1,2314 @@
-Sun Jul  7 19:52:53 JST 2024
-//Time-stamp: <2010-06-18 11:31:00 hamada>
-// Copyright(C) 2008 by 
-// Tsuyoshi Hamada <hamada@progrape.jp>
-
-#include <iostream>
-#include "cuda.h"
-#include "cutil.h"
-
-namespace libcunbody{
-
-  using namespace std;
-
-  // I want to move these member functions into class cunbody.
-  __device__ float4 dev_inter(float4 xi, float4 xj);
-  __device__ float4 dev_inter_001(float4 xi, float4 xj);
-  __device__ float4 dev_inter_011(float4 xi, float4 xj, float* pot);
-  __device__ float4 dev_apot(float4 xi, float4 xj, float4 apot);
-  __global__ void cunbody_kernel_tree_001(float4 *xilist, float4 *xjlist, float4 *apotlist, unsigned int *ioffset, unsigned int *joffset);
-  __global__ void cunbody_kernel_tree_002(float4 *xilist, float4 *xjlist, float4 *apotlist, unsigned int *ioffset, unsigned int *joffset);
-  __global__ void cunbody_kernel_tree_003(float4 *xilist, float4 *xjlist, float4 *apotlist, unsigned int *ioffset, unsigned int *joffset);
-  __global__ void cunbody_kernel_tree_011(float4 *xilist, float4 *xjlist, float4 *apotlist, unsigned int *ioffset, unsigned int *joffset);
-  __global__ void cunbody_kernel_tree_012(float4 *xilist, float4 *xjlist, float4 *apotlist, unsigned int *ioffset, unsigned int *joffset);
-  __global__ void cunbody_kernel_tree_013(float4 *xilist, float4 *xjlist, float4 *apotlist, unsigned int *ioffset, unsigned int *joffset);
-  __global__ void cunbody_kernel_tree_999(float4 *xilist, float4 *xjlist, float4 *apotlist, unsigned int *ioffset, unsigned int *joffset);
-
-  // -------------------------------------- TUNING PROPERTY
-#define KERNEL_TYPE (0x002)                 // (XXX) = (Jark tyep, Pot type, Acc type), 0: not implement 
-  //#define KERNEL_TYPE (0x013)
-#define ACC_TYPE (1)
-#define MAX_WALK (256)
-#define CUDA_MALLOC_TYPE (0)
-#define CUDA_MALLOC_HOST_TYPE (0)
-#define DEV_OPEN_STRATEGY (1)
-#define NTHRE (128)
-  //----------------------------------------.
-
-  class cunbody
-  {
-  private:
-    bool is_open;
-    int host_pid;      // host process id
-    int host_tid;      // host thread Id
-    float4 *dev_xi;
-    float4 *dev_xj;
-    float4 *dev_apot;
-    unsigned int *dev_ioff;
-    unsigned int *dev_joff;
-    unsigned int isize;
-    unsigned int jsize;
-    unsigned int max_isize;
-    unsigned int max_jsize;
-
-//#define ENABLE_DITAILED_OPENMSG
-
-    void dev_check(){
-      int ndev;
-      CUDA_SAFE_CALL(cudaGetDeviceCount(&ndev));
-      if(ndev == 0){
-	fprintf(stdout, "ndev = %d @ %s|%d\n", ndev, __FILE__, __LINE__);
-	fprintf(stdout, "There is no GPUs.\n");
-	exit(-1);
-      }else{
-	int dev = host_pid % ndev;
-	CUDA_SAFE_CALL(cudaSetDevice(dev));
-	printf("[%d]  : cudaSetDevice to %d-th GPU\n",        host_pid, dev+1);
-	cudaDeviceProp deviceProp;
-	CUDA_SAFE_CALL(cudaGetDeviceProperties(&deviceProp, dev));
-	if (deviceProp.major == 9999 && deviceProp.minor == 9999){
-	  printf("There is no device supporting CUDA.\n");
-	}
-#if defined(ENABLE_DITAILED_OPENMSG)
-	printf("[%d]  : Major revision number:  %d\n",        host_pid, deviceProp.major);
-	printf("[%d]  : Minor revision number:  %d\n",        host_pid, deviceProp.minor);
-        printf("[%d]  : core clock rate:  %.2f GHz\n",        host_pid, deviceProp.clockRate * 1e-6f);
-#  if  (CUDART_VERSION >= 2000)
-	printf("[%d]  : Number of cores:  %d\n",              host_pid, 8 * deviceProp.multiProcessorCount);
-        printf("[%d]  : Concurrent copy and execution: %s\n", host_pid, deviceProp.deviceOverlap ? "Yes" : "No");
-#  endif
-#endif
-
-      }
-    }
-
-    void dev_open(int hpid, int htid) {
-      //      CUT_DEVICE_INIT(, ); // thread safe ?
-      host_pid = hpid;
-      host_tid = htid;
-      fprintf(stdout, "[%d] CUNBODY-1 library: rev.hamada20080920 (^-^)v\n", host_pid);
-#if defined(ENABLE_DITAILED_OPENMSG)
-      fprintf(stdout, "[%d]  open GPU by host thread %d\n", host_pid, host_tid);
-      fprintf(stdout, "[%d]  : KERNEL_TYPE %03x\n",     host_pid, KERNEL_TYPE);
-      fprintf(stdout, "[%d]  : MAX_WALK %d\n",          host_pid, MAX_WALK);
-      fprintf(stdout, "[%d]  : NTHRE    %d\n",          host_pid, NTHRE);
-      fprintf(stdout, "[%d]  : ACC_TYPE %d\n",          host_pid, ACC_TYPE);
-      fprintf(stdout, "[%d]  : CUDA_MALLOC_TYPE %d\n",  host_pid, CUDA_MALLOC_TYPE);
-      fprintf(stdout, "[%d]  : CUDA_MALLOC_HOST_TYPE %d\n", host_pid, CUDA_MALLOC_HOST_TYPE);
-      fprintf(stdout, "[%d]  : DEV_OPEN_STRATEGY %d\n", host_pid, DEV_OPEN_STRATEGY);
-#endif
-      dev_check();
-      //      max_isize = 1500000;
-      //      max_jsize = (this->jsize)*2;
-
-      //      max_isize = (this->isize)*3;
-      //      max_jsize = (this->jsize) + (this->jsize)>>1;
-
-      //theta=0.5
-      //      max_isize = 380000;
-      //      max_jsize = 2100000;
-
-      //theta=0.4
-#if 0
-      max_isize = 380000;
-      max_jsize = 4000000;
-#else
-      max_isize = 520000;
-      max_jsize = 4200000;
-#endif
-
-      CUDA_SAFE_CALL(cudaMalloc((void **)&dev_xi,   (NTHRE + max_isize) * sizeof(float4)));
-      CUDA_SAFE_CALL(cudaMalloc((void **)&dev_apot, max_isize * sizeof(float4)));
-      CUDA_SAFE_CALL(cudaMalloc((void **)&dev_xj,   max_jsize * sizeof(float4)));
-      CUDA_SAFE_CALL(cudaMalloc((void **)&dev_ioff, (MAX_WALK + 1) * sizeof(unsigned int)));
-      CUDA_SAFE_CALL(cudaMalloc((void **)&dev_joff, (MAX_WALK + 1) * sizeof(unsigned int)));
-      printf("[%d-proc, %d-thread] ******** cudaMalloc in total at dev_open() : %d MB (j=%d, i=%d)(j=%d MB, i=%d MB)\n", host_pid, host_tid, 
-	     (
-	      (NTHRE + max_isize) * sizeof(float4) + 
-	      max_isize * sizeof(float4) + 
-	      max_jsize * sizeof(float4) + 
-	      (MAX_WALK + 1) * sizeof(unsigned int) + 
-	      (MAX_WALK + 1) * sizeof(unsigned int)
-	      )/(1024*1024), //                           <----------- total(i, j, offset)
-
-	     max_jsize, max_isize,
-
-	     (max_jsize * sizeof(float4))/(1024*1024), // <----------- only j
-
-	     ((NTHRE + max_isize) * sizeof(float4) +
-	      max_isize * sizeof(float4))/(1024*1024)  // <----------- only i
-	     );
-
-      is_open = true;
-    }
-
-    void dev_close(void) {
-      CUDA_SAFE_CALL(cudaFree(dev_xi));
-      CUDA_SAFE_CALL(cudaFree(dev_xj));
-      CUDA_SAFE_CALL(cudaFree(dev_apot));
-      CUDA_SAFE_CALL(cudaFree(dev_ioff));
-      CUDA_SAFE_CALL(cudaFree(dev_joff));
-    }
-
-  public:
-
-    cunbody() {
-      is_open = false;
-      host_pid = -1;
-      host_tid = -1;
-      max_isize = 0;
-      max_jsize = 0;
-      dev_xi = NULL;
-      dev_xj = NULL;
-      dev_apot = NULL;
-      dev_ioff = NULL;
-      dev_joff = NULL;
-    }
-
-    ~cunbody() {
-      this->dev_close();
-      dev_xi = NULL;
-      dev_xj = NULL;
-      dev_apot = NULL;
-      dev_ioff = NULL;
-      dev_joff = NULL;
-      max_isize = 0;
-      max_jsize = 0;
-      host_tid = -1;
-      host_pid = -1;
-      is_open = false;
-    }
-
-    void vforce_open(int host_pid, int host_tid)
-    {
-      if(is_open == false) this->dev_open(host_pid, host_tid);
-    }
-
-    void vforce_mp(int host_pid,
-		   int host_tid, 
-		float4 xilist[], 
-		float4 xjlist[], 
-		float4 apotlist[], 
-		unsigned int ioff[], 
-		unsigned int joff[], 
-		unsigned int nwalk) 
-    {
-      isize = ioff[nwalk];
-      jsize = joff[nwalk];
-
-      if(is_open == false) this->dev_open(host_pid, host_tid);
-
-#define WARNING_CUDA_MALLOC
-
-      if(isize > max_isize){
-	int isize_bak = isize;
-	isize = (int)(isize*1.1);
-	max_isize = isize_bak;
-#if defined(WARNING_CUDA_MALLOC)
-	int megabyte = ((NTHRE + isize) * sizeof(float4)+isize * sizeof(float4))>>20;
-	printf("[%d @%d]================== cudaMalloc for i : %d MB\n", host_pid, host_tid, megabyte);
-#endif
-	CUDA_SAFE_CALL(cudaFree(dev_xi));
-	CUDA_SAFE_CALL(cudaFree(dev_apot));
-	CUDA_SAFE_CALL(cudaMalloc((void **)&dev_xi,   (NTHRE + isize) * sizeof(float4)));
-	CUDA_SAFE_CALL(cudaMalloc((void **)&dev_apot, isize * sizeof(float4)));
-	isize = isize_bak;
-      }
-
-      if(jsize > max_jsize){
-	max_jsize = jsize;
-#if defined(WARNING_CUDA_MALLOC)
-	int megabyte = (jsize * sizeof(float4))>>20;
-	printf("[%d @%d]------------------ cudaMalloc for j : %d MB\n",  host_pid, host_tid, megabyte);
-#endif
-	CUDA_SAFE_CALL(cudaFree(dev_xj));
-	CUDA_SAFE_CALL(cudaMalloc((void **)&dev_xj,   jsize * sizeof(float4)));
-      }
-
-      CUDA_SAFE_CALL(cudaMemcpy(dev_xi, xilist, isize * sizeof(float4), cudaMemcpyHostToDevice));
-      CUDA_SAFE_CALL(cudaMemcpy(dev_xj, xjlist, jsize * sizeof(float4), cudaMemcpyHostToDevice));
-      CUDA_SAFE_CALL(cudaMemcpy(dev_ioff, ioff, (nwalk + 1) * sizeof(unsigned int), cudaMemcpyHostToDevice));
-      CUDA_SAFE_CALL(cudaMemcpy(dev_joff, joff, (nwalk + 1) * sizeof(unsigned int), cudaMemcpyHostToDevice));
-
-      dim3 grid(nwalk);
-      dim3 threads(NTHRE);
-
-#if   (KERNEL_TYPE == 0x001)
-      cunbody_kernel_tree_001 <<< grid, threads >>> (dev_xi, dev_xj, dev_apot, dev_ioff, dev_joff);
-#elif (KERNEL_TYPE == 0x002)
-      cunbody_kernel_tree_002 <<< grid, threads >>> (dev_xi, dev_xj, dev_apot, dev_ioff, dev_joff);
-#elif (KERNEL_TYPE == 0x011)
-      cunbody_kernel_tree_011 <<< grid, threads >>> (dev_xi, dev_xj, dev_apot, dev_ioff, dev_joff);
-#elif (KERNEL_TYPE == 0x012)
-      cunbody_kernel_tree_012 <<< grid, threads >>> (dev_xi, dev_xj, dev_apot, dev_ioff, dev_joff);
-#elif (KERNEL_TYPE == 0x013)
-      cunbody_kernel_tree_013 <<< grid, threads >>> (dev_xi, dev_xj, dev_apot, dev_ioff, dev_joff);
-#elif (KERNEL_TYPE == 0x003)
-      cunbody_kernel_tree_003 <<< grid, threads >>> (dev_xi, dev_xj, dev_apot, dev_ioff, dev_joff); // has some bug (# of registers overflow ?)
-#elif (KERNEL_TYPE == 0x999)
-      cunbody_kernel_tree_999 <<< grid, threads >>> (dev_xi, dev_xj, dev_apot, dev_ioff, dev_joff); // has some bug
-#else
-      cunbody_kernel_tree_000 <<< grid, threads >>> (dev_xi, dev_xj, dev_apot, dev_ioff, dev_joff);
-#endif
-
-      CUT_CHECK_ERROR("KERNEL EXECUTION FAILED");
-      CUDA_SAFE_CALL(cudaMemcpy(apotlist, dev_apot, isize * sizeof(float4), cudaMemcpyDeviceToHost));
-    }
-
-  }; // class cunbody __END__
-
-}; // namespace libcunbody __END__  ----------------------------------------------------------------------------------
-
-
-
-#define MAX_OMP_THRE (4)
-static libcunbody::cunbody cunObj[MAX_OMP_THRE];
-
-extern "C"
-void vforce(int host_tid, float4 xilist[], float4 xjlist[], float4 apotlist[], unsigned int ioff[], unsigned int joff[], unsigned int nwalk)
-{
-  using namespace std;
-  using namespace libcunbody;
-  cunObj[host_tid].vforce_mp(0, host_tid, xilist, xjlist, apotlist, ioff, joff, nwalk);
-}
-
-extern "C"
-void vforce_mp(int proc_id, int host_tid, float4 xilist[], float4 xjlist[], float4 apotlist[], unsigned int ioff[], unsigned int joff[], unsigned int nwalk)
-{
-  using namespace std;
-  using namespace libcunbody;
-  cunObj[host_tid].vforce_mp(proc_id, host_tid, xilist, xjlist, apotlist, ioff, joff, nwalk);
-}
-
-extern "C"
-void vforce_open(int proc_id, int host_tid)
-{
-  using namespace std;
-  using namespace libcunbody;
-  cunObj[host_tid].vforce_open(proc_id, host_tid);
-}
-
-#if (NTHRE != 128)
-compile-touccha-dame
-#endif
-
-namespace libcunbody{
-
-  using namespace std;
-
-  __device__ float4 dev_inter(float4 xi, float4 xj)
-  {
-    float dx = xj.x - xi.x;
-    float dy = xj.y - xi.y;
-    float dz = xj.z - xi.z;
-    float eps2 = xi.w;
-    float mj   = xj.w;
-
-#if (0)
-    float r2   = (dz*dz +(dy*dy +(dx*dx+eps2)));
-#else
-    float r2   = (dx*dx + eps2) + dy*dy + dz*dz;
-#endif
-
-    float r1i  = 1/sqrt(r2);
-    float r2i  = r1i*r1i;
-    float mr3i = mj * r1i * r2i;
-
-#if (0)  
-    float4 retval = make_float4(dx, dy, dz, mr3i);
-#else
-    float4 retval;
-    retval.x = dx;
-    retval.y = dy;
-    retval.z = dz;
-    retval.w = mr3i;
-#endif
-
-    return retval;
-  }
-
-  __global__ 
-  void cunbody_kernel_tree_999(float4 *xilist,
-				float4 *xjlist,
-				float4 *apotlist,
-				unsigned int *ioffset,
-				unsigned int *joffset)
-  {
-    unsigned int tid = threadIdx.x;
-    unsigned int bid = blockIdx.x;
-    unsigned int ibegin = ioffset[bid];
-    unsigned int iend   = ioffset[bid+1];
-    unsigned int jbegin = joffset[bid];
-    unsigned int jend   = joffset[bid+1];
-    for(unsigned int ibase = ibegin; ibase < iend; ibase += NTHRE){
-      float4 xi = xilist[ibase+tid];
-      float4 apot = make_float4(0,0,0,0);
-      for(unsigned int jbase = jbegin; jbase < jend; jbase += NTHRE){
-	__shared__ float4 sj[NTHRE];
-	sj[tid] = xjlist[jbase + tid];
-	__syncthreads();
-	{
-	  float4 dm0 = dev_inter(xi, sj[0]);
-	  float4 dm1 = dev_inter(xi, sj[1]);
-	  float4 dm2 = dev_inter(xi, sj[2]);
-	  float4 dm3 = dev_inter(xi, sj[3]);
-	  float4 dm4 = dev_inter(xi, sj[4]);
-	  float4 dm5 = dev_inter(xi, sj[5]);
-	  float4 dm6 = dev_inter(xi, sj[6]);
-	  float4 dm7 = dev_inter(xi, sj[7]);
-	  float4 dm8 = dev_inter(xi, sj[8]);
-	  float4 dm9 = dev_inter(xi, sj[9]);
-
-	  float4 dm10 = dev_inter(xi, sj[10]);
-	  float4 dm11 = dev_inter(xi, sj[11]);
-	  float4 dm12 = dev_inter(xi, sj[12]);
-	  float4 dm13 = dev_inter(xi, sj[13]);
-	  float4 dm14 = dev_inter(xi, sj[14]);
-	  float4 dm15 = dev_inter(xi, sj[15]);
-	  float4 dm16 = dev_inter(xi, sj[16]);
-	  float4 dm17 = dev_inter(xi, sj[17]);
-	  float4 dm18 = dev_inter(xi, sj[18]);
-	  float4 dm19 = dev_inter(xi, sj[19]);
-
-	  float4 dm20 = dev_inter(xi, sj[20]);
-	  float4 dm21 = dev_inter(xi, sj[21]);
-	  float4 dm22 = dev_inter(xi, sj[22]);
-	  float4 dm23 = dev_inter(xi, sj[23]);
-	  float4 dm24 = dev_inter(xi, sj[24]);
-	  float4 dm25 = dev_inter(xi, sj[25]);
-	  float4 dm26 = dev_inter(xi, sj[26]);
-	  float4 dm27 = dev_inter(xi, sj[27]);
-	  float4 dm28 = dev_inter(xi, sj[28]);
-	  float4 dm29 = dev_inter(xi, sj[29]);
-
-	  float4 dm30 = dev_inter(xi, sj[30]);
-	  float4 dm31 = dev_inter(xi, sj[31]);
-	  float4 dm32 = dev_inter(xi, sj[32]);
-	  float4 dm33 = dev_inter(xi, sj[33]);
-	  float4 dm34 = dev_inter(xi, sj[34]);
-	  float4 dm35 = dev_inter(xi, sj[35]);
-	  float4 dm36 = dev_inter(xi, sj[36]);
-	  float4 dm37 = dev_inter(xi, sj[37]);
-	  float4 dm38 = dev_inter(xi, sj[38]);
-	  float4 dm39 = dev_inter(xi, sj[39]);
-
-	  float4 dm40 = dev_inter(xi, sj[40]);
-	  float4 dm41 = dev_inter(xi, sj[41]);
-	  float4 dm42 = dev_inter(xi, sj[42]);
-	  float4 dm43 = dev_inter(xi, sj[43]);
-	  float4 dm44 = dev_inter(xi, sj[44]);
-	  float4 dm45 = dev_inter(xi, sj[45]);
-	  float4 dm46 = dev_inter(xi, sj[46]);
-	  float4 dm47 = dev_inter(xi, sj[47]);
-	  float4 dm48 = dev_inter(xi, sj[48]);
-	  float4 dm49 = dev_inter(xi, sj[49]);
-
-	  float4 dm50 = dev_inter(xi, sj[50]);
-	  float4 dm51 = dev_inter(xi, sj[51]);
-	  float4 dm52 = dev_inter(xi, sj[52]);
-	  float4 dm53 = dev_inter(xi, sj[53]);
-	  float4 dm54 = dev_inter(xi, sj[54]);
-	  float4 dm55 = dev_inter(xi, sj[55]);
-	  float4 dm56 = dev_inter(xi, sj[56]);
-	  float4 dm57 = dev_inter(xi, sj[57]);
-	  float4 dm58 = dev_inter(xi, sj[58]);
-	  float4 dm59 = dev_inter(xi, sj[59]);
-
-	  float4 dm60 = dev_inter(xi, sj[60]);
-	  float4 dm61 = dev_inter(xi, sj[61]);
-	  float4 dm62 = dev_inter(xi, sj[62]);
-	  float4 dm63 = dev_inter(xi, sj[63]);
-	  float4 dm64 = dev_inter(xi, sj[64]);
-	  float4 dm65 = dev_inter(xi, sj[65]);
-	  float4 dm66 = dev_inter(xi, sj[66]);
-	  float4 dm67 = dev_inter(xi, sj[67]);
-	  float4 dm68 = dev_inter(xi, sj[68]);
-	  float4 dm69 = dev_inter(xi, sj[69]);
-
-	  float4 dm70 = dev_inter(xi, sj[70]);
-	  float4 dm71 = dev_inter(xi, sj[71]);
-	  float4 dm72 = dev_inter(xi, sj[72]);
-	  float4 dm73 = dev_inter(xi, sj[73]);
-	  float4 dm74 = dev_inter(xi, sj[74]);
-	  float4 dm75 = dev_inter(xi, sj[75]);
-	  float4 dm76 = dev_inter(xi, sj[76]);
-	  float4 dm77 = dev_inter(xi, sj[77]);
-	  float4 dm78 = dev_inter(xi, sj[78]);
-	  float4 dm79 = dev_inter(xi, sj[79]);
-
-	  float4 dm80 = dev_inter(xi, sj[80]);
-	  float4 dm81 = dev_inter(xi, sj[81]);
-	  float4 dm82 = dev_inter(xi, sj[82]);
-	  float4 dm83 = dev_inter(xi, sj[83]);
-	  float4 dm84 = dev_inter(xi, sj[84]);
-	  float4 dm85 = dev_inter(xi, sj[85]);
-	  float4 dm86 = dev_inter(xi, sj[86]);
-	  float4 dm87 = dev_inter(xi, sj[87]);
-	  float4 dm88 = dev_inter(xi, sj[88]);
-	  float4 dm89 = dev_inter(xi, sj[89]);
-
-	  float4 dm90 = dev_inter(xi, sj[90]);
-	  float4 dm91 = dev_inter(xi, sj[91]);
-	  float4 dm92 = dev_inter(xi, sj[92]);
-	  float4 dm93 = dev_inter(xi, sj[93]);
-	  float4 dm94 = dev_inter(xi, sj[94]);
-	  float4 dm95 = dev_inter(xi, sj[95]);
-	  float4 dm96 = dev_inter(xi, sj[96]);
-	  float4 dm97 = dev_inter(xi, sj[97]);
-	  float4 dm98 = dev_inter(xi, sj[98]);
-	  float4 dm99 = dev_inter(xi, sj[99]);
-
-	  float4 dm100 = dev_inter(xi, sj[100]);
-	  float4 dm101 = dev_inter(xi, sj[101]);
-	  float4 dm102 = dev_inter(xi, sj[102]);
-	  float4 dm103 = dev_inter(xi, sj[103]);
-	  float4 dm104 = dev_inter(xi, sj[104]);
-	  float4 dm105 = dev_inter(xi, sj[105]);
-	  float4 dm106 = dev_inter(xi, sj[106]);
-	  float4 dm107 = dev_inter(xi, sj[107]);
-	  float4 dm108 = dev_inter(xi, sj[108]);
-	  float4 dm109 = dev_inter(xi, sj[109]);
-
-	  float4 dm110 = dev_inter(xi, sj[110]);
-	  float4 dm111 = dev_inter(xi, sj[111]);
-	  float4 dm112 = dev_inter(xi, sj[112]);
-	  float4 dm113 = dev_inter(xi, sj[113]);
-	  float4 dm114 = dev_inter(xi, sj[114]);
-	  float4 dm115 = dev_inter(xi, sj[115]);
-	  float4 dm116 = dev_inter(xi, sj[116]);
-	  float4 dm117 = dev_inter(xi, sj[117]);
-	  float4 dm118 = dev_inter(xi, sj[118]);
-	  float4 dm119 = dev_inter(xi, sj[119]);
-
-	  float4 dm120 = dev_inter(xi, sj[120]);
-	  float4 dm121 = dev_inter(xi, sj[121]);
-	  float4 dm122 = dev_inter(xi, sj[122]);
-	  float4 dm123 = dev_inter(xi, sj[123]);
-	  float4 dm124 = dev_inter(xi, sj[124]);
-	  float4 dm125 = dev_inter(xi, sj[125]);
-	  float4 dm126 = dev_inter(xi, sj[126]);
-	  float4 dm127 = dev_inter(xi, sj[127]);
-
-	  apot.x = dm0.x * dm0.w + dm1.x * dm1.w + dm2.x * dm2.w + dm3.x * dm3.w + dm4.x * dm4.w + dm5.x * dm5.w + dm6.x * dm6.w + dm7.x * dm7.w + dm8.x * dm8.w + dm9.x * dm9.w + 
-	    dm10.x * dm10.w + dm11.x * dm11.w + dm12.x * dm12.w + dm13.x * dm13.w + dm14.x * dm14.w + dm15.x * dm15.w + dm16.x * dm16.w + dm17.x * dm17.w + dm18.x * dm18.w + dm19.x * dm19.w + 
-	    dm20.x * dm20.w + dm21.x * dm21.w + dm22.x * dm22.w + dm23.x * dm23.w + dm24.x * dm24.w + dm25.x * dm25.w + dm26.x * dm26.w + dm27.x * dm27.w + dm28.x * dm28.w + dm29.x * dm29.w + 
-	    dm30.x * dm30.w + dm31.x * dm31.w + dm32.x * dm32.w + dm33.x * dm33.w + dm34.x * dm34.w + dm35.x * dm35.w + dm36.x * dm36.w + dm37.x * dm37.w + dm38.x * dm38.w + dm39.x * dm39.w + 
-	    dm40.x * dm40.w + dm41.x * dm41.w + dm42.x * dm42.w + dm43.x * dm43.w + dm44.x * dm44.w + dm45.x * dm45.w + dm46.x * dm46.w + dm47.x * dm47.w + dm48.x * dm48.w + dm49.x * dm49.w + 
-	    dm50.x * dm50.w + dm51.x * dm51.w + dm52.x * dm52.w + dm53.x * dm53.w + dm54.x * dm54.w + dm55.x * dm55.w + dm56.x * dm56.w + dm57.x * dm57.w + dm58.x * dm58.w + dm59.x * dm59.w + 
-	    dm60.x * dm60.w + dm61.x * dm61.w + dm62.x * dm62.w + dm63.x * dm63.w + dm64.x * dm64.w + dm65.x * dm65.w + dm66.x * dm66.w + dm67.x * dm67.w + dm68.x * dm68.w + dm69.x * dm69.w + 
-	    dm70.x * dm70.w + dm71.x * dm71.w + dm72.x * dm72.w + dm73.x * dm73.w + dm74.x * dm74.w + dm75.x * dm75.w + dm76.x * dm76.w + dm77.x * dm77.w + dm78.x * dm78.w + dm79.x * dm79.w + 
-	    dm80.x * dm80.w + dm81.x * dm81.w + dm82.x * dm82.w + dm83.x * dm83.w + dm84.x * dm84.w + dm85.x * dm85.w + dm86.x * dm86.w + dm87.x * dm87.w + dm88.x * dm88.w + dm89.x * dm89.w + 
-	    dm90.x * dm90.w + dm91.x * dm91.w + dm92.x * dm92.w + dm93.x * dm93.w + dm94.x * dm94.w + dm95.x * dm95.w + dm96.x * dm96.w + dm97.x * dm97.w + dm98.x * dm98.w + dm99.x * dm99.w + 
-	    dm100.x * dm100.w + dm101.x * dm101.w + dm102.x * dm102.w + dm103.x * dm103.w + dm104.x * dm104.w + dm105.x * dm105.w + dm106.x * dm106.w + dm107.x * dm107.w + dm108.x * dm108.w + dm109.x * dm109.w + 
-	    dm110.x * dm110.w + dm111.x * dm111.w + dm112.x * dm112.w + dm113.x * dm113.w + dm114.x * dm114.w + dm115.x * dm115.w + dm116.x * dm116.w + dm117.x * dm117.w + dm118.x * dm118.w + dm119.x * dm119.w + 
-	    dm120.x * dm120.w + dm121.x * dm121.w + dm122.x * dm122.w + dm123.x * dm123.w + dm124.x * dm124.w + dm125.x * dm125.w + dm126.x * dm126.w + dm127.x * dm127.w;
-
-	  apot.y = dm0.y * dm0.w + dm1.y * dm1.w + dm2.y * dm2.w + dm3.y * dm3.w + dm4.y * dm4.w + dm5.y * dm5.w + dm6.y * dm6.w + dm7.y * dm7.w + dm8.y * dm8.w + dm9.y * dm9.w + 
-	    dm10.y * dm10.w + dm11.y * dm11.w + dm12.y * dm12.w + dm13.y * dm13.w + dm14.y * dm14.w + dm15.y * dm15.w + dm16.y * dm16.w + dm17.y * dm17.w + dm18.y * dm18.w + dm19.y * dm19.w + 
-	    dm20.y * dm20.w + dm21.y * dm21.w + dm22.y * dm22.w + dm23.y * dm23.w + dm24.y * dm24.w + dm25.y * dm25.w + dm26.y * dm26.w + dm27.y * dm27.w + dm28.y * dm28.w + dm29.y * dm29.w + 
-	    dm30.y * dm30.w + dm31.y * dm31.w + dm32.y * dm32.w + dm33.y * dm33.w + dm34.y * dm34.w + dm35.y * dm35.w + dm36.y * dm36.w + dm37.y * dm37.w + dm38.y * dm38.w + dm39.y * dm39.w + 
-	    dm40.y * dm40.w + dm41.y * dm41.w + dm42.y * dm42.w + dm43.y * dm43.w + dm44.y * dm44.w + dm45.y * dm45.w + dm46.y * dm46.w + dm47.y * dm47.w + dm48.y * dm48.w + dm49.y * dm49.w + 
-	    dm50.y * dm50.w + dm51.y * dm51.w + dm52.y * dm52.w + dm53.y * dm53.w + dm54.y * dm54.w + dm55.y * dm55.w + dm56.y * dm56.w + dm57.y * dm57.w + dm58.y * dm58.w + dm59.y * dm59.w + 
-	    dm60.y * dm60.w + dm61.y * dm61.w + dm62.y * dm62.w + dm63.y * dm63.w + dm64.y * dm64.w + dm65.y * dm65.w + dm66.y * dm66.w + dm67.y * dm67.w + dm68.y * dm68.w + dm69.y * dm69.w + 
-	    dm70.y * dm70.w + dm71.y * dm71.w + dm72.y * dm72.w + dm73.y * dm73.w + dm74.y * dm74.w + dm75.y * dm75.w + dm76.y * dm76.w + dm77.y * dm77.w + dm78.y * dm78.w + dm79.y * dm79.w + 
-	    dm80.y * dm80.w + dm81.y * dm81.w + dm82.y * dm82.w + dm83.y * dm83.w + dm84.y * dm84.w + dm85.y * dm85.w + dm86.y * dm86.w + dm87.y * dm87.w + dm88.y * dm88.w + dm89.y * dm89.w + 
-	    dm90.y * dm90.w + dm91.y * dm91.w + dm92.y * dm92.w + dm93.y * dm93.w + dm94.y * dm94.w + dm95.y * dm95.w + dm96.y * dm96.w + dm97.y * dm97.w + dm98.y * dm98.w + dm99.y * dm99.w + 
-	    dm100.y * dm100.w + dm101.y * dm101.w + dm102.y * dm102.w + dm103.y * dm103.w + dm104.y * dm104.w + dm105.y * dm105.w + dm106.y * dm106.w + dm107.y * dm107.w + dm108.y * dm108.w + dm109.y * dm109.w + 
-	    dm110.y * dm110.w + dm111.y * dm111.w + dm112.y * dm112.w + dm113.y * dm113.w + dm114.y * dm114.w + dm115.y * dm115.w + dm116.y * dm116.w + dm117.y * dm117.w + dm118.y * dm118.w + dm119.y * dm119.w + 
-	    dm120.y * dm120.w + dm121.y * dm121.w + dm122.y * dm122.w + dm123.y * dm123.w + dm124.y * dm124.w + dm125.y * dm125.w + dm126.y * dm126.w + dm127.y * dm127.w;
-
-	  apot.z = dm0.z * dm0.w + dm1.z * dm1.w + dm2.z * dm2.w + dm3.z * dm3.w + dm4.z * dm4.w + dm5.z * dm5.w + dm6.z * dm6.w + dm7.z * dm7.w + dm8.z * dm8.w + dm9.z * dm9.w + 
-	    dm10.z * dm10.w + dm11.z * dm11.w + dm12.z * dm12.w + dm13.z * dm13.w + dm14.z * dm14.w + dm15.z * dm15.w + dm16.z * dm16.w + dm17.z * dm17.w + dm18.z * dm18.w + dm19.z * dm19.w + 
-	    dm20.z * dm20.w + dm21.z * dm21.w + dm22.z * dm22.w + dm23.z * dm23.w + dm24.z * dm24.w + dm25.z * dm25.w + dm26.z * dm26.w + dm27.z * dm27.w + dm28.z * dm28.w + dm29.z * dm29.w + 
-	    dm30.z * dm30.w + dm31.z * dm31.w + dm32.z * dm32.w + dm33.z * dm33.w + dm34.z * dm34.w + dm35.z * dm35.w + dm36.z * dm36.w + dm37.z * dm37.w + dm38.z * dm38.w + dm39.z * dm39.w + 
-	    dm40.z * dm40.w + dm41.z * dm41.w + dm42.z * dm42.w + dm43.z * dm43.w + dm44.z * dm44.w + dm45.z * dm45.w + dm46.z * dm46.w + dm47.z * dm47.w + dm48.z * dm48.w + dm49.z * dm49.w + 
-	    dm50.z * dm50.w + dm51.z * dm51.w + dm52.z * dm52.w + dm53.z * dm53.w + dm54.z * dm54.w + dm55.z * dm55.w + dm56.z * dm56.w + dm57.z * dm57.w + dm58.z * dm58.w + dm59.z * dm59.w + 
-	    dm60.z * dm60.w + dm61.z * dm61.w + dm62.z * dm62.w + dm63.z * dm63.w + dm64.z * dm64.w + dm65.z * dm65.w + dm66.z * dm66.w + dm67.z * dm67.w + dm68.z * dm68.w + dm69.z * dm69.w + 
-	    dm70.z * dm70.w + dm71.z * dm71.w + dm72.z * dm72.w + dm73.z * dm73.w + dm74.z * dm74.w + dm75.z * dm75.w + dm76.z * dm76.w + dm77.z * dm77.w + dm78.z * dm78.w + dm79.z * dm79.w + 
-	    dm80.z * dm80.w + dm81.z * dm81.w + dm82.z * dm82.w + dm83.z * dm83.w + dm84.z * dm84.w + dm85.z * dm85.w + dm86.z * dm86.w + dm87.z * dm87.w + dm88.z * dm88.w + dm89.z * dm89.w + 
-	    dm90.z * dm90.w + dm91.z * dm91.w + dm92.z * dm92.w + dm93.z * dm93.w + dm94.z * dm94.w + dm95.z * dm95.w + dm96.z * dm96.w + dm97.z * dm97.w + dm98.z * dm98.w + dm99.z * dm99.w + 
-	    dm100.z * dm100.w + dm101.z * dm101.w + dm102.z * dm102.w + dm103.z * dm103.w + dm104.z * dm104.w + dm105.z * dm105.w + dm106.z * dm106.w + dm107.z * dm107.w + dm108.z * dm108.w + dm109.z * dm109.w + 
-	    dm110.z * dm110.w + dm111.z * dm111.w + dm112.z * dm112.w + dm113.z * dm113.w + dm114.z * dm114.w + dm115.z * dm115.w + dm116.z * dm116.w + dm117.z * dm117.w + dm118.z * dm118.w + dm119.z * dm119.w + 
-	    dm120.z * dm120.w + dm121.z * dm121.w + dm122.z * dm122.w + dm123.z * dm123.w + dm124.z * dm124.w + dm125.z * dm125.w + dm126.z * dm126.w + dm127.z * dm127.w;
-
-	}
-      }
-      if(ibase+tid < iend){
-	apotlist[ibase+tid] = apot;
-      }
-    }
-  }
-
-
-
-  __device__ 
-  float4 dev_inter_001(float4 xi, float4 xj)
-  {
-    float dx = xj.x - xi.x;
-    float dy = xj.y - xi.y;
-    float dz = xj.z - xi.z;
-    float eps2 = xi.w;
-    float mj   = xj.w;
-#if (0)
-    float r2 = dx*dz + (dy*dy + (dx*dx + eps2));
-#else
-    float r2 = (dx*dx + eps2) + dy*dy + dz*dz;
-#endif
-    //	if(r2 == eps2) return (a,p)
-
-    float r1i = 1/sqrt(r2);
-    //  float r1i = rsqrt(r2);
-
-    float r2i = r1i*r1i;
-    float mr3i = mj * r1i * r2i;
-    float4 retval;
-
-    retval.x = dx; 
-    retval.y = dy; 
-    retval.z = dz;
-    retval.w = mr3i; 
-
-    return (retval);
-  }
-
-
-
-  __global__ 
-  void cunbody_kernel_tree_001(float4 *xilist,
-				float4 *xjlist,
-				float4 *apotlist,
-				unsigned int *ioffset,
-				unsigned int *joffset)
-  {
-    unsigned int tid = threadIdx.x;
-    unsigned int bid = blockIdx.x;
-    unsigned int ibegin = ioffset[bid];
-    unsigned int iend   = ioffset[bid+1];
-    unsigned int jbegin = joffset[bid];
-    unsigned int jend   = joffset[bid+1];
-    for(unsigned int ibase = ibegin; ibase < iend; ibase += NTHRE){
-      float4 xi = xilist[ibase + tid];
-      float4 apot = make_float4(0,0,0,0);
-      for(unsigned int jbase = jbegin; jbase < jend; jbase += NTHRE){
-	__shared__ float4 sj[NTHRE];
-	sj[tid] = xjlist[jbase + tid];
-	__syncthreads();
-	{
-	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9;
-	  dm0 = dev_inter_001(xi, sj[0]);
-	  dm1 = dev_inter_001(xi, sj[1]);
-	  dm2 = dev_inter_001(xi, sj[2]);
-	  dm3 = dev_inter_001(xi, sj[3]);
-	  dm4 = dev_inter_001(xi, sj[4]);
-	  dm5 = dev_inter_001(xi, sj[5]);
-	  dm6 = dev_inter_001(xi, sj[6]);
-	  dm7 = dev_inter_001(xi, sj[7]);
-	  dm8 = dev_inter_001(xi, sj[8]);
-	  dm9 = dev_inter_001(xi, sj[9]);
-	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) + (dm8.x*dm8.w) + (dm9.x*dm9.w);
-	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) + (dm8.y*dm8.w) + (dm9.y*dm9.w);
-	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) + (dm8.z*dm8.w) + (dm9.z*dm9.w);
-	}
-	{
-	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9;
-	  dm0 = dev_inter_001(xi, sj[10]);
-	  dm1 = dev_inter_001(xi, sj[11]);
-	  dm2 = dev_inter_001(xi, sj[12]);
-	  dm3 = dev_inter_001(xi, sj[13]);
-	  dm4 = dev_inter_001(xi, sj[14]);
-	  dm5 = dev_inter_001(xi, sj[15]);
-	  dm6 = dev_inter_001(xi, sj[16]);
-	  dm7 = dev_inter_001(xi, sj[17]);
-	  dm8 = dev_inter_001(xi, sj[18]);
-	  dm9 = dev_inter_001(xi, sj[19]);
-	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) + (dm8.x*dm8.w) + (dm9.x*dm9.w);
-	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) + (dm8.y*dm8.w) + (dm9.y*dm9.w);
-	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) + (dm8.z*dm8.w) + (dm9.z*dm9.w);
-	}
-	{
-	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9;
-	  dm0 = dev_inter_001(xi, sj[20]);
-	  dm1 = dev_inter_001(xi, sj[21]);
-	  dm2 = dev_inter_001(xi, sj[22]);
-	  dm3 = dev_inter_001(xi, sj[23]);
-	  dm4 = dev_inter_001(xi, sj[24]);
-	  dm5 = dev_inter_001(xi, sj[25]);
-	  dm6 = dev_inter_001(xi, sj[26]);
-	  dm7 = dev_inter_001(xi, sj[27]);
-	  dm8 = dev_inter_001(xi, sj[28]);
-	  dm9 = dev_inter_001(xi, sj[29]);
-	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) + (dm8.x*dm8.w) + (dm9.x*dm9.w);
-	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) + (dm8.y*dm8.w) + (dm9.y*dm9.w);
-	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) + (dm8.z*dm8.w) + (dm9.z*dm9.w);
-	}
-	{
-	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9;
-	  dm0 = dev_inter_001(xi, sj[30]);
-	  dm1 = dev_inter_001(xi, sj[31]);
-	  dm2 = dev_inter_001(xi, sj[32]);
-	  dm3 = dev_inter_001(xi, sj[33]);
-	  dm4 = dev_inter_001(xi, sj[34]);
-	  dm5 = dev_inter_001(xi, sj[35]);
-	  dm6 = dev_inter_001(xi, sj[36]);
-	  dm7 = dev_inter_001(xi, sj[37]);
-	  dm8 = dev_inter_001(xi, sj[38]);
-	  dm9 = dev_inter_001(xi, sj[39]);
-	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) + (dm8.x*dm8.w) + (dm9.x*dm9.w);
-	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) + (dm8.y*dm8.w) + (dm9.y*dm9.w);
-	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) + (dm8.z*dm8.w) + (dm9.z*dm9.w);
-	}
-	{
-	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9;
-	  dm0 = dev_inter_001(xi, sj[40]);
-	  dm1 = dev_inter_001(xi, sj[41]);
-	  dm2 = dev_inter_001(xi, sj[42]);
-	  dm3 = dev_inter_001(xi, sj[43]);
-	  dm4 = dev_inter_001(xi, sj[44]);
-	  dm5 = dev_inter_001(xi, sj[45]);
-	  dm6 = dev_inter_001(xi, sj[46]);
-	  dm7 = dev_inter_001(xi, sj[47]);
-	  dm8 = dev_inter_001(xi, sj[48]);
-	  dm9 = dev_inter_001(xi, sj[49]);
-	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) + (dm8.x*dm8.w) + (dm9.x*dm9.w);
-	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) + (dm8.y*dm8.w) + (dm9.y*dm9.w);
-	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) + (dm8.z*dm8.w) + (dm9.z*dm9.w);
-	}
-	{
-	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9;
-	  dm0 = dev_inter_001(xi, sj[50]);
-	  dm1 = dev_inter_001(xi, sj[51]);
-	  dm2 = dev_inter_001(xi, sj[52]);
-	  dm3 = dev_inter_001(xi, sj[53]);
-	  dm4 = dev_inter_001(xi, sj[54]);
-	  dm5 = dev_inter_001(xi, sj[55]);
-	  dm6 = dev_inter_001(xi, sj[56]);
-	  dm7 = dev_inter_001(xi, sj[57]);
-	  dm8 = dev_inter_001(xi, sj[58]);
-	  dm9 = dev_inter_001(xi, sj[59]);
-	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) + (dm8.x*dm8.w) + (dm9.x*dm9.w);
-	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) + (dm8.y*dm8.w) + (dm9.y*dm9.w);
-	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) + (dm8.z*dm8.w) + (dm9.z*dm9.w);
-	}
-	{
-	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9;
-	  dm0 = dev_inter_001(xi, sj[60]);
-	  dm1 = dev_inter_001(xi, sj[61]);
-	  dm2 = dev_inter_001(xi, sj[62]);
-	  dm3 = dev_inter_001(xi, sj[63]);
-	  dm4 = dev_inter_001(xi, sj[64]);
-	  dm5 = dev_inter_001(xi, sj[65]);
-	  dm6 = dev_inter_001(xi, sj[66]);
-	  dm7 = dev_inter_001(xi, sj[67]);
-	  dm8 = dev_inter_001(xi, sj[68]);
-	  dm9 = dev_inter_001(xi, sj[69]);
-	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) + (dm8.x*dm8.w) + (dm9.x*dm9.w);
-	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) + (dm8.y*dm8.w) + (dm9.y*dm9.w);
-	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) + (dm8.z*dm8.w) + (dm9.z*dm9.w);
-	}
-	{
-	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9;
-	  dm0 = dev_inter_001(xi, sj[70]);
-	  dm1 = dev_inter_001(xi, sj[71]);
-	  dm2 = dev_inter_001(xi, sj[72]);
-	  dm3 = dev_inter_001(xi, sj[73]);
-	  dm4 = dev_inter_001(xi, sj[74]);
-	  dm5 = dev_inter_001(xi, sj[75]);
-	  dm6 = dev_inter_001(xi, sj[76]);
-	  dm7 = dev_inter_001(xi, sj[77]);
-	  dm8 = dev_inter_001(xi, sj[78]);
-	  dm9 = dev_inter_001(xi, sj[79]);
-	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) + (dm8.x*dm8.w) + (dm9.x*dm9.w);
-	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) + (dm8.y*dm8.w) + (dm9.y*dm9.w);
-	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) + (dm8.z*dm8.w) + (dm9.z*dm9.w);
-	}
-	{
-	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9;
-	  dm0 = dev_inter_001(xi, sj[80]);
-	  dm1 = dev_inter_001(xi, sj[81]);
-	  dm2 = dev_inter_001(xi, sj[82]);
-	  dm3 = dev_inter_001(xi, sj[83]);
-	  dm4 = dev_inter_001(xi, sj[84]);
-	  dm5 = dev_inter_001(xi, sj[85]);
-	  dm6 = dev_inter_001(xi, sj[86]);
-	  dm7 = dev_inter_001(xi, sj[87]);
-	  dm8 = dev_inter_001(xi, sj[88]);
-	  dm9 = dev_inter_001(xi, sj[89]);
-	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) + (dm8.x*dm8.w) + (dm9.x*dm9.w);
-	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) + (dm8.y*dm8.w) + (dm9.y*dm9.w);
-	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) + (dm8.z*dm8.w) + (dm9.z*dm9.w);
-	}
-	{
-	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9;
-	  dm0 = dev_inter_001(xi, sj[90]);
-	  dm1 = dev_inter_001(xi, sj[91]);
-	  dm2 = dev_inter_001(xi, sj[92]);
-	  dm3 = dev_inter_001(xi, sj[93]);
-	  dm4 = dev_inter_001(xi, sj[94]);
-	  dm5 = dev_inter_001(xi, sj[95]);
-	  dm6 = dev_inter_001(xi, sj[96]);
-	  dm7 = dev_inter_001(xi, sj[97]);
-	  dm8 = dev_inter_001(xi, sj[98]);
-	  dm9 = dev_inter_001(xi, sj[99]);
-	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) + (dm8.x*dm8.w) + (dm9.x*dm9.w);
-	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) + (dm8.y*dm8.w) + (dm9.y*dm9.w);
-	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) + (dm8.z*dm8.w) + (dm9.z*dm9.w);
-	}
-	{
-	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9;
-	  dm0 = dev_inter_001(xi, sj[100]);
-	  dm1 = dev_inter_001(xi, sj[101]);
-	  dm2 = dev_inter_001(xi, sj[102]);
-	  dm3 = dev_inter_001(xi, sj[103]);
-	  dm4 = dev_inter_001(xi, sj[104]);
-	  dm5 = dev_inter_001(xi, sj[105]);
-	  dm6 = dev_inter_001(xi, sj[106]);
-	  dm7 = dev_inter_001(xi, sj[107]);
-	  dm8 = dev_inter_001(xi, sj[108]);
-	  dm9 = dev_inter_001(xi, sj[109]);
-	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) + (dm8.x*dm8.w) + (dm9.x*dm9.w);
-	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) + (dm8.y*dm8.w) + (dm9.y*dm9.w);
-	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) + (dm8.z*dm8.w) + (dm9.z*dm9.w);
-	}
-	{
-	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9;
-	  dm0 = dev_inter_001(xi, sj[110]);
-	  dm1 = dev_inter_001(xi, sj[111]);
-	  dm2 = dev_inter_001(xi, sj[112]);
-	  dm3 = dev_inter_001(xi, sj[113]);
-	  dm4 = dev_inter_001(xi, sj[114]);
-	  dm5 = dev_inter_001(xi, sj[115]);
-	  dm6 = dev_inter_001(xi, sj[116]);
-	  dm7 = dev_inter_001(xi, sj[117]);
-	  dm8 = dev_inter_001(xi, sj[118]);
-	  dm9 = dev_inter_001(xi, sj[119]);
-	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) + (dm8.x*dm8.w) + (dm9.x*dm9.w);
-	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) + (dm8.y*dm8.w) + (dm9.y*dm9.w);
-	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) + (dm8.z*dm8.w) + (dm9.z*dm9.w);
-	}
-	{
-	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7;//, dm8, dm9;
-	  dm0 = dev_inter_001(xi, sj[120]);
-	  dm1 = dev_inter_001(xi, sj[121]);
-	  dm2 = dev_inter_001(xi, sj[122]);
-	  dm3 = dev_inter_001(xi, sj[123]);
-	  dm4 = dev_inter_001(xi, sj[124]);
-	  dm5 = dev_inter_001(xi, sj[125]);
-	  dm6 = dev_inter_001(xi, sj[126]);
-	  dm7 = dev_inter_001(xi, sj[127]);
-	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w);// + (dm8.x*dm8.w) + (dm9.x*dm9.w);
-	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w);// + (dm8.y*dm8.w) + (dm9.y*dm9.w);
-	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w);// + (dm8.z*dm8.w) + (dm9.z*dm9.w);
-	}
-      }
-      if(ibase + tid < iend){
-	apotlist[ibase + tid] = apot;
-      }
-    }
-  }
-
-
-  __global__ 
-  void cunbody_kernel_tree_002(float4 *xilist,
-				float4 *xjlist,
-				float4 *apotlist,
-				unsigned int *ioffset,
-				unsigned int *joffset)
-  {
-    unsigned int tid = threadIdx.x;
-    unsigned int bid = blockIdx.x;
-    unsigned int ibegin = ioffset[bid];
-    unsigned int iend   = ioffset[bid+1];
-    unsigned int jbegin = joffset[bid];
-    unsigned int jend   = joffset[bid+1];
-    for(unsigned int ibase = ibegin; ibase < iend; ibase += NTHRE){
-      float4 xi = xilist[ibase + tid];
-      float4 apot = make_float4(0,0,0,0);
-      for(unsigned int jbase = jbegin; jbase < jend; jbase += NTHRE){
-	__shared__ float4 sj[NTHRE];
-	__syncthreads(); // bugfixed 2008/09/19
-	sj[tid] = xjlist[jbase + tid];
-	__syncthreads();
-	{
-	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9, dm10, dm11, dm12, dm13, dm14, dm15;
-	  dm0 = dev_inter_001(xi, sj[0]);
-	  dm1 = dev_inter_001(xi, sj[1]);
-	  dm2 = dev_inter_001(xi, sj[2]);
-	  dm3 = dev_inter_001(xi, sj[3]);
-	  dm4 = dev_inter_001(xi, sj[4]);
-	  dm5 = dev_inter_001(xi, sj[5]);
-	  dm6 = dev_inter_001(xi, sj[6]);
-	  dm7 = dev_inter_001(xi, sj[7]);
-	  dm8 = dev_inter_001(xi, sj[8]);
-	  dm9 = dev_inter_001(xi, sj[9]);
-	  dm10 = dev_inter_001(xi, sj[10]);
-	  dm11 = dev_inter_001(xi, sj[11]);
-	  dm12 = dev_inter_001(xi, sj[12]);
-	  dm13 = dev_inter_001(xi, sj[13]);
-	  dm14 = dev_inter_001(xi, sj[14]);
-	  dm15 = dev_inter_001(xi, sj[15]);
-	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) \
-	    + (dm8.x*dm8.w) + (dm9.x*dm9.w) + (dm10.x*dm10.w) + (dm11.x*dm11.w) + (dm12.x*dm12.w) + (dm13.x*dm13.w) + (dm14.x*dm14.w) + (dm15.x*dm15.w);
-	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) \
-	    + (dm8.y*dm8.w) + (dm9.y*dm9.w) + (dm10.y*dm10.w) + (dm11.y*dm11.w) + (dm12.y*dm12.w) + (dm13.y*dm13.w) + (dm14.y*dm14.w) + (dm15.y*dm15.w);
-	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) \
-	    + (dm8.z*dm8.w) + (dm9.z*dm9.w) + (dm10.z*dm10.w) + (dm11.z*dm11.w) + (dm12.z*dm12.w) + (dm13.z*dm13.w) + (dm14.z*dm14.w) + (dm15.z*dm15.w);
-	}
-
-	{
-	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9, dm10, dm11, dm12, dm13, dm14, dm15;
-	  dm0 = dev_inter_001(xi, sj[16]);
-	  dm1 = dev_inter_001(xi, sj[17]);
-	  dm2 = dev_inter_001(xi, sj[18]);
-	  dm3 = dev_inter_001(xi, sj[19]);
-	  dm4 = dev_inter_001(xi, sj[20]);
-	  dm5 = dev_inter_001(xi, sj[21]);
-	  dm6 = dev_inter_001(xi, sj[22]);
-	  dm7 = dev_inter_001(xi, sj[23]);
-	  dm8 = dev_inter_001(xi, sj[24]);
-	  dm9 = dev_inter_001(xi, sj[25]);
-	  dm10 = dev_inter_001(xi, sj[26]);
-	  dm11 = dev_inter_001(xi, sj[27]);
-	  dm12 = dev_inter_001(xi, sj[28]);
-	  dm13 = dev_inter_001(xi, sj[29]);
-	  dm14 = dev_inter_001(xi, sj[30]);
-	  dm15 = dev_inter_001(xi, sj[31]);
-	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) \
-	    + (dm8.x*dm8.w) + (dm9.x*dm9.w) + (dm10.x*dm10.w) + (dm11.x*dm11.w) + (dm12.x*dm12.w) + (dm13.x*dm13.w) + (dm14.x*dm14.w) + (dm15.x*dm15.w);
-	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) \
-	    + (dm8.y*dm8.w) + (dm9.y*dm9.w) + (dm10.y*dm10.w) + (dm11.y*dm11.w) + (dm12.y*dm12.w) + (dm13.y*dm13.w) + (dm14.y*dm14.w) + (dm15.y*dm15.w);
-	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) \
-	    + (dm8.z*dm8.w) + (dm9.z*dm9.w) + (dm10.z*dm10.w) + (dm11.z*dm11.w) + (dm12.z*dm12.w) + (dm13.z*dm13.w) + (dm14.z*dm14.w) + (dm15.z*dm15.w);
-	}
-
-	{
-	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9, dm10, dm11, dm12, dm13, dm14, dm15;
-	  dm0 = dev_inter_001(xi, sj[32]);
-	  dm1 = dev_inter_001(xi, sj[33]);
-	  dm2 = dev_inter_001(xi, sj[34]);
-	  dm3 = dev_inter_001(xi, sj[35]);
-	  dm4 = dev_inter_001(xi, sj[36]);
-	  dm5 = dev_inter_001(xi, sj[37]);
-	  dm6 = dev_inter_001(xi, sj[38]);
-	  dm7 = dev_inter_001(xi, sj[39]);
-	  dm8 = dev_inter_001(xi, sj[40]);
-	  dm9 = dev_inter_001(xi, sj[41]);
-	  dm10 = dev_inter_001(xi, sj[42]);
-	  dm11 = dev_inter_001(xi, sj[43]);
-	  dm12 = dev_inter_001(xi, sj[44]);
-	  dm13 = dev_inter_001(xi, sj[45]);
-	  dm14 = dev_inter_001(xi, sj[46]);
-	  dm15 = dev_inter_001(xi, sj[47]);
-	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) \
-	    + (dm8.x*dm8.w) + (dm9.x*dm9.w) + (dm10.x*dm10.w) + (dm11.x*dm11.w) + (dm12.x*dm12.w) + (dm13.x*dm13.w) + (dm14.x*dm14.w) + (dm15.x*dm15.w);
-	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) \
-	    + (dm8.y*dm8.w) + (dm9.y*dm9.w) + (dm10.y*dm10.w) + (dm11.y*dm11.w) + (dm12.y*dm12.w) + (dm13.y*dm13.w) + (dm14.y*dm14.w) + (dm15.y*dm15.w);
-	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) \
-	    + (dm8.z*dm8.w) + (dm9.z*dm9.w) + (dm10.z*dm10.w) + (dm11.z*dm11.w) + (dm12.z*dm12.w) + (dm13.z*dm13.w) + (dm14.z*dm14.w) + (dm15.z*dm15.w);
-	}
-
-	{
-	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9, dm10, dm11, dm12, dm13, dm14, dm15;
-	  dm0 = dev_inter_001(xi, sj[48]);
-	  dm1 = dev_inter_001(xi, sj[49]);
-	  dm2 = dev_inter_001(xi, sj[50]);
-	  dm3 = dev_inter_001(xi, sj[51]);
-	  dm4 = dev_inter_001(xi, sj[52]);
-	  dm5 = dev_inter_001(xi, sj[53]);
-	  dm6 = dev_inter_001(xi, sj[54]);
-	  dm7 = dev_inter_001(xi, sj[55]);
-	  dm8 = dev_inter_001(xi, sj[56]);
-	  dm9 = dev_inter_001(xi, sj[57]);
-	  dm10 = dev_inter_001(xi, sj[58]);
-	  dm11 = dev_inter_001(xi, sj[59]);
-	  dm12 = dev_inter_001(xi, sj[60]);
-	  dm13 = dev_inter_001(xi, sj[61]);
-	  dm14 = dev_inter_001(xi, sj[62]);
-	  dm15 = dev_inter_001(xi, sj[63]);
-	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) \
-	    + (dm8.x*dm8.w) + (dm9.x*dm9.w) + (dm10.x*dm10.w) + (dm11.x*dm11.w) + (dm12.x*dm12.w) + (dm13.x*dm13.w) + (dm14.x*dm14.w) + (dm15.x*dm15.w);
-	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) \
-	    + (dm8.y*dm8.w) + (dm9.y*dm9.w) + (dm10.y*dm10.w) + (dm11.y*dm11.w) + (dm12.y*dm12.w) + (dm13.y*dm13.w) + (dm14.y*dm14.w) + (dm15.y*dm15.w);
-	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) \
-	    + (dm8.z*dm8.w) + (dm9.z*dm9.w) + (dm10.z*dm10.w) + (dm11.z*dm11.w) + (dm12.z*dm12.w) + (dm13.z*dm13.w) + (dm14.z*dm14.w) + (dm15.z*dm15.w);
-	}
-
-	{
-	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9, dm10, dm11, dm12, dm13, dm14, dm15;
-	  dm0 = dev_inter_001(xi, sj[64]);
-	  dm1 = dev_inter_001(xi, sj[65]);
-	  dm2 = dev_inter_001(xi, sj[66]);
-	  dm3 = dev_inter_001(xi, sj[67]);
-	  dm4 = dev_inter_001(xi, sj[68]);
-	  dm5 = dev_inter_001(xi, sj[69]);
-	  dm6 = dev_inter_001(xi, sj[70]);
-	  dm7 = dev_inter_001(xi, sj[71]);
-	  dm8 = dev_inter_001(xi, sj[72]);
-	  dm9 = dev_inter_001(xi, sj[73]);
-	  dm10 = dev_inter_001(xi, sj[74]);
-	  dm11 = dev_inter_001(xi, sj[75]);
-	  dm12 = dev_inter_001(xi, sj[76]);
-	  dm13 = dev_inter_001(xi, sj[77]);
-	  dm14 = dev_inter_001(xi, sj[78]);
-	  dm15 = dev_inter_001(xi, sj[79]);
-	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) \
-	    + (dm8.x*dm8.w) + (dm9.x*dm9.w) + (dm10.x*dm10.w) + (dm11.x*dm11.w) + (dm12.x*dm12.w) + (dm13.x*dm13.w) + (dm14.x*dm14.w) + (dm15.x*dm15.w);
-	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) \
-	    + (dm8.y*dm8.w) + (dm9.y*dm9.w) + (dm10.y*dm10.w) + (dm11.y*dm11.w) + (dm12.y*dm12.w) + (dm13.y*dm13.w) + (dm14.y*dm14.w) + (dm15.y*dm15.w);
-	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) \
-	    + (dm8.z*dm8.w) + (dm9.z*dm9.w) + (dm10.z*dm10.w) + (dm11.z*dm11.w) + (dm12.z*dm12.w) + (dm13.z*dm13.w) + (dm14.z*dm14.w) + (dm15.z*dm15.w);
-	}
-
-	{
-	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9, dm10, dm11, dm12, dm13, dm14, dm15;
-	  dm0 = dev_inter_001(xi, sj[80]);
-	  dm1 = dev_inter_001(xi, sj[81]);
-	  dm2 = dev_inter_001(xi, sj[82]);
-	  dm3 = dev_inter_001(xi, sj[83]);
-	  dm4 = dev_inter_001(xi, sj[84]);
-	  dm5 = dev_inter_001(xi, sj[85]);
-	  dm6 = dev_inter_001(xi, sj[86]);
-	  dm7 = dev_inter_001(xi, sj[87]);
-	  dm8 = dev_inter_001(xi, sj[88]);
-	  dm9 = dev_inter_001(xi, sj[89]);
-	  dm10 = dev_inter_001(xi, sj[90]);
-	  dm11 = dev_inter_001(xi, sj[91]);
-	  dm12 = dev_inter_001(xi, sj[92]);
-	  dm13 = dev_inter_001(xi, sj[93]);
-	  dm14 = dev_inter_001(xi, sj[94]);
-	  dm15 = dev_inter_001(xi, sj[95]);
-	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) \
-	    + (dm8.x*dm8.w) + (dm9.x*dm9.w) + (dm10.x*dm10.w) + (dm11.x*dm11.w) + (dm12.x*dm12.w) + (dm13.x*dm13.w) + (dm14.x*dm14.w) + (dm15.x*dm15.w);
-	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) \
-	    + (dm8.y*dm8.w) + (dm9.y*dm9.w) + (dm10.y*dm10.w) + (dm11.y*dm11.w) + (dm12.y*dm12.w) + (dm13.y*dm13.w) + (dm14.y*dm14.w) + (dm15.y*dm15.w);
-	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) \
-	    + (dm8.z*dm8.w) + (dm9.z*dm9.w) + (dm10.z*dm10.w) + (dm11.z*dm11.w) + (dm12.z*dm12.w) + (dm13.z*dm13.w) + (dm14.z*dm14.w) + (dm15.z*dm15.w);
-	}
-
-	{
-	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9, dm10, dm11, dm12, dm13, dm14, dm15;
-	  dm0 = dev_inter_001(xi, sj[96]);
-	  dm1 = dev_inter_001(xi, sj[97]);
-	  dm2 = dev_inter_001(xi, sj[98]);
-	  dm3 = dev_inter_001(xi, sj[99]);
-	  dm4 = dev_inter_001(xi, sj[100]);
-	  dm5 = dev_inter_001(xi, sj[101]);
-	  dm6 = dev_inter_001(xi, sj[102]);
-	  dm7 = dev_inter_001(xi, sj[103]);
-	  dm8 = dev_inter_001(xi, sj[104]);
-	  dm9 = dev_inter_001(xi, sj[105]);
-	  dm10 = dev_inter_001(xi, sj[106]);
-	  dm11 = dev_inter_001(xi, sj[107]);
-	  dm12 = dev_inter_001(xi, sj[108]);
-	  dm13 = dev_inter_001(xi, sj[109]);
-	  dm14 = dev_inter_001(xi, sj[110]);
-	  dm15 = dev_inter_001(xi, sj[111]);
-	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) \
-	    + (dm8.x*dm8.w) + (dm9.x*dm9.w) + (dm10.x*dm10.w) + (dm11.x*dm11.w) + (dm12.x*dm12.w) + (dm13.x*dm13.w) + (dm14.x*dm14.w) + (dm15.x*dm15.w);
-	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) \
-	    + (dm8.y*dm8.w) + (dm9.y*dm9.w) + (dm10.y*dm10.w) + (dm11.y*dm11.w) + (dm12.y*dm12.w) + (dm13.y*dm13.w) + (dm14.y*dm14.w) + (dm15.y*dm15.w);
-	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) \
-	    + (dm8.z*dm8.w) + (dm9.z*dm9.w) + (dm10.z*dm10.w) + (dm11.z*dm11.w) + (dm12.z*dm12.w) + (dm13.z*dm13.w) + (dm14.z*dm14.w) + (dm15.z*dm15.w);
-	}
-
-	{
-	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9, dm10, dm11, dm12, dm13, dm14, dm15;
-	  dm0 = dev_inter_001(xi, sj[112]);
-	  dm1 = dev_inter_001(xi, sj[113]);
-	  dm2 = dev_inter_001(xi, sj[114]);
-	  dm3 = dev_inter_001(xi, sj[115]);
-	  dm4 = dev_inter_001(xi, sj[116]);
-	  dm5 = dev_inter_001(xi, sj[117]);
-	  dm6 = dev_inter_001(xi, sj[118]);
-	  dm7 = dev_inter_001(xi, sj[119]);
-	  dm8 = dev_inter_001(xi, sj[120]);
-	  dm9 = dev_inter_001(xi, sj[121]);
-	  dm10 = dev_inter_001(xi, sj[122]);
-	  dm11 = dev_inter_001(xi, sj[123]);
-	  dm12 = dev_inter_001(xi, sj[124]);
-	  dm13 = dev_inter_001(xi, sj[125]);
-	  dm14 = dev_inter_001(xi, sj[126]);
-	  dm15 = dev_inter_001(xi, sj[127]);
-	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) \
-	    + (dm8.x*dm8.w) + (dm9.x*dm9.w) + (dm10.x*dm10.w) + (dm11.x*dm11.w) + (dm12.x*dm12.w) + (dm13.x*dm13.w) + (dm14.x*dm14.w) + (dm15.x*dm15.w);
-	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) \
-	    + (dm8.y*dm8.w) + (dm9.y*dm9.w) + (dm10.y*dm10.w) + (dm11.y*dm11.w) + (dm12.y*dm12.w) + (dm13.y*dm13.w) + (dm14.y*dm14.w) + (dm15.y*dm15.w);
-	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) \
-	    + (dm8.z*dm8.w) + (dm9.z*dm9.w) + (dm10.z*dm10.w) + (dm11.z*dm11.w) + (dm12.z*dm12.w) + (dm13.z*dm13.w) + (dm14.z*dm14.w) + (dm15.z*dm15.w);
-	}
-
-      }
-      if(ibase + tid < iend){
-	apotlist[ibase + tid] = apot;
-      }
-    }
-  }
-
-  __global__ 
-  void cunbody_kernel_tree_003(float4 *xilist,
-				float4 *xjlist,
-				float4 *apotlist,
-				unsigned int *ioffset,
-				unsigned int *joffset)
-  {
-    unsigned int tid = threadIdx.x;
-    unsigned int bid = blockIdx.x;
-    unsigned int ibegin = ioffset[bid];
-    unsigned int iend   = ioffset[bid+1];
-    unsigned int jbegin = joffset[bid];
-    unsigned int jend   = joffset[bid+1];
-    for(unsigned int ibase = ibegin; ibase < iend; ibase += NTHRE){
-      float4 xi = xilist[ibase + tid];
-      float4 apot = make_float4(0,0,0,0);
-      for(unsigned int jbase = jbegin; jbase < jend; jbase += NTHRE){
-	__shared__ float4 sj[NTHRE];
-	sj[tid] = xjlist[jbase + tid];
-	__syncthreads();
-	{
-	  float4 dm0 = dev_inter_001(xi, sj[0]);
-	  float4 dm1 = dev_inter_001(xi, sj[1]);
-	  float4 dm2 = dev_inter_001(xi, sj[2]);
-	  float4 dm3 = dev_inter_001(xi, sj[3]);
-	  float4 dm4 = dev_inter_001(xi, sj[4]);
-	  float4 dm5 = dev_inter_001(xi, sj[5]);
-	  float4 dm6 = dev_inter_001(xi, sj[6]);
-	  float4 dm7 = dev_inter_001(xi, sj[7]);
-	  float4 dm8 = dev_inter_001(xi, sj[8]);
-	  float4 dm9 = dev_inter_001(xi, sj[9]);
-
-	  float4 dm10 = dev_inter_001(xi, sj[0]);
-	  float4 dm11 = dev_inter_001(xi, sj[1]);
-	  float4 dm12 = dev_inter_001(xi, sj[2]);
-	  float4 dm13 = dev_inter_001(xi, sj[3]);
-	  float4 dm14 = dev_inter_001(xi, sj[4]);
-	  float4 dm15 = dev_inter_001(xi, sj[5]);
-	  float4 dm16 = dev_inter_001(xi, sj[6]);
-	  float4 dm17 = dev_inter_001(xi, sj[7]);
-	  float4 dm18 = dev_inter_001(xi, sj[8]);
-	  float4 dm19 = dev_inter_001(xi, sj[9]);
-
-	  float4 dm20 = dev_inter_001(xi, sj[0]);
-	  float4 dm21 = dev_inter_001(xi, sj[1]);
-	  float4 dm22 = dev_inter_001(xi, sj[2]);
-	  float4 dm23 = dev_inter_001(xi, sj[3]);
-	  float4 dm24 = dev_inter_001(xi, sj[4]);
-	  float4 dm25 = dev_inter_001(xi, sj[5]);
-	  float4 dm26 = dev_inter_001(xi, sj[6]);
-	  float4 dm27 = dev_inter_001(xi, sj[7]);
-	  float4 dm28 = dev_inter_001(xi, sj[8]);
-	  float4 dm29 = dev_inter_001(xi, sj[9]);
-
-	  float4 dm30 = dev_inter_001(xi, sj[0]);
-	  float4 dm31 = dev_inter_001(xi, sj[1]);
-	  float4 dm32 = dev_inter_001(xi, sj[2]);
-	  float4 dm33 = dev_inter_001(xi, sj[3]);
-	  float4 dm34 = dev_inter_001(xi, sj[4]);
-	  float4 dm35 = dev_inter_001(xi, sj[5]);
-	  float4 dm36 = dev_inter_001(xi, sj[6]);
-	  float4 dm37 = dev_inter_001(xi, sj[7]);
-	  float4 dm38 = dev_inter_001(xi, sj[8]);
-	  float4 dm39 = dev_inter_001(xi, sj[9]);
-
-	  float4 dm40 = dev_inter_001(xi, sj[0]);
-	  float4 dm41 = dev_inter_001(xi, sj[1]);
-	  float4 dm42 = dev_inter_001(xi, sj[2]);
-	  float4 dm43 = dev_inter_001(xi, sj[3]);
-	  float4 dm44 = dev_inter_001(xi, sj[4]);
-	  float4 dm45 = dev_inter_001(xi, sj[5]);
-	  float4 dm46 = dev_inter_001(xi, sj[6]);
-	  float4 dm47 = dev_inter_001(xi, sj[7]);
-	  float4 dm48 = dev_inter_001(xi, sj[8]);
-	  float4 dm49 = dev_inter_001(xi, sj[9]);
-
-	  float4 dm50 = dev_inter_001(xi, sj[0]);
-	  float4 dm51 = dev_inter_001(xi, sj[1]);
-	  float4 dm52 = dev_inter_001(xi, sj[2]);
-	  float4 dm53 = dev_inter_001(xi, sj[3]);
-	  float4 dm54 = dev_inter_001(xi, sj[4]);
-	  float4 dm55 = dev_inter_001(xi, sj[5]);
-	  float4 dm56 = dev_inter_001(xi, sj[6]);
-	  float4 dm57 = dev_inter_001(xi, sj[7]);
-	  float4 dm58 = dev_inter_001(xi, sj[8]);
-	  float4 dm59 = dev_inter_001(xi, sj[9]);
-
-	  float4 dm60 = dev_inter_001(xi, sj[0]);
-	  float4 dm61 = dev_inter_001(xi, sj[1]);
-	  float4 dm62 = dev_inter_001(xi, sj[2]);
-	  float4 dm63 = dev_inter_001(xi, sj[3]);
-	  float4 dm64 = dev_inter_001(xi, sj[4]);
-	  float4 dm65 = dev_inter_001(xi, sj[5]);
-	  float4 dm66 = dev_inter_001(xi, sj[6]);
-	  float4 dm67 = dev_inter_001(xi, sj[7]);
-	  float4 dm68 = dev_inter_001(xi, sj[8]);
-	  float4 dm69 = dev_inter_001(xi, sj[9]);
-
-	  float4 dm70 = dev_inter_001(xi, sj[0]);
-	  float4 dm71 = dev_inter_001(xi, sj[1]);
-	  float4 dm72 = dev_inter_001(xi, sj[2]);
-	  float4 dm73 = dev_inter_001(xi, sj[3]);
-	  float4 dm74 = dev_inter_001(xi, sj[4]);
-	  float4 dm75 = dev_inter_001(xi, sj[5]);
-	  float4 dm76 = dev_inter_001(xi, sj[6]);
-	  float4 dm77 = dev_inter_001(xi, sj[7]);
-	  float4 dm78 = dev_inter_001(xi, sj[8]);
-	  float4 dm79 = dev_inter_001(xi, sj[9]);
-
-	  float4 dm80 = dev_inter_001(xi, sj[0]);
-	  float4 dm81 = dev_inter_001(xi, sj[1]);
-	  float4 dm82 = dev_inter_001(xi, sj[2]);
-	  float4 dm83 = dev_inter_001(xi, sj[3]);
-	  float4 dm84 = dev_inter_001(xi, sj[4]);
-	  float4 dm85 = dev_inter_001(xi, sj[5]);
-	  float4 dm86 = dev_inter_001(xi, sj[6]);
-	  float4 dm87 = dev_inter_001(xi, sj[7]);
-	  float4 dm88 = dev_inter_001(xi, sj[8]);
-	  float4 dm89 = dev_inter_001(xi, sj[9]);
-
-	  float4 dm90 = dev_inter_001(xi, sj[0]);
-	  float4 dm91 = dev_inter_001(xi, sj[1]);
-	  float4 dm92 = dev_inter_001(xi, sj[2]);
-	  float4 dm93 = dev_inter_001(xi, sj[3]);
-	  float4 dm94 = dev_inter_001(xi, sj[4]);
-	  float4 dm95 = dev_inter_001(xi, sj[5]);
-	  float4 dm96 = dev_inter_001(xi, sj[6]);
-	  float4 dm97 = dev_inter_001(xi, sj[7]);
-	  float4 dm98 = dev_inter_001(xi, sj[8]);
-	  float4 dm99 = dev_inter_001(xi, sj[9]);
-
-	  float4 dm100 = dev_inter_001(xi, sj[0]);
-	  float4 dm101 = dev_inter_001(xi, sj[1]);
-	  float4 dm102 = dev_inter_001(xi, sj[2]);
-	  float4 dm103 = dev_inter_001(xi, sj[3]);
-	  float4 dm104 = dev_inter_001(xi, sj[4]);
-	  float4 dm105 = dev_inter_001(xi, sj[5]);
-	  float4 dm106 = dev_inter_001(xi, sj[6]);
-	  float4 dm107 = dev_inter_001(xi, sj[7]);
-	  float4 dm108 = dev_inter_001(xi, sj[8]);
-	  float4 dm109 = dev_inter_001(xi, sj[9]);
-
-	  float4 dm110 = dev_inter_001(xi, sj[0]);
-	  float4 dm111 = dev_inter_001(xi, sj[1]);
-	  float4 dm112 = dev_inter_001(xi, sj[2]);
-	  float4 dm113 = dev_inter_001(xi, sj[3]);
-	  float4 dm114 = dev_inter_001(xi, sj[4]);
-	  float4 dm115 = dev_inter_001(xi, sj[5]);
-	  float4 dm116 = dev_inter_001(xi, sj[6]);
-	  float4 dm117 = dev_inter_001(xi, sj[7]);
-	  float4 dm118 = dev_inter_001(xi, sj[8]);
-	  float4 dm119 = dev_inter_001(xi, sj[9]);
-
-	  float4 dm120 = dev_inter_001(xi, sj[0]);
-	  float4 dm121 = dev_inter_001(xi, sj[1]);
-	  float4 dm122 = dev_inter_001(xi, sj[2]);
-	  float4 dm123 = dev_inter_001(xi, sj[3]);
-	  float4 dm124 = dev_inter_001(xi, sj[4]);
-	  float4 dm125 = dev_inter_001(xi, sj[5]);
-	  float4 dm126 = dev_inter_001(xi, sj[6]);
-	  float4 dm127 = dev_inter_001(xi, sj[7]);
-
-
-#if (ACC_TYPE==1)
-	  apot.x += \
-	    (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) + (dm8.x*dm8.w) + (dm9.x*dm9.w) + \
-	    (dm10.x*dm10.w) + (dm11.x*dm11.w) + (dm12.x*dm12.w) + (dm13.x*dm13.w) + (dm14.x*dm14.w) + (dm15.x*dm15.w) + (dm16.x*dm16.w) + (dm17.x*dm17.w) + (dm18.x*dm18.w) + (dm19.x*dm19.w) + \
-	    (dm20.x*dm20.w) + (dm21.x*dm21.w) + (dm22.x*dm22.w) + (dm23.x*dm23.w) + (dm24.x*dm24.w) + (dm25.x*dm25.w) + (dm26.x*dm26.w) + (dm27.x*dm27.w) + (dm28.x*dm28.w) + (dm29.x*dm29.w) + \
-	    (dm30.x*dm30.w) + (dm31.x*dm31.w) + (dm32.x*dm32.w) + (dm33.x*dm33.w) + (dm34.x*dm34.w) + (dm35.x*dm35.w) + (dm36.x*dm36.w) + (dm37.x*dm37.w) + (dm38.x*dm38.w) + (dm39.x*dm39.w) + \
-	    (dm40.x*dm40.w) + (dm41.x*dm41.w) + (dm42.x*dm42.w) + (dm43.x*dm43.w) + (dm44.x*dm44.w) + (dm45.x*dm45.w) + (dm46.x*dm46.w) + (dm47.x*dm47.w) + (dm48.x*dm48.w) + (dm49.x*dm49.w) + \
-	    (dm50.x*dm50.w) + (dm51.x*dm51.w) + (dm52.x*dm52.w) + (dm53.x*dm53.w) + (dm54.x*dm54.w) + (dm55.x*dm55.w) + (dm56.x*dm56.w) + (dm57.x*dm57.w) + (dm58.x*dm58.w) + (dm59.x*dm59.w) + \
-	    (dm60.x*dm60.w) + (dm61.x*dm61.w) + (dm62.x*dm62.w) + (dm63.x*dm63.w) + (dm64.x*dm64.w) + (dm65.x*dm65.w) + (dm66.x*dm66.w) + (dm67.x*dm67.w) + (dm68.x*dm68.w) + (dm69.x*dm69.w) + \
-	    (dm70.x*dm70.w) + (dm71.x*dm71.w) + (dm72.x*dm72.w) + (dm73.x*dm73.w) + (dm74.x*dm74.w) + (dm75.x*dm75.w) + (dm76.x*dm76.w) + (dm77.x*dm77.w) + (dm78.x*dm78.w) + (dm79.x*dm79.w) + \
-	    (dm80.x*dm80.w) + (dm81.x*dm81.w) + (dm82.x*dm82.w) + (dm83.x*dm83.w) + (dm84.x*dm84.w) + (dm85.x*dm85.w) + (dm86.x*dm86.w) + (dm87.x*dm87.w) + (dm88.x*dm88.w) + (dm89.x*dm89.w) + \
-	    (dm90.x*dm90.w) + (dm91.x*dm91.w) + (dm92.x*dm92.w) + (dm93.x*dm93.w) + (dm94.x*dm94.w) + (dm95.x*dm95.w) + (dm96.x*dm96.w) + (dm97.x*dm97.w) + (dm98.x*dm98.w) + (dm99.x*dm99.w) + \
-	    (dm100.x*dm100.w) + (dm101.x*dm101.w) + (dm102.x*dm102.w) + (dm103.x*dm103.w) + (dm104.x*dm104.w) + (dm105.x*dm105.w) + (dm106.x*dm106.w) + (dm107.x*dm107.w) + (dm108.x*dm108.w) + (dm109.x*dm109.w) + \
-	    (dm110.x*dm110.w) + (dm111.x*dm111.w) + (dm112.x*dm112.w) + (dm113.x*dm113.w) + (dm114.x*dm114.w) + (dm115.x*dm115.w) + (dm116.x*dm116.w) + (dm117.x*dm117.w) + (dm118.x*dm118.w) + (dm119.x*dm119.w) + \
-	    (dm120.x*dm120.w) + (dm121.x*dm121.w) + (dm122.x*dm122.w) + (dm123.x*dm123.w) + (dm124.x*dm124.w) + (dm125.x*dm125.w) + (dm126.x*dm126.w) + (dm127.x*dm127.w);
-
-	  apot.y += \
-	    (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) + (dm8.y*dm8.w) + (dm9.y*dm9.w) + \
-	    (dm10.y*dm10.w) + (dm11.y*dm11.w) + (dm12.y*dm12.w) + (dm13.y*dm13.w) + (dm14.y*dm14.w) + (dm15.y*dm15.w) + (dm16.y*dm16.w) + (dm17.y*dm17.w) + (dm18.y*dm18.w) + (dm19.y*dm19.w) + \
-	    (dm20.y*dm20.w) + (dm21.y*dm21.w) + (dm22.y*dm22.w) + (dm23.y*dm23.w) + (dm24.y*dm24.w) + (dm25.y*dm25.w) + (dm26.y*dm26.w) + (dm27.y*dm27.w) + (dm28.y*dm28.w) + (dm29.y*dm29.w) + \
-	    (dm30.y*dm30.w) + (dm31.y*dm31.w) + (dm32.y*dm32.w) + (dm33.y*dm33.w) + (dm34.y*dm34.w) + (dm35.y*dm35.w) + (dm36.y*dm36.w) + (dm37.y*dm37.w) + (dm38.y*dm38.w) + (dm39.y*dm39.w) + \
-	    (dm40.y*dm40.w) + (dm41.y*dm41.w) + (dm42.y*dm42.w) + (dm43.y*dm43.w) + (dm44.y*dm44.w) + (dm45.y*dm45.w) + (dm46.y*dm46.w) + (dm47.y*dm47.w) + (dm48.y*dm48.w) + (dm49.y*dm49.w) + \
-	    (dm50.y*dm50.w) + (dm51.y*dm51.w) + (dm52.y*dm52.w) + (dm53.y*dm53.w) + (dm54.y*dm54.w) + (dm55.y*dm55.w) + (dm56.y*dm56.w) + (dm57.y*dm57.w) + (dm58.y*dm58.w) + (dm59.y*dm59.w) + \
-	    (dm60.y*dm60.w) + (dm61.y*dm61.w) + (dm62.y*dm62.w) + (dm63.y*dm63.w) + (dm64.y*dm64.w) + (dm65.y*dm65.w) + (dm66.y*dm66.w) + (dm67.y*dm67.w) + (dm68.y*dm68.w) + (dm69.y*dm69.w) + \
-	    (dm70.y*dm70.w) + (dm71.y*dm71.w) + (dm72.y*dm72.w) + (dm73.y*dm73.w) + (dm74.y*dm74.w) + (dm75.y*dm75.w) + (dm76.y*dm76.w) + (dm77.y*dm77.w) + (dm78.y*dm78.w) + (dm79.y*dm79.w) + \
-	    (dm80.y*dm80.w) + (dm81.y*dm81.w) + (dm82.y*dm82.w) + (dm83.y*dm83.w) + (dm84.y*dm84.w) + (dm85.y*dm85.w) + (dm86.y*dm86.w) + (dm87.y*dm87.w) + (dm88.y*dm88.w) + (dm89.y*dm89.w) + \
-	    (dm90.y*dm90.w) + (dm91.y*dm91.w) + (dm92.y*dm92.w) + (dm93.y*dm93.w) + (dm94.y*dm94.w) + (dm95.y*dm95.w) + (dm96.y*dm96.w) + (dm97.y*dm97.w) + (dm98.y*dm98.w) + (dm99.y*dm99.w) + \
-	    (dm100.y*dm100.w) + (dm101.y*dm101.w) + (dm102.y*dm102.w) + (dm103.y*dm103.w) + (dm104.y*dm104.w) + (dm105.y*dm105.w) + (dm106.y*dm106.w) + (dm107.y*dm107.w) + (dm108.y*dm108.w) + (dm109.y*dm109.w) + \
-	    (dm110.y*dm110.w) + (dm111.y*dm111.w) + (dm112.y*dm112.w) + (dm113.y*dm113.w) + (dm114.y*dm114.w) + (dm115.y*dm115.w) + (dm116.y*dm116.w) + (dm117.y*dm117.w) + (dm118.y*dm118.w) + (dm119.y*dm119.w) + \
-	    (dm120.y*dm120.w) + (dm121.y*dm121.w) + (dm122.y*dm122.w) + (dm123.y*dm123.w) + (dm124.y*dm124.w) + (dm125.y*dm125.w) + (dm126.y*dm126.w) + (dm127.y*dm127.w);
-
-	  apot.z += \
-	    (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) + (dm8.z*dm8.w) + (dm9.z*dm9.w) + \
-	    (dm10.z*dm10.w) + (dm11.z*dm11.w) + (dm12.z*dm12.w) + (dm13.z*dm13.w) + (dm14.z*dm14.w) + (dm15.z*dm15.w) + (dm16.z*dm16.w) + (dm17.z*dm17.w) + (dm18.z*dm18.w) + (dm19.z*dm19.w) + \
-	    (dm20.z*dm20.w) + (dm21.z*dm21.w) + (dm22.z*dm22.w) + (dm23.z*dm23.w) + (dm24.z*dm24.w) + (dm25.z*dm25.w) + (dm26.z*dm26.w) + (dm27.z*dm27.w) + (dm28.z*dm28.w) + (dm29.z*dm29.w) + \
-	    (dm30.z*dm30.w) + (dm31.z*dm31.w) + (dm32.z*dm32.w) + (dm33.z*dm33.w) + (dm34.z*dm34.w) + (dm35.z*dm35.w) + (dm36.z*dm36.w) + (dm37.z*dm37.w) + (dm38.z*dm38.w) + (dm39.z*dm39.w) + \
-	    (dm40.z*dm40.w) + (dm41.z*dm41.w) + (dm42.z*dm42.w) + (dm43.z*dm43.w) + (dm44.z*dm44.w) + (dm45.z*dm45.w) + (dm46.z*dm46.w) + (dm47.z*dm47.w) + (dm48.z*dm48.w) + (dm49.z*dm49.w) + \
-	    (dm50.z*dm50.w) + (dm51.z*dm51.w) + (dm52.z*dm52.w) + (dm53.z*dm53.w) + (dm54.z*dm54.w) + (dm55.z*dm55.w) + (dm56.z*dm56.w) + (dm57.z*dm57.w) + (dm58.z*dm58.w) + (dm59.z*dm59.w) + \
-	    (dm60.z*dm60.w) + (dm61.z*dm61.w) + (dm62.z*dm62.w) + (dm63.z*dm63.w) + (dm64.z*dm64.w) + (dm65.z*dm65.w) + (dm66.z*dm66.w) + (dm67.z*dm67.w) + (dm68.z*dm68.w) + (dm69.z*dm69.w) + \
-	    (dm70.z*dm70.w) + (dm71.z*dm71.w) + (dm72.z*dm72.w) + (dm73.z*dm73.w) + (dm74.z*dm74.w) + (dm75.z*dm75.w) + (dm76.z*dm76.w) + (dm77.z*dm77.w) + (dm78.z*dm78.w) + (dm79.z*dm79.w) + \
-	    (dm80.z*dm80.w) + (dm81.z*dm81.w) + (dm82.z*dm82.w) + (dm83.z*dm83.w) + (dm84.z*dm84.w) + (dm85.z*dm85.w) + (dm86.z*dm86.w) + (dm87.z*dm87.w) + (dm88.z*dm88.w) + (dm89.z*dm89.w) + \
-	    (dm90.z*dm90.w) + (dm91.z*dm91.w) + (dm92.z*dm92.w) + (dm93.z*dm93.w) + (dm94.z*dm94.w) + (dm95.z*dm95.w) + (dm96.z*dm96.w) + (dm97.z*dm97.w) + (dm98.z*dm98.w) + (dm99.z*dm99.w) + \
-	    (dm100.z*dm100.w) + (dm101.z*dm101.w) + (dm102.z*dm102.w) + (dm103.z*dm103.w) + (dm104.z*dm104.w) + (dm105.z*dm105.w) + (dm106.z*dm106.w) + (dm107.z*dm107.w) + (dm108.z*dm108.w) + (dm109.z*dm109.w) + \
-	    (dm110.z*dm110.w) + (dm111.z*dm111.w) + (dm112.z*dm112.w) + (dm113.z*dm113.w) + (dm114.z*dm114.w) + (dm115.z*dm115.w) + (dm116.z*dm116.w) + (dm117.z*dm117.w) + (dm118.z*dm118.w) + (dm119.z*dm119.w) + \
-	    (dm120.z*dm120.w) + (dm121.z*dm121.w) + (dm122.z*dm122.w) + (dm123.z*dm123.w) + (dm124.z*dm124.w) + (dm125.z*dm125.w) + (dm126.z*dm126.w) + (dm127.z*dm127.w);
-
-#else 
-	  apot.x += \
-	    (dm0.x*dm0.w + dm1.x*dm1.w + dm2.x*dm2.w + dm3.x*dm3.w + dm4.x*dm4.w + dm5.x*dm5.w + dm6.x*dm6.w + dm7.x*dm7.w + dm8.x*dm8.w + dm9.x*dm9.w + \
-	     dm10.x*dm10.w + dm11.x*dm11.w + dm12.x*dm12.w + dm13.x*dm13.w + dm14.x*dm14.w + dm15.x*dm15.w + dm16.x*dm16.w + dm17.x*dm17.w + dm18.x*dm18.w + dm19.x*dm19.w + \
-	     dm20.x*dm20.w + dm21.x*dm21.w + dm22.x*dm22.w + dm23.x*dm23.w + dm24.x*dm24.w + dm25.x*dm25.w + dm26.x*dm26.w + dm27.x*dm27.w + dm28.x*dm28.w + dm29.x*dm29.w + \
-	     dm30.x*dm30.w + dm31.x*dm31.w + dm32.x*dm32.w + dm33.x*dm33.w + dm34.x*dm34.w + dm35.x*dm35.w + dm36.x*dm36.w + dm37.x*dm37.w + dm38.x*dm38.w + dm39.x*dm39.w + \
-	     dm40.x*dm40.w + dm41.x*dm41.w + dm42.x*dm42.w + dm43.x*dm43.w + dm44.x*dm44.w + dm45.x*dm45.w + dm46.x*dm46.w + dm47.x*dm47.w + dm48.x*dm48.w + dm49.x*dm49.w + \
-	     dm50.x*dm50.w + dm51.x*dm51.w + dm52.x*dm52.w + dm53.x*dm53.w + dm54.x*dm54.w + dm55.x*dm55.w + dm56.x*dm56.w + dm57.x*dm57.w + dm58.x*dm58.w + dm59.x*dm59.w + \
-	     dm60.x*dm60.w + dm61.x*dm61.w + dm62.x*dm62.w + dm63.x*dm63.w) +\
-	    (dm64.x*dm64.w + dm65.x*dm65.w + dm66.x*dm66.w + dm67.x*dm67.w + dm68.x*dm68.w + dm69.x*dm69.w + \
-	     dm70.x*dm70.w + dm71.x*dm71.w + dm72.x*dm72.w + dm73.x*dm73.w + dm74.x*dm74.w + dm75.x*dm75.w + dm76.x*dm76.w + dm77.x*dm77.w + dm78.x*dm78.w + dm79.x*dm79.w + \
-	     dm80.x*dm80.w + dm81.x*dm81.w + dm82.x*dm82.w + dm83.x*dm83.w + dm84.x*dm84.w + dm85.x*dm85.w + dm86.x*dm86.w + dm87.x*dm87.w + dm88.x*dm88.w + dm89.x*dm89.w + \
-	     dm90.x*dm90.w + dm91.x*dm91.w + dm92.x*dm92.w + dm93.x*dm93.w + dm94.x*dm94.w + dm95.x*dm95.w + dm96.x*dm96.w + dm97.x*dm97.w + dm98.x*dm98.w + dm99.x*dm99.w + \
-	     dm100.x*dm100.w + dm101.x*dm101.w + dm102.x*dm102.w + dm103.x*dm103.w + dm104.x*dm104.w + dm105.x*dm105.w + dm106.x*dm106.w + dm107.x*dm107.w + dm108.x*dm108.w + dm109.x*dm109.w + \
-	     dm110.x*dm110.w + dm111.x*dm111.w + dm112.x*dm112.w + dm113.x*dm113.w + dm114.x*dm114.w + dm115.x*dm115.w + dm116.x*dm116.w + dm117.x*dm117.w + dm118.x*dm118.w + dm119.x*dm119.w + \
-	     dm120.x*dm120.w + dm121.x*dm121.w + dm122.x*dm122.w + dm123.x*dm123.w + dm124.x*dm124.w + dm125.x*dm125.w + dm126.x*dm126.w + dm127.x*dm127.w);
-
-	  apot.y += \
-	    (dm0.y*dm0.w + dm1.y*dm1.w + dm2.y*dm2.w + dm3.y*dm3.w + dm4.y*dm4.w + dm5.y*dm5.w + dm6.y*dm6.w + dm7.y*dm7.w + dm8.y*dm8.w + dm9.y*dm9.w + \
-	     dm10.y*dm10.w + dm11.y*dm11.w + dm12.y*dm12.w + dm13.y*dm13.w + dm14.y*dm14.w + dm15.y*dm15.w + dm16.y*dm16.w + dm17.y*dm17.w + dm18.y*dm18.w + dm19.y*dm19.w + \
-	     dm20.y*dm20.w + dm21.y*dm21.w + dm22.y*dm22.w + dm23.y*dm23.w + dm24.y*dm24.w + dm25.y*dm25.w + dm26.y*dm26.w + dm27.y*dm27.w + dm28.y*dm28.w + dm29.y*dm29.w + \
-	     dm30.y*dm30.w + dm31.y*dm31.w + dm32.y*dm32.w + dm33.y*dm33.w + dm34.y*dm34.w + dm35.y*dm35.w + dm36.y*dm36.w + dm37.y*dm37.w + dm38.y*dm38.w + dm39.y*dm39.w + \
-	     dm40.y*dm40.w + dm41.y*dm41.w + dm42.y*dm42.w + dm43.y*dm43.w + dm44.y*dm44.w + dm45.y*dm45.w + dm46.y*dm46.w + dm47.y*dm47.w + dm48.y*dm48.w + dm49.y*dm49.w + \
-	     dm50.y*dm50.w + dm51.y*dm51.w + dm52.y*dm52.w + dm53.y*dm53.w + dm54.y*dm54.w + dm55.y*dm55.w + dm56.y*dm56.w + dm57.y*dm57.w + dm58.y*dm58.w + dm59.y*dm59.w + \
-	     dm60.y*dm60.w + dm61.y*dm61.w + dm62.y*dm62.w + dm63.y*dm63.w) +\
-	    (dm64.x*dm64.w + dm65.x*dm65.w + dm66.x*dm66.w + dm67.x*dm67.w + dm68.x*dm68.w + dm69.x*dm69.w + \
-	     dm70.y*dm70.w + dm71.y*dm71.w + dm72.y*dm72.w + dm73.y*dm73.w + dm74.y*dm74.w + dm75.y*dm75.w + dm76.y*dm76.w + dm77.y*dm77.w + dm78.y*dm78.w + dm79.y*dm79.w + \
-	     dm80.y*dm80.w + dm81.y*dm81.w + dm82.y*dm82.w + dm83.y*dm83.w + dm84.y*dm84.w + dm85.y*dm85.w + dm86.y*dm86.w + dm87.y*dm87.w + dm88.y*dm88.w + dm89.y*dm89.w + \
-	     dm90.y*dm90.w + dm91.y*dm91.w + dm92.y*dm92.w + dm93.y*dm93.w + dm94.y*dm94.w + dm95.y*dm95.w + dm96.y*dm96.w + dm97.y*dm97.w + dm98.y*dm98.w + dm99.y*dm99.w + \
-	     dm100.y*dm100.w + dm101.y*dm101.w + dm102.y*dm102.w + dm103.y*dm103.w + dm104.y*dm104.w + dm105.y*dm105.w + dm106.y*dm106.w + dm107.y*dm107.w + dm108.y*dm108.w + dm109.y*dm109.w + \
-	     dm110.y*dm110.w + dm111.y*dm111.w + dm112.y*dm112.w + dm113.y*dm113.w + dm114.y*dm114.w + dm115.y*dm115.w + dm116.y*dm116.w + dm117.y*dm117.w + dm118.y*dm118.w + dm119.y*dm119.w + \
-	     dm120.y*dm120.w + dm121.y*dm121.w + dm122.y*dm122.w + dm123.y*dm123.w + dm124.y*dm124.w + dm125.y*dm125.w + dm126.y*dm126.w + dm127.y*dm127.w);
-
-	  apot.z += \
-	    (dm0.z*dm0.w + dm1.z*dm1.w + dm2.z*dm2.w + dm3.z*dm3.w + dm4.z*dm4.w + dm5.z*dm5.w + dm6.z*dm6.w + dm7.z*dm7.w + dm8.z*dm8.w + dm9.z*dm9.w + \
-	     dm10.z*dm10.w + dm11.z*dm11.w + dm12.z*dm12.w + dm13.z*dm13.w + dm14.z*dm14.w + dm15.z*dm15.w + dm16.z*dm16.w + dm17.z*dm17.w + dm18.z*dm18.w + dm19.z*dm19.w + \
-	     dm20.z*dm20.w + dm21.z*dm21.w + dm22.z*dm22.w + dm23.z*dm23.w + dm24.z*dm24.w + dm25.z*dm25.w + dm26.z*dm26.w + dm27.z*dm27.w + dm28.z*dm28.w + dm29.z*dm29.w + \
-	     dm30.z*dm30.w + dm31.z*dm31.w + dm32.z*dm32.w + dm33.z*dm33.w + dm34.z*dm34.w + dm35.z*dm35.w + dm36.z*dm36.w + dm37.z*dm37.w + dm38.z*dm38.w + dm39.z*dm39.w + \
-	     dm40.z*dm40.w + dm41.z*dm41.w + dm42.z*dm42.w + dm43.z*dm43.w + dm44.z*dm44.w + dm45.z*dm45.w + dm46.z*dm46.w + dm47.z*dm47.w + dm48.z*dm48.w + dm49.z*dm49.w + \
-	     dm50.z*dm50.w + dm51.z*dm51.w + dm52.z*dm52.w + dm53.z*dm53.w + dm54.z*dm54.w + dm55.z*dm55.w + dm56.z*dm56.w + dm57.z*dm57.w + dm58.z*dm58.w + dm59.z*dm59.w + \
-	     dm60.z*dm60.w + dm61.z*dm61.w + dm62.z*dm62.w + dm63.z*dm63.w) +\
-	    (dm64.z*dm64.w + dm65.z*dm65.w + dm66.z*dm66.w + dm67.z*dm67.w + dm68.z*dm68.w + dm69.z*dm69.w + \
-	     dm70.z*dm70.w + dm71.z*dm71.w + dm72.z*dm72.w + dm73.z*dm73.w + dm74.z*dm74.w + dm75.z*dm75.w + dm76.z*dm76.w + dm77.z*dm77.w + dm78.z*dm78.w + dm79.z*dm79.w + \
-	     dm80.z*dm80.w + dm81.z*dm81.w + dm82.z*dm82.w + dm83.z*dm83.w + dm84.z*dm84.w + dm85.z*dm85.w + dm86.z*dm86.w + dm87.z*dm87.w + dm88.z*dm88.w + dm89.z*dm89.w + \
-	     dm90.z*dm90.w + dm91.z*dm91.w + dm92.z*dm92.w + dm93.z*dm93.w + dm94.z*dm94.w + dm95.z*dm95.w + dm96.z*dm96.w + dm97.z*dm97.w + dm98.z*dm98.w + dm99.z*dm99.w + \
-	     dm100.z*dm100.w + dm101.z*dm101.w + dm102.z*dm102.w + dm103.z*dm103.w + dm104.z*dm104.w + dm105.z*dm105.w + dm106.z*dm106.w + dm107.z*dm107.w + dm108.z*dm108.w + dm109.z*dm109.w + \
-	     dm110.z*dm110.w + dm111.z*dm111.w + dm112.z*dm112.w + dm113.z*dm113.w + dm114.z*dm114.w + dm115.z*dm115.w + dm116.z*dm116.w + dm117.z*dm117.w + dm118.z*dm118.w + dm119.z*dm119.w + \
-	     dm120.z*dm120.w + dm121.z*dm121.w + dm122.z*dm122.w + dm123.z*dm123.w + dm124.z*dm124.w + dm125.z*dm125.w + dm126.z*dm126.w + dm127.z*dm127.w);
-#endif
-
-	}
-      }
-      if(ibase + tid < iend){
-	apotlist[ibase + tid] = apot;
-      }
-    }
-  }
-
-
-
-  __device__
-  float4 dev_inter_011(float4 xi, float4 xj, float* pot)
-  {
-    float dx = xj.x - xi.x;
-    float dy = xj.y - xi.y;
-    float dz = xj.z - xi.z;
-    float eps2 = xi.w;
-    float mj   = xj.w;
-    float r2 = (dx*dx + eps2) + dy*dy + dz*dz;
-    float r1i  = 1/sqrt(r2);
-
-    if(r2 == eps2) mj = 0.0;
-    float r2i = r1i*r1i;
-    float mr3i = mj * r1i * r2i;
-    float4 retval;
-
-    retval.x = dx; 
-    retval.y = dy; 
-    retval.z = dz;
-    retval.w = mr3i; 
-    (*pot) -= mj * r1i;
-
-    return (retval);
-  }
-
-
-  __global__ 
-  void cunbody_kernel_tree_011(float4 *xilist,
-				float4 *xjlist,
-				float4 *apotlist,
-				unsigned int *ioffset,
-				unsigned int *joffset)
-  {
-    unsigned int tid = threadIdx.x;
-    unsigned int bid = blockIdx.x;
-    unsigned int ibegin = ioffset[bid];
-    unsigned int iend   = ioffset[bid+1];
-    unsigned int jbegin = joffset[bid];
-    unsigned int jend   = joffset[bid+1];
-    for(unsigned int ibase = ibegin; ibase < iend; ibase += NTHRE){
-      float4 xi = xilist[ibase + tid];
-      float4 apot = make_float4(0,0,0,0);
-      float pot0 = 0.0;
-      float pot1 = 0.0;
-      float pot2 = 0.0;
-      float pot3 = 0.0;
-      float pot4 = 0.0;
-      float pot5 = 0.0;
-      float pot6 = 0.0;
-      float pot7 = 0.0;
-
-      for(unsigned int jbase = jbegin; jbase < jend; jbase += NTHRE){
-	__shared__ float4 sj[NTHRE];
-	sj[tid] = xjlist[jbase + tid];
-	__syncthreads();
-	{
-	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9, dm10, dm11, dm12, dm13, dm14, dm15;
-	  dm0 = dev_inter_011(xi, sj[0], &pot0);
-	  dm1 = dev_inter_011(xi, sj[1], &pot0);
-	  dm2 = dev_inter_011(xi, sj[2], &pot0);
-	  dm3 = dev_inter_011(xi, sj[3], &pot0);
-	  dm4 = dev_inter_011(xi, sj[4], &pot0);
-	  dm5 = dev_inter_011(xi, sj[5], &pot0);
-	  dm6 = dev_inter_011(xi, sj[6], &pot0);
-	  dm7 = dev_inter_011(xi, sj[7], &pot0);
-	  dm8 = dev_inter_011(xi, sj[8], &pot0);
-	  dm9 = dev_inter_011(xi, sj[9], &pot0);
-	  dm10 = dev_inter_011(xi, sj[10], &pot0);
-	  dm11 = dev_inter_011(xi, sj[11], &pot0);
-	  dm12 = dev_inter_011(xi, sj[12], &pot0);
-	  dm13 = dev_inter_011(xi, sj[13], &pot0);
-	  dm14 = dev_inter_011(xi, sj[14], &pot0);
-	  dm15 = dev_inter_011(xi, sj[15], &pot0);
-	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) \
-	    + (dm8.x*dm8.w) + (dm9.x*dm9.w) + (dm10.x*dm10.w) + (dm11.x*dm11.w) + (dm12.x*dm12.w) + (dm13.x*dm13.w) + (dm14.x*dm14.w) + (dm15.x*dm15.w);
-	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) \
-	    + (dm8.y*dm8.w) + (dm9.y*dm9.w) + (dm10.y*dm10.w) + (dm11.y*dm11.w) + (dm12.y*dm12.w) + (dm13.y*dm13.w) + (dm14.y*dm14.w) + (dm15.y*dm15.w);
-	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) \
-	    + (dm8.z*dm8.w) + (dm9.z*dm9.w) + (dm10.z*dm10.w) + (dm11.z*dm11.w) + (dm12.z*dm12.w) + (dm13.z*dm13.w) + (dm14.z*dm14.w) + (dm15.z*dm15.w);
-	}
-
-	{
-	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9, dm10, dm11, dm12, dm13, dm14, dm15;
-	  dm0 = dev_inter_011(xi, sj[16], &pot1);
-	  dm1 = dev_inter_011(xi, sj[17], &pot1);
-	  dm2 = dev_inter_011(xi, sj[18], &pot1);
-	  dm3 = dev_inter_011(xi, sj[19], &pot1);
-	  dm4 = dev_inter_011(xi, sj[20], &pot1);
-	  dm5 = dev_inter_011(xi, sj[21], &pot1);
-	  dm6 = dev_inter_011(xi, sj[22], &pot1);
-	  dm7 = dev_inter_011(xi, sj[23], &pot1);
-	  dm8 = dev_inter_011(xi, sj[24], &pot1);
-	  dm9 = dev_inter_011(xi, sj[25], &pot1);
-	  dm10 = dev_inter_011(xi, sj[26], &pot1);
-	  dm11 = dev_inter_011(xi, sj[27], &pot1);
-	  dm12 = dev_inter_011(xi, sj[28], &pot1);
-	  dm13 = dev_inter_011(xi, sj[29], &pot1);
-	  dm14 = dev_inter_011(xi, sj[30], &pot1);
-	  dm15 = dev_inter_011(xi, sj[31], &pot1);
-	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) \
-	    + (dm8.x*dm8.w) + (dm9.x*dm9.w) + (dm10.x*dm10.w) + (dm11.x*dm11.w) + (dm12.x*dm12.w) + (dm13.x*dm13.w) + (dm14.x*dm14.w) + (dm15.x*dm15.w);
-	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) \
-	    + (dm8.y*dm8.w) + (dm9.y*dm9.w) + (dm10.y*dm10.w) + (dm11.y*dm11.w) + (dm12.y*dm12.w) + (dm13.y*dm13.w) + (dm14.y*dm14.w) + (dm15.y*dm15.w);
-	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) \
-	    + (dm8.z*dm8.w) + (dm9.z*dm9.w) + (dm10.z*dm10.w) + (dm11.z*dm11.w) + (dm12.z*dm12.w) + (dm13.z*dm13.w) + (dm14.z*dm14.w) + (dm15.z*dm15.w);
-	}
-
-	{
-	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9, dm10, dm11, dm12, dm13, dm14, dm15;
-	  dm0 = dev_inter_011(xi, sj[32], &pot2);
-	  dm1 = dev_inter_011(xi, sj[33], &pot2);
-	  dm2 = dev_inter_011(xi, sj[34], &pot2);
-	  dm3 = dev_inter_011(xi, sj[35], &pot2);
-	  dm4 = dev_inter_011(xi, sj[36], &pot2);
-	  dm5 = dev_inter_011(xi, sj[37], &pot2);
-	  dm6 = dev_inter_011(xi, sj[38], &pot2);
-	  dm7 = dev_inter_011(xi, sj[39], &pot2);
-	  dm8 = dev_inter_011(xi, sj[40], &pot2);
-	  dm9 = dev_inter_011(xi, sj[41], &pot2);
-	  dm10 = dev_inter_011(xi, sj[42], &pot2);
-	  dm11 = dev_inter_011(xi, sj[43], &pot2);
-	  dm12 = dev_inter_011(xi, sj[44], &pot2);
-	  dm13 = dev_inter_011(xi, sj[45], &pot2);
-	  dm14 = dev_inter_011(xi, sj[46], &pot2);
-	  dm15 = dev_inter_011(xi, sj[47], &pot2);
-	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) \
-	    + (dm8.x*dm8.w) + (dm9.x*dm9.w) + (dm10.x*dm10.w) + (dm11.x*dm11.w) + (dm12.x*dm12.w) + (dm13.x*dm13.w) + (dm14.x*dm14.w) + (dm15.x*dm15.w);
-	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) \
-	    + (dm8.y*dm8.w) + (dm9.y*dm9.w) + (dm10.y*dm10.w) + (dm11.y*dm11.w) + (dm12.y*dm12.w) + (dm13.y*dm13.w) + (dm14.y*dm14.w) + (dm15.y*dm15.w);
-	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) \
-	    + (dm8.z*dm8.w) + (dm9.z*dm9.w) + (dm10.z*dm10.w) + (dm11.z*dm11.w) + (dm12.z*dm12.w) + (dm13.z*dm13.w) + (dm14.z*dm14.w) + (dm15.z*dm15.w);
-	}
-
-	{
-	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9, dm10, dm11, dm12, dm13, dm14, dm15;
-	  dm0 = dev_inter_011(xi, sj[48], &pot3);
-	  dm1 = dev_inter_011(xi, sj[49], &pot3);
-	  dm2 = dev_inter_011(xi, sj[50], &pot3);
-	  dm3 = dev_inter_011(xi, sj[51], &pot3);
-	  dm4 = dev_inter_011(xi, sj[52], &pot3);
-	  dm5 = dev_inter_011(xi, sj[53], &pot3);
-	  dm6 = dev_inter_011(xi, sj[54], &pot3);
-	  dm7 = dev_inter_011(xi, sj[55], &pot3);
-	  dm8 = dev_inter_011(xi, sj[56], &pot3);
-	  dm9 = dev_inter_011(xi, sj[57], &pot3);
-	  dm10 = dev_inter_011(xi, sj[58], &pot3);
-	  dm11 = dev_inter_011(xi, sj[59], &pot3);
-	  dm12 = dev_inter_011(xi, sj[60], &pot3);
-	  dm13 = dev_inter_011(xi, sj[61], &pot3);
-	  dm14 = dev_inter_011(xi, sj[62], &pot3);
-	  dm15 = dev_inter_011(xi, sj[63], &pot3);
-	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) \
-	    + (dm8.x*dm8.w) + (dm9.x*dm9.w) + (dm10.x*dm10.w) + (dm11.x*dm11.w) + (dm12.x*dm12.w) + (dm13.x*dm13.w) + (dm14.x*dm14.w) + (dm15.x*dm15.w);
-	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) \
-	    + (dm8.y*dm8.w) + (dm9.y*dm9.w) + (dm10.y*dm10.w) + (dm11.y*dm11.w) + (dm12.y*dm12.w) + (dm13.y*dm13.w) + (dm14.y*dm14.w) + (dm15.y*dm15.w);
-	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) \
-	    + (dm8.z*dm8.w) + (dm9.z*dm9.w) + (dm10.z*dm10.w) + (dm11.z*dm11.w) + (dm12.z*dm12.w) + (dm13.z*dm13.w) + (dm14.z*dm14.w) + (dm15.z*dm15.w);
-	}
-
-	{
-	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9, dm10, dm11, dm12, dm13, dm14, dm15;
-	  dm0 = dev_inter_011(xi, sj[64], &pot4);
-	  dm1 = dev_inter_011(xi, sj[65], &pot4);
-	  dm2 = dev_inter_011(xi, sj[66], &pot4);
-	  dm3 = dev_inter_011(xi, sj[67], &pot4);
-	  dm4 = dev_inter_011(xi, sj[68], &pot4);
-	  dm5 = dev_inter_011(xi, sj[69], &pot4);
-	  dm6 = dev_inter_011(xi, sj[70], &pot4);
-	  dm7 = dev_inter_011(xi, sj[71], &pot4);
-	  dm8 = dev_inter_011(xi, sj[72], &pot4);
-	  dm9 = dev_inter_011(xi, sj[73], &pot4);
-	  dm10 = dev_inter_011(xi, sj[74], &pot4);
-	  dm11 = dev_inter_011(xi, sj[75], &pot4);
-	  dm12 = dev_inter_011(xi, sj[76], &pot4);
-	  dm13 = dev_inter_011(xi, sj[77], &pot4);
-	  dm14 = dev_inter_011(xi, sj[78], &pot4);
-	  dm15 = dev_inter_011(xi, sj[79], &pot4);
-	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) \
-	    + (dm8.x*dm8.w) + (dm9.x*dm9.w) + (dm10.x*dm10.w) + (dm11.x*dm11.w) + (dm12.x*dm12.w) + (dm13.x*dm13.w) + (dm14.x*dm14.w) + (dm15.x*dm15.w);
-	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) \
-	    + (dm8.y*dm8.w) + (dm9.y*dm9.w) + (dm10.y*dm10.w) + (dm11.y*dm11.w) + (dm12.y*dm12.w) + (dm13.y*dm13.w) + (dm14.y*dm14.w) + (dm15.y*dm15.w);
-	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) \
-	    + (dm8.z*dm8.w) + (dm9.z*dm9.w) + (dm10.z*dm10.w) + (dm11.z*dm11.w) + (dm12.z*dm12.w) + (dm13.z*dm13.w) + (dm14.z*dm14.w) + (dm15.z*dm15.w);
-	}
-
-	{
-	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9, dm10, dm11, dm12, dm13, dm14, dm15;
-	  dm0 = dev_inter_011(xi, sj[80], &pot5);
-	  dm1 = dev_inter_011(xi, sj[81], &pot5);
-	  dm2 = dev_inter_011(xi, sj[82], &pot5);
-	  dm3 = dev_inter_011(xi, sj[83], &pot5);
-	  dm4 = dev_inter_011(xi, sj[84], &pot5);
-	  dm5 = dev_inter_011(xi, sj[85], &pot5);
-	  dm6 = dev_inter_011(xi, sj[86], &pot5);
-	  dm7 = dev_inter_011(xi, sj[87], &pot5);
-	  dm8 = dev_inter_011(xi, sj[88], &pot5);
-	  dm9 = dev_inter_011(xi, sj[89], &pot5);
-	  dm10 = dev_inter_011(xi, sj[90], &pot5);
-	  dm11 = dev_inter_011(xi, sj[91], &pot5);
-	  dm12 = dev_inter_011(xi, sj[92], &pot5);
-	  dm13 = dev_inter_011(xi, sj[93], &pot5);
-	  dm14 = dev_inter_011(xi, sj[94], &pot5);
-	  dm15 = dev_inter_011(xi, sj[95], &pot5);
-	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) \
-	    + (dm8.x*dm8.w) + (dm9.x*dm9.w) + (dm10.x*dm10.w) + (dm11.x*dm11.w) + (dm12.x*dm12.w) + (dm13.x*dm13.w) + (dm14.x*dm14.w) + (dm15.x*dm15.w);
-	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) \
-	    + (dm8.y*dm8.w) + (dm9.y*dm9.w) + (dm10.y*dm10.w) + (dm11.y*dm11.w) + (dm12.y*dm12.w) + (dm13.y*dm13.w) + (dm14.y*dm14.w) + (dm15.y*dm15.w);
-	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) \
-	    + (dm8.z*dm8.w) + (dm9.z*dm9.w) + (dm10.z*dm10.w) + (dm11.z*dm11.w) + (dm12.z*dm12.w) + (dm13.z*dm13.w) + (dm14.z*dm14.w) + (dm15.z*dm15.w);
-	}
-
-	{
-	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9, dm10, dm11, dm12, dm13, dm14, dm15;
-	  dm0 = dev_inter_011(xi, sj[96], &pot6);
-	  dm1 = dev_inter_011(xi, sj[97], &pot6);
-	  dm2 = dev_inter_011(xi, sj[98], &pot6);
-	  dm3 = dev_inter_011(xi, sj[99], &pot6);
-	  dm4 = dev_inter_011(xi, sj[100], &pot6);
-	  dm5 = dev_inter_011(xi, sj[101], &pot6);
-	  dm6 = dev_inter_011(xi, sj[102], &pot6);
-	  dm7 = dev_inter_011(xi, sj[103], &pot6);
-	  dm8 = dev_inter_011(xi, sj[104], &pot6);
-	  dm9 = dev_inter_011(xi, sj[105], &pot6);
-	  dm10 = dev_inter_011(xi, sj[106], &pot6);
-	  dm11 = dev_inter_011(xi, sj[107], &pot6);
-	  dm12 = dev_inter_011(xi, sj[108], &pot6);
-	  dm13 = dev_inter_011(xi, sj[109], &pot6);
-	  dm14 = dev_inter_011(xi, sj[110], &pot6);
-	  dm15 = dev_inter_011(xi, sj[111], &pot6);
-	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) \
-	    + (dm8.x*dm8.w) + (dm9.x*dm9.w) + (dm10.x*dm10.w) + (dm11.x*dm11.w) + (dm12.x*dm12.w) + (dm13.x*dm13.w) + (dm14.x*dm14.w) + (dm15.x*dm15.w);
-	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) \
-	    + (dm8.y*dm8.w) + (dm9.y*dm9.w) + (dm10.y*dm10.w) + (dm11.y*dm11.w) + (dm12.y*dm12.w) + (dm13.y*dm13.w) + (dm14.y*dm14.w) + (dm15.y*dm15.w);
-	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) \
-	    + (dm8.z*dm8.w) + (dm9.z*dm9.w) + (dm10.z*dm10.w) + (dm11.z*dm11.w) + (dm12.z*dm12.w) + (dm13.z*dm13.w) + (dm14.z*dm14.w) + (dm15.z*dm15.w);
-	}
-
-	{
-	  float4 dm0, dm1, dm2, dm3, dm4, dm5, dm6, dm7, dm8, dm9, dm10, dm11, dm12, dm13, dm14, dm15;
-	  dm0 = dev_inter_011(xi, sj[112], &pot7);
-	  dm1 = dev_inter_011(xi, sj[113], &pot7);
-	  dm2 = dev_inter_011(xi, sj[114], &pot7);
-	  dm3 = dev_inter_011(xi, sj[115], &pot7);
-	  dm4 = dev_inter_011(xi, sj[116], &pot7);
-	  dm5 = dev_inter_011(xi, sj[117], &pot7);
-	  dm6 = dev_inter_011(xi, sj[118], &pot7);
-	  dm7 = dev_inter_011(xi, sj[119], &pot7);
-	  dm8 = dev_inter_011(xi, sj[120], &pot7);
-	  dm9 = dev_inter_011(xi, sj[121], &pot7);
-	  dm10 = dev_inter_011(xi, sj[122], &pot7);
-	  dm11 = dev_inter_011(xi, sj[123], &pot7);
-	  dm12 = dev_inter_011(xi, sj[124], &pot7);
-	  dm13 = dev_inter_011(xi, sj[125], &pot7);
-	  dm14 = dev_inter_011(xi, sj[126], &pot7);
-	  dm15 = dev_inter_011(xi, sj[127], &pot7);
-	  apot.x += (dm0.x*dm0.w) + (dm1.x*dm1.w) + (dm2.x*dm2.w) + (dm3.x*dm3.w) + (dm4.x*dm4.w) + (dm5.x*dm5.w) + (dm6.x*dm6.w) + (dm7.x*dm7.w) \
-	    + (dm8.x*dm8.w) + (dm9.x*dm9.w) + (dm10.x*dm10.w) + (dm11.x*dm11.w) + (dm12.x*dm12.w) + (dm13.x*dm13.w) + (dm14.x*dm14.w) + (dm15.x*dm15.w);
-	  apot.y += (dm0.y*dm0.w) + (dm1.y*dm1.w) + (dm2.y*dm2.w) + (dm3.y*dm3.w) + (dm4.y*dm4.w) + (dm5.y*dm5.w) + (dm6.y*dm6.w) + (dm7.y*dm7.w) \
-	    + (dm8.y*dm8.w) + (dm9.y*dm9.w) + (dm10.y*dm10.w) + (dm11.y*dm11.w) + (dm12.y*dm12.w) + (dm13.y*dm13.w) + (dm14.y*dm14.w) + (dm15.y*dm15.w);
-	  apot.z += (dm0.z*dm0.w) + (dm1.z*dm1.w) + (dm2.z*dm2.w) + (dm3.z*dm3.w) + (dm4.z*dm4.w) + (dm5.z*dm5.w) + (dm6.z*dm6.w) + (dm7.z*dm7.w) \
-	    + (dm8.z*dm8.w) + (dm9.z*dm9.w) + (dm10.z*dm10.w) + (dm11.z*dm11.w) + (dm12.z*dm12.w) + (dm13.z*dm13.w) + (dm14.z*dm14.w) + (dm15.z*dm15.w);
-	}
-
-      }
-
-      apot.w -= pot0+pot1+pot2+pot3+pot4+pot5+pot6+pot7;
-
-      if(ibase + tid < iend){
-	apotlist[ibase + tid] = apot;
-      }
-    }
-  }
-
-
-  // 2008/04/23
-  __device__ float4 dev_apot(float4 xi, float4 xj, float4 apot)
-  {
-    float dx = xj.x - xi.x;
-    float dy = xj.y - xi.y;
-    float dz = xj.z - xi.z;
-    float eps2 = xi.w;
-    float mj   = xj.w;
-    float r2   = (dx*dx + eps2) + dy*dy + dz*dz;
-    float r1i  = rsqrt(r2);
-    float r2i  = r1i*r1i;
-    float mr1i = mj * r1i;
-    float mr3i = mr1i * r2i;
-    apot.x += dx * mr3i;
-    apot.y += dy * mr3i;
-    apot.z += dz * mr3i;
-    apot.w -= mr1i;
-    return (apot);
-  }
-
-  // 2008/04/23
-  __global__ 
-  void cunbody_kernel_tree_012(float4 *xilist,
-			       float4 *xjlist,
-			       float4 *apotlist,
-			       unsigned int *ioffset,
-			       unsigned int *joffset)
-  {
-    unsigned int tid = threadIdx.x;
-    unsigned int bid = blockIdx.x;
-    unsigned int ibegin = ioffset[bid];
-    unsigned int iend   = ioffset[bid+1];
-    unsigned int jbegin = joffset[bid];
-    unsigned int jend   = joffset[bid+1];
-    for(unsigned int ibase = ibegin; ibase < iend; ibase += NTHRE){
-      float4 xi = xilist[ibase + tid];
-      float4 apot = make_float4(0.0f, 0.0f, 0.0f, 0.0f);
-
-      for(unsigned int jbase = jbegin; jbase < jend; jbase += NTHRE){
-	__shared__ float4 sj[NTHRE];
-	sj[tid] = xjlist[jbase + tid];
-	__syncthreads();
-	apot = dev_apot(xi, sj[0], apot); apot = dev_apot(xi, sj[1], apot); apot = dev_apot(xi, sj[2], apot); apot = dev_apot(xi, sj[3], apot);	apot = dev_apot(xi, sj[4], apot);
-	apot = dev_apot(xi, sj[5], apot); apot = dev_apot(xi, sj[6], apot); apot = dev_apot(xi, sj[7], apot); apot = dev_apot(xi, sj[8], apot); apot = dev_apot(xi, sj[9], apot);
-	apot = dev_apot(xi, sj[10], apot); apot = dev_apot(xi, sj[11], apot); apot = dev_apot(xi, sj[12], apot); apot = dev_apot(xi, sj[13], apot); apot = dev_apot(xi, sj[14], apot);
-	apot = dev_apot(xi, sj[15], apot); apot = dev_apot(xi, sj[16], apot); apot = dev_apot(xi, sj[17], apot); apot = dev_apot(xi, sj[18], apot); apot = dev_apot(xi, sj[19], apot);
-	apot = dev_apot(xi, sj[20], apot); apot = dev_apot(xi, sj[21], apot); apot = dev_apot(xi, sj[22], apot); apot = dev_apot(xi, sj[23], apot); apot = dev_apot(xi, sj[24], apot);
-	apot = dev_apot(xi, sj[25], apot); apot = dev_apot(xi, sj[26], apot); apot = dev_apot(xi, sj[27], apot); apot = dev_apot(xi, sj[28], apot); apot = dev_apot(xi, sj[29], apot);
-	apot = dev_apot(xi, sj[30], apot); apot = dev_apot(xi, sj[31], apot); apot = dev_apot(xi, sj[32], apot); apot = dev_apot(xi, sj[33], apot); apot = dev_apot(xi, sj[34], apot);
-	apot = dev_apot(xi, sj[35], apot); apot = dev_apot(xi, sj[36], apot); apot = dev_apot(xi, sj[37], apot); apot = dev_apot(xi, sj[38], apot); apot = dev_apot(xi, sj[39], apot);
-	apot = dev_apot(xi, sj[40], apot); apot = dev_apot(xi, sj[41], apot); apot = dev_apot(xi, sj[42], apot); apot = dev_apot(xi, sj[43], apot); apot = dev_apot(xi, sj[44], apot);
-	apot = dev_apot(xi, sj[45], apot); apot = dev_apot(xi, sj[46], apot); apot = dev_apot(xi, sj[47], apot); apot = dev_apot(xi, sj[48], apot); apot = dev_apot(xi, sj[49], apot);
-	apot = dev_apot(xi, sj[50], apot); apot = dev_apot(xi, sj[51], apot); apot = dev_apot(xi, sj[52], apot); apot = dev_apot(xi, sj[53], apot); apot = dev_apot(xi, sj[54], apot);
-	apot = dev_apot(xi, sj[55], apot); apot = dev_apot(xi, sj[56], apot); apot = dev_apot(xi, sj[57], apot); apot = dev_apot(xi, sj[58], apot); apot = dev_apot(xi, sj[59], apot);
-	apot = dev_apot(xi, sj[60], apot); apot = dev_apot(xi, sj[61], apot); apot = dev_apot(xi, sj[62], apot); apot = dev_apot(xi, sj[63], apot); apot = dev_apot(xi, sj[64], apot);
-	apot = dev_apot(xi, sj[65], apot); apot = dev_apot(xi, sj[66], apot); apot = dev_apot(xi, sj[67], apot); apot = dev_apot(xi, sj[68], apot); apot = dev_apot(xi, sj[69], apot);
-	apot = dev_apot(xi, sj[70], apot); apot = dev_apot(xi, sj[71], apot); apot = dev_apot(xi, sj[72], apot); apot = dev_apot(xi, sj[73], apot); apot = dev_apot(xi, sj[74], apot);
-	apot = dev_apot(xi, sj[75], apot); apot = dev_apot(xi, sj[76], apot); apot = dev_apot(xi, sj[77], apot); apot = dev_apot(xi, sj[78], apot); apot = dev_apot(xi, sj[79], apot);
-	apot = dev_apot(xi, sj[80], apot); apot = dev_apot(xi, sj[81], apot); apot = dev_apot(xi, sj[82], apot); apot = dev_apot(xi, sj[83], apot); apot = dev_apot(xi, sj[84], apot);
-	apot = dev_apot(xi, sj[85], apot); apot = dev_apot(xi, sj[86], apot); apot = dev_apot(xi, sj[87], apot); apot = dev_apot(xi, sj[88], apot); apot = dev_apot(xi, sj[89], apot);
-	apot = dev_apot(xi, sj[90], apot); apot = dev_apot(xi, sj[91], apot); apot = dev_apot(xi, sj[92], apot); apot = dev_apot(xi, sj[93], apot); apot = dev_apot(xi, sj[94], apot);
-	apot = dev_apot(xi, sj[95], apot); apot = dev_apot(xi, sj[96], apot); apot = dev_apot(xi, sj[97], apot); apot = dev_apot(xi, sj[98], apot); apot = dev_apot(xi, sj[99], apot);
-	apot = dev_apot(xi, sj[100], apot); apot = dev_apot(xi, sj[101], apot); apot = dev_apot(xi, sj[102], apot); apot = dev_apot(xi, sj[103], apot); apot = dev_apot(xi, sj[104], apot);
-	apot = dev_apot(xi, sj[105], apot); apot = dev_apot(xi, sj[106], apot); apot = dev_apot(xi, sj[107], apot); apot = dev_apot(xi, sj[108], apot); apot = dev_apot(xi, sj[109], apot);
-	apot = dev_apot(xi, sj[110], apot); apot = dev_apot(xi, sj[111], apot); apot = dev_apot(xi, sj[112], apot); apot = dev_apot(xi, sj[113], apot); apot = dev_apot(xi, sj[114], apot);
-	apot = dev_apot(xi, sj[115], apot); apot = dev_apot(xi, sj[116], apot); apot = dev_apot(xi, sj[117], apot); apot = dev_apot(xi, sj[118], apot); apot = dev_apot(xi, sj[119], apot);
-	apot = dev_apot(xi, sj[120], apot); apot = dev_apot(xi, sj[121], apot); apot = dev_apot(xi, sj[122], apot); apot = dev_apot(xi, sj[123], apot); apot = dev_apot(xi, sj[124], apot);
-	apot = dev_apot(xi, sj[125], apot); apot = dev_apot(xi, sj[126], apot); apot = dev_apot(xi, sj[127], apot);
-	__syncthreads();
-      }
-
-      if(ibase + tid < iend){
-	apotlist[ibase + tid] = apot;
-      }
-    }
-  }
-
-  // 2008/04/24
-  __global__ 
-  void cunbody_kernel_tree_013(float4 *xilist,
-			       float4 *xjlist,
-			       float4 *apotlist,
-			       unsigned int *ioffset,
-			       unsigned int *joffset)
-  {
-    __syncthreads(); // iranai
-
-    int tid = threadIdx.x;
-    int bid = blockIdx.x;
-    int ibegin = ioffset[bid];
-    int iend   = ioffset[bid+1];
-    int jbegin = joffset[bid];
-    int jend   = joffset[bid+1];
-
-    __syncthreads(); // iranai
-    for(int ibase = ibegin; ibase < iend; ibase += NTHRE){
-
-      __syncthreads(); // iranai
-      float4 xi = xilist[ibase + tid];
-      float4 apot = make_float4(0.0f, 0.0f, 0.0f, 0.0f);
-      __syncthreads(); // iranai
-      __shared__ float4 sj[NTHRE];
-      __syncthreads(); // iranai
-
-      for(int jbase = jbegin; jbase < jend; jbase += NTHRE){
-	sj[tid] = xjlist[jbase + tid];
-	__syncthreads();
-	for(int j=0; j<128; j++){ apot = dev_apot(xi, sj[j], apot); }
-	__syncthreads();
-      }
-
-      __syncthreads(); // iranai
-      if(ibase + tid < iend){
-	apotlist[ibase + tid] = apot;
-      }
-      __syncthreads(); // iranai
-    }
-
-    __syncthreads(); // irania
-  }
-
-
-}; // namespace libcunbody __END__
-
-
+Tue Oct 29 19:34:50 JST 2024
+--------------------------------------------------------------------------
+--
+--  File:   pcim_lc.vhd
+--  Rev:    3.0.0
+--
+--  This is a lower-level VHDL module which serves as a wrapper
+--  for the PCI interface.  This module makes use of Unified Library
+--  Primitives.  Do not modify this file.
+--
+--  Copyright (c) 2005 Xilinx, Inc.  All rights reserved.
+--
+--------------------------------------------------------------------------
+
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+-- synthesis translate_off
+library UNISIM;
+use UNISIM.VCOMPONENTS.ALL;
+-- synthesis translate_on
+
+
+entity pcim_lc is
+  port (
+        AD_IO           : inout std_logic_vector( 63 downto 0);
+        CBE_IO          : inout std_logic_vector(  7 downto 0);
+        PAR_IO          : inout std_logic;
+        PAR64_IO        : inout std_logic;
+        FRAME_IO        : inout std_logic;
+        REQ64_IO        : inout std_logic;
+        TRDY_IO         : inout std_logic;
+        IRDY_IO         : inout std_logic;
+        STOP_IO         : inout std_logic;
+        DEVSEL_IO       : inout std_logic;
+        ACK64_IO        : inout std_logic;
+        IDSEL_I         : in    std_logic;
+        INTA_O          : out   std_logic;
+        PERR_IO         : inout std_logic;
+        SERR_IO         : inout std_logic;
+        REQ_O           : out   std_logic;
+        GNT_I           : in    std_logic;
+
+        RST_I           : in    std_logic;
+        PCLK            : in    std_logic;
+
+        CFG             : in    std_logic_vector(255 downto 0);
+
+        FRAMEQ_N        : out   std_logic;
+        REQ64Q_N        : out   std_logic;
+        TRDYQ_N         : out   std_logic;
+        IRDYQ_N         : out   std_logic;
+        STOPQ_N         : out   std_logic;
+        DEVSELQ_N       : out   std_logic;
+        ACK64Q_N        : out   std_logic;
+
+        ADDR            : out   std_logic_vector( 31 downto 0);
+        ADIO            : inout std_logic_vector( 63 downto 0);
+
+        CFG_VLD         : out   std_logic;
+        CFG_HIT         : out   std_logic;
+        C_TERM          : in    std_logic;
+        C_READY         : in    std_logic;
+        ADDR_VLD        : out   std_logic;
+        BASE_HIT        : out   std_logic_vector(  7 downto 0);
+        S_CYCLE64       : out   std_logic;
+        S_TERM          : in    std_logic;
+        S_READY         : in    std_logic;
+        S_ABORT         : in    std_logic;
+        S_WRDN          : out   std_logic;
+        S_SRC_EN        : out   std_logic;
+        S_DATA_VLD      : out   std_logic;
+        S_CBE           : out   std_logic_vector(  7 downto 0);
+        PCI_CMD         : out   std_logic_vector( 15 downto 0);
+
+        REQUEST         : in    std_logic;
+        REQUEST64       : in    std_logic;
+        REQUESTHOLD     : in    std_logic;
+        COMPLETE        : in    std_logic;
+        M_WRDN          : in    std_logic;
+        M_READY         : in    std_logic;
+        M_SRC_EN        : out   std_logic;
+        M_DATA_VLD      : out   std_logic;
+        M_CBE           : in    std_logic_vector(  7 downto 0);
+        TIME_OUT        : out   std_logic;
+        M_FAIL64        : out   std_logic;
+        CFG_SELF        : in    std_logic;
+
+        M_DATA          : out   std_logic;
+        DR_BUS          : out   std_logic;
+        I_IDLE          : out   std_logic;
+        M_ADDR_N        : out   std_logic;
+
+        IDLE            : out   std_logic;
+        B_BUSY          : out   std_logic;
+        S_DATA          : out   std_logic;
+        BACKOFF         : out   std_logic;
+
+        SLOT64          : in    std_logic;
+        INTR_N          : in    std_logic;
+        PERRQ_N         : out   std_logic;
+        SERRQ_N         : out   std_logic;
+        KEEPOUT         : in    std_logic;
+        CSR             : out   std_logic_vector( 39 downto 0);
+        SUB_DATA        : in    std_logic_vector( 31 downto 0);
+
+        RST             : inout std_logic;
+        CLK             : inout std_logic
+  );
+end pcim_lc;
+
+
+architecture WRAPPER of pcim_lc is
+
+  attribute syn_edif_bit_format : string;
+  attribute syn_edif_scalar_format : string;
+  attribute syn_noclockbuf : boolean;
+  attribute syn_hier : string;
+  attribute syn_edif_bit_format of WRAPPER : architecture is "%u<%i>";
+  attribute syn_edif_scalar_format of WRAPPER : architecture is "%u";
+  attribute syn_noclockbuf of WRAPPER : architecture is true;
+  attribute syn_hier of WRAPPER : architecture is "hard";
+
+  component IOBUF_PCI66_3
+    port(O: out STD_LOGIC;
+         IO: inout STD_LOGIC;
+         I: in STD_LOGIC;
+         T: in STD_LOGIC
+    );
+  end component;
+
+  component IBUF_PCI66_3
+    port(O: out STD_LOGIC;
+         I: in STD_LOGIC
+    );
+  end component; 
+
+  component OBUFT_PCI66_3
+    port(O: out STD_LOGIC;
+         I: in STD_LOGIC;
+         T: in STD_LOGIC
+    );
+  end component; 
+
+  component IBUFG_PCI66_3
+    port(O: out STD_LOGIC; 
+         I: in STD_LOGIC
+    ); 
+  end component;  
+
+  component BUFG
+    port(O: out STD_LOGIC; 
+         I: in STD_LOGIC
+    ); 
+  end component;  
+
+  component FDPE
+    port(Q: out STD_LOGIC;
+         D: in STD_LOGIC;
+         C: in STD_LOGIC;
+         CE: in STD_LOGIC;
+         PRE: in STD_LOGIC
+    );
+  end component;
+
+  component PCI_LC_I
+    port (
+      OE_ADO_T64 : out STD_LOGIC; 
+      OE_ADO_T : out STD_LOGIC; 
+      OE_ADO_LT64 : out STD_LOGIC; 
+      OE_ADO_LT : out STD_LOGIC; 
+      OE_ADO_LB64 : out STD_LOGIC; 
+      OE_ADO_LB : out STD_LOGIC; 
+      OE_ADO_B64 : out STD_LOGIC; 
+      OE_ADO_B : out STD_LOGIC; 
+      AD63 : in STD_LOGIC; 
+      AD62 : in STD_LOGIC; 
+      AD61 : in STD_LOGIC; 
+      AD60 : in STD_LOGIC; 
+      AD59 : in STD_LOGIC; 
+      AD58 : in STD_LOGIC; 
+      AD57 : in STD_LOGIC; 
+      AD56 : in STD_LOGIC; 
+      AD55 : in STD_LOGIC; 
+      AD54 : in STD_LOGIC; 
+      AD53 : in STD_LOGIC; 
+      AD52 : in STD_LOGIC; 
+      AD51 : in STD_LOGIC; 
+      AD50 : in STD_LOGIC; 
+      AD49 : in STD_LOGIC; 
+      AD48 : in STD_LOGIC; 
+      AD47 : in STD_LOGIC; 
+      AD46 : in STD_LOGIC; 
+      AD45 : in STD_LOGIC; 
+      AD44 : in STD_LOGIC; 
+      AD43 : in STD_LOGIC; 
+      AD42 : in STD_LOGIC; 
+      AD41 : in STD_LOGIC; 
+      AD40 : in STD_LOGIC; 
+      AD39 : in STD_LOGIC; 
+      AD38 : in STD_LOGIC; 
+      AD37 : in STD_LOGIC; 
+      AD36 : in STD_LOGIC; 
+      AD35 : in STD_LOGIC; 
+      AD34 : in STD_LOGIC; 
+      AD33 : in STD_LOGIC; 
+      AD32 : in STD_LOGIC; 
+      AD31 : in STD_LOGIC; 
+      AD30 : in STD_LOGIC; 
+      AD29 : in STD_LOGIC; 
+      AD28 : in STD_LOGIC; 
+      AD27 : in STD_LOGIC; 
+      AD26 : in STD_LOGIC; 
+      AD25 : in STD_LOGIC; 
+      AD24 : in STD_LOGIC; 
+      AD23 : in STD_LOGIC; 
+      AD22 : in STD_LOGIC; 
+      AD21 : in STD_LOGIC; 
+      AD20 : in STD_LOGIC; 
+      AD19 : in STD_LOGIC; 
+      AD18 : in STD_LOGIC; 
+      AD17 : in STD_LOGIC; 
+      AD16 : in STD_LOGIC; 
+      AD15 : in STD_LOGIC; 
+      AD14 : in STD_LOGIC; 
+      AD13 : in STD_LOGIC; 
+      AD12 : in STD_LOGIC; 
+      AD11 : in STD_LOGIC; 
+      AD10 : in STD_LOGIC; 
+      AD9 : in STD_LOGIC; 
+      AD8 : in STD_LOGIC; 
+      AD7 : in STD_LOGIC; 
+      AD6 : in STD_LOGIC; 
+      AD5 : in STD_LOGIC; 
+      AD4 : in STD_LOGIC; 
+      AD3 : in STD_LOGIC; 
+      AD2 : in STD_LOGIC; 
+      AD1 : in STD_LOGIC; 
+      AD0 : in STD_LOGIC; 
+      AD_O63 : out STD_LOGIC; 
+      AD_O62 : out STD_LOGIC; 
+      AD_O61 : out STD_LOGIC; 
+      AD_O60 : out STD_LOGIC; 
+      AD_O59 : out STD_LOGIC; 
+      AD_O58 : out STD_LOGIC; 
+      AD_O57 : out STD_LOGIC; 
+      AD_O56 : out STD_LOGIC; 
+      AD_O55 : out STD_LOGIC; 
+      AD_O54 : out STD_LOGIC; 
+      AD_O53 : out STD_LOGIC; 
+      AD_O52 : out STD_LOGIC; 
+      AD_O51 : out STD_LOGIC; 
+      AD_O50 : out STD_LOGIC; 
+      AD_O49 : out STD_LOGIC; 
+      AD_O48 : out STD_LOGIC; 
+      AD_O47 : out STD_LOGIC; 
+      AD_O46 : out STD_LOGIC; 
+      AD_O45 : out STD_LOGIC; 
+      AD_O44 : out STD_LOGIC; 
+      AD_O43 : out STD_LOGIC; 
+      AD_O42 : out STD_LOGIC; 
+      AD_O41 : out STD_LOGIC; 
+      AD_O40 : out STD_LOGIC; 
+      AD_O39 : out STD_LOGIC; 
+      AD_O38 : out STD_LOGIC; 
+      AD_O37 : out STD_LOGIC; 
+      AD_O36 : out STD_LOGIC; 
+      AD_O35 : out STD_LOGIC; 
+      AD_O34 : out STD_LOGIC; 
+      AD_O33 : out STD_LOGIC; 
+      AD_O32 : out STD_LOGIC; 
+      AD_O31 : out STD_LOGIC; 
+      AD_O30 : out STD_LOGIC; 
+      AD_O29 : out STD_LOGIC; 
+      AD_O28 : out STD_LOGIC; 
+      AD_O27 : out STD_LOGIC; 
+      AD_O26 : out STD_LOGIC; 
+      AD_O25 : out STD_LOGIC; 
+      AD_O24 : out STD_LOGIC; 
+      AD_O23 : out STD_LOGIC; 
+      AD_O22 : out STD_LOGIC; 
+      AD_O21 : out STD_LOGIC; 
+      AD_O20 : out STD_LOGIC; 
+      AD_O19 : out STD_LOGIC; 
+      AD_O18 : out STD_LOGIC; 
+      AD_O17 : out STD_LOGIC; 
+      AD_O16 : out STD_LOGIC; 
+      AD_O15 : out STD_LOGIC; 
+      AD_O14 : out STD_LOGIC; 
+      AD_O13 : out STD_LOGIC; 
+      AD_O12 : out STD_LOGIC; 
+      AD_O11 : out STD_LOGIC; 
+      AD_O10 : out STD_LOGIC; 
+      AD_O9 : out STD_LOGIC; 
+      AD_O8 : out STD_LOGIC; 
+      AD_O7 : out STD_LOGIC; 
+      AD_O6 : out STD_LOGIC; 
+      AD_O5 : out STD_LOGIC; 
+      AD_O4 : out STD_LOGIC; 
+      AD_O3 : out STD_LOGIC; 
+      AD_O2 : out STD_LOGIC; 
+      AD_O1 : out STD_LOGIC; 
+      AD_O0 : out STD_LOGIC; 
+
+      OE_CBE64 : out STD_LOGIC; 
+      OE_CBE : out STD_LOGIC; 
+      CBE_I7 : in STD_LOGIC; 
+      CBE_I6 : in STD_LOGIC; 
+      CBE_I5 : in STD_LOGIC; 
+      CBE_I4 : in STD_LOGIC; 
+      CBE_I3 : in STD_LOGIC; 
+      CBE_I2 : in STD_LOGIC; 
+      CBE_I1 : in STD_LOGIC; 
+      CBE_I0 : in STD_LOGIC; 
+      CBE_IN7 : in STD_LOGIC; 
+      CBE_IN6 : in STD_LOGIC; 
+      CBE_IN5 : in STD_LOGIC; 
+      CBE_IN4 : in STD_LOGIC; 
+      CBE_IN3 : in STD_LOGIC; 
+      CBE_IN2 : in STD_LOGIC; 
+      CBE_IN1 : in STD_LOGIC; 
+      CBE_IN0 : in STD_LOGIC; 
+      CBE_O7 : out STD_LOGIC; 
+      CBE_O6 : out STD_LOGIC; 
+      CBE_O5 : out STD_LOGIC; 
+      CBE_O4 : out STD_LOGIC; 
+      CBE_O3 : out STD_LOGIC; 
+      CBE_O2 : out STD_LOGIC; 
+      CBE_O1 : out STD_LOGIC; 
+      CBE_O0 : out STD_LOGIC; 
+
+      OE_PAR64 : out STD_LOGIC; 
+      PAR64_I : in STD_LOGIC; 
+      PAR64_O : out STD_LOGIC; 
+
+      OE_PAR : out STD_LOGIC; 
+      PAR_I : in STD_LOGIC; 
+      PAR_O : out STD_LOGIC; 
+
+      OE_FRAME : out STD_LOGIC; 
+      FRAME_I : in STD_LOGIC; 
+      FRAME_O : out STD_LOGIC; 
+
+      OE_REQ64 : out STD_LOGIC; 
+      REQ64_I : in STD_LOGIC; 
+      REQ64_O : out STD_LOGIC; 
+
+      OE_TRDY : out STD_LOGIC; 
+      TRDY_I : in STD_LOGIC; 
+      TRDY_O : out STD_LOGIC; 
+
+      OE_IRDY : out STD_LOGIC; 
+      IRDY_I : in STD_LOGIC; 
+      IRDY_O : out STD_LOGIC; 
+
+      OE_STOP : out STD_LOGIC; 
+      STOP_I : in STD_LOGIC; 
+      STOP_O : out STD_LOGIC; 
+
+      OE_DEVSEL : out STD_LOGIC; 
+      DEVSEL_I : in STD_LOGIC; 
+      DEVSEL_O : out STD_LOGIC; 
+
+      OE_ACK64 : out STD_LOGIC; 
+      ACK64_I : in STD_LOGIC; 
+      ACK64_O : out STD_LOGIC; 
+
+      IDSEL_IN : in STD_LOGIC; 
+
+      OE_INTA : out STD_LOGIC; 
+
+      OE_PERR : out STD_LOGIC; 
+      PERR_I : in STD_LOGIC; 
+      PERR_O : out STD_LOGIC; 
+
+      OE_SERR : out STD_LOGIC; 
+      SERR_I : in STD_LOGIC; 
+
+      OE_REQ : out STD_LOGIC; 
+      REQ_OUT : out STD_LOGIC; 
+
+      GNT_IN : in STD_LOGIC; 
+
+      RST_N : in STD_LOGIC; 
+
+      CFG255 : in STD_LOGIC; 
+      CFG254 : in STD_LOGIC; 
+      CFG253 : in STD_LOGIC; 
+      CFG252 : in STD_LOGIC; 
+      CFG251 : in STD_LOGIC; 
+      CFG250 : in STD_LOGIC; 
+      CFG249 : in STD_LOGIC; 
+      CFG248 : in STD_LOGIC; 
+      CFG247 : in STD_LOGIC; 
+      CFG246 : in STD_LOGIC; 
+      CFG245 : in STD_LOGIC; 
+      CFG244 : in STD_LOGIC; 
+      CFG243 : in STD_LOGIC; 
+      CFG242 : in STD_LOGIC; 
+      CFG241 : in STD_LOGIC; 
+      CFG240 : in STD_LOGIC; 
+      CFG239 : in STD_LOGIC; 
+      CFG238 : in STD_LOGIC; 
+      CFG237 : in STD_LOGIC; 
+      CFG236 : in STD_LOGIC; 
+      CFG235 : in STD_LOGIC; 
+      CFG234 : in STD_LOGIC; 
+      CFG233 : in STD_LOGIC; 
+      CFG232 : in STD_LOGIC; 
+      CFG231 : in STD_LOGIC; 
+      CFG230 : in STD_LOGIC; 
+      CFG229 : in STD_LOGIC; 
+      CFG228 : in STD_LOGIC; 
+      CFG227 : in STD_LOGIC; 
+      CFG226 : in STD_LOGIC; 
+      CFG225 : in STD_LOGIC; 
+      CFG224 : in STD_LOGIC; 
+      CFG223 : in STD_LOGIC; 
+      CFG222 : in STD_LOGIC; 
+      CFG221 : in STD_LOGIC; 
+      CFG220 : in STD_LOGIC; 
+      CFG219 : in STD_LOGIC; 
+      CFG218 : in STD_LOGIC; 
+      CFG217 : in STD_LOGIC; 
+      CFG216 : in STD_LOGIC; 
+      CFG215 : in STD_LOGIC; 
+      CFG214 : in STD_LOGIC; 
+      CFG213 : in STD_LOGIC; 
+      CFG212 : in STD_LOGIC; 
+      CFG211 : in STD_LOGIC; 
+      CFG210 : in STD_LOGIC; 
+      CFG209 : in STD_LOGIC; 
+      CFG208 : in STD_LOGIC; 
+      CFG207 : in STD_LOGIC; 
+      CFG206 : in STD_LOGIC; 
+      CFG205 : in STD_LOGIC; 
+      CFG204 : in STD_LOGIC; 
+      CFG203 : in STD_LOGIC; 
+      CFG202 : in STD_LOGIC; 
+      CFG201 : in STD_LOGIC; 
+      CFG200 : in STD_LOGIC; 
+      CFG199 : in STD_LOGIC; 
+      CFG198 : in STD_LOGIC; 
+      CFG197 : in STD_LOGIC; 
+      CFG196 : in STD_LOGIC; 
+      CFG195 : in STD_LOGIC; 
+      CFG194 : in STD_LOGIC; 
+      CFG193 : in STD_LOGIC; 
+      CFG192 : in STD_LOGIC; 
+      CFG191 : in STD_LOGIC; 
+      CFG190 : in STD_LOGIC; 
+      CFG189 : in STD_LOGIC; 
+      CFG188 : in STD_LOGIC; 
+      CFG187 : in STD_LOGIC; 
+      CFG186 : in STD_LOGIC; 
+      CFG185 : in STD_LOGIC; 
+      CFG184 : in STD_LOGIC; 
+      CFG183 : in STD_LOGIC; 
+      CFG182 : in STD_LOGIC; 
+      CFG181 : in STD_LOGIC; 
+      CFG180 : in STD_LOGIC; 
+      CFG179 : in STD_LOGIC; 
+      CFG178 : in STD_LOGIC; 
+      CFG177 : in STD_LOGIC; 
+      CFG176 : in STD_LOGIC; 
+      CFG175 : in STD_LOGIC; 
+      CFG174 : in STD_LOGIC; 
+      CFG173 : in STD_LOGIC; 
+      CFG172 : in STD_LOGIC; 
+      CFG171 : in STD_LOGIC; 
+      CFG170 : in STD_LOGIC; 
+      CFG169 : in STD_LOGIC; 
+      CFG168 : in STD_LOGIC; 
+      CFG167 : in STD_LOGIC; 
+      CFG166 : in STD_LOGIC; 
+      CFG165 : in STD_LOGIC; 
+      CFG164 : in STD_LOGIC; 
+      CFG163 : in STD_LOGIC; 
+      CFG162 : in STD_LOGIC; 
+      CFG161 : in STD_LOGIC; 
+      CFG160 : in STD_LOGIC; 
+      CFG159 : in STD_LOGIC; 
+      CFG158 : in STD_LOGIC; 
+      CFG157 : in STD_LOGIC; 
+      CFG156 : in STD_LOGIC; 
+      CFG155 : in STD_LOGIC; 
+      CFG154 : in STD_LOGIC; 
+      CFG153 : in STD_LOGIC; 
+      CFG152 : in STD_LOGIC; 
+      CFG151 : in STD_LOGIC; 
+      CFG150 : in STD_LOGIC; 
+      CFG149 : in STD_LOGIC; 
+      CFG148 : in STD_LOGIC; 
+      CFG147 : in STD_LOGIC; 
+      CFG146 : in STD_LOGIC; 
+      CFG145 : in STD_LOGIC; 
+      CFG144 : in STD_LOGIC; 
+      CFG143 : in STD_LOGIC; 
+      CFG142 : in STD_LOGIC; 
+      CFG141 : in STD_LOGIC; 
+      CFG140 : in STD_LOGIC; 
+      CFG139 : in STD_LOGIC; 
+      CFG138 : in STD_LOGIC; 
+      CFG137 : in STD_LOGIC; 
+      CFG136 : in STD_LOGIC; 
+      CFG135 : in STD_LOGIC; 
+      CFG134 : in STD_LOGIC; 
+      CFG133 : in STD_LOGIC; 
+      CFG132 : in STD_LOGIC; 
+      CFG131 : in STD_LOGIC; 
+      CFG130 : in STD_LOGIC; 
+      CFG129 : in STD_LOGIC; 
+      CFG128 : in STD_LOGIC; 
+      CFG127 : in STD_LOGIC; 
+      CFG126 : in STD_LOGIC; 
+      CFG125 : in STD_LOGIC; 
+      CFG124 : in STD_LOGIC; 
+      CFG123 : in STD_LOGIC; 
+      CFG122 : in STD_LOGIC; 
+      CFG121 : in STD_LOGIC; 
+      CFG120 : in STD_LOGIC; 
+      CFG119 : in STD_LOGIC; 
+      CFG118 : in STD_LOGIC; 
+      CFG117 : in STD_LOGIC; 
+      CFG116 : in STD_LOGIC; 
+      CFG115 : in STD_LOGIC; 
+      CFG114 : in STD_LOGIC; 
+      CFG113 : in STD_LOGIC; 
+      CFG112 : in STD_LOGIC; 
+      CFG111 : in STD_LOGIC; 
+      CFG110 : in STD_LOGIC; 
+      CFG109 : in STD_LOGIC; 
+      CFG108 : in STD_LOGIC; 
+      CFG107 : in STD_LOGIC; 
+      CFG106 : in STD_LOGIC; 
+      CFG105 : in STD_LOGIC; 
+      CFG104 : in STD_LOGIC; 
+      CFG103 : in STD_LOGIC; 
+      CFG102 : in STD_LOGIC; 
+      CFG101 : in STD_LOGIC; 
+      CFG100 : in STD_LOGIC; 
+      CFG99 : in STD_LOGIC; 
+      CFG98 : in STD_LOGIC; 
+      CFG97 : in STD_LOGIC; 
+      CFG96 : in STD_LOGIC; 
+      CFG95 : in STD_LOGIC; 
+      CFG94 : in STD_LOGIC; 
+      CFG93 : in STD_LOGIC; 
+      CFG92 : in STD_LOGIC; 
+      CFG91 : in STD_LOGIC; 
+      CFG90 : in STD_LOGIC; 
+      CFG89 : in STD_LOGIC; 
+      CFG88 : in STD_LOGIC; 
+      CFG87 : in STD_LOGIC; 
+      CFG86 : in STD_LOGIC; 
+      CFG85 : in STD_LOGIC; 
+      CFG84 : in STD_LOGIC; 
+      CFG83 : in STD_LOGIC; 
+      CFG82 : in STD_LOGIC; 
+      CFG81 : in STD_LOGIC; 
+      CFG80 : in STD_LOGIC; 
+      CFG79 : in STD_LOGIC; 
+      CFG78 : in STD_LOGIC; 
+      CFG77 : in STD_LOGIC; 
+      CFG76 : in STD_LOGIC; 
+      CFG75 : in STD_LOGIC; 
+      CFG74 : in STD_LOGIC; 
+      CFG73 : in STD_LOGIC; 
+      CFG72 : in STD_LOGIC; 
+      CFG71 : in STD_LOGIC; 
+      CFG70 : in STD_LOGIC; 
+      CFG69 : in STD_LOGIC; 
+      CFG68 : in STD_LOGIC; 
+      CFG67 : in STD_LOGIC; 
+      CFG66 : in STD_LOGIC; 
+      CFG65 : in STD_LOGIC; 
+      CFG64 : in STD_LOGIC; 
+      CFG63 : in STD_LOGIC; 
+      CFG62 : in STD_LOGIC; 
+      CFG61 : in STD_LOGIC; 
+      CFG60 : in STD_LOGIC; 
+      CFG59 : in STD_LOGIC; 
+      CFG58 : in STD_LOGIC; 
+      CFG57 : in STD_LOGIC; 
+      CFG56 : in STD_LOGIC; 
+      CFG55 : in STD_LOGIC; 
+      CFG54 : in STD_LOGIC; 
+      CFG53 : in STD_LOGIC; 
+      CFG52 : in STD_LOGIC; 
+      CFG51 : in STD_LOGIC; 
+      CFG50 : in STD_LOGIC; 
+      CFG49 : in STD_LOGIC; 
+      CFG48 : in STD_LOGIC; 
+      CFG47 : in STD_LOGIC; 
+      CFG46 : in STD_LOGIC; 
+      CFG45 : in STD_LOGIC; 
+      CFG44 : in STD_LOGIC; 
+      CFG43 : in STD_LOGIC; 
+      CFG42 : in STD_LOGIC; 
+      CFG41 : in STD_LOGIC; 
+      CFG40 : in STD_LOGIC; 
+      CFG39 : in STD_LOGIC; 
+      CFG38 : in STD_LOGIC; 
+      CFG37 : in STD_LOGIC; 
+      CFG36 : in STD_LOGIC; 
+      CFG35 : in STD_LOGIC; 
+      CFG34 : in STD_LOGIC; 
+      CFG33 : in STD_LOGIC; 
+      CFG32 : in STD_LOGIC; 
+      CFG31 : in STD_LOGIC; 
+      CFG30 : in STD_LOGIC; 
+      CFG29 : in STD_LOGIC; 
+      CFG28 : in STD_LOGIC; 
+      CFG27 : in STD_LOGIC; 
+      CFG26 : in STD_LOGIC; 
+      CFG25 : in STD_LOGIC; 
+      CFG24 : in STD_LOGIC; 
+      CFG23 : in STD_LOGIC; 
+      CFG22 : in STD_LOGIC; 
+      CFG21 : in STD_LOGIC; 
+      CFG20 : in STD_LOGIC; 
+      CFG19 : in STD_LOGIC; 
+      CFG18 : in STD_LOGIC; 
+      CFG17 : in STD_LOGIC; 
+      CFG16 : in STD_LOGIC; 
+      CFG15 : in STD_LOGIC; 
+      CFG14 : in STD_LOGIC; 
+      CFG13 : in STD_LOGIC; 
+      CFG12 : in STD_LOGIC; 
+      CFG11 : in STD_LOGIC; 
+      CFG10 : in STD_LOGIC; 
+      CFG9 : in STD_LOGIC; 
+      CFG8 : in STD_LOGIC; 
+      CFG7 : in STD_LOGIC; 
+      CFG6 : in STD_LOGIC; 
+      CFG5 : in STD_LOGIC; 
+      CFG4 : in STD_LOGIC; 
+      CFG3 : in STD_LOGIC; 
+      CFG2 : in STD_LOGIC; 
+      CFG1 : in STD_LOGIC; 
+      CFG0 : in STD_LOGIC; 
+
+      FRAMEQ_N : out STD_LOGIC; 
+      REQ64Q_N : out STD_LOGIC; 
+      TRDYQ_N : out STD_LOGIC; 
+      IRDYQ_N : out STD_LOGIC; 
+      STOPQ_N : out STD_LOGIC; 
+      DEVSELQ_N : out STD_LOGIC; 
+      ACK64Q_N : out STD_LOGIC;
+
+      ADDR31 : out STD_LOGIC; 
+      ADDR30 : out STD_LOGIC; 
+      ADDR29 : out STD_LOGIC; 
+      ADDR28 : out STD_LOGIC; 
+      ADDR27 : out STD_LOGIC; 
+      ADDR26 : out STD_LOGIC; 
+      ADDR25 : out STD_LOGIC; 
+      ADDR24 : out STD_LOGIC; 
+      ADDR23 : out STD_LOGIC; 
+      ADDR22 : out STD_LOGIC; 
+      ADDR21 : out STD_LOGIC; 
+      ADDR20 : out STD_LOGIC; 
+      ADDR19 : out STD_LOGIC; 
+      ADDR18 : out STD_LOGIC; 
+      ADDR17 : out STD_LOGIC; 
+      ADDR16 : out STD_LOGIC; 
+      ADDR15 : out STD_LOGIC; 
+      ADDR14 : out STD_LOGIC; 
+      ADDR13 : out STD_LOGIC; 
+      ADDR12 : out STD_LOGIC; 
+      ADDR11 : out STD_LOGIC; 
+      ADDR10 : out STD_LOGIC; 
+      ADDR9 : out STD_LOGIC; 
+      ADDR8 : out STD_LOGIC; 
+      ADDR7 : out STD_LOGIC; 
+      ADDR6 : out STD_LOGIC; 
+      ADDR5 : out STD_LOGIC; 
+      ADDR4 : out STD_LOGIC; 
+      ADDR3 : out STD_LOGIC; 
+      ADDR2 : out STD_LOGIC; 
+      ADDR1 : out STD_LOGIC; 
+      ADDR0 : out STD_LOGIC; 
+
+      ADIO63 : inout STD_LOGIC; 
+      ADIO62 : inout STD_LOGIC; 
+      ADIO61 : inout STD_LOGIC; 
+      ADIO60 : inout STD_LOGIC; 
+      ADIO59 : inout STD_LOGIC; 
+      ADIO58 : inout STD_LOGIC; 
+      ADIO57 : inout STD_LOGIC; 
+      ADIO56 : inout STD_LOGIC; 
+      ADIO55 : inout STD_LOGIC; 
+      ADIO54 : inout STD_LOGIC; 
+      ADIO53 : inout STD_LOGIC; 
+      ADIO52 : inout STD_LOGIC; 
+      ADIO51 : inout STD_LOGIC; 
+      ADIO50 : inout STD_LOGIC; 
+      ADIO49 : inout STD_LOGIC; 
+      ADIO48 : inout STD_LOGIC; 
+      ADIO47 : inout STD_LOGIC; 
+      ADIO46 : inout STD_LOGIC; 
+      ADIO45 : inout STD_LOGIC; 
+      ADIO44 : inout STD_LOGIC; 
+      ADIO43 : inout STD_LOGIC; 
+      ADIO42 : inout STD_LOGIC; 
+      ADIO41 : inout STD_LOGIC; 
+      ADIO40 : inout STD_LOGIC; 
+      ADIO39 : inout STD_LOGIC; 
+      ADIO38 : inout STD_LOGIC; 
+      ADIO37 : inout STD_LOGIC; 
+      ADIO36 : inout STD_LOGIC; 
+      ADIO35 : inout STD_LOGIC; 
+      ADIO34 : inout STD_LOGIC; 
+      ADIO33 : inout STD_LOGIC; 
+      ADIO32 : inout STD_LOGIC; 
+      ADIO31 : inout STD_LOGIC; 
+      ADIO30 : inout STD_LOGIC; 
+      ADIO29 : inout STD_LOGIC; 
+      ADIO28 : inout STD_LOGIC; 
+      ADIO27 : inout STD_LOGIC; 
+      ADIO26 : inout STD_LOGIC; 
+      ADIO25 : inout STD_LOGIC; 
+      ADIO24 : inout STD_LOGIC; 
+      ADIO23 : inout STD_LOGIC; 
+      ADIO22 : inout STD_LOGIC; 
+      ADIO21 : inout STD_LOGIC; 
+      ADIO20 : inout STD_LOGIC; 
+      ADIO19 : inout STD_LOGIC; 
+      ADIO18 : inout STD_LOGIC; 
+      ADIO17 : inout STD_LOGIC; 
+      ADIO16 : inout STD_LOGIC; 
+      ADIO15 : inout STD_LOGIC; 
+      ADIO14 : inout STD_LOGIC; 
+      ADIO13 : inout STD_LOGIC; 
+      ADIO12 : inout STD_LOGIC; 
+      ADIO11 : inout STD_LOGIC; 
+      ADIO10 : inout STD_LOGIC; 
+      ADIO9 : inout STD_LOGIC; 
+      ADIO8 : inout STD_LOGIC; 
+      ADIO7 : inout STD_LOGIC; 
+      ADIO6 : inout STD_LOGIC; 
+      ADIO5 : inout STD_LOGIC; 
+      ADIO4 : inout STD_LOGIC; 
+      ADIO3 : inout STD_LOGIC; 
+      ADIO2 : inout STD_LOGIC; 
+      ADIO1 : inout STD_LOGIC; 
+      ADIO0 : inout STD_LOGIC; 
+
+      CFG_VLD : out STD_LOGIC; 
+      CFG_HIT : out STD_LOGIC; 
+      C_TERM : in STD_LOGIC; 
+      C_READY : in STD_LOGIC; 
+      ADDR_VLD : out STD_LOGIC; 
+      BASE_HIT7 : out STD_LOGIC; 
+      BASE_HIT6 : out STD_LOGIC; 
+      BASE_HIT5 : out STD_LOGIC; 
+      BASE_HIT4 : out STD_LOGIC; 
+      BASE_HIT3 : out STD_LOGIC; 
+      BASE_HIT2 : out STD_LOGIC; 
+      BASE_HIT1 : out STD_LOGIC; 
+      BASE_HIT0 : out STD_LOGIC; 
+      S_CYCLE64 : out STD_LOGIC; 
+      S_TERM : in STD_LOGIC; 
+      S_READY : in STD_LOGIC; 
+      S_ABORT : in STD_LOGIC; 
+      S_WRDN : out STD_LOGIC; 
+      S_SRC_EN : out STD_LOGIC; 
+      S_DATA_VLD : out STD_LOGIC; 
+      S_CBE7 : out STD_LOGIC; 
+      S_CBE6 : out STD_LOGIC; 
+      S_CBE5 : out STD_LOGIC; 
+      S_CBE4 : out STD_LOGIC; 
+      S_CBE3 : out STD_LOGIC; 
+      S_CBE2 : out STD_LOGIC; 
+      S_CBE1 : out STD_LOGIC; 
+      S_CBE0 : out STD_LOGIC; 
+      PCI_CMD15 : out STD_LOGIC; 
+      PCI_CMD14 : out STD_LOGIC; 
+      PCI_CMD13 : out STD_LOGIC; 
+      PCI_CMD12 : out STD_LOGIC; 
+      PCI_CMD11 : out STD_LOGIC; 
+      PCI_CMD10 : out STD_LOGIC; 
+      PCI_CMD9 : out STD_LOGIC; 
+      PCI_CMD8 : out STD_LOGIC; 
+      PCI_CMD7 : out STD_LOGIC; 
+      PCI_CMD6 : out STD_LOGIC; 
+      PCI_CMD5 : out STD_LOGIC; 
+      PCI_CMD4 : out STD_LOGIC; 
+      PCI_CMD3 : out STD_LOGIC; 
+      PCI_CMD2 : out STD_LOGIC; 
+      PCI_CMD1 : out STD_LOGIC; 
+      PCI_CMD0 : out STD_LOGIC; 
+
+      REQUEST : in STD_LOGIC; 
+      REQUEST64 : in STD_LOGIC; 
+      REQUESTHOLD : in STD_LOGIC; 
+      COMPLETE : in STD_LOGIC; 
+
+      M_WRDN : in STD_LOGIC; 
+      M_READY : in STD_LOGIC; 
+      M_SRC_EN : out STD_LOGIC; 
+      M_DATA_VLD : out STD_LOGIC; 
+      M_CBE7 : in STD_LOGIC; 
+      M_CBE6 : in STD_LOGIC; 
+      M_CBE5 : in STD_LOGIC; 
+      M_CBE4 : in STD_LOGIC; 
+      M_CBE3 : in STD_LOGIC; 
+      M_CBE2 : in STD_LOGIC; 
+      M_CBE1 : in STD_LOGIC; 
+      M_CBE0 : in STD_LOGIC; 
+      TIME_OUT : out STD_LOGIC; 
+      M_FAIL64 : out STD_LOGIC; 
+      CFG_SELF : in STD_LOGIC; 
+
+      M_DATA : out STD_LOGIC; 
+      DR_BUS : out STD_LOGIC; 
+      I_IDLE : out STD_LOGIC; 
+      M_ADDR_N : out STD_LOGIC; 
+      IDLE : out STD_LOGIC; 
+      B_BUSY : out STD_LOGIC; 
+      S_DATA : out STD_LOGIC; 
+      BACKOFF : out STD_LOGIC; 
+
+      SLOT64 : in STD_LOGIC; 
+      INTR_N : in STD_LOGIC; 
+      PERRQ_N : out STD_LOGIC; 
+      SERRQ_N : out STD_LOGIC; 
+      KEEPOUT : in STD_LOGIC; 
+
+      CSR39 : out STD_LOGIC; 
+      CSR38 : out STD_LOGIC; 
+      CSR37 : out STD_LOGIC; 
+      CSR36 : out STD_LOGIC; 
+      CSR35 : out STD_LOGIC; 
+      CSR34 : out STD_LOGIC; 
+      CSR33 : out STD_LOGIC; 
+      CSR32 : out STD_LOGIC; 
+      CSR31 : out STD_LOGIC; 
+      CSR30 : out STD_LOGIC; 
+      CSR29 : out STD_LOGIC; 
+      CSR28 : out STD_LOGIC; 
+      CSR27 : out STD_LOGIC; 
+      CSR26 : out STD_LOGIC; 
+      CSR25 : out STD_LOGIC; 
+      CSR24 : out STD_LOGIC; 
+      CSR23 : out STD_LOGIC; 
+      CSR22 : out STD_LOGIC; 
+      CSR21 : out STD_LOGIC; 
+      CSR20 : out STD_LOGIC; 
+      CSR19 : out STD_LOGIC; 
+      CSR18 : out STD_LOGIC; 
+      CSR17 : out STD_LOGIC; 
+      CSR16 : out STD_LOGIC; 
+      CSR15 : out STD_LOGIC; 
+      CSR14 : out STD_LOGIC; 
+      CSR13 : out STD_LOGIC; 
+      CSR12 : out STD_LOGIC; 
+      CSR11 : out STD_LOGIC; 
+      CSR10 : out STD_LOGIC; 
+      CSR9 : out STD_LOGIC; 
+      CSR8 : out STD_LOGIC; 
+      CSR7 : out STD_LOGIC; 
+      CSR6 : out STD_LOGIC; 
+      CSR5 : out STD_LOGIC; 
+      CSR4 : out STD_LOGIC; 
+      CSR3 : out STD_LOGIC; 
+      CSR2 : out STD_LOGIC; 
+      CSR1 : out STD_LOGIC; 
+      CSR0 : out STD_LOGIC; 
+      SUB_DATA31 : in STD_LOGIC; 
+      SUB_DATA30 : in STD_LOGIC; 
+      SUB_DATA29 : in STD_LOGIC;
+      SUB_DATA28 : in STD_LOGIC;
+      SUB_DATA27 : in STD_LOGIC;
+      SUB_DATA26 : in STD_LOGIC;
+      SUB_DATA25 : in STD_LOGIC;
+      SUB_DATA24 : in STD_LOGIC;
+      SUB_DATA23 : in STD_LOGIC;
+      SUB_DATA22 : in STD_LOGIC;
+      SUB_DATA21 : in STD_LOGIC;
+      SUB_DATA20 : in STD_LOGIC;
+      SUB_DATA19 : in STD_LOGIC;
+      SUB_DATA18 : in STD_LOGIC;
+      SUB_DATA17 : in STD_LOGIC;
+      SUB_DATA16 : in STD_LOGIC;
+      SUB_DATA15 : in STD_LOGIC;
+      SUB_DATA14 : in STD_LOGIC;
+      SUB_DATA13 : in STD_LOGIC;
+      SUB_DATA12 : in STD_LOGIC;
+      SUB_DATA11 : in STD_LOGIC;
+      SUB_DATA10 : in STD_LOGIC;
+      SUB_DATA9 : in STD_LOGIC;
+      SUB_DATA8 : in STD_LOGIC;
+      SUB_DATA7 : in STD_LOGIC;
+      SUB_DATA6 : in STD_LOGIC;
+      SUB_DATA5 : in STD_LOGIC;
+      SUB_DATA4 : in STD_LOGIC;
+      SUB_DATA3 : in STD_LOGIC;
+      SUB_DATA2 : in STD_LOGIC;
+      SUB_DATA1 : in STD_LOGIC;
+      SUB_DATA0 : in STD_LOGIC;
+      CLK : in STD_LOGIC;
+      CLKX : in STD_LOGIC;
+      RST : out STD_LOGIC
+    );
+  end component;
+
+
+  signal LO: std_logic;
+  signal HI: std_logic;
+
+  signal OE_ADO_T64: std_logic;
+  signal OE_ADO_LT64: std_logic;
+  signal OE_ADO_LB64: std_logic;
+  signal OE_ADO_B64: std_logic;
+
+  signal OE_ADO_T: std_logic;
+  signal OE_ADO_LT: std_logic;
+  signal OE_ADO_LB: std_logic;
+  signal OE_ADO_B: std_logic;
+
+  signal OE_CBE64: std_logic;
+  signal OE_CBE: std_logic;
+
+  signal OE_PAR64: std_logic;
+  signal PAR64_I: std_logic;
+  signal PAR64_O: std_logic;
+
+  signal OE_PAR: std_logic;
+  signal PAR_I: std_logic;
+  signal PAR_O: std_logic;
+
+  signal OE_FRAME: std_logic;
+  signal FRAME_I: std_logic;
+  signal FRAME_O: std_logic;
+
+  signal OE_REQ64: std_logic;
+  signal REQ64_I: std_logic;
+  signal REQ64_O: std_logic;
+
+  signal OE_TRDY: std_logic;
+  signal TRDY_I: std_logic;
+  signal TRDY_O: std_logic;
+
+  signal OE_IRDY: std_logic;
+  signal IRDY_I: std_logic;
+  signal IRDY_O: std_logic;
+
+  signal OE_STOP: std_logic;
+  signal STOP_I: std_logic;
+  signal STOP_O: std_logic;
+
+  signal OE_DEVSEL: std_logic;
+  signal DEVSEL_I: std_logic;
+  signal DEVSEL_O: std_logic;
+
+  signal OE_ACK64: std_logic;
+  signal ACK64_I: std_logic;
+  signal ACK64_O: std_logic;
+
+  signal OE_PERR: std_logic;
+  signal PERR_I: std_logic;
+  signal PERR_O: std_logic;
+
+  signal OE_SERR: std_logic;
+  signal SERR_I: std_logic;
+
+  signal OE_REQ: std_logic;
+  signal REQ_OUT: std_logic;
+
+  signal OE_INTA: std_logic;
+
+  signal IDSEL_IN: std_logic;
+
+  signal GNT_IN: std_logic;
+
+  signal NUB: std_logic;
+  signal CLKX: std_logic;
+
+  signal RST_N: std_logic;
+
+  signal AD63: std_logic; 
+  signal AD62: std_logic; 
+  signal AD61: std_logic; 
+  signal AD60: std_logic; 
+  signal AD59: std_logic; 
+  signal AD58: std_logic; 
+  signal AD57: std_logic; 
+  signal AD56: std_logic; 
+  signal AD55: std_logic; 
+  signal AD54: std_logic; 
+  signal AD53: std_logic; 
+  signal AD52: std_logic; 
+  signal AD51: std_logic; 
+  signal AD50: std_logic; 
+  signal AD49: std_logic; 
+  signal AD48: std_logic; 
+  signal AD47: std_logic; 
+  signal AD46: std_logic; 
+  signal AD45: std_logic; 
+  signal AD44: std_logic; 
+  signal AD43: std_logic; 
+  signal AD42: std_logic; 
+  signal AD41: std_logic; 
+  signal AD40: std_logic; 
+  signal AD39: std_logic; 
+  signal AD38: std_logic; 
+  signal AD37: std_logic; 
+  signal AD36: std_logic; 
+  signal AD35: std_logic; 
+  signal AD34: std_logic; 
+  signal AD33: std_logic; 
+  signal AD32: std_logic; 
+  signal AD31: std_logic; 
+  signal AD30: std_logic; 
+  signal AD29: std_logic; 
+  signal AD28: std_logic; 
+  signal AD27: std_logic; 
+  signal AD26: std_logic; 
+  signal AD25: std_logic; 
+  signal AD24: std_logic; 
+  signal AD23: std_logic; 
+  signal AD22: std_logic; 
+  signal AD21: std_logic; 
+  signal AD20: std_logic; 
+  signal AD19: std_logic; 
+  signal AD18: std_logic; 
+  signal AD17: std_logic; 
+  signal AD16: std_logic; 
+  signal AD15: std_logic; 
+  signal AD14: std_logic; 
+  signal AD13: std_logic; 
+  signal AD12: std_logic; 
+  signal AD11: std_logic; 
+  signal AD10: std_logic; 
+  signal AD9: std_logic; 
+  signal AD8: std_logic; 
+  signal AD7: std_logic; 
+  signal AD6: std_logic; 
+  signal AD5: std_logic; 
+  signal AD4: std_logic; 
+  signal AD3: std_logic; 
+  signal AD2: std_logic; 
+  signal AD1: std_logic; 
+  signal AD0: std_logic; 
+
+  signal AD_I63: std_logic; 
+  signal AD_I62: std_logic; 
+  signal AD_I61: std_logic; 
+  signal AD_I60: std_logic; 
+  signal AD_I59: std_logic; 
+  signal AD_I58: std_logic; 
+  signal AD_I57: std_logic; 
+  signal AD_I56: std_logic; 
+  signal AD_I55: std_logic; 
+  signal AD_I54: std_logic; 
+  signal AD_I53: std_logic; 
+  signal AD_I52: std_logic; 
+  signal AD_I51: std_logic; 
+  signal AD_I50: std_logic; 
+  signal AD_I49: std_logic; 
+  signal AD_I48: std_logic; 
+  signal AD_I47: std_logic; 
+  signal AD_I46: std_logic; 
+  signal AD_I45: std_logic; 
+  signal AD_I44: std_logic; 
+  signal AD_I43: std_logic; 
+  signal AD_I42: std_logic; 
+  signal AD_I41: std_logic; 
+  signal AD_I40: std_logic; 
+  signal AD_I39: std_logic; 
+  signal AD_I38: std_logic; 
+  signal AD_I37: std_logic; 
+  signal AD_I36: std_logic; 
+  signal AD_I35: std_logic; 
+  signal AD_I34: std_logic; 
+  signal AD_I33: std_logic; 
+  signal AD_I32: std_logic; 
+  signal AD_I31: std_logic; 
+  signal AD_I30: std_logic; 
+  signal AD_I29: std_logic; 
+  signal AD_I28: std_logic; 
+  signal AD_I27: std_logic; 
+  signal AD_I26: std_logic; 
+  signal AD_I25: std_logic; 
+  signal AD_I24: std_logic; 
+  signal AD_I23: std_logic; 
+  signal AD_I22: std_logic; 
+  signal AD_I21: std_logic; 
+  signal AD_I20: std_logic; 
+  signal AD_I19: std_logic; 
+  signal AD_I18: std_logic; 
+  signal AD_I17: std_logic; 
+  signal AD_I16: std_logic; 
+  signal AD_I15: std_logic; 
+  signal AD_I14: std_logic; 
+  signal AD_I13: std_logic; 
+  signal AD_I12: std_logic; 
+  signal AD_I11: std_logic; 
+  signal AD_I10: std_logic; 
+  signal AD_I9: std_logic; 
+  signal AD_I8: std_logic; 
+  signal AD_I7: std_logic; 
+  signal AD_I6: std_logic; 
+  signal AD_I5: std_logic; 
+  signal AD_I4: std_logic; 
+  signal AD_I3: std_logic; 
+  signal AD_I2: std_logic; 
+  signal AD_I1: std_logic; 
+  signal AD_I0: std_logic; 
+
+  signal AD_O63: std_logic; 
+  signal AD_O62: std_logic; 
+  signal AD_O61: std_logic; 
+  signal AD_O60: std_logic; 
+  signal AD_O59: std_logic; 
+  signal AD_O58: std_logic; 
+  signal AD_O57: std_logic; 
+  signal AD_O56: std_logic; 
+  signal AD_O55: std_logic; 
+  signal AD_O54: std_logic; 
+  signal AD_O53: std_logic; 
+  signal AD_O52: std_logic; 
+  signal AD_O51: std_logic; 
+  signal AD_O50: std_logic; 
+  signal AD_O49: std_logic; 
+  signal AD_O48: std_logic; 
+  signal AD_O47: std_logic; 
+  signal AD_O46: std_logic; 
+  signal AD_O45: std_logic; 
+  signal AD_O44: std_logic; 
+  signal AD_O43: std_logic; 
+  signal AD_O42: std_logic; 
+  signal AD_O41: std_logic; 
+  signal AD_O40: std_logic; 
+  signal AD_O39: std_logic; 
+  signal AD_O38: std_logic; 
+  signal AD_O37: std_logic; 
+  signal AD_O36: std_logic; 
+  signal AD_O35: std_logic; 
+  signal AD_O34: std_logic; 
+  signal AD_O33: std_logic; 
+  signal AD_O32: std_logic; 
+  signal AD_O31: std_logic; 
+  signal AD_O30: std_logic; 
+  signal AD_O29: std_logic; 
+  signal AD_O28: std_logic; 
+  signal AD_O27: std_logic; 
+  signal AD_O26: std_logic; 
+  signal AD_O25: std_logic; 
+  signal AD_O24: std_logic; 
+  signal AD_O23: std_logic; 
+  signal AD_O22: std_logic; 
+  signal AD_O21: std_logic; 
+  signal AD_O20: std_logic; 
+  signal AD_O19: std_logic; 
+  signal AD_O18: std_logic; 
+  signal AD_O17: std_logic; 
+  signal AD_O16: std_logic; 
+  signal AD_O15: std_logic; 
+  signal AD_O14: std_logic; 
+  signal AD_O13: std_logic; 
+  signal AD_O12: std_logic; 
+  signal AD_O11: std_logic; 
+  signal AD_O10: std_logic; 
+  signal AD_O9: std_logic; 
+  signal AD_O8: std_logic; 
+  signal AD_O7: std_logic; 
+  signal AD_O6: std_logic; 
+  signal AD_O5: std_logic; 
+  signal AD_O4: std_logic; 
+  signal AD_O3: std_logic; 
+  signal AD_O2: std_logic; 
+  signal AD_O1: std_logic; 
+  signal AD_O0: std_logic; 
+
+  signal CBE_IN7: std_logic; 
+  signal CBE_IN6: std_logic; 
+  signal CBE_IN5: std_logic; 
+  signal CBE_IN4: std_logic; 
+  signal CBE_IN3: std_logic; 
+  signal CBE_IN2: std_logic; 
+  signal CBE_IN1: std_logic; 
+  signal CBE_IN0: std_logic; 
+
+  signal CBE_I7: std_logic; 
+  signal CBE_I6: std_logic; 
+  signal CBE_I5: std_logic; 
+  signal CBE_I4: std_logic; 
+  signal CBE_I3: std_logic; 
+  signal CBE_I2: std_logic; 
+  signal CBE_I1: std_logic; 
+  signal CBE_I0: std_logic; 
+
+  signal CBE_O7: std_logic; 
+  signal CBE_O6: std_logic; 
+  signal CBE_O5: std_logic; 
+  signal CBE_O4: std_logic; 
+  signal CBE_O3: std_logic; 
+  signal CBE_O2: std_logic; 
+  signal CBE_O1: std_logic; 
+  signal CBE_O0: std_logic; 
+
+
+begin
+
+  LO <= '0';
+  HI <= '1';
+
+  XPCI_ADB63: IOBUF_PCI66_3 port map
+              ( O => AD_I63, IO => AD_IO(63), I => AD_O63, T => OE_ADO_T64 );
+  XPCI_ADB62: IOBUF_PCI66_3 port map
+              ( O => AD_I62, IO => AD_IO(62), I => AD_O62, T => OE_ADO_T64 );
+  XPCI_ADB61: IOBUF_PCI66_3 port map
+              ( O => AD_I61, IO => AD_IO(61), I => AD_O61, T => OE_ADO_T64 );
+  XPCI_ADB60: IOBUF_PCI66_3 port map
+              ( O => AD_I60, IO => AD_IO(60), I => AD_O60, T => OE_ADO_T64 );
+  XPCI_ADB59: IOBUF_PCI66_3 port map
+              ( O => AD_I59, IO => AD_IO(59), I => AD_O59, T => OE_ADO_T64 );
+  XPCI_ADB58: IOBUF_PCI66_3 port map
+              ( O => AD_I58, IO => AD_IO(58), I => AD_O58, T => OE_ADO_T64 );
+  XPCI_ADB57: IOBUF_PCI66_3 port map
+              ( O => AD_I57, IO => AD_IO(57), I => AD_O57, T => OE_ADO_T64 );
+  XPCI_ADB56: IOBUF_PCI66_3 port map
+              ( O => AD_I56, IO => AD_IO(56), I => AD_O56, T => OE_ADO_T64 );
+
+  XPCI_ADB55: IOBUF_PCI66_3 port map
+              ( O => AD_I55, IO => AD_IO(55), I => AD_O55, T => OE_ADO_LT64);
+  XPCI_ADB54: IOBUF_PCI66_3 port map
+              ( O => AD_I54, IO => AD_IO(54), I => AD_O54, T => OE_ADO_LT64);
+  XPCI_ADB53: IOBUF_PCI66_3 port map
+              ( O => AD_I53, IO => AD_IO(53), I => AD_O53, T => OE_ADO_LT64);
+  XPCI_ADB52: IOBUF_PCI66_3 port map
+              ( O => AD_I52, IO => AD_IO(52), I => AD_O52, T => OE_ADO_LT64);
+  XPCI_ADB51: IOBUF_PCI66_3 port map
+              ( O => AD_I51, IO => AD_IO(51), I => AD_O51, T => OE_ADO_LT64);
+  XPCI_ADB50: IOBUF_PCI66_3 port map
+              ( O => AD_I50, IO => AD_IO(50), I => AD_O50, T => OE_ADO_LT64);
+  XPCI_ADB49: IOBUF_PCI66_3 port map
+              ( O => AD_I49, IO => AD_IO(49), I => AD_O49, T => OE_ADO_LT64);
+  XPCI_ADB48: IOBUF_PCI66_3 port map
+              ( O => AD_I48, IO => AD_IO(48), I => AD_O48, T => OE_ADO_LT64);
+
+  XPCI_ADB47: IOBUF_PCI66_3 port map
+              ( O => AD_I47, IO => AD_IO(47), I => AD_O47, T => OE_ADO_LB64);
+  XPCI_ADB46: IOBUF_PCI66_3 port map
+              ( O => AD_I46, IO => AD_IO(46), I => AD_O46, T => OE_ADO_LB64);
+  XPCI_ADB45: IOBUF_PCI66_3 port map
+              ( O => AD_I45, IO => AD_IO(45), I => AD_O45, T => OE_ADO_LB64);
+  XPCI_ADB44: IOBUF_PCI66_3 port map
+              ( O => AD_I44, IO => AD_IO(44), I => AD_O44, T => OE_ADO_LB64);
+  XPCI_ADB43: IOBUF_PCI66_3 port map
+              ( O => AD_I43, IO => AD_IO(43), I => AD_O43, T => OE_ADO_LB64);
+  XPCI_ADB42: IOBUF_PCI66_3 port map
+              ( O => AD_I42, IO => AD_IO(42), I => AD_O42, T => OE_ADO_LB64);
+  XPCI_ADB41: IOBUF_PCI66_3 port map
+              ( O => AD_I41, IO => AD_IO(41), I => AD_O41, T => OE_ADO_LB64);
+  XPCI_ADB40: IOBUF_PCI66_3 port map
+              ( O => AD_I40, IO => AD_IO(40), I => AD_O40, T => OE_ADO_LB64);
+
+  XPCI_ADB39: IOBUF_PCI66_3 port map
+              ( O => AD_I39, IO => AD_IO(39), I => AD_O39, T => OE_ADO_B64 );
+  XPCI_ADB38: IOBUF_PCI66_3 port map
+              ( O => AD_I38, IO => AD_IO(38), I => AD_O38, T => OE_ADO_B64 );
+  XPCI_ADB37: IOBUF_PCI66_3 port map
+              ( O => AD_I37, IO => AD_IO(37), I => AD_O37, T => OE_ADO_B64 );
+  XPCI_ADB36: IOBUF_PCI66_3 port map
+              ( O => AD_I36, IO => AD_IO(36), I => AD_O36, T => OE_ADO_B64 );
+  XPCI_ADB35: IOBUF_PCI66_3 port map
+              ( O => AD_I35, IO => AD_IO(35), I => AD_O35, T => OE_ADO_B64 );
+  XPCI_ADB34: IOBUF_PCI66_3 port map
+              ( O => AD_I34, IO => AD_IO(34), I => AD_O34, T => OE_ADO_B64 );
+  XPCI_ADB33: IOBUF_PCI66_3 port map
+              ( O => AD_I33, IO => AD_IO(33), I => AD_O33, T => OE_ADO_B64 );
+  XPCI_ADB32: IOBUF_PCI66_3 port map
+              ( O => AD_I32, IO => AD_IO(32), I => AD_O32, T => OE_ADO_B64 );
+
+  XPCI_ADB31: IOBUF_PCI66_3 port map
+              ( O => AD_I31, IO => AD_IO(31), I => AD_O31, T => OE_ADO_T   );
+  XPCI_ADB30: IOBUF_PCI66_3 port map
+              ( O => AD_I30, IO => AD_IO(30), I => AD_O30, T => OE_ADO_T   );
+  XPCI_ADB29: IOBUF_PCI66_3 port map
+              ( O => AD_I29, IO => AD_IO(29), I => AD_O29, T => OE_ADO_T   );
+  XPCI_ADB28: IOBUF_PCI66_3 port map
+              ( O => AD_I28, IO => AD_IO(28), I => AD_O28, T => OE_ADO_T   );
+  XPCI_ADB27: IOBUF_PCI66_3 port map
+              ( O => AD_I27, IO => AD_IO(27), I => AD_O27, T => OE_ADO_T   );
+  XPCI_ADB26: IOBUF_PCI66_3 port map
+              ( O => AD_I26, IO => AD_IO(26), I => AD_O26, T => OE_ADO_T   );
+  XPCI_ADB25: IOBUF_PCI66_3 port map
+              ( O => AD_I25, IO => AD_IO(25), I => AD_O25, T => OE_ADO_T   );
+  XPCI_ADB24: IOBUF_PCI66_3 port map
+              ( O => AD_I24, IO => AD_IO(24), I => AD_O24, T => OE_ADO_T   );
+
+  XPCI_ADB23: IOBUF_PCI66_3 port map
+              ( O => AD_I23, IO => AD_IO(23), I => AD_O23, T => OE_ADO_LT  );
+  XPCI_ADB22: IOBUF_PCI66_3 port map
+              ( O => AD_I22, IO => AD_IO(22), I => AD_O22, T => OE_ADO_LT  );
+  XPCI_ADB21: IOBUF_PCI66_3 port map
+              ( O => AD_I21, IO => AD_IO(21), I => AD_O21, T => OE_ADO_LT  );
+  XPCI_ADB20: IOBUF_PCI66_3 port map
+              ( O => AD_I20, IO => AD_IO(20), I => AD_O20, T => OE_ADO_LT  );
+  XPCI_ADB19: IOBUF_PCI66_3 port map
+              ( O => AD_I19, IO => AD_IO(19), I => AD_O19, T => OE_ADO_LT  );
+  XPCI_ADB18: IOBUF_PCI66_3 port map
+              ( O => AD_I18, IO => AD_IO(18), I => AD_O18, T => OE_ADO_LT  );
+  XPCI_ADB17: IOBUF_PCI66_3 port map
+              ( O => AD_I17, IO => AD_IO(17), I => AD_O17, T => OE_ADO_LT  );
+  XPCI_ADB16: IOBUF_PCI66_3 port map
+              ( O => AD_I16, IO => AD_IO(16), I => AD_O16, T => OE_ADO_LT  );
+
+  XPCI_ADB15: IOBUF_PCI66_3 port map
+              ( O => AD_I15, IO => AD_IO(15), I => AD_O15, T => OE_ADO_LB  );
+  XPCI_ADB14: IOBUF_PCI66_3 port map
+              ( O => AD_I14, IO => AD_IO(14), I => AD_O14, T => OE_ADO_LB  );
+  XPCI_ADB13: IOBUF_PCI66_3 port map
+              ( O => AD_I13, IO => AD_IO(13), I => AD_O13, T => OE_ADO_LB  );
+  XPCI_ADB12: IOBUF_PCI66_3 port map
+              ( O => AD_I12, IO => AD_IO(12), I => AD_O12, T => OE_ADO_LB  );
+  XPCI_ADB11: IOBUF_PCI66_3 port map
+              ( O => AD_I11, IO => AD_IO(11), I => AD_O11, T => OE_ADO_LB  );
+  XPCI_ADB10: IOBUF_PCI66_3 port map
+              ( O => AD_I10, IO => AD_IO(10), I => AD_O10, T => OE_ADO_LB  );
+  XPCI_ADB9 : IOBUF_PCI66_3 port map
+              ( O => AD_I9 , IO => AD_IO( 9), I => AD_O9 , T => OE_ADO_LB  );
+  XPCI_ADB8 : IOBUF_PCI66_3 port map
+              ( O => AD_I8 , IO => AD_IO( 8), I => AD_O8 , T => OE_ADO_LB  );
+
+  XPCI_ADB7 : IOBUF_PCI66_3 port map
+              ( O => AD_I7 , IO => AD_IO( 7), I => AD_O7 , T => OE_ADO_B   );
+  XPCI_ADB6 : IOBUF_PCI66_3 port map
+              ( O => AD_I6 , IO => AD_IO( 6), I => AD_O6 , T => OE_ADO_B   );
+  XPCI_ADB5 : IOBUF_PCI66_3 port map
+              ( O => AD_I5 , IO => AD_IO( 5), I => AD_O5 , T => OE_ADO_B   );
+  XPCI_ADB4 : IOBUF_PCI66_3 port map
+              ( O => AD_I4 , IO => AD_IO( 4), I => AD_O4 , T => OE_ADO_B   );
+  XPCI_ADB3 : IOBUF_PCI66_3 port map
+              ( O => AD_I3 , IO => AD_IO( 3), I => AD_O3 , T => OE_ADO_B   );
+  XPCI_ADB2 : IOBUF_PCI66_3 port map
+              ( O => AD_I2 , IO => AD_IO( 2), I => AD_O2 , T => OE_ADO_B   );
+  XPCI_ADB1 : IOBUF_PCI66_3 port map
+              ( O => AD_I1 , IO => AD_IO( 1), I => AD_O1 , T => OE_ADO_B   );
+  XPCI_ADB0 : IOBUF_PCI66_3 port map
+              ( O => AD_I0 , IO => AD_IO( 0), I => AD_O0 , T => OE_ADO_B   );
+
+  XPCI_ADQ63: FDPE port map
+              ( Q => AD63, D => AD_I63, C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ62: FDPE port map
+              ( Q => AD62, D => AD_I62, C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ61: FDPE port map
+              ( Q => AD61, D => AD_I61, C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ60: FDPE port map
+              ( Q => AD60, D => AD_I60, C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ59: FDPE port map
+              ( Q => AD59, D => AD_I59, C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ58: FDPE port map
+              ( Q => AD58, D => AD_I58, C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ57: FDPE port map
+              ( Q => AD57, D => AD_I57, C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ56: FDPE port map
+              ( Q => AD56, D => AD_I56, C => CLKX, CE => HI, PRE => RST );
+
+  XPCI_ADQ55: FDPE port map
+              ( Q => AD55, D => AD_I55, C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ54: FDPE port map
+              ( Q => AD54, D => AD_I54, C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ53: FDPE port map
+              ( Q => AD53, D => AD_I53, C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ52: FDPE port map
+              ( Q => AD52, D => AD_I52, C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ51: FDPE port map
+              ( Q => AD51, D => AD_I51, C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ50: FDPE port map
+              ( Q => AD50, D => AD_I50, C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ49: FDPE port map
+              ( Q => AD49, D => AD_I49, C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ48: FDPE port map
+              ( Q => AD48, D => AD_I48, C => CLKX, CE => HI, PRE => RST );
+
+  XPCI_ADQ47: FDPE port map
+              ( Q => AD47, D => AD_I47, C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ46: FDPE port map
+              ( Q => AD46, D => AD_I46, C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ45: FDPE port map
+              ( Q => AD45, D => AD_I45, C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ44: FDPE port map
+              ( Q => AD44, D => AD_I44, C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ43: FDPE port map
+              ( Q => AD43, D => AD_I43, C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ42: FDPE port map
+              ( Q => AD42, D => AD_I42, C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ41: FDPE port map
+              ( Q => AD41, D => AD_I41, C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ40: FDPE port map
+              ( Q => AD40, D => AD_I40, C => CLKX, CE => HI, PRE => RST );
+
+  XPCI_ADQ39: FDPE port map
+              ( Q => AD39, D => AD_I39, C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ38: FDPE port map
+              ( Q => AD38, D => AD_I38, C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ37: FDPE port map
+              ( Q => AD37, D => AD_I37, C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ36: FDPE port map
+              ( Q => AD36, D => AD_I36, C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ35: FDPE port map
+              ( Q => AD35, D => AD_I35, C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ34: FDPE port map
+              ( Q => AD34, D => AD_I34, C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ33: FDPE port map
+              ( Q => AD33, D => AD_I33, C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ32: FDPE port map
+              ( Q => AD32, D => AD_I32, C => CLKX, CE => HI, PRE => RST );
+
+  XPCI_ADQ31: FDPE port map
+              ( Q => AD31, D => AD_I31, C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ30: FDPE port map
+              ( Q => AD30, D => AD_I30, C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ29: FDPE port map
+              ( Q => AD29, D => AD_I29, C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ28: FDPE port map
+              ( Q => AD28, D => AD_I28, C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ27: FDPE port map
+              ( Q => AD27, D => AD_I27, C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ26: FDPE port map
+              ( Q => AD26, D => AD_I26, C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ25: FDPE port map
+              ( Q => AD25, D => AD_I25, C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ24: FDPE port map
+              ( Q => AD24, D => AD_I24, C => CLKX, CE => HI, PRE => RST );
+
+  XPCI_ADQ23: FDPE port map
+              ( Q => AD23, D => AD_I23, C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ22: FDPE port map
+              ( Q => AD22, D => AD_I22, C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ21: FDPE port map
+              ( Q => AD21, D => AD_I21, C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ20: FDPE port map
+              ( Q => AD20, D => AD_I20, C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ19: FDPE port map
+              ( Q => AD19, D => AD_I19, C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ18: FDPE port map
+              ( Q => AD18, D => AD_I18, C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ17: FDPE port map
+              ( Q => AD17, D => AD_I17, C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ16: FDPE port map
+              ( Q => AD16, D => AD_I16, C => CLKX, CE => HI, PRE => RST );
+
+  XPCI_ADQ15: FDPE port map
+              ( Q => AD15, D => AD_I15, C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ14: FDPE port map
+              ( Q => AD14, D => AD_I14, C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ13: FDPE port map
+              ( Q => AD13, D => AD_I13, C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ12: FDPE port map
+              ( Q => AD12, D => AD_I12, C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ11: FDPE port map
+              ( Q => AD11, D => AD_I11, C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ10: FDPE port map
+              ( Q => AD10, D => AD_I10, C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ9 : FDPE port map
+              ( Q => AD9 , D => AD_I9 , C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ8 : FDPE port map
+              ( Q => AD8 , D => AD_I8 , C => CLKX, CE => HI, PRE => RST );
+
+  XPCI_ADQ7 : FDPE port map
+              ( Q => AD7 , D => AD_I7 , C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ6 : FDPE port map
+              ( Q => AD6 , D => AD_I6 , C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ5 : FDPE port map
+              ( Q => AD5 , D => AD_I5 , C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ4 : FDPE port map
+              ( Q => AD4 , D => AD_I4 , C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ3 : FDPE port map
+              ( Q => AD3 , D => AD_I3 , C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ2 : FDPE port map
+              ( Q => AD2 , D => AD_I2 , C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ1 : FDPE port map
+              ( Q => AD1 , D => AD_I1 , C => CLKX, CE => HI, PRE => RST );
+  XPCI_ADQ0 : FDPE port map
+              ( Q => AD0 , D => AD_I0 , C => CLKX, CE => HI, PRE => RST );
+
+  XPCI_CBB7 : IOBUF_PCI66_3 port map
+              ( O => CBE_I7 , IO => CBE_IO(7), I => CBE_O7 , T => OE_CBE64 );
+  XPCI_CBB6 : IOBUF_PCI66_3 port map  
+              ( O => CBE_I6 , IO => CBE_IO(6), I => CBE_O6 , T => OE_CBE64 );
+  XPCI_CBB5 : IOBUF_PCI66_3 port map  
+              ( O => CBE_I5 , IO => CBE_IO(5), I => CBE_O5 , T => OE_CBE64 );
+  XPCI_CBB4 : IOBUF_PCI66_3 port map  
+              ( O => CBE_I4 , IO => CBE_IO(4), I => CBE_O4 , T => OE_CBE64 );
+  XPCI_CBB3 : IOBUF_PCI66_3 port map  
+              ( O => CBE_I3 , IO => CBE_IO(3), I => CBE_O3 , T => OE_CBE   );
+  XPCI_CBB2 : IOBUF_PCI66_3 port map  
+              ( O => CBE_I2 , IO => CBE_IO(2), I => CBE_O2 , T => OE_CBE   );
+  XPCI_CBB1 : IOBUF_PCI66_3 port map  
+              ( O => CBE_I1 , IO => CBE_IO(1), I => CBE_O1 , T => OE_CBE   );
+  XPCI_CBB0 : IOBUF_PCI66_3 port map  
+              ( O => CBE_I0 , IO => CBE_IO(0), I => CBE_O0 , T => OE_CBE   );
+ 
+  XPCI_CBQ7 : FDPE port map
+              ( Q => CBE_IN7 , D => CBE_I7 , C => CLKX, CE => HI, PRE => RST );
+  XPCI_CBQ6 : FDPE port map
+              ( Q => CBE_IN6 , D => CBE_I6 , C => CLKX, CE => HI, PRE => RST );
+  XPCI_CBQ5 : FDPE port map
+              ( Q => CBE_IN5 , D => CBE_I5 , C => CLKX, CE => HI, PRE => RST );
+  XPCI_CBQ4 : FDPE port map
+              ( Q => CBE_IN4 , D => CBE_I4 , C => CLKX, CE => HI, PRE => RST );
+  XPCI_CBQ3 : FDPE port map
+              ( Q => CBE_IN3 , D => CBE_I3 , C => CLKX, CE => HI, PRE => RST );
+  XPCI_CBQ2 : FDPE port map
+              ( Q => CBE_IN2 , D => CBE_I2 , C => CLKX, CE => HI, PRE => RST );
+  XPCI_CBQ1 : FDPE port map
+              ( Q => CBE_IN1 , D => CBE_I1 , C => CLKX, CE => HI, PRE => RST );
+  XPCI_CBQ0 : FDPE port map
+              ( Q => CBE_IN0 , D => CBE_I0 , C => CLKX, CE => HI, PRE => RST );
+
+  XPCI_PAR64 : IOBUF_PCI66_3 port map
+              ( O => PAR64_I, IO => PAR64_IO, I => PAR64_O, T => OE_PAR64 );
+ 
+  XPCI_PAR : IOBUF_PCI66_3 port map
+              ( O => PAR_I, IO => PAR_IO, I => PAR_O, T => OE_PAR );
+
+  XPCI_FRAME : IOBUF_PCI66_3 port map
+              ( O => FRAME_I, IO => FRAME_IO, I => FRAME_O, T => OE_FRAME );
+
+  XPCI_REQ64 : IOBUF_PCI66_3 port map
+              ( O => REQ64_I, IO => REQ64_IO, I => REQ64_O, T => OE_REQ64 );
+
+  XPCI_TRDY : IOBUF_PCI66_3 port map
+              ( O => TRDY_I, IO => TRDY_IO, I => TRDY_O, T => OE_TRDY );
+
+  XPCI_IRDY : IOBUF_PCI66_3 port map
+              ( O => IRDY_I, IO => IRDY_IO, I => IRDY_O, T => OE_IRDY );
+
+  XPCI_STOP : IOBUF_PCI66_3 port map
+              ( O => STOP_I, IO => STOP_IO, I => STOP_O, T => OE_STOP );
+
+  XPCI_DEVSEL : IOBUF_PCI66_3 port map
+              ( O => DEVSEL_I, IO => DEVSEL_IO, I => DEVSEL_O, T => OE_DEVSEL );
+
+  XPCI_ACK64 : IOBUF_PCI66_3 port map
+              ( O => ACK64_I, IO => ACK64_IO, I => ACK64_O, T => OE_ACK64 );
+
+  XPCI_PERR : IOBUF_PCI66_3 port map
+              ( O => PERR_I, IO => PERR_IO, I => PERR_O, T => OE_PERR );
+
+  XPCI_SERR : IOBUF_PCI66_3 port map
+              ( O => SERR_I, IO => SERR_IO, I => LO, T => OE_SERR );
+
+  XPCI_REQ : OBUFT_PCI66_3 port map
+              ( O => REQ_O, I => REQ_OUT, T => OE_REQ );
+
+  XPCI_INTA : OBUFT_PCI66_3 port map
+              ( O => INTA_O, I => LO, T => OE_INTA );
+
+  XPCI_IDSEL : IBUF_PCI66_3 port map
+              ( O => IDSEL_IN, I => IDSEL_I );
+
+  XPCI_GNT : IBUF_PCI66_3 port map
+              ( O => GNT_IN, I => GNT_I );
+
+  XPCI_RST : IBUF_PCI66_3 port map
+              ( O => RST_N, I => RST_I );
+
+  XPCI_CKI : IBUFG_PCI66_3 port map
+              ( O => NUB, I => PCLK );
+
+  XPCI_CKA : BUFG port map
+              ( O => CLK, I => NUB );
+
+  XPCI_CKB : BUFG port map
+              ( O => CLKX, I => NUB );
+
+  PCI_LC : PCI_LC_I port map (
+    OE_ADO_T64          => OE_ADO_T64,
+    OE_ADO_T            => OE_ADO_T,
+    OE_ADO_LT64         => OE_ADO_LT64,
+    OE_ADO_LT           => OE_ADO_LT,
+    OE_ADO_LB64         => OE_ADO_LB64,
+    OE_ADO_LB           => OE_ADO_LB,
+    OE_ADO_B64          => OE_ADO_B64,
+    OE_ADO_B            => OE_ADO_B,
+    AD63                => AD63,
+    AD62                => AD62,
+    AD61                => AD61,
+    AD60                => AD60,
+    AD59                => AD59,
+    AD58                => AD58,
+    AD57                => AD57,
+    AD56                => AD56,
+    AD55                => AD55,
+    AD54                => AD54,
+    AD53                => AD53,
+    AD52                => AD52,
+    AD51                => AD51,
+    AD50                => AD50,
+    AD49                => AD49,
+    AD48                => AD48,
+    AD47                => AD47,
+    AD46                => AD46,
+    AD45                => AD45,
+    AD44                => AD44,
+    AD43                => AD43,
+    AD42                => AD42,
+    AD41                => AD41,
+    AD40                => AD40,
+    AD39                => AD39,
+    AD38                => AD38,
+    AD37                => AD37,
+    AD36                => AD36,
+    AD35                => AD35,
+    AD34                => AD34,
+    AD33                => AD33,
+    AD32                => AD32,
+    AD31                => AD31,
+    AD30                => AD30,
+    AD29                => AD29,
+    AD28                => AD28,
+    AD27                => AD27,
+    AD26                => AD26,
+    AD25                => AD25,
+    AD24                => AD24,
+    AD23                => AD23,
+    AD22                => AD22,
+    AD21                => AD21,
+    AD20                => AD20,
+    AD19                => AD19,
+    AD18                => AD18,
+    AD17                => AD17,
+    AD16                => AD16,
+    AD15                => AD15,
+    AD14                => AD14,
+    AD13                => AD13,
+    AD12                => AD12,
+    AD11                => AD11,
+    AD10                => AD10,
+    AD9                 => AD9,
+    AD8                 => AD8,
+    AD7                 => AD7,
+    AD6                 => AD6,
+    AD5                 => AD5,
+    AD4                 => AD4,
+    AD3                 => AD3,
+    AD2                 => AD2,
+    AD1                 => AD1,
+    AD0                 => AD0,
+    AD_O63              => AD_O63,
+    AD_O62              => AD_O62,
+    AD_O61              => AD_O61,
+    AD_O60              => AD_O60,
+    AD_O59              => AD_O59,
+    AD_O58              => AD_O58,
+    AD_O57              => AD_O57,
+    AD_O56              => AD_O56,
+    AD_O55              => AD_O55,
+    AD_O54              => AD_O54,
+    AD_O53              => AD_O53,
+    AD_O52              => AD_O52,
+    AD_O51              => AD_O51,
+    AD_O50              => AD_O50,
+    AD_O49              => AD_O49,
+    AD_O48              => AD_O48,
+    AD_O47              => AD_O47,
+    AD_O46              => AD_O46,
+    AD_O45              => AD_O45,
+    AD_O44              => AD_O44,
+    AD_O43              => AD_O43,
+    AD_O42              => AD_O42,
+    AD_O41              => AD_O41,
+    AD_O40              => AD_O40,
+    AD_O39              => AD_O39,
+    AD_O38              => AD_O38,
+    AD_O37              => AD_O37,
+    AD_O36              => AD_O36,
+    AD_O35              => AD_O35,
+    AD_O34              => AD_O34,
+    AD_O33              => AD_O33,
+    AD_O32              => AD_O32,
+    AD_O31              => AD_O31,
+    AD_O30              => AD_O30,
+    AD_O29              => AD_O29,
+    AD_O28              => AD_O28,
+    AD_O27              => AD_O27,
+    AD_O26              => AD_O26,
+    AD_O25              => AD_O25,
+    AD_O24              => AD_O24,
+    AD_O23              => AD_O23,
+    AD_O22              => AD_O22,
+    AD_O21              => AD_O21,
+    AD_O20              => AD_O20,
+    AD_O19              => AD_O19,
+    AD_O18              => AD_O18,
+    AD_O17              => AD_O17,
+    AD_O16              => AD_O16,
+    AD_O15              => AD_O15,
+    AD_O14              => AD_O14,
+    AD_O13              => AD_O13,
+    AD_O12              => AD_O12,
+    AD_O11              => AD_O11,
+    AD_O10              => AD_O10,
+    AD_O9               => AD_O9,
+    AD_O8               => AD_O8,
+    AD_O7               => AD_O7,
+    AD_O6               => AD_O6,
+    AD_O5               => AD_O5,
+    AD_O4               => AD_O4,
+    AD_O3               => AD_O3,
+    AD_O2               => AD_O2,
+    AD_O1               => AD_O1,
+    AD_O0               => AD_O0,
+
+    OE_CBE64            => OE_CBE64,
+    OE_CBE              => OE_CBE,
+    CBE_I7              => CBE_I7,
+    CBE_I6              => CBE_I6,
+    CBE_I5              => CBE_I5,
+    CBE_I4              => CBE_I4,
+    CBE_I3              => CBE_I3,
+    CBE_I2              => CBE_I2,
+    CBE_I1              => CBE_I1,
+    CBE_I0              => CBE_I0,
+    CBE_IN7             => CBE_IN7,
+    CBE_IN6             => CBE_IN6,
+    CBE_IN5             => CBE_IN5,
+    CBE_IN4             => CBE_IN4,
+    CBE_IN3             => CBE_IN3,
+    CBE_IN2             => CBE_IN2,
+    CBE_IN1             => CBE_IN1,
+    CBE_IN0             => CBE_IN0,
+    CBE_O7              => CBE_O7,
+    CBE_O6              => CBE_O6,
+    CBE_O5              => CBE_O5,
+    CBE_O4              => CBE_O4,
+    CBE_O3              => CBE_O3,
+    CBE_O2              => CBE_O2,
+    CBE_O1              => CBE_O1,
+    CBE_O0              => CBE_O0,
+
+    OE_PAR64            => OE_PAR64,
+    PAR64_I             => PAR64_I,
+    PAR64_O             => PAR64_O,
+
+    OE_PAR              => OE_PAR,
+    PAR_I               => PAR_I,
+    PAR_O               => PAR_O,
+
+    OE_FRAME            => OE_FRAME,
+    FRAME_I             => FRAME_I,
+    FRAME_O             => FRAME_O,
+
+    OE_REQ64            => OE_REQ64,
+    REQ64_I             => REQ64_I,
+    REQ64_O             => REQ64_O,
+
+    OE_TRDY             => OE_TRDY,
+    TRDY_I              => TRDY_I,
+    TRDY_O              => TRDY_O,
+
+    OE_IRDY             => OE_IRDY,
+    IRDY_I              => IRDY_I,
+    IRDY_O              => IRDY_O,
+
+    OE_STOP             => OE_STOP,
+    STOP_I              => STOP_I,
+    STOP_O              => STOP_O,
+
+    OE_DEVSEL           => OE_DEVSEL,
+    DEVSEL_I            => DEVSEL_I,
+    DEVSEL_O            => DEVSEL_O,
+
+    OE_ACK64            => OE_ACK64,
+    ACK64_I             => ACK64_I,
+    ACK64_O             => ACK64_O,
+
+    IDSEL_IN            => IDSEL_IN,
+
+    OE_INTA             => OE_INTA,
+
+    OE_PERR             => OE_PERR,
+    PERR_I              => PERR_I,
+    PERR_O              => PERR_O,
+
+    OE_SERR             => OE_SERR,
+    SERR_I              => SERR_I,
+
+    OE_REQ              => OE_REQ,
+    REQ_OUT             => REQ_OUT,
+
+    GNT_IN              => GNT_IN,
+
+    RST_N               => RST_N,
+
+    CFG255              => CFG(255),
+    CFG254              => CFG(254),
+    CFG253              => CFG(253),
+    CFG252              => CFG(252),
+    CFG251              => CFG(251),
+    CFG250              => CFG(250),
+    CFG249              => CFG(249),
+    CFG248              => CFG(248),
+    CFG247              => CFG(247),
+    CFG246              => CFG(246),
+    CFG245              => CFG(245),
+    CFG244              => CFG(244),
+    CFG243              => CFG(243),
+    CFG242              => CFG(242),
+    CFG241              => CFG(241),
+    CFG240              => CFG(240),
+    CFG239              => CFG(239),
+    CFG238              => CFG(238),
+    CFG237              => CFG(237),
+    CFG236              => CFG(236),
+    CFG235              => CFG(235),
+    CFG234              => CFG(234),
+    CFG233              => CFG(233),
+    CFG232              => CFG(232),
+    CFG231              => CFG(231),
+    CFG230              => CFG(230),
+    CFG229              => CFG(229),
+    CFG228              => CFG(228),
+    CFG227              => CFG(227),
+    CFG226              => CFG(226),
+    CFG225              => CFG(225),
+    CFG224              => CFG(224),
+    CFG223              => CFG(223),
+    CFG222              => CFG(222),
+    CFG221              => CFG(221),
+    CFG220              => CFG(220),
+    CFG219              => CFG(219),
+    CFG218              => CFG(218),
+    CFG217              => CFG(217),
+    CFG216              => CFG(216),
+    CFG215              => CFG(215),
+    CFG214              => CFG(214),
+    CFG213              => CFG(213),
+    CFG212              => CFG(212),
+    CFG211              => CFG(211),
+    CFG210              => CFG(210),
+    CFG209              => CFG(209),
+    CFG208              => CFG(208),
+    CFG207              => CFG(207),
+    CFG206              => CFG(206),
+    CFG205              => CFG(205),
+    CFG204              => CFG(204),
+    CFG203              => CFG(203),
+    CFG202              => CFG(202),
+    CFG201              => CFG(201),
+    CFG200              => CFG(200),
+    CFG199              => CFG(199),
+    CFG198              => CFG(198),
+    CFG197              => CFG(197),
+    CFG196              => CFG(196),
+    CFG195              => CFG(195),
+    CFG194              => CFG(194),
+    CFG193              => CFG(193),
+    CFG192              => CFG(192),
+    CFG191              => CFG(191),
+    CFG190              => CFG(190),
+    CFG189              => CFG(189),
+    CFG188              => CFG(188),
+    CFG187              => CFG(187),
+    CFG186              => CFG(186),
+    CFG185              => CFG(185),
+    CFG184              => CFG(184),
+    CFG183              => CFG(183),
+    CFG182              => CFG(182),
+    CFG181              => CFG(181),
+    CFG180              => CFG(180),
+    CFG179              => CFG(179),
+    CFG178              => CFG(178),
+    CFG177              => CFG(177),
+    CFG176              => CFG(176),
+    CFG175              => CFG(175),
+    CFG174              => CFG(174),
+    CFG173              => CFG(173),
+    CFG172              => CFG(172),
+    CFG171              => CFG(171),
+    CFG170              => CFG(170),
+    CFG169              => CFG(169),
+    CFG168              => CFG(168),
+    CFG167              => CFG(167),
+    CFG166              => CFG(166),
+    CFG165              => CFG(165),
+    CFG164              => CFG(164),
+    CFG163              => CFG(163),
+    CFG162              => CFG(162),
+    CFG161              => CFG(161),
+    CFG160              => CFG(160),
+    CFG159              => CFG(159),
+    CFG158              => CFG(158),
+    CFG157              => CFG(157),
+    CFG156              => CFG(156),
+    CFG155              => CFG(155),
+    CFG154              => CFG(154),
+    CFG153              => CFG(153),
+    CFG152              => CFG(152),
+    CFG151              => CFG(151),
+    CFG150              => CFG(150),
+    CFG149              => CFG(149),
+    CFG148              => CFG(148),
+    CFG147              => CFG(147),
+    CFG146              => CFG(146),
+    CFG145              => CFG(145),
+    CFG144              => CFG(144),
+    CFG143              => CFG(143),
+    CFG142              => CFG(142),
+    CFG141              => CFG(141),
+    CFG140              => CFG(140),
+    CFG139              => CFG(139),
+    CFG138              => CFG(138),
+    CFG137              => CFG(137),
+    CFG136              => CFG(136),
+    CFG135              => CFG(135),
+    CFG134              => CFG(134),
+    CFG133              => CFG(133),
+    CFG132              => CFG(132),
+    CFG131              => CFG(131),
+    CFG130              => CFG(130),
+    CFG129              => CFG(129),
+    CFG128              => CFG(128),
+    CFG127              => CFG(127),
+    CFG126              => CFG(126),
+    CFG125              => CFG(125),
+    CFG124              => CFG(124),
+    CFG123              => CFG(123),
+    CFG122              => CFG(122),
+    CFG121              => CFG(121),
+    CFG120              => CFG(120),
+    CFG119              => CFG(119),
+    CFG118              => CFG(118),
+    CFG117              => CFG(117),
+    CFG116              => CFG(116),
+    CFG115              => CFG(115),
+    CFG114              => CFG(114),
+    CFG113              => CFG(113),
+    CFG112              => CFG(112),
+    CFG111              => CFG(111),
+    CFG110              => CFG(110),
+    CFG109              => CFG(109),
+    CFG108              => CFG(108),
+    CFG107              => CFG(107),
+    CFG106              => CFG(106),
+    CFG105              => CFG(105),
+    CFG104              => CFG(104),
+    CFG103              => CFG(103),
+    CFG102              => CFG(102),
+    CFG101              => CFG(101),
+    CFG100              => CFG(100),
+    CFG99               => CFG(99),
+    CFG98               => CFG(98),
+    CFG97               => CFG(97),
+    CFG96               => CFG(96),
+    CFG95               => CFG(95),
+    CFG94               => CFG(94),
+    CFG93               => CFG(93),
+    CFG92               => CFG(92),
+    CFG91               => CFG(91),
+    CFG90               => CFG(90),
+    CFG89               => CFG(89),
+    CFG88               => CFG(88),
+    CFG87               => CFG(87),
+    CFG86               => CFG(86),
+    CFG85               => CFG(85),
+    CFG84               => CFG(84),
+    CFG83               => CFG(83),
+    CFG82               => CFG(82),
+    CFG81               => CFG(81),
+    CFG80               => CFG(80),
+    CFG79               => CFG(79),
+    CFG78               => CFG(78),
+    CFG77               => CFG(77),
+    CFG76               => CFG(76),
+    CFG75               => CFG(75),
+    CFG74               => CFG(74),
+    CFG73               => CFG(73),
+    CFG72               => CFG(72),
+    CFG71               => CFG(71),
+    CFG70               => CFG(70),
+    CFG69               => CFG(69),
+    CFG68               => CFG(68),
+    CFG67               => CFG(67),
+    CFG66               => CFG(66),
+    CFG65               => CFG(65),
+    CFG64               => CFG(64),
+    CFG63               => CFG(63),
+    CFG62               => CFG(62),
+    CFG61               => CFG(61),
+    CFG60               => CFG(60),
+    CFG59               => CFG(59),
+    CFG58               => CFG(58),
+    CFG57               => CFG(57),
+    CFG56               => CFG(56),
+    CFG55               => CFG(55),
+    CFG54               => CFG(54),
+    CFG53               => CFG(53),
+    CFG52               => CFG(52),
+    CFG51               => CFG(51),
+    CFG50               => CFG(50),
+    CFG49               => CFG(49),
+    CFG48               => CFG(48),
+    CFG47               => CFG(47),
+    CFG46               => CFG(46),
+    CFG45               => CFG(45),
+    CFG44               => CFG(44),
+    CFG43               => CFG(43),
+    CFG42               => CFG(42),
+    CFG41               => CFG(41),
+    CFG40               => CFG(40),
+    CFG39               => CFG(39),
+    CFG38               => CFG(38),
+    CFG37               => CFG(37),
+    CFG36               => CFG(36),
+    CFG35               => CFG(35),
+    CFG34               => CFG(34),
+    CFG33               => CFG(33),
+    CFG32               => CFG(32),
+    CFG31               => CFG(31),
+    CFG30               => CFG(30),
+    CFG29               => CFG(29),
+    CFG28               => CFG(28),
+    CFG27               => CFG(27),
+    CFG26               => CFG(26),
+    CFG25               => CFG(25),
+    CFG24               => CFG(24),
+    CFG23               => CFG(23),
+    CFG22               => CFG(22),
+    CFG21               => CFG(21),
+    CFG20               => CFG(20),
+    CFG19               => CFG(19),
+    CFG18               => CFG(18),
+    CFG17               => CFG(17),
+    CFG16               => CFG(16),
+    CFG15               => CFG(15),
+    CFG14               => CFG(14),
+    CFG13               => CFG(13),
+    CFG12               => CFG(12),
+    CFG11               => CFG(11),
+    CFG10               => CFG(10),
+    CFG9                => CFG(9),
+    CFG8                => CFG(8),
+    CFG7                => CFG(7),
+    CFG6                => CFG(6),
+    CFG5                => CFG(5),
+    CFG4                => CFG(4),
+    CFG3                => CFG(3),
+    CFG2                => CFG(2),
+    CFG1                => CFG(1),
+    CFG0                => CFG(0),
+
+    FRAMEQ_N            => FRAMEQ_N,
+    REQ64Q_N            => REQ64Q_N,
+    TRDYQ_N             => TRDYQ_N,
+    IRDYQ_N             => IRDYQ_N,
+    STOPQ_N             => STOPQ_N,
+    DEVSELQ_N           => DEVSELQ_N,
+    ACK64Q_N            => ACK64Q_N,
+
+    ADDR31              => ADDR(31),
+    ADDR30              => ADDR(30),
+    ADDR29              => ADDR(29),
+    ADDR28              => ADDR(28),
+    ADDR27              => ADDR(27),
+    ADDR26              => ADDR(26),
+    ADDR25              => ADDR(25),
+    ADDR24              => ADDR(24),
+    ADDR23              => ADDR(23),
+    ADDR22              => ADDR(22),
+    ADDR21              => ADDR(21),
+    ADDR20              => ADDR(20),
+    ADDR19              => ADDR(19),
+    ADDR18              => ADDR(18),
+    ADDR17              => ADDR(17),
+    ADDR16              => ADDR(16),
+    ADDR15              => ADDR(15),
+    ADDR14              => ADDR(14),
+    ADDR13              => ADDR(13),
+    ADDR12              => ADDR(12),
+    ADDR11              => ADDR(11),
+    ADDR10              => ADDR(10),
+    ADDR9               => ADDR(9),
+    ADDR8               => ADDR(8),
+    ADDR7               => ADDR(7),
+    ADDR6               => ADDR(6),
+    ADDR5               => ADDR(5),
+    ADDR4               => ADDR(4),
+    ADDR3               => ADDR(3),
+    ADDR2               => ADDR(2),
+    ADDR1               => ADDR(1),
+    ADDR0               => ADDR(0),
+
+    ADIO63              => ADIO(63),
+    ADIO62              => ADIO(62),
+    ADIO61              => ADIO(61),
+    ADIO60              => ADIO(60),
+    ADIO59              => ADIO(59),
+    ADIO58              => ADIO(58),
+    ADIO57              => ADIO(57),
+    ADIO56              => ADIO(56),
+    ADIO55              => ADIO(55),
+    ADIO54              => ADIO(54),
+    ADIO53              => ADIO(53),
+    ADIO52              => ADIO(52),
+    ADIO51              => ADIO(51),
+    ADIO50              => ADIO(50),
+    ADIO49              => ADIO(49),
+    ADIO48              => ADIO(48),
+    ADIO47              => ADIO(47),
+    ADIO46              => ADIO(46),
+    ADIO45              => ADIO(45),
+    ADIO44              => ADIO(44),
+    ADIO43              => ADIO(43),
+    ADIO42              => ADIO(42),
+    ADIO41              => ADIO(41),
+    ADIO40              => ADIO(40),
+    ADIO39              => ADIO(39),
+    ADIO38              => ADIO(38),
+    ADIO37              => ADIO(37),
+    ADIO36              => ADIO(36),
+    ADIO35              => ADIO(35),
+    ADIO34              => ADIO(34),
+    ADIO33              => ADIO(33),
+    ADIO32              => ADIO(32),
+    ADIO31              => ADIO(31),
+    ADIO30              => ADIO(30),
+    ADIO29              => ADIO(29),
+    ADIO28              => ADIO(28),
+    ADIO27              => ADIO(27),
+    ADIO26              => ADIO(26),
+    ADIO25              => ADIO(25),
+    ADIO24              => ADIO(24),
+    ADIO23              => ADIO(23),
+    ADIO22              => ADIO(22),
+    ADIO21              => ADIO(21),
+    ADIO20              => ADIO(20),
+    ADIO19              => ADIO(19),
+    ADIO18              => ADIO(18),
+    ADIO17              => ADIO(17),
+    ADIO16              => ADIO(16),
+    ADIO15              => ADIO(15),
+    ADIO14              => ADIO(14),
+    ADIO13              => ADIO(13),
+    ADIO12              => ADIO(12),
+    ADIO11              => ADIO(11),
+    ADIO10              => ADIO(10),
+    ADIO9               => ADIO(9),
+    ADIO8               => ADIO(8),
+    ADIO7               => ADIO(7),
+    ADIO6               => ADIO(6),
+    ADIO5               => ADIO(5),
+    ADIO4               => ADIO(4),
+    ADIO3               => ADIO(3),
+    ADIO2               => ADIO(2),
+    ADIO1               => ADIO(1),
+    ADIO0               => ADIO(0),
+
+    CFG_VLD             => CFG_VLD,
+    CFG_HIT             => CFG_HIT,
+    C_TERM              => C_TERM,
+    C_READY             => C_READY,
+    ADDR_VLD            => ADDR_VLD,
+    BASE_HIT7           => BASE_HIT(7),
+    BASE_HIT6           => BASE_HIT(6),
+    BASE_HIT5           => BASE_HIT(5),
+    BASE_HIT4           => BASE_HIT(4),
+    BASE_HIT3           => BASE_HIT(3),
+    BASE_HIT2           => BASE_HIT(2),
+    BASE_HIT1           => BASE_HIT(1),
+    BASE_HIT0           => BASE_HIT(0),
+    S_CYCLE64           => S_CYCLE64,
+    S_TERM              => S_TERM,
+    S_READY             => S_READY,
+    S_ABORT             => S_ABORT,
+    S_WRDN              => S_WRDN,
+    S_SRC_EN            => S_SRC_EN,
+    S_DATA_VLD          => S_DATA_VLD,
+    S_CBE7              => S_CBE(7),
+    S_CBE6              => S_CBE(6),
+    S_CBE5              => S_CBE(5),
+    S_CBE4              => S_CBE(4),
+    S_CBE3              => S_CBE(3),
+    S_CBE2              => S_CBE(2),
+    S_CBE1              => S_CBE(1),
+    S_CBE0              => S_CBE(0),
+    PCI_CMD15           => PCI_CMD(15),
+    PCI_CMD14           => PCI_CMD(14),
+    PCI_CMD13           => PCI_CMD(13),
+    PCI_CMD12           => PCI_CMD(12),
+    PCI_CMD11           => PCI_CMD(11),
+    PCI_CMD10           => PCI_CMD(10),
+    PCI_CMD9            => PCI_CMD(9),
+    PCI_CMD8            => PCI_CMD(8),
+    PCI_CMD7            => PCI_CMD(7),
+    PCI_CMD6            => PCI_CMD(6),
+    PCI_CMD5            => PCI_CMD(5),
+    PCI_CMD4            => PCI_CMD(4),
+    PCI_CMD3            => PCI_CMD(3),
+    PCI_CMD2            => PCI_CMD(2),
+    PCI_CMD1            => PCI_CMD(1),
+    PCI_CMD0            => PCI_CMD(0),
+
+    REQUEST             => REQUEST,
+    REQUEST64           => REQUEST64,
+    REQUESTHOLD         => REQUESTHOLD,
+    COMPLETE            => COMPLETE,
+
+    M_WRDN              => M_WRDN,
+    M_READY             => M_READY,
+    M_SRC_EN            => M_SRC_EN,
+    M_DATA_VLD          => M_DATA_VLD,
+    M_CBE7              => M_CBE(7),
+    M_CBE6              => M_CBE(6),
+    M_CBE5              => M_CBE(5),
+    M_CBE4              => M_CBE(4),
+    M_CBE3              => M_CBE(3),
+    M_CBE2              => M_CBE(2),
+    M_CBE1              => M_CBE(1),
+    M_CBE0              => M_CBE(0),
+    TIME_OUT            => TIME_OUT,
+    M_FAIL64            => M_FAIL64,
+    CFG_SELF            => CFG_SELF,
+
+    M_DATA              => M_DATA,
+    DR_BUS              => DR_BUS,
+    I_IDLE              => I_IDLE,
+    M_ADDR_N            => M_ADDR_N,
+    IDLE                => IDLE,
+    B_BUSY              => B_BUSY,
+    S_DATA              => S_DATA,
+    BACKOFF             => BACKOFF,
+
+    SLOT64              => SLOT64,
+    INTR_N              => INTR_N,
+    PERRQ_N             => PERRQ_N,
+    SERRQ_N             => SERRQ_N,
+    KEEPOUT             => KEEPOUT,
+
+    CSR39               => CSR(39),
+    CSR38               => CSR(38),
+    CSR37               => CSR(37),
+    CSR36               => CSR(36),
+    CSR35               => CSR(35),
+    CSR34               => CSR(34),
+    CSR33               => CSR(33),
+    CSR32               => CSR(32),
+    CSR31               => CSR(31),
+    CSR30               => CSR(30),
+    CSR29               => CSR(29),
+    CSR28               => CSR(28),
+    CSR27               => CSR(27),
+    CSR26               => CSR(26),
+    CSR25               => CSR(25),
+    CSR24               => CSR(24),
+    CSR23               => CSR(23),
+    CSR22               => CSR(22),
+    CSR21               => CSR(21),
+    CSR20               => CSR(20),
+    CSR19               => CSR(19),
+    CSR18               => CSR(18),
+    CSR17               => CSR(17),
+    CSR16               => CSR(16),
+    CSR15               => CSR(15),
+    CSR14               => CSR(14),
+    CSR13               => CSR(13),
+    CSR12               => CSR(12),
+    CSR11               => CSR(11),
+    CSR10               => CSR(10),
+    CSR9                => CSR(9),
+    CSR8                => CSR(8),
+    CSR7                => CSR(7),
+    CSR6                => CSR(6),
+    CSR5                => CSR(5),
+    CSR4                => CSR(4),
+    CSR3                => CSR(3),
+    CSR2                => CSR(2),
+    CSR1                => CSR(1),
+    CSR0                => CSR(0),
+    SUB_DATA31          => SUB_DATA(31),
+    SUB_DATA30          => SUB_DATA(30),
+    SUB_DATA29          => SUB_DATA(29),
+    SUB_DATA28          => SUB_DATA(28),
+    SUB_DATA27          => SUB_DATA(27),
+    SUB_DATA26          => SUB_DATA(26),
+    SUB_DATA25          => SUB_DATA(25),
+    SUB_DATA24          => SUB_DATA(24),
+    SUB_DATA23          => SUB_DATA(23),
+    SUB_DATA22          => SUB_DATA(22),
+    SUB_DATA21          => SUB_DATA(21),
+    SUB_DATA20          => SUB_DATA(20),
+    SUB_DATA19          => SUB_DATA(19),
+    SUB_DATA18          => SUB_DATA(18),
+    SUB_DATA17          => SUB_DATA(17),
+    SUB_DATA16          => SUB_DATA(16),
+    SUB_DATA15          => SUB_DATA(15),
+    SUB_DATA14          => SUB_DATA(14),
+    SUB_DATA13          => SUB_DATA(13),
+    SUB_DATA12          => SUB_DATA(12),
+    SUB_DATA11          => SUB_DATA(11),
+    SUB_DATA10          => SUB_DATA(10),
+    SUB_DATA9           => SUB_DATA(9),
+    SUB_DATA8           => SUB_DATA(8),
+    SUB_DATA7           => SUB_DATA(7),
+    SUB_DATA6           => SUB_DATA(6),
+    SUB_DATA5           => SUB_DATA(5),
+    SUB_DATA4           => SUB_DATA(4),
+    SUB_DATA3           => SUB_DATA(3),
+    SUB_DATA2           => SUB_DATA(2),
+    SUB_DATA1           => SUB_DATA(1),
+    SUB_DATA0           => SUB_DATA(0),
+    CLK                 => CLK,
+    CLKX                => CLKX,
+    RST                 => RST
+  );
+
+
+end WRAPPER;

@@ -1,40 +1,44 @@
-Sat Sep 28 19:38:01 JST 2024
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL;
-use IEEE.STD_LOGIC_ARITH.ALL;
+Thu Nov  7 19:29:05 JST 2024
+////////////////////////////////////// ADDRESS OF IFPGA REGISTERS
+#define PIPE_DMA_STAT      0x0   // gpreg0(0) : pipe calc sts | available but not used in api
+#define PIPE_RST           0x4
+#define CNF_CMD_ADR       0x80
+#define CNF_DAT_ADR       0x84
+#define PIPE_DMA_WRITE    0x88   // unused
+#define PIPE_DMA_READ     0x8C   // unused
+#define NPIPE_IFPGA       0x8C  // PGPG_REG3 @ ifpga.vhd
 
+/********************************************************************
+ * PIPE_DMA_WRITE (31 downto 28) : pfpga chip select
+ *       "        (27 downto 19) : num of 64-bit WARD
+ *       "        (18 downto  0) : offset of pfpga address
+ *
+ * PIPE_DMA_READ  (31 downto 28) : pfpga chip select
+ *       "        (27 downto 19) : num of 64-bit WARD
+ *       "        (18 downto  0) : offset of pfpga address
+ ********************************************************************/
 
-entity WRITECOMB_CHECK is
-  port (
-    MEM_WEHA : in std_logic;
-    MEM_WELA : in std_logic;
-    IS_ERR : out std_logic_vector(25 downto 0);
-    RST : in  std_logic;
-    CLK : in  std_logic
-    );
-end WRITECOMB_CHECK;
+/*****************************************************
+0x5000 - 0x501f : i 0
+0x5020 - 0x503f : i 1
+0x5040 - 0x505f : i 2
+0x5060 - 0x507f : i 3
+0x5080 - 0x5fff : -- none --
 
-architecture rtl of WRITECOMB_CHECK is
+0x6000 - 0x60ff : f 0
+0x6100 - 0x61ff : f 1
+0x6200 - 0x62ff : f 2
+0x6300 - 0x63ff : f 3
+0x6400 - 0x6fff : -- none --
 
-signal cnt,cntr : std_logic_vector(25 downto 0) := (others=>'0');
+0x7000          : set n
+0x7001          : run
 
-begin
+0x40000 -       : j
+********************************************/
+#define ADR_IPSET 0x5000
+#define ADR_FOSET 0x6000
+#define ADR_SETN  0x7000
+#define ADR_RUN   0x7008
 
-  IS_ERR <= cnt;
-
-  cntr <= cnt;
-
-  process(CLK, RST, MEM_WEHA, MEM_WELA) begin
-    if(RST = '1') then
-      cnt <= (others=>'0');
-    elsif(CLK'event and CLK='1') then
-      if(MEM_WEHA='1' AND MEM_WELA='0') then
-        cnt <= cntr + "00000000000000000000000001";
-      elsif(MEM_WEHA='0' AND MEM_WELA='1') then
-        cnt <= cntr + "00000000000000000000000001";
-      end if;
-    end if;
-  end process;
-
-end rtl;
+#define ADR_JPSET 0x40000

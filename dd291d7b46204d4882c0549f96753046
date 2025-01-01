@@ -1,18 +1,15 @@
-Sun Nov 17 19:42:28 JST 2024
-FILES
-{
-	VHDL_FILE = pgfpga.vhd;
-}
-COMPILER_SETTINGS_LIST
-{
-	COMPILER_SETTINGS = pgfpga;
-}
-SIMULATOR_SETTINGS_LIST
-{
-	SIMULATOR_SETTINGS = pgfpga;
-}
-SOFTWARE_SETTINGS_LIST
-{
-	SOFTWARE_SETTINGS = Debug;
-	SOFTWARE_SETTINGS = Release;
-}
+Wed Jan  1 19:30:18 JST 2025
+#!/usr/bin/env python3
+import cv2
+import glob
+from datetime import datetime
+import time 
+
+while(True):
+    tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S_%f')
+    print(tnow)
+
+    with open(".tc~", "w") as file:
+        file.write(tnow +"\n")
+
+    time.sleep(3)

@@ -1,15 +1,3 @@
-Wed Jan  1 19:30:18 JST 2025
-#!/usr/bin/env python3
-import cv2
-import glob
-from datetime import datetime
-import time 
-
-while(True):
-    tnow = datetime.now().strftime('%Y%m%d_%H_%M_%S_%f')
-    print(tnow)
-
-    with open(".tc~", "w") as file:
-        file.write(tnow +"\n")
-
-    time.sleep(3)
+Thu Jan  2 19:27:24 JST 2025
+MODULE local_write
+SUBMODULE local_write

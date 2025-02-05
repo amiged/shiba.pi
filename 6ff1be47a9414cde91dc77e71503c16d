@@ -1,471 +1,206 @@
-Tue Jan 28 19:30:43 JST 2025
--- C:\CYGWIN\HOME\ADMINISTRATOR\FKIT\PCI64\PROJ
--- VHDL Test Bench created by
--- HDL Bencher 6.1i
--- Thu Dec 16 15:39:41 2004
--- 
--- Notes:
--- 1) This testbench has been automatically generated from
---   your Test Bench Waveform
--- 2) To use this as a user modifiable testbench do the following:
---   - Save it as a file with a .vhd extension (i.e. File->Save As...)
---   - Add it to your project as a testbench source (i.e. Project->Add Source...)
--- 
-
-LIBRARY IEEE;
-USE IEEE.STD_LOGIC_1164.ALL;
-USE IEEE.STD_LOGIC_UNSIGNED.ALL;
-USE IEEE.STD_LOGIC_ARITH.ALL;
-USE IEEE.STD_LOGIC_TEXTIO.ALL;
-USE STD.TEXTIO.ALL;
-
-ENTITY sim_pfpga_dma IS
-END sim_pfpga_dma;
-
-ARCHITECTURE testbench_arch OF sim_pfpga_dma IS
--- If you get a compiler error on the following line,
--- from the menu do Options->Configuration select VHDL 87
-FILE RESULTS: TEXT OPEN WRITE_MODE IS "results.txt";
-	COMPONENT pfpga_dma
-		PORT (
-			PGPG_REG3 : In  std_logic_vector (31 DOWNTO 0);
-			GPREG0 : Out  std_logic_vector (31 DOWNTO 0);
-			Hit_PGPG_REG3 : In  std_logic;
-			MEM_ADA : In  std_logic_vector (12 DOWNTO 0);
-			MEM_WEHA : In  std_logic;
-			MEM_WELA : In  std_logic;
-			MEM_DTIA : In  std_logic_vector (63 DOWNTO 0);
-			DMAW_ENABLE : Out  std_logic_vector (3 DOWNTO 0);
-			DMAR_ENABLE : Out  std_logic_vector (3 DOWNTO 0);
-			DBUS_Port : Out  std_logic_vector (63 DOWNTO 0);
-			DBUS_idata : In  std_logic_vector (63 DOWNTO 0);
-			DBUS_HiZ : Out  std_logic;
-			MEM_ADB : Out  std_logic_vector (12 DOWNTO 0);
-			MEM_WEHB : Out  std_logic;
-			MEM_WELB : Out  std_logic;
-			MEM_DTIB : Out  std_logic_vector (63 DOWNTO 0);
-			MEM_DTOB : In  std_logic_vector (63 DOWNTO 0);
-			RST : In  std_logic;
-			CLK : In  std_logic
-		);
-	END COMPONENT;
-
-	SIGNAL PGPG_REG3 : std_logic_vector (31 DOWNTO 0);
-	SIGNAL GPREG0 : std_logic_vector (31 DOWNTO 0);
-	SIGNAL Hit_PGPG_REG3 : std_logic;
-	SIGNAL MEM_ADA : std_logic_vector (12 DOWNTO 0);
-	SIGNAL MEM_WEHA : std_logic;
-	SIGNAL MEM_WELA : std_logic;
-	SIGNAL MEM_DTIA : std_logic_vector (63 DOWNTO 0);
-	SIGNAL DMAW_ENABLE : std_logic_vector (3 DOWNTO 0);
-	SIGNAL DMAR_ENABLE : std_logic_vector (3 DOWNTO 0);
-	SIGNAL DBUS_Port : std_logic_vector (63 DOWNTO 0);
-	SIGNAL DBUS_idata : std_logic_vector (63 DOWNTO 0);
-	SIGNAL DBUS_HiZ : std_logic;
-	SIGNAL MEM_ADB : std_logic_vector (12 DOWNTO 0);
-	SIGNAL MEM_WEHB : std_logic;
-	SIGNAL MEM_WELB : std_logic;
-	SIGNAL MEM_DTIB : std_logic_vector (63 DOWNTO 0);
-	SIGNAL MEM_DTOB : std_logic_vector (63 DOWNTO 0);
-	SIGNAL RST : std_logic;
-	SIGNAL CLK : std_logic;
-
-BEGIN
-	UUT : pfpga_dma
-	PORT MAP (
-		PGPG_REG3 => PGPG_REG3,
-		GPREG0 => GPREG0,
-		Hit_PGPG_REG3 => Hit_PGPG_REG3,
-		MEM_ADA => MEM_ADA,
-		MEM_WEHA => MEM_WEHA,
-		MEM_WELA => MEM_WELA,
-		MEM_DTIA => MEM_DTIA,
-		DMAW_ENABLE => DMAW_ENABLE,
-		DMAR_ENABLE => DMAR_ENABLE,
-		DBUS_Port => DBUS_Port,
-		DBUS_idata => DBUS_idata,
-		DBUS_HiZ => DBUS_HiZ,
-		MEM_ADB => MEM_ADB,
-		MEM_WEHB => MEM_WEHB,
-		MEM_WELB => MEM_WELB,
-		MEM_DTIB => MEM_DTIB,
-		MEM_DTOB => MEM_DTOB,
-		RST => RST,
-		CLK => CLK
-	);
-
-	PROCESS -- clock process for CLK,
-	BEGIN
-		CLOCK_LOOP : LOOP
-		CLK <= transport '0';
-		WAIT FOR 5 ns;
-		CLK <= transport '1';
-		WAIT FOR 50 ns;
-		CLK <= transport '0';
-		WAIT FOR 35 ns;
-		WAIT FOR 10 ns;
-		END LOOP CLOCK_LOOP;
-	END PROCESS;
-
-	PROCESS   -- Process for CLK
-		VARIABLE TX_OUT : LINE;
-		VARIABLE TX_ERROR : INTEGER := 0;
-
-		PROCEDURE CHECK_GPREG0(
-			next_GPREG0 : std_logic_vector (31 DOWNTO 0);
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			-- If compiler error ("/=" is ambiguous) occurs in the next line of code
-			-- change compiler settings to use explicit declarations only
-			IF (GPREG0 /= next_GPREG0) THEN 
-				STD.TEXTIO.write(TX_LOC,string'("Error at time="));
-				STD.TEXTIO.write(TX_LOC, TX_TIME);
-				STD.TEXTIO.write(TX_LOC,string'("ns GPREG0="));
-				IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, GPREG0);
-				STD.TEXTIO.write(TX_LOC, string'(", Expected = "));
-				IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, next_GPREG0);
-				STD.TEXTIO.write(TX_LOC, string'(" "));
-				TX_STR(TX_LOC.all'range) := TX_LOC.all;
-				STD.TEXTIO.writeline(results, TX_LOC);
-				STD.TEXTIO.Deallocate(TX_LOC);
-				ASSERT (FALSE) REPORT TX_STR SEVERITY ERROR;
-				TX_ERROR := TX_ERROR + 1;
-			END IF;
-		END;
-
-		PROCEDURE CHECK_DMAW_ENABLE(
-			next_DMAW_ENABLE : std_logic_vector (3 DOWNTO 0);
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			-- If compiler error ("/=" is ambiguous) occurs in the next line of code
-			-- change compiler settings to use explicit declarations only
-			IF (DMAW_ENABLE /= next_DMAW_ENABLE) THEN 
-				STD.TEXTIO.write(TX_LOC,string'("Error at time="));
-				STD.TEXTIO.write(TX_LOC, TX_TIME);
-				STD.TEXTIO.write(TX_LOC,string'("ns DMAW_ENABLE="));
-				IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, DMAW_ENABLE);
-				STD.TEXTIO.write(TX_LOC, string'(", Expected = "));
-				IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, next_DMAW_ENABLE);
-				STD.TEXTIO.write(TX_LOC, string'(" "));
-				TX_STR(TX_LOC.all'range) := TX_LOC.all;
-				STD.TEXTIO.writeline(results, TX_LOC);
-				STD.TEXTIO.Deallocate(TX_LOC);
-				ASSERT (FALSE) REPORT TX_STR SEVERITY ERROR;
-				TX_ERROR := TX_ERROR + 1;
-			END IF;
-		END;
-
-		PROCEDURE CHECK_DMAR_ENABLE(
-			next_DMAR_ENABLE : std_logic_vector (3 DOWNTO 0);
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			-- If compiler error ("/=" is ambiguous) occurs in the next line of code
-			-- change compiler settings to use explicit declarations only
-			IF (DMAR_ENABLE /= next_DMAR_ENABLE) THEN 
-				STD.TEXTIO.write(TX_LOC,string'("Error at time="));
-				STD.TEXTIO.write(TX_LOC, TX_TIME);
-				STD.TEXTIO.write(TX_LOC,string'("ns DMAR_ENABLE="));
-				IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, DMAR_ENABLE);
-				STD.TEXTIO.write(TX_LOC, string'(", Expected = "));
-				IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, next_DMAR_ENABLE);
-				STD.TEXTIO.write(TX_LOC, string'(" "));
-				TX_STR(TX_LOC.all'range) := TX_LOC.all;
-				STD.TEXTIO.writeline(results, TX_LOC);
-				STD.TEXTIO.Deallocate(TX_LOC);
-				ASSERT (FALSE) REPORT TX_STR SEVERITY ERROR;
-				TX_ERROR := TX_ERROR + 1;
-			END IF;
-		END;
-
-		PROCEDURE CHECK_DBUS_Port(
-			next_DBUS_Port : std_logic_vector (63 DOWNTO 0);
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			-- If compiler error ("/=" is ambiguous) occurs in the next line of code
-			-- change compiler settings to use explicit declarations only
-			IF (DBUS_Port /= next_DBUS_Port) THEN 
-				STD.TEXTIO.write(TX_LOC,string'("Error at time="));
-				STD.TEXTIO.write(TX_LOC, TX_TIME);
-				STD.TEXTIO.write(TX_LOC,string'("ns DBUS_Port="));
-				IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, DBUS_Port);
-				STD.TEXTIO.write(TX_LOC, string'(", Expected = "));
-				IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, next_DBUS_Port);
-				STD.TEXTIO.write(TX_LOC, string'(" "));
-				TX_STR(TX_LOC.all'range) := TX_LOC.all;
-				STD.TEXTIO.writeline(results, TX_LOC);
-				STD.TEXTIO.Deallocate(TX_LOC);
-				ASSERT (FALSE) REPORT TX_STR SEVERITY ERROR;
-				TX_ERROR := TX_ERROR + 1;
-			END IF;
-		END;
-
-		PROCEDURE CHECK_DBUS_HiZ(
-			next_DBUS_HiZ : std_logic;
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			-- If compiler error ("/=" is ambiguous) occurs in the next line of code
-			-- change compiler settings to use explicit declarations only
-			IF (DBUS_HiZ /= next_DBUS_HiZ) THEN 
-				STD.TEXTIO.write(TX_LOC,string'("Error at time="));
-				STD.TEXTIO.write(TX_LOC, TX_TIME);
-				STD.TEXTIO.write(TX_LOC,string'("ns DBUS_HiZ="));
-				IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, DBUS_HiZ);
-				STD.TEXTIO.write(TX_LOC, string'(", Expected = "));
-				IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, next_DBUS_HiZ);
-				STD.TEXTIO.write(TX_LOC, string'(" "));
-				TX_STR(TX_LOC.all'range) := TX_LOC.all;
-				STD.TEXTIO.writeline(results, TX_LOC);
-				STD.TEXTIO.Deallocate(TX_LOC);
-				ASSERT (FALSE) REPORT TX_STR SEVERITY ERROR;
-				TX_ERROR := TX_ERROR + 1;
-			END IF;
-		END;
-
-		PROCEDURE CHECK_MEM_ADB(
-			next_MEM_ADB : std_logic_vector (12 DOWNTO 0);
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			-- If compiler error ("/=" is ambiguous) occurs in the next line of code
-			-- change compiler settings to use explicit declarations only
-			IF (MEM_ADB /= next_MEM_ADB) THEN 
-				STD.TEXTIO.write(TX_LOC,string'("Error at time="));
-				STD.TEXTIO.write(TX_LOC, TX_TIME);
-				STD.TEXTIO.write(TX_LOC,string'("ns MEM_ADB="));
-				IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, MEM_ADB);
-				STD.TEXTIO.write(TX_LOC, string'(", Expected = "));
-				IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, next_MEM_ADB);
-				STD.TEXTIO.write(TX_LOC, string'(" "));
-				TX_STR(TX_LOC.all'range) := TX_LOC.all;
-				STD.TEXTIO.writeline(results, TX_LOC);
-				STD.TEXTIO.Deallocate(TX_LOC);
-				ASSERT (FALSE) REPORT TX_STR SEVERITY ERROR;
-				TX_ERROR := TX_ERROR + 1;
-			END IF;
-		END;
-
-		PROCEDURE CHECK_MEM_WEHB(
-			next_MEM_WEHB : std_logic;
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			-- If compiler error ("/=" is ambiguous) occurs in the next line of code
-			-- change compiler settings to use explicit declarations only
-			IF (MEM_WEHB /= next_MEM_WEHB) THEN 
-				STD.TEXTIO.write(TX_LOC,string'("Error at time="));
-				STD.TEXTIO.write(TX_LOC, TX_TIME);
-				STD.TEXTIO.write(TX_LOC,string'("ns MEM_WEHB="));
-				IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, MEM_WEHB);
-				STD.TEXTIO.write(TX_LOC, string'(", Expected = "));
-				IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, next_MEM_WEHB);
-				STD.TEXTIO.write(TX_LOC, string'(" "));
-				TX_STR(TX_LOC.all'range) := TX_LOC.all;
-				STD.TEXTIO.writeline(results, TX_LOC);
-				STD.TEXTIO.Deallocate(TX_LOC);
-				ASSERT (FALSE) REPORT TX_STR SEVERITY ERROR;
-				TX_ERROR := TX_ERROR + 1;
-			END IF;
-		END;
-
-		PROCEDURE CHECK_MEM_WELB(
-			next_MEM_WELB : std_logic;
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			-- If compiler error ("/=" is ambiguous) occurs in the next line of code
-			-- change compiler settings to use explicit declarations only
-			IF (MEM_WELB /= next_MEM_WELB) THEN 
-				STD.TEXTIO.write(TX_LOC,string'("Error at time="));
-				STD.TEXTIO.write(TX_LOC, TX_TIME);
-				STD.TEXTIO.write(TX_LOC,string'("ns MEM_WELB="));
-				IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, MEM_WELB);
-				STD.TEXTIO.write(TX_LOC, string'(", Expected = "));
-				IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, next_MEM_WELB);
-				STD.TEXTIO.write(TX_LOC, string'(" "));
-				TX_STR(TX_LOC.all'range) := TX_LOC.all;
-				STD.TEXTIO.writeline(results, TX_LOC);
-				STD.TEXTIO.Deallocate(TX_LOC);
-				ASSERT (FALSE) REPORT TX_STR SEVERITY ERROR;
-				TX_ERROR := TX_ERROR + 1;
-			END IF;
-		END;
-
-		PROCEDURE CHECK_MEM_DTIB(
-			next_MEM_DTIB : std_logic_vector (63 DOWNTO 0);
-			TX_TIME : INTEGER
-		) IS
-			VARIABLE TX_STR : String(1 to 4096);
-			VARIABLE TX_LOC : LINE;
-		BEGIN
-			-- If compiler error ("/=" is ambiguous) occurs in the next line of code
-			-- change compiler settings to use explicit declarations only
-			IF (MEM_DTIB /= next_MEM_DTIB) THEN 
-				STD.TEXTIO.write(TX_LOC,string'("Error at time="));
-				STD.TEXTIO.write(TX_LOC, TX_TIME);
-				STD.TEXTIO.write(TX_LOC,string'("ns MEM_DTIB="));
-				IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, MEM_DTIB);
-				STD.TEXTIO.write(TX_LOC, string'(", Expected = "));
-				IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, next_MEM_DTIB);
-				STD.TEXTIO.write(TX_LOC, string'(" "));
-				TX_STR(TX_LOC.all'range) := TX_LOC.all;
-				STD.TEXTIO.writeline(results, TX_LOC);
-				STD.TEXTIO.Deallocate(TX_LOC);
-				ASSERT (FALSE) REPORT TX_STR SEVERITY ERROR;
-				TX_ERROR := TX_ERROR + 1;
-			END IF;
-		END;
-
-		BEGIN
-		-- --------------------
-		RST <= transport '0';
-		PGPG_REG3 <= transport std_logic_vector'("00000000000000000000000000000000"); --0
-		Hit_PGPG_REG3 <= transport '0';
-		MEM_ADA <= transport std_logic_vector'("0000000000000"); --0
-		MEM_WEHA <= transport '0';
-		MEM_WELA <= transport '0';
-		MEM_DTIA <= transport std_logic_vector'("0000000000000000000000000000000000000000000000000000000000000000"); --0
-		DBUS_idata <= transport std_logic_vector'("0000000000000000000000000000000000000000000000000000000000000000"); --0
-		MEM_DTOB <= transport std_logic_vector'("0000000000000000000000000000000000000000000000000000000000000000"); --0
-		-- --------------------
-		WAIT FOR 500 ns; -- Time=500 ns
-		RST <= transport '1';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=600 ns
-		RST <= transport '0';
-		-- --------------------
-		WAIT FOR 600 ns; -- Time=1200 ns
-		MEM_ADA <= transport std_logic_vector'("0111111110000"); --FF0
-		MEM_WEHA <= transport '1';
-		MEM_WELA <= transport '1';
-		MEM_DTIA <= transport std_logic_vector'("0000000000000000000000000000000000000000000000000000000000001010"); --A
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=1300 ns
-		MEM_ADA <= transport std_logic_vector'("0111111110010"); --FF2
-		MEM_DTIA <= transport std_logic_vector'("0000000000000000000000000000000000000000000000000000000000001011"); --B
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=1400 ns
-		MEM_ADA <= transport std_logic_vector'("0111111110100"); --FF4
-		MEM_DTIA <= transport std_logic_vector'("0000000000000000000000000000000000000000000000000000000000001100"); --C
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=1500 ns
-		MEM_ADA <= transport std_logic_vector'("0111111110110"); --FF6
-		MEM_DTIA <= transport std_logic_vector'("0000000000000000000000000000000000000000000000000000000000001101"); --D
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=1600 ns
-		MEM_WEHA <= transport '0';
-		MEM_WELA <= transport '0';
-		-- --------------------
-		WAIT FOR 300 ns; -- Time=1900 ns
-		MEM_ADA <= transport std_logic_vector'("0011101110000"); --770
-		MEM_WEHA <= transport '1';
-		MEM_WELA <= transport '1';
-		MEM_DTIA <= transport std_logic_vector'("0000000000000000000000000000000000001111111111110000000000000001"); --FFF0001
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=2000 ns
-		MEM_ADA <= transport std_logic_vector'("0011101110010"); --772
-		MEM_DTIA <= transport std_logic_vector'("0000000000000000000000000000000000001111111111110000000000000010"); --FFF0002
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=2100 ns
-		MEM_ADA <= transport std_logic_vector'("0011101110100"); --774
-		MEM_DTIA <= transport std_logic_vector'("0000000000000000000000000000000000001111111111110000000000000011"); --FFF0003
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=2200 ns
-		MEM_ADA <= transport std_logic_vector'("0011101110110"); --776
-		MEM_DTIA <= transport std_logic_vector'("0000000000000000000000000000000000001111111111110000000000000100"); --FFF0004
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=2300 ns
-		MEM_ADA <= transport std_logic_vector'("0011101111000"); --778
-		MEM_DTIA <= transport std_logic_vector'("0000000000000000000000000000000000001111111111110000000000000101"); --FFF0005
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=2400 ns
-		MEM_ADA <= transport std_logic_vector'("0011101111010"); --77A
-		MEM_DTIA <= transport std_logic_vector'("0000000000000000000000000000000000001111111111110000000000000110"); --FFF0006
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=2500 ns
-		MEM_ADA <= transport std_logic_vector'("0011101111100"); --77C
-		MEM_DTIA <= transport std_logic_vector'("0000000000000000000000000000000000001111111111110000000000000111"); --FFF0007
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=2600 ns
-		MEM_WEHA <= transport '0';
-		MEM_WELA <= transport '0';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=2700 ns
-		MEM_ADA <= transport std_logic_vector'("0000000000100"); --4
-		MEM_WEHA <= transport '1';
-		MEM_WELA <= transport '1';
-		MEM_DTIA <= transport std_logic_vector'("0000000000000000000000000000011101110111011101110000000000000100"); --777770004
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=2800 ns
-		MEM_WEHA <= transport '0';
-		MEM_WELA <= transport '0';
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=2900 ns
-		MEM_ADA <= transport std_logic_vector'("0000000000110"); --6
-		MEM_WEHA <= transport '1';
-		MEM_WELA <= transport '1';
-		MEM_DTIA <= transport std_logic_vector'("0000000000000000000000000000011101110111011101110000000000000110"); --777770006
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=3000 ns
-		MEM_WEHA <= transport '0';
-		MEM_WELA <= transport '0';
-		-- --------------------
-		WAIT FOR 500 ns; -- Time=3500 ns
-		MEM_ADA <= transport std_logic_vector'("0011101111000"); --778
-		MEM_WEHA <= transport '1';
-		MEM_WELA <= transport '1';
-		MEM_DTIA <= transport std_logic_vector'("1001100110011001100110011001100110001000100010001000100010001000"); --9999999988888888
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=3600 ns
-		MEM_ADA <= transport std_logic_vector'("0011101111010"); --77A
-		MEM_DTIA <= transport std_logic_vector'("1011101110111011101110111011101110101010101010101010101010101010"); --BBBBBBBBAAAAAAAA
-		-- --------------------
-		WAIT FOR 100 ns; -- Time=3700 ns
-		MEM_WEHA <= transport '0';
-		MEM_WELA <= transport '0';
-		-- --------------------
-		WAIT FOR 1255 ns; -- Time=4955 ns
-		-- --------------------
-
-		IF (TX_ERROR = 0) THEN 
-			STD.TEXTIO.write(TX_OUT,string'("No errors or warnings"));
-			STD.TEXTIO.writeline(results, TX_OUT);
-			ASSERT (FALSE) REPORT
-				"Simulation successful (not a failure).  No problems detected. "
-				SEVERITY FAILURE;
-		ELSE
-			STD.TEXTIO.write(TX_OUT, TX_ERROR);
-			STD.TEXTIO.write(TX_OUT, string'(
-				" errors found in simulation"));
-			STD.TEXTIO.writeline(results, TX_OUT);
-			ASSERT (FALSE) REPORT
-				"Errors found during simulation"
-				SEVERITY FAILURE;
-		END IF;
-	END PROCESS;
-END testbench_arch;
-
-CONFIGURATION pfpga_dma_cfg OF sim_pfpga_dma IS
-	FOR testbench_arch
-	END FOR;
-END pfpga_dma_cfg;
+Wed Feb  5 19:53:54 JST 2025
+#ChipScope Core Inserter Project File Version 3.0
+#Sat Nov 20 01:19:00 JST 2004
+Project.device.designInputFile=c\:\\cygwin\\home\\administrator\\fkit\\pci64\\proj\\ifpga.ngc
+Project.device.designOutputFile=c\:\\cygwin\\home\\administrator\\fkit\\pci64\\proj\\ifpga.ngc
+Project.device.deviceFamily=2
+Project.device.enableRPMs=true
+Project.device.outputDirectory=c\:\\cygwin\\home\\administrator\\fkit\\pci64\\proj\\_ngo
+Project.device.useSRL16=true
+Project.filter.dimension=19
+Project.filter<0>=*DBUS_idata*
+Project.filter<10>=*DMAR_ENA*
+Project.filter<11>=*DMAW_ENA*
+Project.filter<12>=*DMAW_*
+Project.filter<13>=*Port*
+Project.filter<14>=*Port
+Project.filter<15>=Hit*
+Project.filter<16>=DEBUG*
+Project.filter<17>=DEBUG
+Project.filter<18>=CLK
+Project.filter<1>=*DBUS_HiZ*
+Project.filter<2>=*MEM_DTIB*
+Project.filter<3>=*MEM_WE*B
+Project.filter<4>=*MEM_WE*
+Project.filter<5>=*MEM_LE**
+Project.filter<6>=*MEM_DTOB*
+Project.filter<7>=*MEM_ADB*
+Project.filter<8>=*MEM_AD*
+Project.filter<9>=*
+Project.icon.boundaryScanChain=0
+Project.icon.disableBUFGInsertion=false
+Project.icon.enableExtTriggerIn=false
+Project.icon.enableExtTriggerOut=false
+Project.icon.triggerInPinName=
+Project.icon.triggerOutPinName=
+Project.unit.dimension=1
+Project.unit<0>.clockChannel=CLK
+Project.unit<0>.clockEdge=Rising
+Project.unit<0>.dataDepth=2048
+Project.unit<0>.dataEqualsTrigger=true
+Project.unit<0>.dataPortWidth=16
+Project.unit<0>.enableGaps=false
+Project.unit<0>.enableTimestamps=false
+Project.unit<0>.timestampDepth=0
+Project.unit<0>.timestampWidth=0
+Project.unit<0>.triggerChannel<0><0>=DEBUG_CS_CLK0
+Project.unit<0>.triggerChannel<0><100>=MEM_DTIB<14>
+Project.unit<0>.triggerChannel<0><101>=MEM_DTIB<15>
+Project.unit<0>.triggerChannel<0><102>=MEM_DTIB<32>
+Project.unit<0>.triggerChannel<0><103>=MEM_DTIB<33>
+Project.unit<0>.triggerChannel<0><104>=MEM_DTIB<34>
+Project.unit<0>.triggerChannel<0><105>=MEM_DTIB<35>
+Project.unit<0>.triggerChannel<0><106>=MEM_DTIB<36>
+Project.unit<0>.triggerChannel<0><107>=MEM_DTIB<37>
+Project.unit<0>.triggerChannel<0><108>=MEM_DTIB<38>
+Project.unit<0>.triggerChannel<0><109>=MEM_DTIB<39>
+Project.unit<0>.triggerChannel<0><10>=DBUS_Port<7>
+Project.unit<0>.triggerChannel<0><110>=MEM_DTIB<40>
+Project.unit<0>.triggerChannel<0><111>=MEM_DTIB<41>
+Project.unit<0>.triggerChannel<0><112>=MEM_DTIB<42>
+Project.unit<0>.triggerChannel<0><113>=MEM_DTIB<43>
+Project.unit<0>.triggerChannel<0><114>=MEM_DTIB<44>
+Project.unit<0>.triggerChannel<0><115>=MEM_DTIB<45>
+Project.unit<0>.triggerChannel<0><116>=MEM_DTIB<46>
+Project.unit<0>.triggerChannel<0><117>=MEM_DTIB<47>
+Project.unit<0>.triggerChannel<0><118>=DBUS_HiZ
+Project.unit<0>.triggerChannel<0><119>=pgpg1 DBUS_idata<0>
+Project.unit<0>.triggerChannel<0><11>=DBUS_Port<8>
+Project.unit<0>.triggerChannel<0><120>=pgpg1 DBUS_idata<1>
+Project.unit<0>.triggerChannel<0><121>=pgpg1 DBUS_idata<2>
+Project.unit<0>.triggerChannel<0><122>=pgpg1 DBUS_idata<3>
+Project.unit<0>.triggerChannel<0><123>=pgpg1 DBUS_idata<4>
+Project.unit<0>.triggerChannel<0><124>=pgpg1 DBUS_idata<5>
+Project.unit<0>.triggerChannel<0><125>=pgpg1 DBUS_idata<6>
+Project.unit<0>.triggerChannel<0><126>=pgpg1 DBUS_idata<7>
+Project.unit<0>.triggerChannel<0><127>=pgpg1 DBUS_idata<8>
+Project.unit<0>.triggerChannel<0><128>=pgpg1 DBUS_idata<9>
+Project.unit<0>.triggerChannel<0><129>=pgpg1 DBUS_idata<10>
+Project.unit<0>.triggerChannel<0><12>=DBUS_Port<9>
+Project.unit<0>.triggerChannel<0><130>=pgpg1 DBUS_idata<11>
+Project.unit<0>.triggerChannel<0><131>=pgpg1 DBUS_idata<12>
+Project.unit<0>.triggerChannel<0><132>=pgpg1 DBUS_idata<13>
+Project.unit<0>.triggerChannel<0><133>=pgpg1 DBUS_idata<14>
+Project.unit<0>.triggerChannel<0><134>=pgpg1 DBUS_idata<15>
+Project.unit<0>.triggerChannel<0><135>=pgpg1 DBUS_idata<32>
+Project.unit<0>.triggerChannel<0><136>=pgpg1 DBUS_idata<33>
+Project.unit<0>.triggerChannel<0><137>=pgpg1 DBUS_idata<34>
+Project.unit<0>.triggerChannel<0><138>=pgpg1 DBUS_idata<35>
+Project.unit<0>.triggerChannel<0><139>=pgpg1 DBUS_idata<36>
+Project.unit<0>.triggerChannel<0><13>=DBUS_Port<10>
+Project.unit<0>.triggerChannel<0><140>=pgpg1 DBUS_idata<37>
+Project.unit<0>.triggerChannel<0><141>=pgpg1 DBUS_idata<38>
+Project.unit<0>.triggerChannel<0><142>=pgpg1 DBUS_idata<39>
+Project.unit<0>.triggerChannel<0><143>=pgpg1 DBUS_idata<40>
+Project.unit<0>.triggerChannel<0><144>=pgpg1 DBUS_idata<41>
+Project.unit<0>.triggerChannel<0><145>=pgpg1 DBUS_idata<42>
+Project.unit<0>.triggerChannel<0><146>=pgpg1 DBUS_idata<43>
+Project.unit<0>.triggerChannel<0><147>=pgpg1 DBUS_idata<44>
+Project.unit<0>.triggerChannel<0><148>=pgpg1 DBUS_idata<45>
+Project.unit<0>.triggerChannel<0><149>=pgpg1 DBUS_idata<46>
+Project.unit<0>.triggerChannel<0><14>=DBUS_Port<11>
+Project.unit<0>.triggerChannel<0><150>=pgpg1 DBUS_idata<47>
+Project.unit<0>.triggerChannel<0><15>=DBUS_Port<12>
+Project.unit<0>.triggerChannel<0><16>=DBUS_Port<13>
+Project.unit<0>.triggerChannel<0><17>=DBUS_Port<14>
+Project.unit<0>.triggerChannel<0><18>=DBUS_Port<15>
+Project.unit<0>.triggerChannel<0><19>=DBUS_Port<32>
+Project.unit<0>.triggerChannel<0><1>=pgpg1 Hit_PGPG_REG2
+Project.unit<0>.triggerChannel<0><20>=DBUS_Port<33>
+Project.unit<0>.triggerChannel<0><21>=DBUS_Port<34>
+Project.unit<0>.triggerChannel<0><22>=DBUS_Port<35>
+Project.unit<0>.triggerChannel<0><23>=DBUS_Port<36>
+Project.unit<0>.triggerChannel<0><24>=DBUS_Port<37>
+Project.unit<0>.triggerChannel<0><25>=DBUS_Port<38>
+Project.unit<0>.triggerChannel<0><26>=DBUS_Port<39>
+Project.unit<0>.triggerChannel<0><27>=DBUS_Port<40>
+Project.unit<0>.triggerChannel<0><28>=DBUS_Port<41>
+Project.unit<0>.triggerChannel<0><29>=DBUS_Port<42>
+Project.unit<0>.triggerChannel<0><2>=pgpg1 Hit_PGPG_REG3
+Project.unit<0>.triggerChannel<0><30>=DBUS_Port<43>
+Project.unit<0>.triggerChannel<0><31>=DBUS_Port<44>
+Project.unit<0>.triggerChannel<0><32>=DBUS_Port<45>
+Project.unit<0>.triggerChannel<0><33>=DBUS_Port<46>
+Project.unit<0>.triggerChannel<0><34>=DBUS_Port<47>
+Project.unit<0>.triggerChannel<0><35>=pgpg1 DMAW_ENABLE<0>
+Project.unit<0>.triggerChannel<0><36>=pgpg1 DMAW_ENABLE<1>
+Project.unit<0>.triggerChannel<0><37>=pgpg1 DMAW_ENABLE<2>
+Project.unit<0>.triggerChannel<0><38>=pgpg1 DMAW_ENABLE<3>
+Project.unit<0>.triggerChannel<0><39>=pgpg1 DMAR_ENABLE<0>
+Project.unit<0>.triggerChannel<0><3>=DBUS_Port<0>
+Project.unit<0>.triggerChannel<0><40>=pgpg1 DMAR_ENABLE<1>
+Project.unit<0>.triggerChannel<0><41>=pgpg1 DMAR_ENABLE<2>
+Project.unit<0>.triggerChannel<0><42>=pgpg1 DMAR_ENABLE<3>
+Project.unit<0>.triggerChannel<0><43>=MEM_ADB<0>
+Project.unit<0>.triggerChannel<0><44>=MEM_ADB<1>
+Project.unit<0>.triggerChannel<0><45>=MEM_ADB<2>
+Project.unit<0>.triggerChannel<0><46>=MEM_ADB<3>
+Project.unit<0>.triggerChannel<0><47>=MEM_ADB<4>
+Project.unit<0>.triggerChannel<0><48>=MEM_ADB<5>
+Project.unit<0>.triggerChannel<0><49>=MEM_ADB<6>
+Project.unit<0>.triggerChannel<0><4>=DBUS_Port<1>
+Project.unit<0>.triggerChannel<0><50>=MEM_ADB<7>
+Project.unit<0>.triggerChannel<0><51>=MEM_ADB<8>
+Project.unit<0>.triggerChannel<0><52>=MEM_DTOB<0>
+Project.unit<0>.triggerChannel<0><53>=MEM_DTOB<1>
+Project.unit<0>.triggerChannel<0><54>=MEM_DTOB<2>
+Project.unit<0>.triggerChannel<0><55>=MEM_DTOB<3>
+Project.unit<0>.triggerChannel<0><56>=MEM_DTOB<4>
+Project.unit<0>.triggerChannel<0><57>=MEM_DTOB<5>
+Project.unit<0>.triggerChannel<0><58>=MEM_DTOB<6>
+Project.unit<0>.triggerChannel<0><59>=MEM_DTOB<7>
+Project.unit<0>.triggerChannel<0><5>=DBUS_Port<2>
+Project.unit<0>.triggerChannel<0><60>=MEM_DTOB<8>
+Project.unit<0>.triggerChannel<0><61>=MEM_DTOB<9>
+Project.unit<0>.triggerChannel<0><62>=MEM_DTOB<10>
+Project.unit<0>.triggerChannel<0><63>=MEM_DTOB<11>
+Project.unit<0>.triggerChannel<0><64>=MEM_DTOB<12>
+Project.unit<0>.triggerChannel<0><65>=MEM_DTOB<13>
+Project.unit<0>.triggerChannel<0><66>=MEM_DTOB<14>
+Project.unit<0>.triggerChannel<0><67>=MEM_DTOB<15>
+Project.unit<0>.triggerChannel<0><68>=MEM_DTOB<32>
+Project.unit<0>.triggerChannel<0><69>=MEM_DTOB<33>
+Project.unit<0>.triggerChannel<0><6>=DBUS_Port<3>
+Project.unit<0>.triggerChannel<0><70>=MEM_DTOB<34>
+Project.unit<0>.triggerChannel<0><71>=MEM_DTOB<35>
+Project.unit<0>.triggerChannel<0><72>=MEM_DTOB<36>
+Project.unit<0>.triggerChannel<0><73>=MEM_DTOB<37>
+Project.unit<0>.triggerChannel<0><74>=MEM_DTOB<38>
+Project.unit<0>.triggerChannel<0><75>=MEM_DTOB<39>
+Project.unit<0>.triggerChannel<0><76>=MEM_DTOB<40>
+Project.unit<0>.triggerChannel<0><77>=MEM_DTOB<41>
+Project.unit<0>.triggerChannel<0><78>=MEM_DTOB<42>
+Project.unit<0>.triggerChannel<0><79>=MEM_DTOB<43>
+Project.unit<0>.triggerChannel<0><7>=DBUS_Port<4>
+Project.unit<0>.triggerChannel<0><80>=MEM_DTOB<44>
+Project.unit<0>.triggerChannel<0><81>=MEM_DTOB<45>
+Project.unit<0>.triggerChannel<0><82>=MEM_DTOB<46>
+Project.unit<0>.triggerChannel<0><83>=MEM_DTOB<47>
+Project.unit<0>.triggerChannel<0><84>=MEM_WELB
+Project.unit<0>.triggerChannel<0><85>=MEM_WEHB
+Project.unit<0>.triggerChannel<0><86>=MEM_DTIB<0>
+Project.unit<0>.triggerChannel<0><87>=MEM_DTIB<1>
+Project.unit<0>.triggerChannel<0><88>=MEM_DTIB<2>
+Project.unit<0>.triggerChannel<0><89>=MEM_DTIB<3>
+Project.unit<0>.triggerChannel<0><8>=DBUS_Port<5>
+Project.unit<0>.triggerChannel<0><90>=MEM_DTIB<4>
+Project.unit<0>.triggerChannel<0><91>=MEM_DTIB<5>
+Project.unit<0>.triggerChannel<0><92>=MEM_DTIB<6>
+Project.unit<0>.triggerChannel<0><93>=MEM_DTIB<7>
+Project.unit<0>.triggerChannel<0><94>=MEM_DTIB<8>
+Project.unit<0>.triggerChannel<0><95>=MEM_DTIB<9>
+Project.unit<0>.triggerChannel<0><96>=MEM_DTIB<10>
+Project.unit<0>.triggerChannel<0><97>=MEM_DTIB<11>
+Project.unit<0>.triggerChannel<0><98>=MEM_DTIB<12>
+Project.unit<0>.triggerChannel<0><99>=MEM_DTIB<13>
+Project.unit<0>.triggerChannel<0><9>=DBUS_Port<6>
+Project.unit<0>.triggerConditionCountWidth=0
+Project.unit<0>.triggerMatchCount<0>=1
+Project.unit<0>.triggerMatchCountWidth<0><0>=0
+Project.unit<0>.triggerMatchType<0><0>=1
+Project.unit<0>.triggerPortCount=1
+Project.unit<0>.triggerPortIsData<0>=true
+Project.unit<0>.triggerPortWidth<0>=151
+Project.unit<0>.triggerSequencerLevels=16
+Project.unit<0>.triggerSequencerType=1
+Project.unit<0>.type=ilapro

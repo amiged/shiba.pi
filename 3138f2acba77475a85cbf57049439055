@@ -1,94 +1,265 @@
-Mon Feb 10 19:28:24 JST 2025
--- LOCAL READ CONTROLLER ( ifpga <- pfpga )
--- by Tsuyoshi Hamada
---
--- CLK            __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~
--- CALC_DONE      ___/~~~~\____
--- BUSY               ___/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\_______________
--- hit1               ___/~~~~\____
--- c_nchip               < NC                >< NC -1                           >< negativ value
--- next_chip                          ___/~~~~\____                      ___/~~~~\____
---==================================================
--- CLK            __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~ __~~
--- CALC_DONE      ___/~~~~\____
--- c_npipe               < NP                >< NP -1                           >< negativ value
--- next_pipe
+Sat Feb 15 19:38:57 JST 2025
+-- C:\CYGWIN\HOME\ADMINISTRATOR\FKIT\PCI64\PROJ
+-- VHDL Annotation Test Bench created by
+-- HDL Bencher 6.1i
+-- Tue Jan 04 18:45:17 2005
 
+LIBRARY IEEE;
+USE IEEE.STD_LOGIC_1164.ALL;
+USE IEEE.STD_LOGIC_UNSIGNED.ALL;
+USE IEEE.STD_LOGIC_ARITH.ALL;
+USE IEEE.STD_LOGIC_TEXTIO.ALL;
+USE STD.TEXTIO.ALL;
 
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL;
-use IEEE.STD_LOGIC_ARITH.ALL;
+ENTITY sim_local_read IS
+END sim_local_read;
 
-entity local_read_cnt is
-  port (
-    -- from PGPG_REG3
-    NCHIP : in std_logic_vector(1 downto 0);     -- (number of chips) - 1
-    NPIPE : in std_logic_vector(7 downto 0);     -- (number of pipelines) - 1
-    NFI   : in std_logic_vector(7 downto 0);     -- (number of fi registers in a pipe) - 1
-    CALC_DONE : in std_logic;   -- pulse
-    -- to GPREG0
-    BUSY  : out std_logic;
+ARCHITECTURE testbench_arch OF sim_local_read IS
+-- If you get a compiler error on the following line,
+-- from the menu do Options->Configuration select VHDL 87
+FILE RESULTS: TEXT OPEN WRITE_MODE IS "c:\cygwin\home\administrator\fkit\pci64\proj\sim_local_read.ano";
+	COMPONENT local_read
+		GENERIC (
+			NBIT_L_ADRO : INTEGER
+		);
+		PORT (
+			NPIPE : In  std_logic_vector (7 DOWNTO 0);
+			CALC_STS : In  std_logic;
+			BUSY : Out  std_logic;
+			DMAR_ENABLE : Out  std_logic_vector (3 DOWNTO 0);
+			DBUS_Port : Out  std_logic_vector (63 DOWNTO 0);
+			DBUS_idata : In  std_logic_vector (63 DOWNTO 0);
+			DBUS_HiZ : Out  std_logic;
+			MEM_ADB : Out  std_logic_vector (12 DOWNTO 0);
+			MEM_WEHB : Out  std_logic;
+			MEM_WELB : Out  std_logic;
+			MEM_DTIB : Out  std_logic_vector (63 DOWNTO 0);
+			RST : In  std_logic;
+			CLK : In  std_logic
+		);
+	END COMPONENT;
 
-    -- to LOCAL_READ_IF
-    EXEC     : out std_logic;                     -- pulse
-    START_AD : out std_logic_vector(18 downto 0); -- 19 bit
-    NQWORD   : out std_logic_vector( 8 downto 0); --  9 bit
-    CHIPSEL  : out std_logic_vector( 3 downto 0); --  4 bit
-    MEM_AD_BASE : out std_logic_vector(12 downto 0);
-    -- from LOCAL_READ_IF
-    BUSY_IF : in std_logic;
- 
-    RST : in  std_logic;
-    CLK : in  std_logic
-    );
-end local_read;
+	SIGNAL NPIPE : std_logic_vector (7 DOWNTO 0);
+	SIGNAL CALC_STS : std_logic;
+	SIGNAL BUSY : std_logic;
+	SIGNAL DMAR_ENABLE : std_logic_vector (3 DOWNTO 0);
+	SIGNAL DBUS_Port : std_logic_vector (63 DOWNTO 0);
+	SIGNAL DBUS_idata : std_logic_vector (63 DOWNTO 0);
+	SIGNAL DBUS_HiZ : std_logic;
+	SIGNAL MEM_ADB : std_logic_vector (12 DOWNTO 0);
+	SIGNAL MEM_WEHB : std_logic;
+	SIGNAL MEM_WELB : std_logic;
+	SIGNAL MEM_DTIB : std_logic_vector (63 DOWNTO 0);
+	SIGNAL RST : std_logic;
+	SIGNAL CLK : std_logic;
 
-architecture rtl of local_read is
+BEGIN
+	UUT : local_read
+	GENERIC MAP (
+		NBIT_L_ADRO => 1
+	)
+	PORT MAP (
+		NPIPE => NPIPE,
+		CALC_STS => CALC_STS,
+		BUSY => BUSY,
+		DMAR_ENABLE => DMAR_ENABLE,
+		DBUS_Port => DBUS_Port,
+		DBUS_idata => DBUS_idata,
+		DBUS_HiZ => DBUS_HiZ,
+		MEM_ADB => MEM_ADB,
+		MEM_WEHB => MEM_WEHB,
+		MEM_WELB => MEM_WELB,
+		MEM_DTIB => MEM_DTIB,
+		RST => RST,
+		CLK => CLK
+	);
 
-signal hit0,hit1,hit2 : std_logic :='0';
-signal c_nchip,c_nchipr  : std_logic_vector(2 downto 0) := (others=>'0');
-signal c_npipe,c_npiper  : std_logic_vector(7 downto 0) := (others=>'0');
-signal c_nfi  ,c_nfir    : std_logic_vector(7 downto 0) := (others=>'0');
-signal next_chip, next_pipe : std_logic :='0';
+	PROCESS -- clock process for CLK,
+		VARIABLE TX_TIME : INTEGER :=0;
 
-begin
+		PROCEDURE ANNOTATE_BUSY(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",BUSY,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, BUSY);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
 
-  hit0 <= CALC_DONE;
-  process (CLK) begin
-    if (CLK'event and CLK='1') then
-      hit2 <= hit1;
-      hit1 <= hit0;
-    end if;
-  end process;
+		PROCEDURE ANNOTATE_DMAR_ENABLE(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",DMAR_ENABLE,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, DMAR_ENABLE);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
 
-  -- BUSY
-  process (RST,CLK,c_nchip) begin
-    if (RST = '1') then
-      BUSY <= '0';
-    elsif (CLK'event and CLK='1') then
-      if((hit0 = '1') AND (hit1 = '0')) then
-        BUSY <= '1';
-      elsif(c_nchip(2) = '1') then
-        BUSY <= '0';
-      end if;
-    end if;
-  end process;
+		PROCEDURE ANNOTATE_DBUS_Port(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",DBUS_Port,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, DBUS_Port);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
 
+		PROCEDURE ANNOTATE_DBUS_HiZ(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",DBUS_HiZ,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, DBUS_HiZ);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
 
-  -- NCHIP COUNTER
-  c_nchipr <= c_nchip - "01";
-  process (RST,CLK,next_chip) begin
-    if (RST = '1') then
-      c_nchip <= (others=>'0');
-    elsif (CLK'event and CLK='1') then
-      if((hit0 = '1') AND (hit1 = '0')) then
-        c_nchip <= "0" & NCHIP;              -- SIGNED VALUE
-      elsif (next_chip='1') then
-        c_nchip <= c_nchipr;
-      end if;
-    end if;
-  end process;
+		PROCEDURE ANNOTATE_MEM_ADB(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",MEM_ADB,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, MEM_ADB);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
 
-  
+		PROCEDURE ANNOTATE_MEM_WEHB(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",MEM_WEHB,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, MEM_WEHB);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
 
+		PROCEDURE ANNOTATE_MEM_WELB(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",MEM_WELB,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, MEM_WELB);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
+
+		PROCEDURE ANNOTATE_MEM_DTIB(
+			TX_TIME : INTEGER
+		) IS
+			VARIABLE TX_STR : String(1 to 4096);
+			VARIABLE TX_LOC : LINE;
+		BEGIN
+			STD.TEXTIO.write(TX_LOC,string'("Annotate["));
+			STD.TEXTIO.write(TX_LOC, TX_TIME);
+			STD.TEXTIO.write(TX_LOC,string'(",MEM_DTIB,"));
+			IEEE.STD_LOGIC_TEXTIO.write(TX_LOC, MEM_DTIB);
+			STD.TEXTIO.write(TX_LOC, string'("]"));
+			TX_STR(TX_LOC.all'range) := TX_LOC.all;
+			STD.TEXTIO.writeline(results, TX_LOC);
+			STD.TEXTIO.Deallocate(TX_LOC);
+		END;
+
+	BEGIN
+		CLOCK_LOOP : LOOP
+		CLK <= transport '0';
+		WAIT FOR 25 ns;
+		TX_TIME := TX_TIME + 25;
+		CLK <= transport '1';
+		WAIT FOR 25 ns;
+		TX_TIME := TX_TIME + 25;
+		ANNOTATE_BUSY(TX_TIME);
+		ANNOTATE_DMAR_ENABLE(TX_TIME);
+		ANNOTATE_DBUS_Port(TX_TIME);
+		ANNOTATE_DBUS_HiZ(TX_TIME);
+		ANNOTATE_MEM_ADB(TX_TIME);
+		ANNOTATE_MEM_WEHB(TX_TIME);
+		ANNOTATE_MEM_WELB(TX_TIME);
+		ANNOTATE_MEM_DTIB(TX_TIME);
+		WAIT FOR 25 ns;
+		TX_TIME := TX_TIME + 25;
+		CLK <= transport '0';
+		WAIT FOR 25 ns;
+		TX_TIME := TX_TIME + 25;
+		END LOOP CLOCK_LOOP;
+	END PROCESS;
+
+	PROCESS   -- Process for CLK
+		VARIABLE TX_OUT : LINE;
+
+		BEGIN
+		-- --------------------
+		CALC_STS <= transport '0';
+		DBUS_idata <= transport std_logic_vector'("0000000000000000000000000000000000000000000000000000000000000000"); --0
+		RST <= transport '0';
+		NPIPE <= transport std_logic_vector'("00000000"); --0
+		-- --------------------
+		WAIT FOR 200 ns; -- Time=200 ns
+		NPIPE <= transport std_logic_vector'("00010001"); --11
+		-- --------------------
+		WAIT FOR 600 ns; -- Time=800 ns
+		CALC_STS <= transport '1';
+		-- --------------------
+		WAIT FOR 4400 ns; -- Time=5200 ns
+		CALC_STS <= transport '0';
+		-- --------------------
+		WAIT FOR 60275 ns; -- Time=65475 ns
+		-- --------------------
+
+		STD.TEXTIO.write(TX_OUT, string'("Total[]"));
+		STD.TEXTIO.writeline(results, TX_OUT);
+		ASSERT (FALSE) REPORT
+			"Success! Simulation for annotation completed"
+			SEVERITY FAILURE;
+	END PROCESS;
+END testbench_arch;
+
+CONFIGURATION local_read_cfg OF sim_local_read IS
+	FOR testbench_arch
+	END FOR;
+END local_read_cfg;

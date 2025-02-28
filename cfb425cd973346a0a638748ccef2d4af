@@ -1,9 +1,16 @@
-Sun Feb  9 19:49:50 JST 2025
-V1 3
-FL c:/cygwin/home/administrator/fkit/pci64/tmp2/pfpga_config.vhd 2004/11/10.11:36:20
-EN work/PFPGA_CONFIG \
-      FL c:/cygwin/home/administrator/fkit/pci64/tmp2/pfpga_config.vhd \
-      PB ieee/STD_LOGIC_1164 PB ieee/STD_LOGIC_ARITH PB ieee/STD_LOGIC_UNSIGNED
-AR work/PFPGA_CONFIG/RTL \
-      FL c:/cygwin/home/administrator/fkit/pci64/tmp2/pfpga_config.vhd \
-      EN work/PFPGA_CONFIG
+Fri Feb 28 19:27:45 JST 2025
+/** 
+# xを1ステップ進める
+# x(k+1) = x(k) + v(k+1/2)*dt
+*/
+
+#include <stdio.h>
+#include "nbodysim.h"
+
+void leapflog(double dt,double x[][DIM],double v[][DIM],int n)
+{
+    int i,d;
+    for(i=0;i<n;i++)
+        for(d=0;d<3;d++)
+            x[i][d] = x[i][d]+v[i][d]*dt;
+}

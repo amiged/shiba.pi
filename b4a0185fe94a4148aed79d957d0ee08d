@@ -1,68 +1,48 @@
-Sat Feb  1 19:37:36 JST 2025
-#!/usr/bin/env python3
-# ----------------------------------------------------------------------
-# BBox-Label-Tool
-#1
-#231 204 403 455
-# ----------------------------------------------------------------------
-# darknet 
-#0 0.49531250000000004 0.6864583333333333 0.26875 0.5229166666666667
-# ----------------------------------------------------------------------
-import glob
+Sun Mar  2 19:43:30 JST 2025
+#include <stdio.h>
+#include <math.h>
+#include "nbodysim.h"
 
-def convert(size, box):
-    dw = (size[0])
-    dh = (size[1])
-    x = (box[0] + box[2])/2.0
-    y = (box[1] + box[3])/2.0
-    w = box[2] - box[0]
-    h = box[3] - box[1]
-    x = x/dw
-    w = w/dw
-    y = y/dh
-    h = h/dh
-    return (x,y,w,h)
+double energy(double m[], double x[][DIM], double v[][DIM], double eps2 , int n)
+{
+    int i,j,d;
+    double v2,r2;
+    double dx[3];
+    double Ep;  /* 系の位置エネルギー */
+    double Em;  /* 系の運動エネルギー */
+    double Ea;  /* 系の全力学的エネルギー */
 
 
-def _convert(size, box):
-    dw = 1./(size[0])
-    dh = 1./(size[1])
-    x = (box[0] + box[2])/2.0 - 1
-    y = (box[1] + box[3])/2.0 - 1
-    w = box[2] - box[0]
-    h = box[3] - box[1]
-    x = x*dw
-    w = w*dw
-    y = y*dh
-    h = h*dh
-    return (x,y,w,h)
-
-flist = glob.glob("../data4bbox/Labels/777/image*.txt")
-flist.sort()
-
-for fname in flist:
-    with open(fname, "r") as fd:
-        lines = fd.readlines()
-        l = lines[1].replace('\n','')
-        box_str = l.split(' ')
-        box = []
-        for v in box_str:
-            box.append(float(int(v)))
-
-        size = [640.0, 480.0]
-        x, y, w, h = convert(size, box)
-
-        if False:
-        #if True:
-            x0 = box[0]
-            y0 = box[1]
-            x1 = box[2]
-            y1 = box[3]
-            x = (x0 + x1)/2.0/size[0]
-            y = (y0 + y1)/2.0/size[1]
+    /* 系の位置エネルギー Ep を計算する。 */ 
+    Ep=0.0;
+    for(i=0;i<n-1;i++){
+        for(j=i+1;j<n;j++){
+            r2 = eps2;           /* 相対距離初期化 */
+            for(d=0;d<3;d++){
+                dx[d] = x[j][d] - x[i][d];
+                r2 += dx[d] * dx[d];
+            }
+            Ep -= m[i] * m[j] * ( 1/sqrt(r2)  );
+        }
+    }
 
 
-        #print(fname, lines[1], box, x, y, w, h)
-        print("%1.17f %1.17f %1.17f %1.17f " %(x, y, w, h))
+    /* 系の運動エネルギー Em を計算する。 */ 
+    Em=0.0;
+    for(i=0;i<n;i++){
+        v2=0.0;    /* 絶対速度2乗値初期化 */
+        for(d=0;d<3;d++){
+            v2 += v[i][d]*v[i][d];
+        }
+        Em += 0.5 * m[i] * v2;
+    }
 
-    
+    /* 系の全力学的エネルギー Ea を計算する。 */ 
+    Ea=0.0;
+    Ea = Em + Ep;
+
+/*    printf("Emove=%1.6e,   Epot=%1.3e,   Eall=%1.25e\n",Em,Ep,Ea);*/
+/*    printf("%e\n",Ea);*/
+
+    return Ea;
+}
